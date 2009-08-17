@@ -1,0 +1,82 @@
+#!/bin/sh
+
+sed -i '
+# use /^%files/ instead of 1 below when you want to replace macros only in %files section
+# otherwise all macros are replaced until line with %changelog is hit
+
+1,/^%changelog/ {
+
+# replace prefix /usr
+
+s:%_prefix:%{_prefix}:g
+s:/usr:%{_prefix}:g
+s:%prefix:%{_prefix}:g
+s:%{prefix}:%{_prefix}:g
+
+# replace bindir /usr/bin
+
+s:%_bindir:%{_bindir}:g
+s:%{_prefix}/bin:%{_bindir}:g
+
+# replace sbindir /usr/sbin
+
+s:%_sbindir:%{_sbindir}:g
+s:%{_prefix}/sbin:%{_sbindir}:g
+
+# replace includedir /usr/include
+
+s:%_includedir:%{_includedir}:g
+s:%{_prefix}/include:%{_includedir}:g
+
+# replace datadir /usr/share
+
+s:%_datadir:%{_datadir}:g
+s:%{_prefix}/share:%{_datadir}:g
+
+# replace mandir /usr/share/man
+
+s:%_mandir:%{_mandir}:g
+s:%{_datadir}/man:%{_mandir}:g
+
+# replace infodir /usr/share/info
+
+s:%_infodir:%{_infodir}:g
+s:%{_datadir}/info:%{_infodir}:g
+
+# replace lib
+
+s:%_lib:%{_lib}:g
+
+# replace libdir (unfortunately cannot replace /usr/lib{,64} directly - could be libexecdir)
+
+s:%_libdir:%{_libdir}:g
+s:%{_prefix}/%{_lib}:%{_libdir}:g
+
+# replace libexecdir
+
+s:%_libexecdir:%{_libexecdir}:g
+
+# replace sysconfdir /etc
+
+s:%_sysconfdir:%{_sysconfdir}:g
+s:/etc:%{_sysconfdir}:g
+
+# replace localstatedir /var
+
+s:%_localstatedir:%{_localstatedir}:g
+s:/var:%{_localstatedir}:g
+
+# replace buildroot
+
+s:${RPM_BUILD_ROOT}:%{buildroot}:g
+s:$RPM_BUILD_ROOT:%{buildroot}:g
+s:%buildroot:%{buildroot}:g
+
+# replace optflags
+
+s:${RPM_OPT_FLAGS}:%{optflags}:g
+s:$RPM_OPT_FLAGS:%{optflags}:g
+s:%optflags:%{optflags}:g
+
+}
+' *.spec
