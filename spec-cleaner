@@ -1,0 +1,881 @@
+#!/usr/bin/env python
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2009, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@novell.com>
+#
+
+import os
+import sys
+
+import cStringIO
+import optparse
+import re
+import time
+
+# TODO: integrate http://gk2.sk/_tmp/spec-polish-macros / http://gitorious.org/opensuse/spec-cleaner
+
+
+#######################################################################
+
+
+re_comment = re.compile('^$|^\s*#')
+re_define = re.compile('^\s*%define', re.IGNORECASE)
+
+re_bindir = re.compile('%{_prefix}/bin([/\s$])')
+re_sbindir = re.compile('%{_prefix}/sbin([/\s$])')
+re_includedir = re.compile('%{_prefix}/include([/\s$])')
+re_datadir = re.compile('%{_prefix}/share([/\s$])')
+re_mandir = re.compile('%{_datadir}/man([/\s$])')
+re_infodir = re.compile('%{_datadir}/info([/\s$])')
+
+
+def strip_useless_spaces(s):
+    return ' '.join(s.split())
+
+
+def replace_known_dirs(s):
+    s = s.replace('%_prefix', '%{_prefix}')
+    s = s.replace('%_bindir', '%{_bindir}')
+    s = s.replace('%_sbindir', '%{_sbindir}')
+    s = s.replace('%_includedir', '%{_includedir}')
+    s = s.replace('%_datadir', '%{_datadir}')
+    s = s.replace('%_mandir', '%{_mandir}')
+    s = s.replace('%_infodir', '%{_infodir}')
+    s = s.replace('%_libdir', '%{_libdir}')
+    s = s.replace('%_libexecdir', '%{_libexecdir}')
+    s = s.replace('%_lib', '%{_lib}')
+    s = s.replace('%{_prefix}/%{_lib}', '%{_libdir}')
+    s = s.replace('%_sysconfdir', '%{_sysconfdir}')
+    s = s.replace('%_localstatedir', '%{_localstatedir}')
+
+    s = re_bindir.sub(r'%{_bindir}\1', s)
+    s = re_sbindir.sub(r'%{_sbindir}\1', s)
+    s = re_includedir.sub(r'%{_includedir}\1', s)
+    s = re_datadir.sub(r'%{_datadir}\1', s)
+    s = re_mandir.sub(r'%{_mandir}\1', s)
+    s = re_infodir.sub(r'%{_infodir}\1', s)
+
+    return s
+
+
+def replace_buildroot(s):
+    s = s.replace('${RPM_BUILD_ROOT}', '%{buildroot}')
+    s = s.replace('$RPM_BUILD_ROOT', '%{buildroot}')
+    s = s.replace('%buildroot', '%{buildroot}')
+    s = s.replace('%{buildroot}/usr', '%{buildroot}%{_prefix}')
+    s = s.replace('%{buildroot}/', '%{buildroot}')
+    s = s.replace('%{buildroot}etc/', '%{buildroot}%{_sysconfdir}/')
+    s = s.replace('%{buildroot}usr/', '%{buildroot}%{_prefix}/')
+    s = s.replace('%{buildroot}var/', '%{buildroot}%{_localstatedir}/')
+    s = s.replace('"%{buildroot}"', '%{buildroot}')
+    return s
+
+
+def replace_optflags(s):
+    s = s.replace('${RPM_OPT_FLAGS}', '%{optflags}')
+    s = s.replace('$RPM_OPT_FLAGS', '%{optflags}')
+    s = s.replace('%optflags', '%{optflags}')
+    return s
+
+
+def replace_remove_la(s):
+    cmp_line = strip_useless_spaces(s)
+    if cmp_line in [ 'find %{buildroot} -type f -name "*.la" -exec %{__rm} -fv {} +', 'find %{buildroot} -type f -name "*.la" -delete' ]:
+        s = 'find %{buildroot} -type f -name "*.la" -delete -print'
+    return s
+
+
+def replace_all(s):
+    s = replace_buildroot(s)
+    s = replace_optflags(s)
+    s = replace_known_dirs(s)
+    s = replace_remove_la(s)
+    return s
+
+
+#######################################################################
+
+
+class RpmException(Exception):
+    pass
+
+
+#######################################################################
+
+
+class RpmSection(object):
+    '''
+        Basic cleanup: we remove trailing spaces.
+    '''
+
+    def __init__(self):
+        self.lines = []
+        self.previous_line = None
+
+    def add(self, line):
+        line = line.rstrip()
+        line = replace_all(line)
+        self.lines.append(line)
+        self.previous_line = line
+
+    def output(self, fout):
+        for line in self.lines:
+            fout.write(line + '\n')
+
+
+#######################################################################
+
+
+class RpmCopyright(RpmSection):
+    '''
+        Adds default copyright notice if needed.
+        Remove initial empty lines.
+        Remove norootforbuild.
+    '''
+
+
+    def _add_default_copyright(self):
+        self.lines.append(time.strftime('''#
+# spec file for package
+#
+# Copyright (c) %Y SUSE LINUX Products GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#
+
+'''))
+
+
+    def add(self, line):
+        if not self.lines and not line:
+            return
+
+        if line == '# norootforbuild':
+            return
+
+        RpmSection.add(self, line)
+
+
+    def output(self, fout):
+        if not self.lines:
+            self._add_default_copyright()
+        RpmSection.output(self, fout)
+
+
+#######################################################################
+
+
+class RpmPreamble(RpmSection):
+    '''
+        Only keep one empty line for many consecutive ones.
+        Reorder lines.
+        Fix bad licenses.
+        Use one line per BuildRequires/Requires/etc.
+        Use %{version} instead of %{version}-%{release} for BuildRequires/etc.
+        Remove AutoReqProv.
+        Standardize BuildRoot.
+
+        This one is a bit tricky since we reorder things. We have a notion of
+        paragraphs, categories, and groups.
+
+        A paragraph is a list of non-empty lines. Conditional directives like
+        %if/%else/%endif also mark paragraphs. It contains categories.
+        A category is a list of lines on the same topic. It contains a list of
+        groups.
+        A group is a list of lines where the first few ones are either %define
+        or comment lines, and the last one is a normal line.
+
+        This means that the %define and comments will stay attached to one
+        line, even if we reorder the lines.
+    '''
+
+    re_if = re.compile('^\s*(?:%if\s|%else\s*$|%endif\s*$)', re.IGNORECASE)
+
+    re_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
+    re_version = re.compile('^Version:\s*(\S*)', re.IGNORECASE)
+    re_release = re.compile('^Release:\s*(\S*)', re.IGNORECASE)
+    re_license = re.compile('^License:\s*(.*)', re.IGNORECASE)
+    re_summary = re.compile('^Summary:\s*(.*)', re.IGNORECASE)
+    re_url = re.compile('^Url:\s*(\S*)', re.IGNORECASE)
+    re_group = re.compile('^Group:\s*(.*)', re.IGNORECASE)
+    re_source = re.compile('^Source(\d*):\s*(\S*)', re.IGNORECASE)
+    re_patch = re.compile('^((?:#[#\s]*)?)Patch(\d*):\s*(\S*)', re.IGNORECASE)
+    re_buildrequires = re.compile('^BuildRequires:\s*(.*)', re.IGNORECASE)
+    re_prereq = re.compile('^PreReq:\s*(.*)', re.IGNORECASE)
+    re_requires = re.compile('^Requires:\s*(.*)', re.IGNORECASE)
+    re_recommends = re.compile('^Recommends:\s*(.*)', re.IGNORECASE)
+    re_suggests = re.compile('^Suggests:\s*(.*)', re.IGNORECASE)
+    re_supplements = re.compile('^Supplements:\s*(.*)', re.IGNORECASE)
+    re_provides = re.compile('^Provides:\s*(.*)', re.IGNORECASE)
+    re_obsoletes = re.compile('^Obsoletes:\s*(.*)', re.IGNORECASE)
+    re_buildroot = re.compile('^\s*BuildRoot:', re.IGNORECASE)
+    re_buildarch = re.compile('^\s*BuildArch:\s*(.*)', re.IGNORECASE)
+
+    re_requires_token = re.compile('(\s*(\S+(?:\s*(?:[<>]=?|=)\s*[^\s,]+)?),?)')
+
+    category_to_re = {
+        'name': re_name,
+        'version': re_version,
+        'release': re_release,
+        'license': re_license,
+        'summary': re_summary,
+        'url': re_url,
+        'group': re_group,
+        # for source, we have a special match to keep the source number
+        # for patch, we have a special match to keep the patch number
+        'buildrequires': re_buildrequires,
+        'prereq': re_prereq,
+        'requires': re_requires,
+        'recommends': re_recommends,
+        'suggests': re_suggests,
+        'supplements': re_supplements,
+        # for provides/obsoletes, we have a special case because we group them
+        # for build root, we have a special match because we force its value
+        'buildarch': re_buildarch
+    }
+
+    category_to_key = {
+        'name': 'Name',
+        'version': 'Version',
+        'release': 'Release',
+        'license': 'License',
+        'summary': 'Summary',
+        'url': 'Url',
+        'group': 'Group',
+        'source': 'Source',
+        'patch': 'Patch',
+        'buildrequires': 'BuildRequires',
+        'prereq': 'PreReq',
+        'requires': 'Requires',
+        'recommends': 'Recommends',
+        'suggests': 'Suggests',
+        'supplements': 'Supplements',
+        # Provides/Obsoletes cannot be part of this since we want to keep them
+        # mixed, so we'll have to specify the key when needed
+        'buildroot': 'BuildRoot',
+        'buildarch': 'BuildArch'
+    }
+
+    category_to_fixer = {
+    }
+
+    license_fixes = {
+        'LGPLv2.0': 'LGPL v2.0 only',
+        'LGPLv2.0+': 'LGPL v2.0 or later',
+        'LGPLv2.1': 'LGPL v2.1 only',
+        'LGPLv2.1+': 'LGPL v2.1 or later',
+        'LGPLv3': 'LGPL v3 only',
+        'LGPLv3+': 'LGPL v3 or later',
+        'GPLv2': 'GPL v2 only',
+        'GPLv2+': 'GPL v2 or later',
+        'GPLv3': 'GPL v3 only',
+        'GPLv3+': 'GPL v3 or later'
+    }
+
+    categories_order = [ 'name', 'version', 'release', 'license', 'summary', 'url', 'group', 'source', 'patch', 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements', 'provides_obsoletes', 'buildroot', 'buildarch', 'misc' ]
+
+    categories_with_sorted_package_tokens = [ 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements' ]
+    categories_with_package_tokens = categories_with_sorted_package_tokens[:]
+    categories_with_package_tokens.append('provides_obsoletes')
+
+    re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
+
+
+    def __init__(self):
+        RpmSection.__init__(self)
+        self._start_paragraph()
+
+
+    def _start_paragraph(self):
+        self.paragraph = {}
+        for i in self.categories_order:
+            self.paragraph[i] = []
+        self.current_group = []
+
+
+    def _add_group(self, group):
+        t = type(group)
+
+        if t == str:
+            RpmSection.add(self, group)
+        elif t == list:
+            for subgroup in group:
+                self._add_group(subgroup)
+        else:
+            raise RpmException('Unknown type of group in preamble: %s' % t)
+
+
+    def _end_paragraph(self):
+        def sort_helper_key(a):
+            t = type(a)
+            if t == str:
+                return a
+            elif t == list:
+                return a[-1]
+            else:
+                raise RpmException('Unknown type during sort: %s' % t)
+
+        for i in self.categories_order:
+            if i in self.categories_with_sorted_package_tokens:
+                self.paragraph[i].sort(key=sort_helper_key)
+            for group in self.paragraph[i]:
+                self._add_group(group)
+        if self.current_group:
+            # the current group was not added to any category. It's just some
+            # random stuff that should be at the end anyway.
+            self._add_group(self.current_group)
+
+        self._start_paragraph()
+
+
+    def _fix_license(self, value):
+        licenses = value.split(';')
+        for (index, license) in enumerate(licenses):
+            license = strip_useless_spaces(license)
+            if self.license_fixes.has_key(license):
+                license = self.license_fixes[license]
+            licenses[index] = license
+
+        return [ ' ; '.join(licenses) ]
+
+    category_to_fixer['license'] = _fix_license
+
+
+    def _fix_list_of_packages(self, value):
+        if self.re_requires_token.match(value):
+            tokens = [ item[1] for item in self.re_requires_token.findall(value) ]
+            for (index, token) in enumerate(tokens):
+                token = token.replace('%{version}-%{release}', '%{version}')
+                tokens[index] = token
+
+            tokens.sort()
+            return tokens
+        else:
+            return [ value ]
+
+    for i in categories_with_package_tokens:
+        category_to_fixer[i] = _fix_list_of_packages
+
+
+    def _add_line_value_to(self, category, value, key = None):
+        '''
+            Change a key-value line, to make sure we have the right spacing.
+
+            Note: since we don't have a key <-> category matching, we need to
+            redo one. (Eg: Provides and Obsoletes are in the same category)
+        '''
+        keylen = len('BuildRequires:  ')
+
+        if key:
+            pass
+        elif self.category_to_key.has_key(category):
+            key = self.category_to_key[category]
+        else:
+            raise RpmException('Unhandled category in preamble: %s' % category)
+
+        key += ':'
+        while len(key) < keylen:
+            key += ' '
+
+        if self.category_to_fixer.has_key(category):
+            values = self.category_to_fixer[category](self, value)
+        else:
+            values = [ value ]
+
+        for value in values:
+            line = key + value
+            self._add_line_to(category, line)
+
+
+    def _add_line_to(self, category, line):
+        if self.current_group:
+            self.current_group.append(line)
+            self.paragraph[category].append(self.current_group)
+            self.current_group = []
+        else:
+            self.paragraph[category].append(line)
+
+        self.previous_line = line
+
+
+    def add(self, line):
+        if len(line) == 0:
+            if not self.previous_line or len(self.previous_line) == 0:
+                return
+
+            # we put the empty line in the current group (so we don't list it),
+            # and write the paragraph
+            self.current_group.append(line)
+            self._end_paragraph()
+            self.previous_line = line
+            return
+
+        elif self.re_if.match(line):
+            # %if/%else/%endif marks the end of the previous paragraph
+            # We append the line at the end of the previous paragraph, though,
+            # since it will stay at the end there. If putting it at the
+            # beginning of the next paragraph, it will likely move (with the
+            # misc category).
+            self.current_group.append(line)
+            self._end_paragraph()
+            self.previous_line = line
+            return
+
+        elif re_comment.match(line) or re_define.match(line):
+            self.current_group.append(line)
+            self.previous_line = line
+            return
+
+        elif self.re_autoreqprov.match(line):
+            return
+
+        elif self.re_source.match(line):
+            match = self.re_source.match(line)
+            self._add_line_value_to('source', match.group(2), key = 'Source%s' % match.group(1))
+            return
+
+        elif self.re_patch.match(line):
+            # FIXME: this is not perfect, but it's good enough for most cases
+            if not self.previous_line or not re_comment.match(self.previous_line):
+                self.current_group.append('# PATCH-MISSING-TAG -- See http://en.opensuse.org/Packaging/Patches')
+
+            match = self.re_patch.match(line)
+            self._add_line_value_to('source', match.group(3), key = '%sPatch%s' % (match.group(1), match.group(2)))
+            return
+
+        elif self.re_provides.match(line):
+            match = self.re_provides.match(line)
+            self._add_line_value_to('provides_obsoletes', match.group(1), key = 'Provides')
+            return
+
+        elif self.re_obsoletes.match(line):
+            match = self.re_obsoletes.match(line)
+            self._add_line_value_to('provides_obsoletes', match.group(1), key = 'Obsoletes')
+            return
+
+        elif self.re_buildroot.match(line):
+            if len(self.paragraph['buildroot']) == 0:
+                self._add_line_value_to('buildroot', '%{_tmppath}/%{name}-%{version}-build')
+            return
+
+        else:
+            for (category, regexp) in self.category_to_re.iteritems():
+                match = regexp.match(line)
+                if match:
+                    self._add_line_value_to(category, match.group(1))
+                    return
+
+            self._add_line_to('misc', line)
+
+
+    def output(self, fout):
+        self._end_paragraph()
+        RpmSection.output(self, fout)
+
+
+#######################################################################
+
+
+class RpmPackage(RpmPreamble):
+    '''
+        We handle this the same was as the preamble.
+    '''
+
+
+#######################################################################
+
+
+class RpmDescription(RpmSection):
+    '''
+        Only keep one empty line for many consecutive ones.
+        Remove Authors from description.
+    '''
+
+    def __init__(self):
+        RpmSection.__init__(self)
+        self.removing_authors = False
+
+    def add(self, line):
+        if self.removing_authors:
+            return
+
+        if len(line) == 0:
+            if not self.previous_line or len(self.previous_line) == 0:
+                return
+
+        if line == 'Authors:':
+            self.removing_authors = True
+            return
+
+        RpmSection.add(self, line)
+
+
+#######################################################################
+
+
+class RpmPrep(RpmSection):
+    '''
+        Try to simplify to %setup -q when possible.
+    '''
+
+    def add(self, line):
+        if line.startswith('%setup'):
+            cmp_line = line.replace(' -q', '')
+            cmp_line = cmp_line.replace(' -n %{name}-%{version}', '')
+            cmp_line = strip_useless_spaces(cmp_line)
+            if cmp_line == '%setup':
+                line = '%setup -q'
+
+        RpmSection.add(self, line)
+
+
+#######################################################################
+
+
+class RpmBuild(RpmSection):
+    '''
+        Replace %{?_smp_mflags} fedora-ism with %{?jobs:-j%jobs}
+        Replace %{?jobs: -j%jobs} with %{?jobs:-j%jobs} (in some packages)
+    '''
+
+    def add(self, line):
+        if not re_comment.match(line):
+            line = line.replace('%{?_smp_mflags}', '%{?jobs:-j%jobs}')
+            line = line.replace(' %{?jobs: -j%jobs}', ' %{?jobs:-j%jobs}')
+
+        RpmSection.add(self, line)
+
+
+#######################################################################
+
+
+class RpmInstall(RpmSection):
+    '''
+        Remove commands that wipe out the build root.
+        Use %makeinstall macro.
+    '''
+
+    re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
+
+    def add(self, line):
+        # remove double spaces when comparing the line
+        cmp_line = strip_useless_spaces(line)
+        cmp_line = replace_buildroot(cmp_line)
+
+        if cmp_line.find('DESTDIR=%{buildroot}') != -1:
+            buf = cmp_line.replace('DESTDIR=%{buildroot}', '')
+            buf = strip_useless_spaces(buf)
+            if buf == 'make install':
+                line = '%makeinstall'
+        elif cmp_line == 'rm -rf %{buildroot}':
+            return
+
+        if self.re_autoreqprov.match(line):
+            return
+
+        RpmSection.add(self, line)
+
+
+#######################################################################
+
+
+class RpmClean(RpmSection):
+    pass
+
+
+#######################################################################
+
+
+class RpmScriptlets(RpmSection):
+    '''
+        Do %post -p /sbin/ldconfig when possible.
+    '''
+
+    def __init__(self):
+        RpmSection.__init__(self)
+        self.cache = []
+
+
+    def add(self, line):
+        if len(self.lines) == 0:
+            if not self.cache:
+                if line.find(' -p ') == -1 and line.find(' -f ') == -1:
+                    self.cache.append(line)
+                    return
+            else:
+                if line in ['', '/sbin/ldconfig' ]:
+                    self.cache.append(line)
+                    return
+                else:
+                    for cached in self.cache:
+                        RpmSection.add(self, cached)
+                    self.cache = None
+            
+        RpmSection.add(self, line)
+
+
+    def output(self, fout):
+        if self.cache:
+            RpmSection.add(self, self.cache[0] + ' -p /sbin/ldconfig')
+            RpmSection.add(self, '')
+
+        RpmSection.output(self, fout)
+
+
+#######################################################################
+
+
+class RpmFiles(RpmSection):
+    '''
+        Replace additional /usr, /etc and /var because we're sure we can use
+        macros there.
+
+        Replace '%dir %{_includedir}/mux' and '%{_includedir}/mux/*' with
+        '%{_includedir}/mux/'
+    '''
+
+    re_etcdir = re.compile('(^|\s)/etc/')
+    re_usrdir = re.compile('(^|\s)/usr/')
+    re_vardir = re.compile('(^|\s)/var/')
+
+    re_dir = re.compile('^\s*%dir\s*(\S+)\s*')
+
+    def __init__(self):
+        RpmSection.__init__(self)
+        self.dir_on_previous_line = None
+
+
+    def add(self, line):
+        line = self.re_etcdir.sub(r'\1%{_sysconfdir}/', line)
+        line = self.re_usrdir.sub(r'\1%{_prefix}/', line)
+        line = self.re_vardir.sub(r'\1%{_localstatedir}/', line)
+
+        if self.dir_on_previous_line:
+            if line == self.dir_on_previous_line + '/*':
+                RpmSection.add(self, self.dir_on_previous_line + '/')
+                self.dir_on_previous_line = None
+                return
+            else:
+                RpmSection.add(self, '%dir ' + self.dir_on_previous_line)
+                self.dir_on_previous_line = None
+
+        match = self.re_dir.match(line)
+        if match:
+            self.dir_on_previous_line = match.group(1)
+            return
+
+        RpmSection.add(self, line)
+
+
+#######################################################################
+
+
+class RpmChangelog(RpmSection):
+    '''
+        Remove changelog entries.
+    '''
+
+    def add(self, line):
+        # only add the first line (%changelog)
+        if len(self.lines) == 0:
+            RpmSection.add(self, line)
+
+
+#######################################################################
+
+
+class RpmSpecCleaner:
+
+    specfile = None
+    fin = None
+    fout = None
+    current_section = None
+
+
+    re_spec_package = re.compile('^%package\s*', re.IGNORECASE)
+    re_spec_description = re.compile('^%description\s*', re.IGNORECASE)
+    re_spec_prep = re.compile('^%prep\s*$', re.IGNORECASE)
+    re_spec_build = re.compile('^%build\s*$', re.IGNORECASE)
+    re_spec_install = re.compile('^%install\s*$', re.IGNORECASE)
+    re_spec_clean = re.compile('^%clean\s*$', re.IGNORECASE)
+    re_spec_scriptlets = re.compile('(?:^%pretrans\s*)|(?:^%pre\s*)|(?:^%post\s*)|(?:^%preun\s*)|(?:^%postun\s*)|(?:^%posttrans\s*)', re.IGNORECASE)
+    re_spec_files = re.compile('^%files\s*', re.IGNORECASE)
+    re_spec_changelog = re.compile('^%changelog\s*$', re.IGNORECASE)
+
+    section_starts = [
+        (re_spec_package, RpmPackage),
+        (re_spec_description, RpmDescription),
+        (re_spec_prep, RpmPrep),
+        (re_spec_build, RpmBuild),
+        (re_spec_install, RpmInstall),
+        (re_spec_clean, RpmClean),
+        (re_spec_scriptlets, RpmScriptlets),
+        (re_spec_files, RpmFiles),
+        (re_spec_changelog, RpmChangelog)
+    ]
+
+
+    def __init__(self, specfile, output, inline, force):
+        if not specfile.endswith('.spec'):
+            raise RpmException('%s does not appear to be a spec file.' % specfile)
+
+        if not os.path.exists(specfile):
+            raise RpmException('%s does not exist.' % specfile)
+
+        self.specfile = specfile
+        self.output = output
+        self.inline = inline
+
+        self.fin = open(self.specfile)
+
+        if self.output:
+            if not force and os.path.exists(self.output):
+                raise RpmException('%s already exists.' % self.output)
+            self.fout = open(self.output, 'w')
+        elif self.inline:
+            io = cStringIO.StringIO()
+            while True:
+                bytes = self.fin.read(500 * 1024)
+                if len(bytes) == 0:
+                    break
+                io.write(bytes)
+
+            self.fin.close()
+            io.seek(0)
+            self.fin = io
+            self.fout = open(self.specfile, 'w')
+        else:
+            self.fout = sys.stdout
+
+
+    def run(self):
+        if not self.specfile or not self.fin:
+            raise RpmException('No spec file.')
+
+        def _line_for_new_section(self, line):
+            if isinstance(self.current_section, RpmCopyright):
+                if not re_comment.match(line):
+                    return RpmPreamble
+
+            for (regexp, newclass) in self.section_starts:
+                if regexp.match(line):
+                    return newclass
+
+            return None
+
+
+        self.current_section = RpmCopyright()
+
+        while True:
+            line = self.fin.readline()
+            if len(line) == 0:
+                break
+            # Remove \n to make it easier to parse things
+            line = line[:-1]
+
+            new_class = _line_for_new_section(self, line)
+            if new_class:
+                self.current_section.output(self.fout)
+                self.current_section = new_class()
+
+            self.current_section.add(line)
+
+        self.current_section.output(self.fout)
+
+
+    def __del__(self):
+        if self.fin:
+            self.fin.close()
+            self.fin = None
+        if self.fout:
+            self.fout.close()
+            self.fout = None
+
+
+#######################################################################
+
+
+def main(args):
+    parser = optparse.OptionParser(epilog='This script cleans spec file according to some arbitrary style guide. The results it produces should always be checked by someone since it is not and will never be perfect.')
+
+    parser.add_option("-i", "--inline", action="store_true", dest="inline",
+                      default=False, help="edit the file inline")
+    parser.add_option("-o", "--output", dest="output",
+                      help="output file")
+    parser.add_option("-f", "--force", action="store_true", dest="force",
+                      default=False, help="overwrite output file if already existing")
+
+    (options, args) = parser.parse_args()
+
+    if len(args) < 1:
+        print >> sys.stderr,  'Need a filename to work on.'
+        return 1
+    elif len(args) > 1:
+        print >> sys.stderr,  'Too many arguments.'
+        return 1
+
+    spec = args[0]
+
+    if options.output == spec:
+        options.output = ''
+        options.inline = True
+
+    if options.output and options.inline:
+        print >> sys.stderr,  'Conflicting options: --inline and --output.'
+        return 1
+
+    try:
+        cleaner = RpmSpecCleaner(spec, options.output, options.inline, options.force)
+        cleaner.run()
+    except RpmException, e:
+        print >> sys.stderr, '%s' % e
+        return 1
+
+    return 0
+
+if __name__ == '__main__':
+    try:
+        res = main(sys.argv)
+        sys.exit(res)
+    except KeyboardInterrupt:
+        pass
