@@ -521,6 +521,15 @@ class RpmPackage(RpmPreamble):
         We handle this the same was as the preamble.
     '''
 
+    def add(self, line):
+        # The first line (%package) should always be added and is different
+        # from the lines we handle in RpmPreamble.
+        if self.previous_line is None:
+            RpmSection.add(self, line)
+            return
+
+        RpmPreamble.add(self, line)
+
 
 #######################################################################
 
