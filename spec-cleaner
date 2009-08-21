@@ -543,9 +543,17 @@ class RpmDescription(RpmSection):
     def __init__(self):
         RpmSection.__init__(self)
         self.removing_authors = False
+        # Tracks the use of a macro. When this happens and we're still in a
+        # description, we actually don't know where we are so we just put all
+        # the following lines blindly, without trying to fix anything.
+        self.unknown_line = False
 
     def add(self, line):
-        if self.removing_authors:
+        lstrip = line.lstrip()
+        if self.previous_line != None and len(lstrip) > 0 and lstrip[0] == '%':
+            self.unknown_line = True
+
+        if self.removing_authors and not self.unknown_line:
             return
 
         if len(line) == 0:
