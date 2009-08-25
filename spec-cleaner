@@ -229,7 +229,7 @@ class RpmPreamble(RpmSection):
         line, even if we reorder the lines.
     '''
 
-    re_if = re.compile('^\s*(?:%if\s|%else\s*$|%endif\s*$)', re.IGNORECASE)
+    re_if = re.compile('^\s*(?:%if\s|%ifarch\s|%else\s*$|%endif\s*$)', re.IGNORECASE)
 
     re_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
     re_version = re.compile('^Version:\s*(\S*)', re.IGNORECASE)
