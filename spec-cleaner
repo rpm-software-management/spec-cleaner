@@ -871,7 +871,9 @@ def main(args):
         print >> sys.stderr,  'Too many arguments.'
         return 1
 
-    spec = args[0]
+    spec = os.path.expanduser(args[0])
+    if options.output:
+        options.output = os.path.expanduser(options.output)
 
     if options.output == spec:
         options.output = ''
