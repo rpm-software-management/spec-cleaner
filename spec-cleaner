@@ -43,11 +43,7 @@ import optparse
 import re
 import time
 
-# TODO: integrate http://gk2.sk/_tmp/spec-polish-macros / http://gitorious.org/opensuse/spec-cleaner
-
-
 #######################################################################
-
 
 re_comment = re.compile('^$|^\s*#')
 re_define = re.compile('^\s*%define', re.IGNORECASE)
@@ -300,16 +296,16 @@ class RpmPreamble(RpmSection):
     }
 
     license_fixes = {
-        'LGPLv2.0': 'LGPL v2.0 only',
-        'LGPLv2.0+': 'LGPL v2.0 or later',
-        'LGPLv2.1': 'LGPL v2.1 only',
-        'LGPLv2.1+': 'LGPL v2.1 or later',
-        'LGPLv3': 'LGPL v3 only',
-        'LGPLv3+': 'LGPL v3 or later',
-        'GPLv2': 'GPL v2 only',
-        'GPLv2+': 'GPL v2 or later',
-        'GPLv3': 'GPL v3 only',
-        'GPLv3+': 'GPL v3 or later'
+        'LGPL v2.0 only': 'LGPLv2.0',
+        'LGPL v2.0 or later': 'LGPLv2.0+',
+        'LGPL v2.1 only': 'LGPLv2.1',
+        'LGPL v2.1 or later': 'LGPLv2.1+',
+        'LGPL v3 only': 'LGPLv3',
+        'LGPL v3 or later': 'LGPLv3+',
+        'GPL v2 only': 'GPLv2',
+        'GPL v2 or later': 'GPLv2+',
+        'GPL v3 only': 'GPLv3',
+        'GPL v3 or later': 'GPLv3+'
     }
 
     categories_order = [ 'name', 'version', 'release', 'license', 'summary', 'url', 'group', 'source', 'patch', 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements', 'provides_obsoletes', 'buildroot', 'buildarch', 'misc' ]
@@ -398,12 +394,12 @@ class RpmPreamble(RpmSection):
 
 
     def _add_line_value_to(self, category, value, key = None):
-        '''
+        """
             Change a key-value line, to make sure we have the right spacing.
 
             Note: since we don't have a key <-> category matching, we need to
             redo one. (Eg: Provides and Obsoletes are in the same category)
-        '''
+        """
         keylen = len('BuildRequires:  ')
 
         if key:
@@ -591,14 +587,13 @@ class RpmPrep(RpmSection):
 
 class RpmBuild(RpmSection):
     '''
-        Replace %{?_smp_mflags} fedora-ism with %{?jobs:-j%jobs}
-        Replace %{?jobs: -j%jobs} with %{?jobs:-j%jobs} (in some packages)
+        Replace %{?jobs:-j%jobs} (suse-ism) with %{?_smp_mflags}
     '''
 
     def add(self, line):
         if not re_comment.match(line):
-            line = line.replace('%{?_smp_mflags}', '%{?jobs:-j%jobs}')
-            line = line.replace(' %{?jobs: -j%jobs}', ' %{?jobs:-j%jobs}')
+            line = line.replace('%{?jobs:-j%jobs}' , '%{?_smp_mflags}')
+            line = line.replace('%{?jobs: -j%jobs}', '%{?_smp_mflags}')
 
         RpmSection.add(self, line)
 
@@ -667,7 +662,7 @@ class RpmScriptlets(RpmSection):
                     for cached in self.cache:
                         RpmSection.add(self, cached)
                     self.cache = None
-            
+
         RpmSection.add(self, line)
 
 
@@ -683,13 +678,13 @@ class RpmScriptlets(RpmSection):
 
 
 class RpmFiles(RpmSection):
-    '''
+    """
         Replace additional /usr, /etc and /var because we're sure we can use
         macros there.
 
         Replace '%dir %{_includedir}/mux' and '%{_includedir}/mux/*' with
         '%{_includedir}/mux/'
-    '''
+    """
 
     re_etcdir = re.compile('(^|\s)/etc/')
     re_usrdir = re.compile('(^|\s)/usr/')
@@ -758,6 +753,7 @@ class RpmSpecCleaner:
     re_spec_scriptlets = re.compile('(?:^%pretrans\s*)|(?:^%pre\s*)|(?:^%post\s*)|(?:^%preun\s*)|(?:^%postun\s*)|(?:^%posttrans\s*)', re.IGNORECASE)
     re_spec_files = re.compile('^%files\s*', re.IGNORECASE)
     re_spec_changelog = re.compile('^%changelog\s*$', re.IGNORECASE)
+
 
     section_starts = [
         (re_spec_package, RpmPackage),
@@ -864,11 +860,8 @@ def main(args):
 
     (options, args) = parser.parse_args()
 
-    if len(args) < 1:
-        print >> sys.stderr,  'Need a filename to work on.'
-        return 1
-    elif len(args) > 1:
-        print >> sys.stderr,  'Too many arguments.'
+    if len(args) != 1:
+        print >> sys.stderr,  '\nUsage:\n\tspec-cleaner file.spec\n'
         return 1
 
     spec = os.path.expanduser(args[0])

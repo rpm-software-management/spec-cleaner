@@ -1,5 +1,7 @@
 Misc:
  + use "%if 0?%{?suse_version}" instead of "%if %suse_version"
+ + PreReq: -> Requires(pre):
+ + integrate spec-polish-macros into spec-cleaner
 
 Things changed with rpm 4.7:
  + change %patch to %patch0
