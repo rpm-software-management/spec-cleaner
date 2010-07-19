@@ -32,7 +32,9 @@
 #
 # (Licensed under the simplified BSD license)
 #
-# Authors: Vincent Untz <vuntz@novell.com>
+# Authors:
+#   Vincent Untz <vuntz@novell.com>
+#   Pavol Rusnak <prusnak@opensuse.org>
 #
 
 import os
