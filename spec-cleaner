@@ -47,6 +47,8 @@ import time
 
 #######################################################################
 
+VERSION = '0.1'
+
 re_comment = re.compile('^$|^\s*#')
 re_define = re.compile('^\s*%define', re.IGNORECASE)
 
@@ -864,8 +866,14 @@ def main(args):
                       help="output file")
     parser.add_option("-f", "--force", action="store_true", dest="force",
                       default=False, help="overwrite output file if already existing")
+    parser.add_option("-v", "--version", action="store_true", dest="version",
+                      default=False, help="display version (" + VERSION + ")")
 
     (options, args) = parser.parse_args()
+
+    if options.version:
+        print 'spec-cleaner ' + VERSION
+        return 0
 
     if len(args) != 1:
         print >> sys.stderr,  '\nUsage:\n\tspec-cleaner file.spec\n'
