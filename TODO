@@ -1,12 +1,16 @@
 Misc:
- + use "%if 0?%{?suse_version}" instead of "%if %suse_version"
- + PreReq: -> Requires(pre):
- + integrate spec-polish-macros into spec-cleaner
+ + PreReq: -> Requires(pre): (user might want to check if Requires(post/preun/...) is not a better choice
+
+Python stuff:
+ + replace %py_ver with %python_version
+ + replace %py_sitedir with %python_sitearch (user might want to change this to %python_sitelib if the package is noarch)
+ + print a warning if %py_libdir is found
 
 Things changed with rpm 4.7:
+ + change Patch: to Patch0:
  + change %patch to %patch0
+ + change Source: to Source0: (or vice versa?)
 
 Things changed with rpm 4.7 that we can do only if not caring about < 11.2:
  + remove %clean section if it's just removing the build root
  + remove BuildRoot
- + use %make_install instead of %makeinstall

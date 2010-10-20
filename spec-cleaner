@@ -66,6 +66,8 @@ def strip_useless_spaces(s):
 
 def replace_known_dirs(s):
     s = s.replace('%_prefix', '%{_prefix}')
+    s = s.replace('%_usr', '%{_prefix}')
+    s = s.replace('%{_usr}', '%{_prefix}')
     s = s.replace('%_bindir', '%{_bindir}')
     s = s.replace('%_sbindir', '%{_sbindir}')
     s = s.replace('%_includedir', '%{_includedir}')
@@ -78,6 +80,8 @@ def replace_known_dirs(s):
     s = s.replace('%{_prefix}/%{_lib}', '%{_libdir}')
     s = s.replace('%_sysconfdir', '%{_sysconfdir}')
     s = s.replace('%_localstatedir', '%{_localstatedir}')
+    s = s.replace('%_var', '%{_localstatedir}')
+    s = s.replace('%{_var}', '%{_localstatedir}')
     s = s.replace('%_initddir', '%{_initddir}')
     # old typo in rpm macro
     s = s.replace('%_initrddir', '%{_initddir}')
@@ -97,12 +101,10 @@ def replace_buildroot(s):
     s = s.replace('${RPM_BUILD_ROOT}', '%{buildroot}')
     s = s.replace('$RPM_BUILD_ROOT', '%{buildroot}')
     s = s.replace('%buildroot', '%{buildroot}')
-    s = s.replace('%{buildroot}/usr', '%{buildroot}%{_prefix}')
-    s = s.replace('%{buildroot}/', '%{buildroot}')
-    s = s.replace('%{buildroot}etc/init.d/', '%{buildroot}%{_initddir}/')
-    s = s.replace('%{buildroot}etc/', '%{buildroot}%{_sysconfdir}/')
-    s = s.replace('%{buildroot}usr/', '%{buildroot}%{_prefix}/')
-    s = s.replace('%{buildroot}var/', '%{buildroot}%{_localstatedir}/')
+    s = s.replace('%{buildroot}/etc/init.d/', '%{buildroot}%{_initddir}/')
+    s = s.replace('%{buildroot}/etc/', '%{buildroot}%{_sysconfdir}/')
+    s = s.replace('%{buildroot}/usr/', '%{buildroot}%{_prefix}/')
+    s = s.replace('%{buildroot}/var/', '%{buildroot}%{_localstatedir}/')
     s = s.replace('"%{buildroot}"', '%{buildroot}')
     return s
 
@@ -121,11 +123,48 @@ def replace_remove_la(s):
     return s
 
 
+def replace_utils(s):
+    # take care of all utilities macros that bloat spec file
+    s = s.replace('%__id_u', 'id -u')
+    s = s.replace('%{__id_u}', 'id -u')
+    s = s.replace('%__ln_s', 'ln -s')
+    s = s.replace('%{__ln_s}', 'ln -s')
+    s = s.replace('%__lzma', 'xz --format-lzma')
+    s = s.replace('%{__lzma}', 'xz --format-lzma')
+    s = s.replace('%__mkdir_p', 'mkdir -p')
+    s = s.replace('%{__mkdir_p}', 'mkdir -p')
+    s = s.replace('%__awk','gawk')
+    s = s.replace('%{__awk}','gawk')
+    s = s.replace('%__cc','gcc')
+    s = s.replace('%{__cc}','gcc')
+    s = s.replace('%__cpp','gcc -E')
+    s = s.replace('%{__cpp}','gcc -E')
+    s = s.replace('%__cxx','g++')
+    s = s.replace('%{__cxx}','g++')
+    s = s.replace('%__remsh','rsh')
+    s = s.replace('%{__remsh}','rsh')
+
+    for i in [ 'aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz', ]:
+        s = s.replace('%__'+i, i)
+        s = s.replace('%{__'+i+'}', i)
+
+    return s
+
+
+def replace_buildservice(s):
+    for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'ubuntu']:
+        s = s.replace('%' + i + '_version','0%{?' + i + '_version}')
+        s = s.replace('%{' + i + '_version}','0%{?' + i + '_version}')
+    return s
+
+
 def replace_all(s):
     s = replace_buildroot(s)
     s = replace_optflags(s)
     s = replace_known_dirs(s)
     s = replace_remove_la(s)
+    s = replace_utils(s)
+    s = replace_buildservice(s)
     return s
 
 
@@ -613,7 +652,7 @@ class RpmBuild(RpmSection):
 class RpmInstall(RpmSection):
     '''
         Remove commands that wipe out the build root.
-        Use %makeinstall macro.
+        Use %make_install macro.
     '''
 
     re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
@@ -627,7 +666,7 @@ class RpmInstall(RpmSection):
             buf = cmp_line.replace('DESTDIR=%{buildroot}', '')
             buf = strip_useless_spaces(buf)
             if buf == 'make install':
-                line = '%makeinstall'
+                line = '%make_install'
         elif cmp_line == 'rm -rf %{buildroot}':
             return
 
@@ -641,6 +680,7 @@ class RpmInstall(RpmSection):
 
 
 class RpmClean(RpmSection):
+    # if the section contains just rm -rf %{buildroot} then remove the whole section (including %clean)
     pass
 
 
