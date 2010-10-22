@@ -152,7 +152,7 @@ def replace_utils(s):
 
 
 def replace_buildservice(s):
-    for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'ubuntu']:
+    for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'suse', 'ubuntu']:
         s = s.replace('%' + i + '_version','0%{?' + i + '_version}')
         s = s.replace('%{' + i + '_version}','0%{?' + i + '_version}')
     return s
