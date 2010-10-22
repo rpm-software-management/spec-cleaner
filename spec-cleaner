@@ -655,8 +655,6 @@ class RpmInstall(RpmSection):
         Use %make_install macro.
     '''
 
-    re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
-
     def add(self, line):
         # remove double spaces when comparing the line
         cmp_line = strip_useless_spaces(line)
@@ -668,9 +666,6 @@ class RpmInstall(RpmSection):
             if buf == 'make install':
                 line = '%make_install'
         elif cmp_line == 'rm -rf %{buildroot}':
-            return
-
-        if self.re_autoreqprov.match(line):
             return
 
         RpmSection.add(self, line)
