@@ -653,6 +653,7 @@ class RpmInstall(RpmSection):
     '''
         Remove commands that wipe out the build root.
         Use %make_install macro.
+        Replace %makeinstall (suse-ism).
     '''
 
     def add(self, line):
@@ -665,6 +666,8 @@ class RpmInstall(RpmSection):
             buf = strip_useless_spaces(buf)
             if buf == 'make install':
                 line = '%make_install'
+        elif cmp_line == '%makeinstall':
+            line = '%make_install'
         elif cmp_line == 'rm -rf %{buildroot}':
             return
 
