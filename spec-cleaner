@@ -416,6 +416,8 @@ class RpmPreamble(RpmSection):
             tokens = [ item[1] for item in self.re_requires_token.findall(value) ]
             for (index, token) in enumerate(tokens):
                 token = token.replace('%{version}-%{release}', '%{version}')
+                token = token.replace(' ','')
+                token = re.sub(r'([<>]=?|=)', r' \1 ', token)
                 tokens[index] = token
 
             tokens.sort()

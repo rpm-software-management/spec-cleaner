@@ -1,0 +1,12 @@
+#!/bin/sh
+for i in buildrequires ; do
+
+  echo -n "$i ... "
+
+  if ../spec-cleaner "$i-in.spec" | diff -q -- - "$i-out.spec" > /dev/null ; then
+    echo "ok"
+  else
+    echo "FAILED!"
+  fi
+
+done
