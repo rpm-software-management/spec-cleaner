@@ -5,6 +5,7 @@ Python stuff:
  + replace %py_ver with %python_version
  + replace %py_sitedir with %python_sitearch (user might want to change this to %python_sitelib if the package is noarch)
  + print a warning if %py_libdir is found
+ + kill (or just print a warning?) if %py_requires is found: if it's a python module, nothing is needed. If it's not, plain python Requires is what we want.
 
 Things changed with rpm 4.7:
  + change Patch: to Patch0:
