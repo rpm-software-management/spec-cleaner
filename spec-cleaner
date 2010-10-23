@@ -125,7 +125,7 @@ def replace_remove_la(s):
 
 def replace_utils(s):
     # take care of all utilities macros that bloat spec file
-    r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p', 'awk':'gawk', 'cc':'gcc', 'cpp':'gcc -E', 'cxx':'g++', 'remsh':'rsh', }:
+    r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p', 'awk':'gawk', 'cc':'gcc', 'cpp':'gcc -E', 'cxx':'g++', 'remsh':'rsh', }
     for i in r:
       s = s.replace('%__'+i, r[i])
       s = s.replace('%{__'+i+'}', r[i])
@@ -900,7 +900,7 @@ def main(args):
         return 0
 
     if len(args) != 1:
-        print >> sys.stderr,  '\nUsage:\n\tspec-cleaner file.spec\n'
+        parser.print_help()
         return 1
 
     spec = os.path.expanduser(args[0])
