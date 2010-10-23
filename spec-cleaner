@@ -125,24 +125,10 @@ def replace_remove_la(s):
 
 def replace_utils(s):
     # take care of all utilities macros that bloat spec file
-    s = s.replace('%__id_u', 'id -u')
-    s = s.replace('%{__id_u}', 'id -u')
-    s = s.replace('%__ln_s', 'ln -s')
-    s = s.replace('%{__ln_s}', 'ln -s')
-    s = s.replace('%__lzma', 'xz --format-lzma')
-    s = s.replace('%{__lzma}', 'xz --format-lzma')
-    s = s.replace('%__mkdir_p', 'mkdir -p')
-    s = s.replace('%{__mkdir_p}', 'mkdir -p')
-    s = s.replace('%__awk','gawk')
-    s = s.replace('%{__awk}','gawk')
-    s = s.replace('%__cc','gcc')
-    s = s.replace('%{__cc}','gcc')
-    s = s.replace('%__cpp','gcc -E')
-    s = s.replace('%{__cpp}','gcc -E')
-    s = s.replace('%__cxx','g++')
-    s = s.replace('%{__cxx}','g++')
-    s = s.replace('%__remsh','rsh')
-    s = s.replace('%{__remsh}','rsh')
+    r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p', 'awk':'gawk', 'cc':'gcc', 'cpp':'gcc -E', 'cxx':'g++', 'remsh':'rsh', }:
+    for i in r:
+      s = s.replace('%__'+i, r[i])
+      s = s.replace('%{__'+i+'}', r[i])
 
     for i in [ 'aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz', ]:
         s = s.replace('%__'+i, i)
