@@ -220,7 +220,8 @@ class RpmCopyright(RpmSection):
         if not self.lines and not line:
             return
 
-        if line == '# norootforbuild':
+        if line.startswith('# norootforbuild') or
+           line.startswith('# usedforbuild'):
             return
 
         RpmSection.add(self, line)
