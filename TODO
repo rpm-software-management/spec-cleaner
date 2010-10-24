@@ -8,8 +8,6 @@ Python stuff:
  + kill (or just print a warning?) if %py_requires is found: if it's a python module, nothing is needed. If it's not, plain python Requires is what we want.
 
 Things changed with rpm 4.7:
- + change Patch: to Patch0:
- + change %patch to %patch0
  + change Source: to Source0: (or vice versa?)
 
 Things changed with rpm 4.7 that we can do only if not caring about < 11.2:

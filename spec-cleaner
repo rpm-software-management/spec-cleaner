@@ -513,7 +513,12 @@ class RpmPreamble(RpmSection):
                 self.current_group.append('# PATCH-MISSING-TAG -- See http://en.opensuse.org/Packaging/Patches')
 
             match = self.re_patch.match(line)
-            self._add_line_value_to('source', match.group(3), key = '%sPatch%s' % (match.group(1), match.group(2)))
+            # convert Patch: to Patch0:
+            if match.group(2) == '':
+                zero = '0'
+            else:
+                zero = ''
+            self._add_line_value_to('source', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
             return
 
         elif self.re_provides.match(line):
@@ -606,6 +611,7 @@ class RpmDescription(RpmSection):
 class RpmPrep(RpmSection):
     '''
         Try to simplify to %setup -q when possible.
+        Replace %patch with %patch0
     '''
 
     def add(self, line):
@@ -615,6 +621,8 @@ class RpmPrep(RpmSection):
             cmp_line = strip_useless_spaces(cmp_line)
             if cmp_line == '%setup':
                 line = '%setup -q'
+        if line.startswith('%patch '):
+            line = line.replace('%patch','%patch0')
 
         RpmSection.add(self, line)
 
