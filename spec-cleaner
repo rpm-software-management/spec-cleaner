@@ -127,20 +127,20 @@ def replace_utils(s):
     # take care of all utilities macros that bloat spec file
     r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p', 'awk':'gawk', 'cc':'gcc', 'cpp':'gcc -E', 'cxx':'g++', 'remsh':'rsh', }
     for i in r:
-      s = s.replace('%__'+i, r[i])
-      s = s.replace('%{__'+i+'}', r[i])
+      s = s.replace('%__' + i, r[i])
+      s = s.replace('%{__' + i + '}', r[i])
 
     for i in [ 'aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz', ]:
-        s = s.replace('%__'+i, i)
-        s = s.replace('%{__'+i+'}', i)
+        s = s.replace('%__' + i, i)
+        s = s.replace('%{__' + i + '}', i)
 
     return s
 
 
 def replace_buildservice(s):
     for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'suse', 'ubuntu']:
-        s = s.replace('%' + i + '_version','0%{?' + i + '_version}')
-        s = s.replace('%{' + i + '_version}','0%{?' + i + '_version}')
+        s = s.replace('%' + i + '_version', '0%{?' + i + '_version}')
+        s = s.replace('%{' + i + '_version}', '0%{?' + i + '_version}')
     return s
 
 
