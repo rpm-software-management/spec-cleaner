@@ -1,12 +1,30 @@
 #!/bin/sh
-for i in buildrequires ; do
+
+pass=0
+fail=0
+
+echo "Running tests:"
+echo
+
+for i in \
+  buildrequires \
+  patches \
+  ; do
 
   echo -n "$i ... "
 
-  if ../spec-cleaner "$i-in.spec" | diff -q -- - "$i-out.spec" > /dev/null ; then
-    echo "ok"
+  if ../spec-cleaner "$i-in.spec" | diff -u --label="$i-out.spec" -- - "$i-out.spec" > fail-$i.diff ; then
+    rm -f fail-$i.diff
+    echo "passed"
+    pass=`expr $pass + 1`
   else
     echo "FAILED!"
+    fail=`expr $fail + 1`
   fi
 
 done
+
+echo
+echo "TOTAL:  `expr $pass + $fail`"
+echo "Passed: $pass"
+echo "Failed: $fail"
