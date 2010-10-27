@@ -637,8 +637,11 @@ class RpmBuild(RpmSection):
 
     def add(self, line):
         if not re_comment.match(line):
+            line = line.replace('%_smp_mflags'     , '%{?_smp_mflags}')
+            line = line.replace('%{_smp_mflags}'   , '%{?_smp_mflags}')
             line = line.replace('%{?jobs:-j%jobs}' , '%{?_smp_mflags}')
             line = line.replace('%{?jobs: -j%jobs}', '%{?_smp_mflags}')
+            line = line.replace('%{?jobs:-j %jobs}', '%{?_smp_mflags}')
 
         RpmSection.add(self, line)
 
@@ -661,7 +664,7 @@ class RpmInstall(RpmSection):
         if cmp_line.find('DESTDIR=%{buildroot}') != -1:
             buf = cmp_line.replace('DESTDIR=%{buildroot}', '')
             buf = strip_useless_spaces(buf)
-            if buf == 'make install':
+            if buf == 'make install' or buf == 'make  install':
                 line = '%make_install'
         elif cmp_line == '%makeinstall':
             line = '%make_install'
