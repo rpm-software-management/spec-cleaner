@@ -8,6 +8,15 @@
 make %{?jobs: -j%jobs}
 make %{?jobs:-j %jobs}
 make %{?jobs:-j%jobs}
+%__make %{?jobs: -j%{jobs}}
+%__make %{?jobs:-j %{jobs}}
+%__make %{?jobs:-j%{jobs}}
+%{__make} %{?jobs: -j%{jobs}}
+%{__make} %{?jobs:-j %{jobs}}
+%{__make} %{?jobs:-j%{jobs}}
+make %{?jobs: -j%{jobs}}
+make %{?jobs:-j %{jobs}}
+make %{?jobs:-j%{jobs}}
 %__make %_smp_mflags
 %__make %{_smp_mflags}
 %__make %{?_smp_mflags}
