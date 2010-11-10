@@ -19,6 +19,9 @@ for i in \
     echo "passed"
     pass=`expr $pass + 1`
   else
+    if [ "$1" != "-k" ]; then
+      rm -f fail-$i.diff
+    fi
     echo "FAILED!"
     fail=`expr $fail + 1`
   fi
