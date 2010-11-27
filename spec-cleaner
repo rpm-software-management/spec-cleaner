@@ -35,6 +35,7 @@
 # Authors:
 #   Vincent Untz <vuntz@novell.com>
 #   Pavol Rusnak <prusnak@opensuse.org>
+#   Petr Uzel <petr.uzel@suse.cz>
 #
 
 import os
@@ -44,6 +45,9 @@ import cStringIO
 import optparse
 import re
 import time
+import tempfile
+import subprocess
+import shlex
 
 #######################################################################
 
@@ -798,7 +802,6 @@ class RpmSpecCleaner:
     fout = None
     current_section = None
 
-
     re_spec_package = re.compile('^%package\s*', re.IGNORECASE)
     re_spec_description = re.compile('^%description\s*', re.IGNORECASE)
     re_spec_prep = re.compile('^%prep\s*$', re.IGNORECASE)
@@ -823,7 +826,7 @@ class RpmSpecCleaner:
     ]
 
 
-    def __init__(self, specfile, output, inline, force):
+    def __init__(self, specfile, output, inline, force, diff, diff_prog):
         if not specfile.endswith('.spec'):
             raise RpmException('%s does not appear to be a spec file.' % specfile)
 
@@ -833,6 +836,8 @@ class RpmSpecCleaner:
         self.specfile = specfile
         self.output = output
         self.inline = inline
+        self.diff = diff
+        self.diff_prog = diff_prog
 
         self.fin = open(self.specfile)
 
@@ -852,6 +857,8 @@ class RpmSpecCleaner:
             io.seek(0)
             self.fin = io
             self.fout = open(self.specfile, 'w')
+        elif self.diff:
+            self.fout = tempfile.NamedTemporaryFile(prefix=self.specfile)
         else:
             self.fout = sys.stdout
 
@@ -889,7 +896,14 @@ class RpmSpecCleaner:
             self.current_section.add(line)
 
         self.current_section.output(self.fout)
+        self.fout.flush()
 
+        if self.diff:
+            cmd = shlex.split(self.diff_prog + " " + self.specfile.replace(" ","\\ ") + " " + self.fout.name.replace(" ","\\ "))
+            try:
+                subprocess.call(cmd, shell=False)
+            except OSError as e:
+                raise RpmException('Could not execute %s (%s)' % (self.diff_prog.split()[0], e.strerror))
 
     def __del__(self):
         if self.fin:
@@ -912,6 +926,10 @@ def main(args):
                       help="output file")
     parser.add_option("-f", "--force", action="store_true", dest="force",
                       default=False, help="overwrite output file if already existing")
+    parser.add_option("-d", "--diff", action="store_true", dest="diff",
+                      default=False, help="call external program to compare new and original specfile")
+    parser.add_option("--diff-prog", dest="diff_prog",
+                      help="program to generate diff (implies --diff)")
     parser.add_option("-v", "--version", action="store_true", dest="version",
                       default=False, help="display version (" + VERSION + ")")
 
@@ -933,12 +951,27 @@ def main(args):
         options.output = ''
         options.inline = True
 
+    if options.diff_prog:
+        # --diff-prog implies -d
+        options.diff = True
+    else:
+        # if diff-prog is not specified, set default here
+        options.diff_prog = "vimdiff"
+
     if options.output and options.inline:
         print >> sys.stderr,  'Conflicting options: --inline and --output.'
         return 1
 
+    if options.diff and options.output:
+        print >> sys.stderr,  'Conflicting options: --diff and --output.'
+        return 1
+
+    if options.diff and options.inline:
+        print >> sys.stderr,  'Conflicting options: --diff and --inline.'
+        return 1
+
     try:
-        cleaner = RpmSpecCleaner(spec, options.output, options.inline, options.force)
+        cleaner = RpmSpecCleaner(spec, options.output, options.inline, options.force, options.diff, options.diff_prog)
         cleaner.run()
     except RpmException, e:
         print >> sys.stderr, '%s' % e
