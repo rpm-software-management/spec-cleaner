@@ -147,6 +147,10 @@ def replace_buildservice(s):
         s = s.replace('%{' + i + '_version}', '0%{?' + i + '_version}')
     return s
 
+def replace_macros(s):
+    for i in ['name', 'version', 'release']:
+        s = s.replace('%' + i, '%{' + i + '}')
+    return s
 
 def replace_all(s):
     s = replace_buildroot(s)
@@ -155,6 +159,7 @@ def replace_all(s):
     s = replace_remove_la(s)
     s = replace_utils(s)
     s = replace_buildservice(s)
+    s = replace_macros(s)
     return s
 
 
@@ -404,6 +409,7 @@ class RpmPreamble(RpmSection):
 
     def _pkgname_to_pkgconfig(self, value):
         r = {
+          'cairo-devel': 'cairo',
           'dbus-1-devel': 'dbus-1',
           'dbus-1-glib-devel': 'dbus-glib-1',
           'exo-devel': 'exo-1',
@@ -412,11 +418,13 @@ class RpmPreamble(RpmSection):
           'libgarcon-devel': 'garcon-1',
           'libglade2-devel': 'libglade-2.0',
           'libnotify-devel': 'libnotify',
+          'xfce4-panel-devel': 'libxfce4panel-1.0',
           'libwnck-devel': 'libwnck-1.0',
           'libxfce4ui-devel': 'libxfce4ui-1',
           'libxfce4util-devel': 'libxfce4util-1.0',
           'libxfcegui4-devel': 'libxfcegui4-1.0',
           'libxfconf-devel': 'libxfconf-0',
+          'libxklavier-devel': 'libxklavier',
           'startup-notification-devel': 'libstartup-notification-1.0',
         }
         for i in r:
