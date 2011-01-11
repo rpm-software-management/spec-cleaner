@@ -647,7 +647,7 @@ class RpmPrep(RpmSection):
             cmp_line = strip_useless_spaces(cmp_line)
             if cmp_line == '%setup':
                 line = '%setup -q'
-        if line.startswith('%patch '):
+        if line.startswith('%patch ') or line == '%patch':
             line = line.replace('%patch','%patch0')
 
         RpmSection.add(self, line)
