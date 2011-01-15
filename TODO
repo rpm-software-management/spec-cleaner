@@ -5,6 +5,7 @@ Misc:
    - should fix make-params unit test
  + ban %{_bindir}/*, %{_sbindir}/* (?)
  + shouldn't check .spec suffix (?)
+ + s/%doc %{(_mandir|_infodir)}/%{$1}/
 
 Python stuff:
  + replace %py_ver with %python_version
@@ -21,3 +22,4 @@ Things changed with rpm 4.7 that we can do only if not caring about < 11.2:
 
 Bugs:
   %attr, %ghost, etc. are not handled correctly
+  $RPM_BUILD_ROOT_REPLACEMENT is changed to %{buildroot}_REPLACEMENT
