@@ -143,13 +143,18 @@ def replace_utils(s):
 
 def replace_buildservice(s):
     for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'suse', 'ubuntu']:
-        s = s.replace('%' + i + '_version', '0%{?' + i + '_version}')
-        s = s.replace('%{' + i + '_version}', '0%{?' + i + '_version}')
+        s = s.replace('%' + i + '_version', '0%{?' + i + '_version}').replace('00%{','0%{')
+        s = s.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace('00%{','0%{')
     return s
 
-def replace_macros(s):
+def replace_preamble_macros(s):
     for i in ['name', 'version', 'release']:
         s = s.replace('%' + i, '%{' + i + '}')
+    for i in map(str,range(100)):
+        s = s.replace('%{P:' + i + '}', '%{PATCH' + i + '}')
+        s = s.replace('%PATCH' + i, '%{PATCH' + i + '}')
+        s = s.replace('%{S:' + i + '}', '%{SOURCE' + i + '}')
+        s = s.replace('%SOURCE' + i, '%{SOURCE' + i + '}')
     return s
 
 def replace_all(s):
@@ -159,7 +164,7 @@ def replace_all(s):
     s = replace_remove_la(s)
     s = replace_utils(s)
     s = replace_buildservice(s)
-    s = replace_macros(s)
+    s = replace_preamble_macros(s)
     return s
 
 
@@ -413,15 +418,20 @@ class RpmPreamble(RpmSection):
           'dbus-1-devel': 'dbus-1',
           'dbus-1-glib-devel': 'dbus-glib-1',
           'gconf2-devel': 'gconf-2.0',
+          'gstreamer-0_10-devel': 'gstreamer-0.10',
           'exo-devel': 'exo-1',
           'glib2-devel': 'glib-2.0',
           'gtk2-devel': 'gtk+-2.0',
           'hal-devel': 'hal',
+          'ImageMagick-devel': 'ImageMagick',
+          'libapr1-devel': 'apr-1',
+          'libapr-util1-devel': 'apr-util-1',
           'libexif-devel': 'libexif',
           'libgarcon-devel': 'garcon-1',
           'libglade2-devel': 'libglade-2.0',
           'libgladeui-1_0-devel': 'gladeui-1.0',
           'libgudev-1_0-devel': 'gudev-1.0',
+          'libical-devel': 'libical',
           'libnotify-devel': 'libnotify',
           'libwnck-devel': 'libwnck-1.0',
           'libxfce4ui-devel': 'libxfce4ui-1',
@@ -430,7 +440,9 @@ class RpmPreamble(RpmSection):
           'libxfconf-devel': 'libxfconf-0',
           'libxklavier-devel': 'libxklavier',
           'libxml2-devel': 'libxml-2.0',
+          'pango-devel': 'pango',
           'startup-notification-devel': 'libstartup-notification-1.0',
+          'vte-devel': 'vte',
           'xfce4-panel-devel': 'libxfce4panel-1.0',
         }
         for i in r:
@@ -663,11 +675,13 @@ class RpmBuild(RpmSection):
 
     def add(self, line):
         if not re_comment.match(line):
-            line = line.replace('%_smp_mflags'     , '%{?_smp_mflags}')
-            line = line.replace('%{_smp_mflags}'   , '%{?_smp_mflags}')
-            line = line.replace('%{?jobs:-j%jobs}' , '%{?_smp_mflags}')
-            line = line.replace('%{?jobs: -j%jobs}', '%{?_smp_mflags}')
-            line = line.replace('%{?jobs:-j %jobs}', '%{?_smp_mflags}')
+            line = line.replace('%_smp_mflags'       , '%{?_smp_mflags}')
+            line = line.replace('%{_smp_mflags}'     , '%{?_smp_mflags}')
+            line = line.replace('%{?jobs:-j%jobs}'   , '%{?_smp_mflags}')
+            line = line.replace('%{?jobs: -j%jobs}'  , '%{?_smp_mflags}')
+            line = line.replace('%{?jobs:-j %jobs}'  , '%{?_smp_mflags}')
+            line = line.replace('%{?jobs:-j%{jobs}}' , '%{?_smp_mflags}')
+            line = line.replace('%{?jobs:-j %{jobs}}', '%{?_smp_mflags}')
 
         RpmSection.add(self, line)
 
@@ -872,7 +886,7 @@ class RpmSpecCleaner:
             self.fin = io
             self.fout = open(self.specfile, 'w')
         elif self.diff:
-            self.fout = tempfile.NamedTemporaryFile(prefix=self.specfile)
+            self.fout = tempfile.NamedTemporaryFile(prefix=self.specfile+'.')
         else:
             self.fout = sys.stdout
 
