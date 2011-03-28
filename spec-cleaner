@@ -872,7 +872,7 @@ class RpmSpecCleaner:
             self.fin = io
             self.fout = open(self.specfile, 'w')
         elif self.diff:
-            self.fout = tempfile.NamedTemporaryFile(prefix=self.specfile)
+            self.fout = tempfile.NamedTemporaryFile(prefix=self.specfile+'.', suffix='.spec')
         else:
             self.fout = sys.stdout
 
