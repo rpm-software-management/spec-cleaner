@@ -1,0 +1,16 @@
+spec-cleaner
+============
+
+Architecture
+----------------
+
+The following is the vision how future spec-cleaner could look like.
+
+- class SimpleRewriter
+  - rewrites a part of one line (something like encapsulated sed)
+  - attributes:
+    * pattern
+    * replacement
+    * on which section to apply (package, description, prep, build, install, clean, scriptlets*, files, changelog)
+    * priority - determines the order of application (0 - lowest, 99 - highest)
+

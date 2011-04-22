@@ -8,6 +8,7 @@ echo
 
 for i in \
   buildrequires \
+  dos2unix \
   make-params \
   patches \
   pkgconfig \
