@@ -4,7 +4,8 @@ spec-cleaner
 Architecture
 ----------------
 
-The following is the vision how future spec-cleaner could look like.
+- class SpecFile
+  - holds spec file abstraction
 
 - class SimpleRewriter
   - rewrites a part of one line (something like encapsulated sed)
@@ -12,5 +13,4 @@ The following is the vision how future spec-cleaner could look like.
     * pattern
     * replacement
     * on which section to apply (package, description, prep, build, install, clean, scriptlets*, files, changelog)
-    * priority - determines the order of application (0 - lowest, 99 - highest)
-
+    * priority - determines the order of application (0 - first, 99 - last)

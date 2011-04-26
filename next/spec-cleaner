@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+from section import Section
+from simplerewriter import SimpleRewriter
+from spec import Spec
+
+
+rewriters = []
+
+# take care of all utilities macros that bloat spec file
+r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p', 'awk':'gawk', 'cc':'gcc', 'cpp':'gcc -E', 'cxx':'g++', 'remsh':'rsh', }
+for i in r:
+    rewriters.append(SimpleRewriter(Section.CODE, '%__' + i, r[i], 10))
+    rewriters.append(SimpleRewriter(Section.CODE, '%{__' + i + '}', r[i], 10))
+for i in [ 'aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz', ]:
+    rewriters.append(SimpleRewriter(Section.CODE, '%__' + i, i, 10))
+    rewriters.append(SimpleRewriter(Section.CODE, '%{__' + i + '}', i, 10))
+
+# handle dos2unix and friends
+rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^dos2unix ', "sed -i 's/\r$//' ", 50))
+rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^dos2unix -c [0-9a-z]+ ', "sed -i 's/\r$//' ", 50))
+rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^perl -i -pe [\'"]s/\r\n/\n/gs[\'"] ', "sed -i 's/\r$//' ", 50))
+rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^sed -i [\'"]s/\r//[\'"] ', "sed -i 's/\r$//' ", 50))
+rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^sed -i "s/\r$//" ', "sed -i 's/\r$//' ", 50))
+
+print rewriters
