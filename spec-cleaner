@@ -384,11 +384,18 @@ class RpmPreamble(RpmSection):
         def sort_helper_key(a):
             t = type(a)
             if t == str:
-                return a
+                key = a
             elif t == list:
-                return a[-1]
+                key = a[-1]
             else:
                 raise RpmException('Unknown type during sort: %s' % t)
+
+            # Put pkgconfig()-style packages at the end of the list, after all
+            # non-pkgconfig()-style packages
+            if key.find('pkgconfig(') != -1:
+                return '1'+key
+            else:
+                return '0'+key
 
         for i in self.categories_order:
             if i in self.categories_with_sorted_package_tokens:
