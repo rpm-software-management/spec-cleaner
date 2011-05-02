@@ -51,7 +51,7 @@ import shlex
 
 #######################################################################
 
-VERSION = '0.1'
+VERSION = '0.2'
 
 re_comment = re.compile('^$|^\s*#')
 re_define = re.compile('^\s*%define', re.IGNORECASE)
