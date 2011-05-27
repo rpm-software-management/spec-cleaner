@@ -14,6 +14,12 @@ Patch1:         d
 Patch0:         e
 # PATCH-MISSING-TAG -- See http://en.opensuse.org/openSUSE:Packaging_Patches_guidelines
 Patch99:        f
+# PATCH-MISSING-TAG -- See http://en.opensuse.org/openSUSE:Packaging_Patches_guidelines
+Patch10:        g
+# PATCH-MISSING-TAG -- See http://en.opensuse.org/openSUSE:Packaging_Patches_guidelines
+Patch11:        h
+# PATCH-FIX-OPENSUSE fix-for-opensuse-specific-things.patch bnc#123456
+Patch12:        i
 
 %prep
 %patch3 -p1
@@ -22,3 +28,6 @@ Patch99:        f
 %patch0 -p1
 %patch1
 %patch0 -p1
+%patch10
+%patch11 -p1
+%patch12 -p0
