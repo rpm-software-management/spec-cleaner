@@ -6,6 +6,7 @@ Misc:
  + ban %{_bindir}/*, %{_sbindir}/* (?)
  + shouldn't check .spec suffix (?)
  + s/%doc %{(_mandir|_infodir)}/%{$1}/
+ + use license abbreviatons from http://spdx.org/licenses/
 
 Python stuff:
  + replace %py_ver with %python_version
