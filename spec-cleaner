@@ -316,7 +316,7 @@ class RpmPreamble(RpmSection):
         'source': 'Source',
         'patch': 'Patch',
         'buildrequires': 'BuildRequires',
-        'prereq': 'PreReq',
+        'prereq': 'Requires(pre)',
         'requires': 'Requires',
         'recommends': 'Recommends',
         'suggests': 'Suggests',
