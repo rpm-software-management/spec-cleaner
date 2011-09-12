@@ -7,11 +7,11 @@ echo "Running tests:"
 echo
 
 for i in \
-  buildrequires \
   dos2unix \
   make-params \
   patches \
   pkgconfig \
+  requires \
   ; do
 
   echo -n "$i ... "
