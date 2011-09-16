@@ -74,12 +74,12 @@ class Package
     @pretrans = []
     @pre = []
     @post = []
-    @triggerin = []
-    @triggerun = []
+    @triggerin = {}
+    @triggerun = {}
     @preun = []
     @postun = []
-    @triggerpostin = []
-    @triggerpostun = []
+    @triggerpostin = {}
+    @triggerpostun = {}
     @posttrans = []
     @verifyscript = []
   end
@@ -119,10 +119,10 @@ class Spec
   end
 
   def parse_package(pkg)
-    return if @lines.empty?
     meta = []
     @packages[pkg] ||= Package.new
     loop do
+      return if @lines.empty?
       line = @lines.shift
       if next_section(line)
         @lines.unshift(line)
@@ -176,9 +176,9 @@ class Spec
   end
 
   def parse_description(pkg)
-    return if @lines.empty?
     @packages[pkg] ||= Package.new
     loop do
+      return if @lines.empty?
       line = @lines.shift
       if next_section(line)
         @lines.unshift(line)
@@ -189,8 +189,8 @@ class Spec
   end
 
   def parse_section(section)
-    return if @lines.empty?
     loop do
+      return if @lines.empty?
       line = @lines.shift
       if next_section(line)
         @lines.unshift(line)
@@ -200,12 +200,47 @@ class Spec
     end
   end
 
+  # checks for scriptlets that can have -n and -p parameters (%pre for example)
+  def check_scriptlet(type, line)
+    case line
+      when /^%#{type}\s+-n\s+(\S+)\s+-p\s(.+)$/
+        @packages[$1].instance_variable_get('@'+type) << $2.strip
+      when /^%#{type}\s+-n\s+(\S+)$/
+        parse_section(@packages[$1].instance_variable_get('@'+type))
+      when /^%#{type}\s+-p\s(.+)$/
+        @packages[''].instance_variable_get('@'+type) << $1.strip
+      when /^%#{type}\s+(\S+)$/
+        parse_section(@packages[full_name($1)].instance_variable_get('@'+type))
+      when /^%#{type}$/
+        parse_section(@packages[''].instance_variable_get('@'+type))
+    end
+  end
+
+  def check_trigger(type, line)
+    case line
+      when /^%trigger#{type}\s+-n\s+(\S+)\s+-p\s(.+)\s+--\s+(\.+)$/
+        @packages[$1].instance_variable_get('@trigger'+type)[$3] = [$2.strip]
+      when /^%trigger#{type}\s+-n\s+(\S+)\s+--\s+(.+)$/
+        @packages[$1].instance_variable_get('@trigger'+type)[$2] = []
+        parse_section(@packages[$1].instance_variable_get('@trigger'+type)[$2])
+      when /^%trigger#{type}\s+-p\s(.+)\s+--\s+(.+)$/
+        @packages[''].instance_variable_get('@trigger'+type)[$2] = [$1.strip]
+      when /^%trigger#{type}\s+(\S+)\s+--\s+(.+)$/
+        @packages[full_name($1)].instance_variable_get('@trigger'+type)[$2] = []
+        parse_section(@packages[full_name($1)].instance_variable_get('@trigger'+type)[$2])
+      when /^%trigger#{type}\s+--\s+(.+)$/
+        @packages[''].instance_variable_get('@trigger'+type)[$1] = []
+        parse_section(@packages[''].instance_variable_get('@trigger'+type)[$1])
+    end
+  end
+
+
   def parse(lines)
 
     @lines = lines.collect{ |x| x.strip }
-    return if @lines.empty?
 
     loop do
+      return if @lines.empty?
       line = @lines.shift
       if line == '' or line =~ /^#/ or line =~ /^%/
         @intro << line
@@ -241,105 +276,22 @@ class Spec
           parse_section(@clean)
         when /^%changelog$/
           parse_section(@changelog)
-
-        when /^%pretrans\s+-p\s+(.+)\s+-n\s+(\S+)$/
-          @packages[$2].pretrans = $1.strip
-        when /^%pretrans\s+-n\s+(\S+)\s+-p\s(.+)$/
-          @packages[$1].pretrans = $2.strip
-        when /^%pretrans\s+-n\s+(\S+)$/
-          parse_section(@packages[$1].pretrans)
-        when /^%pretrans\s+-p\s(.+)$/
-          @packages[''].pretrans = $1.strip
-        when /^%pretrans\s+(\S+)$/
-          parse_section(@packages[full_name($1)].pretrans)
-        when /^%pretrans$/
-          parse_section(@packages[''].pretrans)
-
-        when /^%pre\s+-p\s+(.+)\s+-n\s+(\S+)$/
-          @packages[$2].pre = $1.strip
-        when /^%pre\s+-n\s+(\S+)\s+-p\s(.+)$/
-          @packages[$1].pre = $2.strip
-        when /^%pre\s+-n\s+(\S+)$/
-          parse_section(@packages[$1].pre)
-        when /^%pre\s+-p\s(.+)$/
-          @packages[''].pre = $1.strip
-        when /^%pre\s+(\S+)$/
-          parse_section(@packages[full_name($1)].pre)
-        when /^%pre$/
-          parse_section(@packages[''].pre)
-
-        when /^%post\s+-p\s+(.+)\s+-n\s+(\S+)$/
-          @packages[$2].post = $1.strip
-        when /^%post\s+-n\s+(\S+)\s+-p\s(.+)$/
-          @packages[$1].post = $2.strip
-        when /^%post\s+-n\s+(\S+)$/
-          parse_section(@packages[$1].post)
-        when /^%post\s+-p\s(.+)$/
-          @packages[''].post = $1.strip
-        when /^%post\s+(\S+)$/
-          parse_section(@packages[full_name($1)].post)
-        when /^%post$/
-          parse_section(@packages[''].post)
-
-        when /^%preun\s+-p\s+(.+)\s+-n\s+(\S+)$/
-          @packages[$2].preun = $1.strip
-        when /^%preun\s+-n\s+(\S+)\s+-p\s(.+)$/
-          @packages[$1].preun = $2.strip
-        when /^%preun\s+-n\s+(\S+)$/
-          parse_section(@packages[$1].preun)
-        when /^%preun\s+-p\s(.+)$/
-          @packages[''].preun = $1.strip
-        when /^%preun\s+(\S+)$/
-          parse_section(@packages[full_name($1)].preun)
-        when /^%preun$/
-          parse_section(@packages[''].preun)
-
-        when /^%postun\s+-p\s+(.+)\s+-n\s+(\S+)$/
-          @packages[$2].postun = $1.strip
-        when /^%postun\s+-n\s+(\S+)\s+-p\s(.+)$/
-          @packages[$1].postun = $2.strip
-        when /^%postun\s+-n\s+(\S+)$/
-          parse_section(@packages[$1].postun)
-        when /^%postun\s+-p\s(.+)$/
-          @packages[''].postun = $1.strip
-        when /^%postun\s+(\S+)$/
-          parse_section(@packages[full_name($1)].postun)
-        when /^%postun$/
-          parse_section(@packages[''].postun)
-
-        when /^%posttrans\s+-p\s+(.+)\s+-n\s+(\S+)$/
-          @packages[$2].posttrans = $1.strip
-        when /^%posttrans\s+-n\s+(\S+)\s+-p\s(.+)$/
-          @packages[$1].posttrans = $2.strip
-        when /^%posttrans\s+-n\s+(\S+)$/
-          parse_section(@packages[$1].posttrans)
-        when /^%posttrans\s+-p\s(.+)$/
-          @packages[''].posttrans = $1.strip
-        when /^%posttrans\s+(\S+)$/
-          parse_section(@packages[full_name($1)].posttrans)
-        when /^%posttrans$/
-          parse_section(@packages[''].posttrans)
-
-        when /^%verifyscript\s+-p\s+(.+)\s+-n\s+(\S+)$/
-          @packages[$2].verifyscript = $1.strip
-        when /^%verifyscript\s+-n\s+(\S+)\s+-p\s(.+)$/
-          @packages[$1].verifyscript = $2.strip
-        when /^%verifyscript\s+-n\s+(\S+)$/
-          parse_section(@packages[$1].verifyscript)
-        when /^%verifyscript\s+-p\s(.+)$/
-          @packages[''].verifyscript = $1.strip
-        when /^%verifyscript\s+(\S+)$/
-          parse_section(@packages[full_name($1)].verifyscript)
-        when /^%verifyscript$/
-          parse_section(@packages[''].verifyscript)
-
-#        when /^%triggerin(.*)$/
-#        when /^%triggerun(.*)$/
-#        when /^%triggerpostin(.*)$/
-#        when /^%triggerpostun(.*)$/
 #        when /^%files(.*)$/ # TODO - handle -f option
 #          parse_section(@packages[full_pkg_name($1.strip)].files)
       end
+
+      check_scriptlet('pretrans', line)
+      check_scriptlet('pre', line)
+      check_scriptlet('post', line)
+      check_scriptlet('preun', line)
+      check_scriptlet('postun', line)
+      check_scriptlet('posttrans', line)
+      check_scriptlet('verifyscript', line)
+
+      check_trigger('in', line)
+      check_trigger('un', line)
+      check_trigger('postin', line)
+      check_trigger('postun', line)
 
     end
 
