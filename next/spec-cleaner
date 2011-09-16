@@ -1,26 +1,358 @@
-#!/usr/bin/env python
+#!/usr/bin/ruby
+#
+# Copyright (c) 2009-2011, SUSE
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors:
+#   Pavol Rusnak <prusnak@opensuse.org>
+#
 
-from section import Section
-from simplerewriter import SimpleRewriter
-from spec import Spec
+class String
+  attr_reader :_meta_
+  def annotate!(meta)
+    @_meta_ = meta unless meta.empty?
+    self
+  end
+end
+
+class Package
+
+  attr_accessor :name, :version, :release, :group, :license, :url
+  attr_accessor :summary, :description
+  attr_accessor :sources, :patches
+  attr_accessor :files
+  attr_accessor :buildrequires, :requires_pre, :requires_preun, :requires_post, :requires_postun, :recommends, :suggests, :supplements
+  attr_accessor :pretrans, :pre, :post, :triggerin, :triggerun, :preun, :postun, :triggerpostin, :triggerpostun, :posttrans, :verifyscript
+
+  def initialize
+    @name = nil
+    @version = nil
+    @release = nil
+    @group = nil
+    @license = nil
+    @url = nil
+    @summary = nil
+    @description = []
+    @sources = {}
+    @patches = {}
+    @files = []
+    @buildrequires = []
+    @recommends = []
+    @suggests = []
+    @supplements = []
+    @requires_pre = []
+    @requires_preun = []
+    @requires_post = []
+    @requires_postun = []
+    @pretrans = []
+    @pre = []
+    @post = []
+    @triggerin = []
+    @triggerun = []
+    @preun = []
+    @postun = []
+    @triggerpostin = []
+    @triggerpostun = []
+    @posttrans = []
+    @verifyscript = []
+  end
+
+end
 
 
-rewriters = []
+class Spec
 
-# take care of all utilities macros that bloat spec file
-r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p', 'awk':'gawk', 'cc':'gcc', 'cpp':'gcc -E', 'cxx':'g++', 'remsh':'rsh', }
-for i in r:
-    rewriters.append(SimpleRewriter(Section.CODE, '%__' + i, r[i], 10))
-    rewriters.append(SimpleRewriter(Section.CODE, '%{__' + i + '}', r[i], 10))
-for i in [ 'aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz', ]:
-    rewriters.append(SimpleRewriter(Section.CODE, '%__' + i, i, 10))
-    rewriters.append(SimpleRewriter(Section.CODE, '%{__' + i + '}', i, 10))
+  def initialize
+    @intro = []
+    @packages = {}
+    @prep = []
+    @build = []
+    @install = []
+    @check = []
+    @clean = []
+    @changelog = []
+    @lines = nil
+    @packages = {}
+  end
 
-# handle dos2unix and friends
-rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^dos2unix ', "sed -i 's/\r$//' ", 50))
-rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^dos2unix -c [0-9a-z]+ ', "sed -i 's/\r$//' ", 50))
-rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^perl -i -pe [\'"]s/\r\n/\n/gs[\'"] ', "sed -i 's/\r$//' ", 50))
-rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^sed -i [\'"]s/\r//[\'"] ', "sed -i 's/\r$//' ", 50))
-rewriters.append(SimpleRewriter(Section.PREP + Section.BUILD + Section.INSTALL, '^sed -i "s/\r$//" ', "sed -i 's/\r$//' ", 50))
+  def next_section(line)
+    case line
+      when /^%package/, /^%description/, /^%prep/, /^%build/, /^%install/, /^%check/, /^%clean/, /^%changelog/,
+           /^%pretrans/, /^%pre/, /^%post/, /^%preun/, /^%postun/, /^%posttrans/,
+           /^%triggerin/, /^%triggerun/, /^%triggerpostin/, /^%triggerpostun/,
+           /^%verifyscript/, /^%files/
+        true
+     else
+       false
+    end
+  end
 
-print rewriters
+  def full_name(pkg)
+    @packages[''].name + '-' + pkg.strip
+  end
+
+  def parse_package(pkg)
+    return if @lines.empty?
+    meta = []
+    @packages[pkg] ||= Package.new
+    loop do
+      line = @lines.shift
+      if next_section(line)
+        @lines.unshift(line)
+        return
+      end
+      case line
+        when /^$/, /^#/, /^%/
+          meta << line
+        when /^Name:/i
+          @packages[pkg].name = line[5..-1].strip.annotate!(meta)
+        when /^Version:/i
+          @packages[pkg].version = line[8..-1].strip.annotate!(meta)
+        when /^Release:/i
+          @packages[pkg].release = line[8..-1].strip.annotate!(meta)
+        when /^Group:/i
+          @packages[pkg].group = line[6..-1].strip.annotate!(meta)
+        when /^License:/i
+          @packages[pkg].group = line[8..-1].strip.annotate!(meta)
+        when /^Url:/i
+          @packages[pkg].group = line[4..-1].strip.annotate!(meta)
+        when /^Summary:/i
+          @packages[pkg].summary = line[8..-1].strip.annotate!(meta)
+        when /^Source:/i
+          @packages[pkg].sources[0] = line[7..-1].strip.annotate!(meta)
+        when /^Patch:/i
+          @packages[pkg].patches[0] = line[6..-1].strip.annotate!(meta)
+        when /^Source(\d+):/i
+          @packages[pkg].sources[ $1.to_i ] = line.gsub(/^Source(\d+):/i, '').strip.annotate!(meta)
+        when /^Patch(\d+):/i
+          @packages[pkg].patches[ $1.to_i ] = line.gsub(/^Patch(\d+):/i, '').strip.annotate!(meta)
+        when /^BuildRequires:/i
+          @packages[pkg].buildrequires << line[14..-1].strip.annotate!(meta)
+        when /^PreReq:/i
+          @packages[pkg].requires_pre << line[7..-1].strip.annotate!(meta)
+        when /^Requires(pre):/i
+          @packages[pkg].requires_pre << line[14..-1].strip.annotate!(meta)
+        when /^Requires(preun):/i
+          @packages[pkg].requires_preun << line[16..-1].strip.annotate!(meta)
+        when /^Requires(post):/i
+          @packages[pkg].requires_post << line[15..-1].strip.annotate!(meta)
+        when /^Requires(postun):/i
+          @packages[pkg].requires_postun << line[17..-1].strip.annotate!(meta)
+        when /^Recommends:/i
+          @packages[pkg].recommends << line[11..-1].strip.annotate!(meta)
+        when /^Suggests:/i
+          @packages[pkg].suggests << line[9..-1].strip.annotate!(meta)
+        when /^Supplements:/i
+          @packages[pkg].supplements << line[12..-1].strip.annotate!(meta)
+      end
+    end
+  end
+
+  def parse_description(pkg)
+    return if @lines.empty?
+    @packages[pkg] ||= Package.new
+    loop do
+      line = @lines.shift
+      if next_section(line)
+        @lines.unshift(line)
+        return
+      end
+      @packages[pkg].description << line
+    end
+  end
+
+  def parse_section(section)
+    return if @lines.empty?
+    loop do
+      line = @lines.shift
+      if next_section(line)
+        @lines.unshift(line)
+        return
+      end
+      section << line
+    end
+  end
+
+  def parse(lines)
+
+    @lines = lines.collect{ |x| x.strip }
+    return if @lines.empty?
+
+    loop do
+      line = @lines.shift
+      if line == '' or line =~ /^#/ or line =~ /^%/
+        @intro << line
+      else
+        @lines.unshift(line)
+        break
+      end
+    end
+
+    parse_package('')
+
+    until @lines.empty? do
+
+      line = @lines.shift
+      case line
+        when /^%package\s+-n\s+(\S+)$/
+          parse_package($1)
+        when /^%package\s+(\S+)$/
+          parse_package(full_name($1))
+        when /^%description\s+-n\s+(\S+)$/
+          parse_description($1)
+        when /^%description\s+(\S+)/
+          parse_description(full_name($1))
+        when /^%prep$/
+          parse_section(@prep)
+        when /^%build$/
+          parse_section(@build)
+        when /^%install$/
+          parse_section(@install)
+        when /^%check$/
+          parse_section(@check)
+        when /^%clean$/
+          parse_section(@clean)
+        when /^%changelog$/
+          parse_section(@changelog)
+
+        when /^%pretrans\s+-p\s+(.+)\s+-n\s+(\S+)$/
+          @packages[$2].pretrans = $1.strip
+        when /^%pretrans\s+-n\s+(\S+)\s+-p\s(.+)$/
+          @packages[$1].pretrans = $2.strip
+        when /^%pretrans\s+-n\s+(\S+)$/
+          parse_section(@packages[$1].pretrans)
+        when /^%pretrans\s+-p\s(.+)$/
+          @packages[''].pretrans = $1.strip
+        when /^%pretrans\s+(\S+)$/
+          parse_section(@packages[full_name($1)].pretrans)
+        when /^%pretrans$/
+          parse_section(@packages[''].pretrans)
+
+        when /^%pre\s+-p\s+(.+)\s+-n\s+(\S+)$/
+          @packages[$2].pre = $1.strip
+        when /^%pre\s+-n\s+(\S+)\s+-p\s(.+)$/
+          @packages[$1].pre = $2.strip
+        when /^%pre\s+-n\s+(\S+)$/
+          parse_section(@packages[$1].pre)
+        when /^%pre\s+-p\s(.+)$/
+          @packages[''].pre = $1.strip
+        when /^%pre\s+(\S+)$/
+          parse_section(@packages[full_name($1)].pre)
+        when /^%pre$/
+          parse_section(@packages[''].pre)
+
+        when /^%post\s+-p\s+(.+)\s+-n\s+(\S+)$/
+          @packages[$2].post = $1.strip
+        when /^%post\s+-n\s+(\S+)\s+-p\s(.+)$/
+          @packages[$1].post = $2.strip
+        when /^%post\s+-n\s+(\S+)$/
+          parse_section(@packages[$1].post)
+        when /^%post\s+-p\s(.+)$/
+          @packages[''].post = $1.strip
+        when /^%post\s+(\S+)$/
+          parse_section(@packages[full_name($1)].post)
+        when /^%post$/
+          parse_section(@packages[''].post)
+
+        when /^%preun\s+-p\s+(.+)\s+-n\s+(\S+)$/
+          @packages[$2].preun = $1.strip
+        when /^%preun\s+-n\s+(\S+)\s+-p\s(.+)$/
+          @packages[$1].preun = $2.strip
+        when /^%preun\s+-n\s+(\S+)$/
+          parse_section(@packages[$1].preun)
+        when /^%preun\s+-p\s(.+)$/
+          @packages[''].preun = $1.strip
+        when /^%preun\s+(\S+)$/
+          parse_section(@packages[full_name($1)].preun)
+        when /^%preun$/
+          parse_section(@packages[''].preun)
+
+        when /^%postun\s+-p\s+(.+)\s+-n\s+(\S+)$/
+          @packages[$2].postun = $1.strip
+        when /^%postun\s+-n\s+(\S+)\s+-p\s(.+)$/
+          @packages[$1].postun = $2.strip
+        when /^%postun\s+-n\s+(\S+)$/
+          parse_section(@packages[$1].postun)
+        when /^%postun\s+-p\s(.+)$/
+          @packages[''].postun = $1.strip
+        when /^%postun\s+(\S+)$/
+          parse_section(@packages[full_name($1)].postun)
+        when /^%postun$/
+          parse_section(@packages[''].postun)
+
+        when /^%posttrans\s+-p\s+(.+)\s+-n\s+(\S+)$/
+          @packages[$2].posttrans = $1.strip
+        when /^%posttrans\s+-n\s+(\S+)\s+-p\s(.+)$/
+          @packages[$1].posttrans = $2.strip
+        when /^%posttrans\s+-n\s+(\S+)$/
+          parse_section(@packages[$1].posttrans)
+        when /^%posttrans\s+-p\s(.+)$/
+          @packages[''].posttrans = $1.strip
+        when /^%posttrans\s+(\S+)$/
+          parse_section(@packages[full_name($1)].posttrans)
+        when /^%posttrans$/
+          parse_section(@packages[''].posttrans)
+
+        when /^%verifyscript\s+-p\s+(.+)\s+-n\s+(\S+)$/
+          @packages[$2].verifyscript = $1.strip
+        when /^%verifyscript\s+-n\s+(\S+)\s+-p\s(.+)$/
+          @packages[$1].verifyscript = $2.strip
+        when /^%verifyscript\s+-n\s+(\S+)$/
+          parse_section(@packages[$1].verifyscript)
+        when /^%verifyscript\s+-p\s(.+)$/
+          @packages[''].verifyscript = $1.strip
+        when /^%verifyscript\s+(\S+)$/
+          parse_section(@packages[full_name($1)].verifyscript)
+        when /^%verifyscript$/
+          parse_section(@packages[''].verifyscript)
+
+#        when /^%triggerin(.*)$/
+#        when /^%triggerun(.*)$/
+#        when /^%triggerpostin(.*)$/
+#        when /^%triggerpostun(.*)$/
+#        when /^%files(.*)$/ # TODO - handle -f option
+#          parse_section(@packages[full_pkg_name($1.strip)].files)
+      end
+
+    end
+
+  end
+
+end
+
+
+abort 'Usage: spec-cleaner filename.spec' if ARGV.length < 1
+
+spec = Spec.new
+
+lines = IO.readlines(ARGV[0])
+spec.parse(lines)
+
+puts spec.inspect
