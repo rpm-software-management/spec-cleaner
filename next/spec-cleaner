@@ -63,6 +63,7 @@ class Package
     @sources = {}
     @patches = {}
     @files = []
+    @files_include = nil
     @buildrequires = []
     @recommends = []
     @suggests = []
@@ -133,44 +134,64 @@ class Spec
           meta << line
         when /^Name:/i
           @packages[pkg].name = line[5..-1].strip.annotate!(meta)
+          meta = []
         when /^Version:/i
           @packages[pkg].version = line[8..-1].strip.annotate!(meta)
+          meta = []
         when /^Release:/i
           @packages[pkg].release = line[8..-1].strip.annotate!(meta)
+          meta = []
         when /^Group:/i
           @packages[pkg].group = line[6..-1].strip.annotate!(meta)
+          meta = []
         when /^License:/i
           @packages[pkg].group = line[8..-1].strip.annotate!(meta)
+          meta = []
         when /^Url:/i
           @packages[pkg].group = line[4..-1].strip.annotate!(meta)
+          meta = []
         when /^Summary:/i
           @packages[pkg].summary = line[8..-1].strip.annotate!(meta)
+          meta = []
         when /^Source:/i
           @packages[pkg].sources[0] = line[7..-1].strip.annotate!(meta)
+          meta = []
         when /^Patch:/i
           @packages[pkg].patches[0] = line[6..-1].strip.annotate!(meta)
+          meta = []
         when /^Source(\d+):/i
           @packages[pkg].sources[ $1.to_i ] = line.gsub(/^Source(\d+):/i, '').strip.annotate!(meta)
+          meta = []
         when /^Patch(\d+):/i
           @packages[pkg].patches[ $1.to_i ] = line.gsub(/^Patch(\d+):/i, '').strip.annotate!(meta)
+          meta = []
         when /^BuildRequires:/i
           @packages[pkg].buildrequires << line[14..-1].strip.annotate!(meta)
+          meta = []
         when /^PreReq:/i
           @packages[pkg].requires_pre << line[7..-1].strip.annotate!(meta)
+          meta = []
         when /^Requires(pre):/i
           @packages[pkg].requires_pre << line[14..-1].strip.annotate!(meta)
+          meta = []
         when /^Requires(preun):/i
           @packages[pkg].requires_preun << line[16..-1].strip.annotate!(meta)
+          meta = []
         when /^Requires(post):/i
           @packages[pkg].requires_post << line[15..-1].strip.annotate!(meta)
+          meta = []
         when /^Requires(postun):/i
           @packages[pkg].requires_postun << line[17..-1].strip.annotate!(meta)
+          meta = []
         when /^Recommends:/i
           @packages[pkg].recommends << line[11..-1].strip.annotate!(meta)
+          meta = []
         when /^Suggests:/i
           @packages[pkg].suggests << line[9..-1].strip.annotate!(meta)
+          meta = []
         when /^Supplements:/i
           @packages[pkg].supplements << line[12..-1].strip.annotate!(meta)
+          meta = []
       end
     end
   end
@@ -197,6 +218,26 @@ class Spec
         return
       end
       section << line
+    end
+  end
+
+  def parse_files_section(line)
+    case line
+      when /^%files\s+-n\s+(\S+)\s+-f(.*)$/
+        parse_section(@packages[$1].instance_variable_get('@files'))
+        @packages[$1].instance_variable_set('@files_include', $2.split(/\s/).select { |x| x != '' and x != '-f' })
+      when /^%files\s+(\S+)\s+-f(.*)$/
+        parse_section(@packages[full_name($1)].instance_variable_get('@files'))
+        @packages[full_name($1)].instance_variable_set('@files_include', $2.split(/\s/).select { |x| x != '' and x != '-f' })
+      when /^%files\s+-f(.*)$/
+        parse_section(@packages[''].instance_variable_get('@files'))
+        @packages[''].instance_variable_set('@files_include', $1.split(/\s/).select { |x| x != '' and x != '-f' })
+      when /^%files\s+-n\s+(\S+)$/
+        parse_section(@packages[$1].instance_variable_get('@files'))
+      when /^%files\s+(\S+)$/
+        parse_section(@packages[full_name($1)].instance_variable_get('@files'))
+      when /^%files$/
+        parse_section(@packages[''].instance_variable_get('@files'))
     end
   end
 
@@ -233,7 +274,6 @@ class Spec
         parse_section(@packages[''].instance_variable_get('@trigger'+type)[$1])
     end
   end
-
 
   def parse(lines)
 
@@ -276,8 +316,8 @@ class Spec
           parse_section(@clean)
         when /^%changelog$/
           parse_section(@changelog)
-#        when /^%files(.*)$/ # TODO - handle -f option
-#          parse_section(@packages[full_pkg_name($1.strip)].files)
+        when /^%files/
+          parse_files_section(line)
       end
 
       check_scriptlet('pretrans', line)
