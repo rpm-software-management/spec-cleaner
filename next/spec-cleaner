@@ -81,13 +81,13 @@ class Package
     @pretrans = []
     @pre = []
     @post = []
-    @triggerin = {}
-    @triggerun = {}
     @preun = []
     @postun = []
+    @posttrans = []
+    @triggerin = {}
+    @triggerun = {}
     @triggerpostin = {}
     @triggerpostun = {}
-    @posttrans = []
     @verifyscript = []
   end
 
@@ -527,13 +527,87 @@ class Spec
       out += @check
     end
 
+    @packages.keys.sort.each{ |x|
+
+      if x != ''
+        pkgname = ' -n ' + x
+      else
+        pkgname = ''
+      end
+
+      unless @packages[x].pretrans.empty?
+        out << ''
+        out << '%pretrans' + pkgname
+        out += @packages[x].pretrans
+      end
+
+      unless @packages[x].pre.empty?
+        out << ''
+        out << '%pre' + pkgname
+        out += @packages[x].pre
+      end
+
+      unless @packages[x].preun.empty?
+        out << ''
+        out << '%preun' + pkgname
+        out += @packages[x].preun
+      end
+
+      unless @packages[x].post.empty?
+        out << ''
+        out << '%post' + pkgname
+        out += @packages[x].post
+      end
+
+      unless @packages[x].postun.empty?
+        out << ''
+        out << '%postun' + pkgname
+        out += @packages[x].postun
+      end
+
+      unless @packages[x].posttrans.empty?
+        out << ''
+        out << '%posttrans' + pkgname
+        out += @packages[x].posttrans
+      end
+
+      @packages[x].triggerin.keys.sort.each{ |y|
+        out << ''
+        out << '%triggerin' + pkgname + ' -- ' + y
+        out += @packages[x].triggerin[y]
+      }
+
+      @packages[x].triggerun.keys.sort.each{ |y|
+        out << ''
+        out << '%triggerun' + pkgname + ' -- ' + y
+        out += @packages[x].triggerun[y]
+      }
+
+      @packages[x].triggerpostin.keys.sort.each{ |y|
+        out << ''
+        out << '%triggerpostin' + pkgname + ' -- ' + y
+        out += @packages[x].triggerpostin[y]
+      }
+
+      @packages[x].triggerpostun.keys.sort.each{ |y|
+        out << ''
+        out << '%triggerpostun' + pkgname + ' -- ' + y
+        out += @packages[x].triggerpostun[y]
+      }
+
+      unless @packages[x].verifyscript.empty?
+        out << ''
+        out << '%verifyscript' + pkgname
+        out += @packages[x].verifyscript
+      end
+
+    }
+
     unless @clean.nil?
       out << ''
       out << '%clean'
       out += @clean
     end
-
-    # TODO: scriptlets!
 
     @packages.keys.sort.each{ |x|
       out << ''
