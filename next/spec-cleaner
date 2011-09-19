@@ -42,6 +42,14 @@ class String
   end
 end
 
+class Array
+  attr_reader :_meta_
+  def annotate!(meta)
+    @_meta_ = meta unless meta.empty?
+    self
+  end
+end
+
 class Package
 
   attr_accessor :name, :version, :release, :group, :license, :url
@@ -78,17 +86,17 @@ class Package
     @requires_preun = []
     @requires_post = []
     @requires_postun = []
-    @pretrans = []
-    @pre = []
-    @post = []
-    @preun = []
-    @postun = []
-    @posttrans = []
+    @pretrans = nil
+    @pre = nil
+    @post = nil
+    @preun = nil
+    @postun = nil
+    @posttrans = nil
     @triggerin = {}
     @triggerun = {}
     @triggerpostin = {}
     @triggerpostun = {}
-    @verifyscript = []
+    @verifyscript = nil
   end
 
 end
@@ -121,15 +129,11 @@ class Spec
     end
   end
 
-  def full_name(pkg)
-    @packages[''].name + '-' + pkg.strip
-  end
-
   def parse_package(pkg)
     meta = []
     @packages[pkg] ||= Package.new
     loop do
-      return if @lines.empty?
+      break if @lines.empty?
       line = @lines.shift
       if next_section(line)
         @lines.unshift(line)
@@ -183,16 +187,16 @@ class Spec
         when /^PreReq:/i
           @packages[pkg].requires_pre << line[7..-1].strip.annotate!(meta)
           meta = []
-        when /^Requires(pre):/i
+        when /^Requires\(pre\):/i
           @packages[pkg].requires_pre << line[14..-1].strip.annotate!(meta)
           meta = []
-        when /^Requires(preun):/i
+        when /^Requires\(preun\):/i
           @packages[pkg].requires_preun << line[16..-1].strip.annotate!(meta)
           meta = []
-        when /^Requires(post):/i
+        when /^Requires\(post\):/i
           @packages[pkg].requires_post << line[15..-1].strip.annotate!(meta)
           meta = []
-        when /^Requires(postun):/i
+        when /^Requires\(postun\):/i
           @packages[pkg].requires_postun << line[17..-1].strip.annotate!(meta)
           meta = []
         when /^Recommends:/i
@@ -217,9 +221,10 @@ class Spec
     end
   end
 
-  def parse_section(section)
+  def parse_section
+    section = []
     loop do
-      return if @lines.empty?
+      break if @lines.empty?
       line = @lines.shift
       if next_section(line)
         @lines.unshift(line)
@@ -227,27 +232,28 @@ class Spec
       end
       section << line
     end
-    section.shift while section.first.empty?
-    section.pop while section.last.empty?
+    section.shift while not section.first.nil? and section.first.empty?
+    section.pop while not section.first.nil? and section.last.empty?
+    section
   end
 
   def parse_files_section(line)
     case line
       when /^%files\s+-n\s+(\S+)\s+-f(.*)$/
-        parse_section(@packages[$1].instance_variable_get('@files'))
-        @packages[$1].instance_variable_set('@files_include', $2.split(/\s/).select { |x| x != '' and x != '-f' })
+        @packages['-n ' + $1].instance_variable_set('@files', parse_section())
+        @packages['-n ' + $1].instance_variable_set('@files_include', $2.split(/\s/).select { |x| x != '' and x != '-f' })
       when /^%files\s+(\S+)\s+-f(.*)$/
-        parse_section(@packages[full_name($1)].instance_variable_get('@files'))
-        @packages[full_name($1)].instance_variable_set('@files_include', $2.split(/\s/).select { |x| x != '' and x != '-f' })
+        @packages[$1].instance_variable_set('@files', parse_section())
+        @packages[$1].instance_variable_set('@files_include', $2.split(/\s/).select { |x| x != '' and x != '-f' })
       when /^%files\s+-f(.*)$/
-        parse_section(@packages[''].instance_variable_get('@files'))
+        @packages[''].instance_variable_set('@files', parse_section())
         @packages[''].instance_variable_set('@files_include', $1.split(/\s/).select { |x| x != '' and x != '-f' })
       when /^%files\s+-n\s+(\S+)$/
-        parse_section(@packages[$1].instance_variable_get('@files'))
+        @packages['-n ' + $1].instance_variable_set('@files', parse_section())
       when /^%files\s+(\S+)$/
-        parse_section(@packages[full_name($1)].instance_variable_get('@files'))
+        @packages[$1].instance_variable_set('@files', parse_section())
       when /^%files$/
-        parse_section(@packages[''].instance_variable_get('@files'))
+        @packages[''].instance_variable_set('@files', parse_section())
     end
   end
 
@@ -255,42 +261,54 @@ class Spec
   def check_scriptlet(type, line)
     case line
       when /^%#{type}\s+-n\s+(\S+)\s+-p\s(.+)$/
-        @packages[$1].instance_variable_get('@'+type) << $2.strip
+        section = parse_section()
+        section.annotate!($2.strip)
+        @packages['-n ' + $1].instance_variable_set('@'+type, section)
       when /^%#{type}\s+-n\s+(\S+)$/
-        parse_section(@packages[$1].instance_variable_get('@'+type))
+        section = parse_section()
+        @packages['-n ' + $1].instance_variable_set('@'+type, section)
       when /^%#{type}\s+-p\s(.+)$/
-        @packages[''].instance_variable_get('@'+type) << $1.strip
+        section = parse_section()
+        section.annotate!($1.strip)
+        @packages[''].instance_variable_set('@'+type, section)
       when /^%#{type}\s+(\S+)$/
-        parse_section(@packages[full_name($1)].instance_variable_get('@'+type))
+        section = parse_section()
+        @packages[$1].instance_variable_set('@'+type, section)
       when /^%#{type}$/
-        parse_section(@packages[''].instance_variable_get('@'+type))
+        section = parse_section()
+        @packages[''].instance_variable_set('@'+type, section)
     end
   end
 
+  # check triggers
   def check_trigger(type, line)
     case line
       when /^%trigger#{type}\s+-n\s+(\S+)\s+-p\s(.+)\s+--\s+(\.+)$/
-        @packages[$1].instance_variable_get('@trigger'+type)[$3] = [$2.strip]
+        section = parse_section()
+        section.annotate!($2.strip)
+        @packages['-n ' + $1].instance_variable_get('@trigger'+type)[$3] = section
       when /^%trigger#{type}\s+-n\s+(\S+)\s+--\s+(.+)$/
-        @packages[$1].instance_variable_get('@trigger'+type)[$2] = []
-        parse_section(@packages[$1].instance_variable_get('@trigger'+type)[$2])
+        section = parse_section()
+        @packages['-n ' + $1].instance_variable_get('@trigger'+type)[$2] = section
       when /^%trigger#{type}\s+-p\s(.+)\s+--\s+(.+)$/
-        @packages[''].instance_variable_get('@trigger'+type)[$2] = [$1.strip]
+        section = parse_section()
+        section.annotate!($1.strip)
+        @packages[''].instance_variable_get('@trigger'+type)[$2] = section
       when /^%trigger#{type}\s+(\S+)\s+--\s+(.+)$/
-        @packages[full_name($1)].instance_variable_get('@trigger'+type)[$2] = []
-        parse_section(@packages[full_name($1)].instance_variable_get('@trigger'+type)[$2])
+        section = parse_section()
+        @packages[$1].instance_variable_get('@trigger'+type)[$2] = section
       when /^%trigger#{type}\s+--\s+(.+)$/
-        @packages[''].instance_variable_get('@trigger'+type)[$1] = []
-        parse_section(@packages[''].instance_variable_get('@trigger'+type)[$1])
+        section = parse_section()
+        @packages[''].instance_variable_get('@trigger'+type)[$1] = section
     end
   end
 
   def parse(lines)
 
-    @lines = lines.collect{ |x| x.strip }
+    @lines = lines.collect{ |x| x.rstrip }
 
     loop do
-      return if @lines.empty?
+      break if @lines.empty?
       line = @lines.shift
       if line == '' or line =~ /^#/ or line =~ /^%/
         @intro << line
@@ -300,8 +318,8 @@ class Spec
       end
     end
 
-    @intro.shift while @intro.first.empty?
-    @intro.pop while @intro.last.empty?
+    @intro.shift while not @intro.first.nil? and @intro.first.empty?
+    @intro.pop while not @intro.last.nil? and @intro.last.empty?
 
     parse_package('')
 
@@ -310,33 +328,27 @@ class Spec
       line = @lines.shift
       case line
         when /^%package\s+-n\s+(\S+)$/
-          parse_package($1)
+          parse_package('-n ' + $1)
         when /^%package\s+(\S+)$/
-          parse_package(full_name($1))
+          parse_package($1)
         when /^%description\s+-n\s+(\S+)$/
-          parse_section(@packages[$1].description)
+          @packages['-n ' + $1].description = parse_section()
         when /^%description\s+(\S+)$/
-          parse_section(@packages[full_name($1)].description)
+          @packages[$1].description = parse_section()
         when /^%description$/
-          parse_section(@packages[''].description)
+          @packages[''].description = parse_section()
         when /^%prep$/
-          @prep = []
-          parse_section(@prep)
+          @prep = parse_section()
         when /^%build$/
-          @build = []
-          parse_section(@build)
+          @build = parse_section()
         when /^%install$/
-          @install = []
-          parse_section(@install)
+          @install = parse_section()
         when /^%check$/
-          @check = []
-          parse_section(@check)
+          @check = parse_section()
         when /^%clean$/
-          @clean = []
-          parse_section(@clean)
+          @clean = parse_section()
         when /^%changelog$/
-          @changelog = []
-          parse_section(@changelog)
+          @changelog = parse_section()
         when /^%files/
           parse_files_section(line)
       end
@@ -368,7 +380,7 @@ class Spec
     out = []
     width = 16
 
-    out << '%package -n ' + id unless id == ''
+    out << '%package ' + id unless id.empty?
 
     unless @packages[id].name.nil?
       out += @packages[id].name._meta_ unless @packages[id].name._meta_.nil?
@@ -407,7 +419,11 @@ class Spec
 
     @packages[id].sources.keys.sort.each { |x|
       out += @packages[id].sources[x]._meta_ unless @packages[id].sources[x]._meta_.nil?
-      out << "Source#{x}:".ljust(width) + @packages[id].sources[x]
+      if x == 0:
+        out << "Source:".ljust(width) + @packages[id].sources[x]
+      else
+        out << "Source#{x}:".ljust(width) + @packages[id].sources[x]
+      end
     }
 
     @packages[id].patches.keys.sort.each { |x|
@@ -481,12 +497,7 @@ class Spec
     end
 
     out << ''
-
-    if id != ''
-      out << '%description -n ' + id
-    else
-      out << '%description'
-    end
+    out << '%description' + (id.empty? ? '' : ' ' + id)
     out += @packages[id].description
 
     out
@@ -527,82 +538,6 @@ class Spec
       out += @check
     end
 
-    @packages.keys.sort.each{ |x|
-
-      if x != ''
-        pkgname = ' -n ' + x
-      else
-        pkgname = ''
-      end
-
-      unless @packages[x].pretrans.empty?
-        out << ''
-        out << '%pretrans' + pkgname
-        out += @packages[x].pretrans
-      end
-
-      unless @packages[x].pre.empty?
-        out << ''
-        out << '%pre' + pkgname
-        out += @packages[x].pre
-      end
-
-      unless @packages[x].preun.empty?
-        out << ''
-        out << '%preun' + pkgname
-        out += @packages[x].preun
-      end
-
-      unless @packages[x].post.empty?
-        out << ''
-        out << '%post' + pkgname
-        out += @packages[x].post
-      end
-
-      unless @packages[x].postun.empty?
-        out << ''
-        out << '%postun' + pkgname
-        out += @packages[x].postun
-      end
-
-      unless @packages[x].posttrans.empty?
-        out << ''
-        out << '%posttrans' + pkgname
-        out += @packages[x].posttrans
-      end
-
-      @packages[x].triggerin.keys.sort.each{ |y|
-        out << ''
-        out << '%triggerin' + pkgname + ' -- ' + y
-        out += @packages[x].triggerin[y]
-      }
-
-      @packages[x].triggerun.keys.sort.each{ |y|
-        out << ''
-        out << '%triggerun' + pkgname + ' -- ' + y
-        out += @packages[x].triggerun[y]
-      }
-
-      @packages[x].triggerpostin.keys.sort.each{ |y|
-        out << ''
-        out << '%triggerpostin' + pkgname + ' -- ' + y
-        out += @packages[x].triggerpostin[y]
-      }
-
-      @packages[x].triggerpostun.keys.sort.each{ |y|
-        out << ''
-        out << '%triggerpostun' + pkgname + ' -- ' + y
-        out += @packages[x].triggerpostun[y]
-      }
-
-      unless @packages[x].verifyscript.empty?
-        out << ''
-        out << '%verifyscript' + pkgname
-        out += @packages[x].verifyscript
-      end
-
-    }
-
     unless @clean.nil?
       out << ''
       out << '%clean'
@@ -610,12 +545,78 @@ class Spec
     end
 
     @packages.keys.sort.each{ |x|
-      out << ''
-      if x != ''
-        out << '%files -n ' + x + @packages[x].files_include.inject('') { |sum, x| sum + ' -f ' + x }
-      else
-        out << '%files' + @packages[x].files_include.inject('') { |sum, x| sum + ' -f ' + x }
+
+      unless @packages[x].pretrans.nil?
+        out << ''
+        out << '%pretrans' + (x.empty? ? '' : ' ' + x) + (@packages[x].pretrans._meta_.nil? ? '' : ' -p ' + @packages[x].pretrans._meta_)
+        out += @packages[x].pretrans
       end
+
+      unless @packages[x].pre.nil?
+        out << ''
+        out << '%pre' + (x.empty? ? '' : ' ' + x) + (@packages[x].pre._meta_.nil? ? '' : ' -p ' + @packages[x].pre._meta_)
+        out += @packages[x].pre
+      end
+
+      unless @packages[x].preun.nil?
+        out << ''
+        out << '%preun' + (x.empty? ? '' : ' ' + x) + (@packages[x].preun._meta_.nil? ? '' : ' -p ' + @packages[x].preun._meta_)
+        out += @packages[x].preun
+      end
+
+      unless @packages[x].post.nil?
+        out << ''
+        out << '%post' + (x.empty? ? '' : ' ' + x) + (@packages[x].post._meta_.nil? ? '' : ' -p ' + @packages[x].post._meta_)
+        out += @packages[x].post
+      end
+
+      unless @packages[x].postun.nil?
+        out << ''
+        out << '%postun' + (x.empty? ? '' : ' ' + x) + (@packages[x].postun._meta_.nil? ? '' : ' -p ' + @packages[x].postun._meta_)
+        out += @packages[x].postun
+      end
+
+      unless @packages[x].posttrans.nil?
+        out << ''
+        out << '%posttrans' + (x.empty? ? '' : ' ' + x) + (@packages[x].posttrans._meta_.nil? ? '' : ' -p ' + @packages[x].posttrans._meta_)
+        out += @packages[x].posttrans
+      end
+
+      unless @packages[x].verifyscript.nil?
+        out << ''
+        out << '%verifyscript' + (x.empty? ? '' : ' ' + x) + (@packages[x].verifyscript._meta_.nil? ? '' : ' -p ' + @packages[x].verifyscript._meta_)
+        out += @packages[x].verifyscript
+      end
+
+       @packages[x].triggerin.keys.sort.each{ |y|
+        out << ''
+        out << '%triggerin' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerin[y]._meta_.nil? ? '' : ' -p ' + @packages[x].triggerin[y]._meta_) + ' -- ' + y
+        out += @packages[x].triggerin[y]
+      }
+
+      @packages[x].triggerun.keys.sort.each{ |y|
+        out << ''
+        out << '%triggerun' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerun[y]._meta_.nil? ? '' : ' -p ' + @packages[x].triggerun[y]._meta_) + ' -- ' + y
+        out += @packages[x].triggerun[y]
+      }
+
+      @packages[x].triggerpostin.keys.sort.each{ |y|
+        out << ''
+        out << '%triggerpostin' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerpostin[y]._meta_.nil? ? '' : ' -p ' + @packages[x].triggerpostin[y]._meta_) + ' -- ' + y
+        out += @packages[x].triggerpostin[y]
+      }
+
+      @packages[x].triggerpostun.keys.sort.each{ |y|
+        out << ''
+        out << '%triggerpostun' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerpostun[y]._meta_.nil? ? '' : ' -p ' + @packages[x].triggerpostun[y]._meta_) + ' -- ' + y
+        out += @packages[x].triggerpostun[y]
+      }
+
+   }
+
+    @packages.keys.sort.each{ |x|
+      out << ''
+      out << '%files' + (x.empty? ? '' : ' ' + x) + @packages[x].files_include.inject('') { |sum, y| sum + ' -f ' + y }
       out += @packages[x].files
     }
 
