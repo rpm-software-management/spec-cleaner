@@ -47,8 +47,9 @@ class Package
   attr_accessor :name, :version, :release, :group, :license, :url
   attr_accessor :summary, :description
   attr_accessor :sources, :patches
-  attr_accessor :files
-  attr_accessor :buildrequires, :requires_pre, :requires_preun, :requires_post, :requires_postun, :recommends, :suggests, :supplements
+  attr_accessor :files, :files_include, :buildarch
+  attr_accessor :buildrequires, :requires, :requires_pre, :requires_preun, :requires_post, :requires_postun, :recommends, :suggests, :supplements
+  attr_accessor :provides, :obsoletes, :conflicts
   attr_accessor :pretrans, :pre, :post, :triggerin, :triggerun, :preun, :postun, :triggerpostin, :triggerpostun, :posttrans, :verifyscript
 
   def initialize
@@ -63,11 +64,16 @@ class Package
     @sources = {}
     @patches = {}
     @files = []
-    @files_include = nil
+    @files_include = []
+    @buildarch = nil
     @buildrequires = []
+    @requires = []
     @recommends = []
     @suggests = []
     @supplements = []
+    @provides = []
+    @obsoletes = []
+    @conflicts = []
     @requires_pre = []
     @requires_preun = []
     @requires_post = []
@@ -93,12 +99,12 @@ class Spec
   def initialize
     @intro = []
     @packages = {}
-    @prep = []
-    @build = []
-    @install = []
-    @check = []
-    @clean = []
-    @changelog = []
+    @prep = nil
+    @build = nil
+    @install = nil
+    @check = nil
+    @clean = nil
+    @changelog = nil
     @lines = nil
     @packages = {}
   end
@@ -145,10 +151,10 @@ class Spec
           @packages[pkg].group = line[6..-1].strip.annotate!(meta)
           meta = []
         when /^License:/i
-          @packages[pkg].group = line[8..-1].strip.annotate!(meta)
+          @packages[pkg].license = line[8..-1].strip.annotate!(meta)
           meta = []
         when /^Url:/i
-          @packages[pkg].group = line[4..-1].strip.annotate!(meta)
+          @packages[pkg].url = line[4..-1].strip.annotate!(meta)
           meta = []
         when /^Summary:/i
           @packages[pkg].summary = line[8..-1].strip.annotate!(meta)
@@ -165,8 +171,14 @@ class Spec
         when /^Patch(\d+):/i
           @packages[pkg].patches[ $1.to_i ] = line.gsub(/^Patch(\d+):/i, '').strip.annotate!(meta)
           meta = []
+        when /^BuildArch:/i
+          @packages[pkg].buildarch = line[14..-1].strip.annotate!(meta)
+          meta = []
         when /^BuildRequires:/i
           @packages[pkg].buildrequires << line[14..-1].strip.annotate!(meta)
+          meta = []
+        when /^Requires:/i
+          @packages[pkg].requires << line[9..-1].strip.annotate!(meta)
           meta = []
         when /^PreReq:/i
           @packages[pkg].requires_pre << line[7..-1].strip.annotate!(meta)
@@ -192,20 +204,16 @@ class Spec
         when /^Supplements:/i
           @packages[pkg].supplements << line[12..-1].strip.annotate!(meta)
           meta = []
+        when /^Provides:/i
+          @packages[pkg].provides << line[9..-1].strip.annotate!(meta)
+          meta = []
+        when /^Obsoletes:/i
+          @packages[pkg].obsoletes << line[10..-1].strip.annotate!(meta)
+          meta = []
+        when /^Conflicts:/i
+          @packages[pkg].conflicts << line[10..-1].strip.annotate!(meta)
+          meta = []
       end
-    end
-  end
-
-  def parse_description(pkg)
-    @packages[pkg] ||= Package.new
-    loop do
-      return if @lines.empty?
-      line = @lines.shift
-      if next_section(line)
-        @lines.unshift(line)
-        return
-      end
-      @packages[pkg].description << line
     end
   end
 
@@ -215,10 +223,12 @@ class Spec
       line = @lines.shift
       if next_section(line)
         @lines.unshift(line)
-        return
+        break
       end
       section << line
     end
+    section.shift while section.first.empty?
+    section.pop while section.last.empty?
   end
 
   def parse_files_section(line)
@@ -290,6 +300,9 @@ class Spec
       end
     end
 
+    @intro.shift while @intro.first.empty?
+    @intro.pop while @intro.last.empty?
+
     parse_package('')
 
     until @lines.empty? do
@@ -301,20 +314,28 @@ class Spec
         when /^%package\s+(\S+)$/
           parse_package(full_name($1))
         when /^%description\s+-n\s+(\S+)$/
-          parse_description($1)
-        when /^%description\s+(\S+)/
-          parse_description(full_name($1))
+          parse_section(@packages[$1].description)
+        when /^%description\s+(\S+)$/
+          parse_section(@packages[full_name($1)].description)
+        when /^%description$/
+          parse_section(@packages[''].description)
         when /^%prep$/
+          @prep = []
           parse_section(@prep)
         when /^%build$/
+          @build = []
           parse_section(@build)
         when /^%install$/
+          @install = []
           parse_section(@install)
         when /^%check$/
+          @check = []
           parse_section(@check)
         when /^%clean$/
+          @clean = []
           parse_section(@clean)
         when /^%changelog$/
+          @changelog = []
           parse_section(@changelog)
         when /^%files/
           parse_files_section(line)
@@ -337,6 +358,202 @@ class Spec
 
   end
 
+  def process
+
+  end
+
+
+  def construct_package(id)
+
+    out = []
+    width = 16
+
+    out << '%package -n ' + id unless id == ''
+
+    unless @packages[id].name.nil?
+      out += @packages[id].name._meta_ unless @packages[id].name._meta_.nil?
+      out << 'Name: '.ljust(width) + @packages[id].name
+    end
+
+    unless @packages[id].version.nil?
+      out += @packages[id].version._meta_ unless @packages[id].version._meta_.nil?
+      out << 'Version: '.ljust(width) + @packages[id].version
+    end
+
+    unless @packages[id].release.nil?
+      out += @packages[id].release._meta_ unless @packages[id].release._meta_.nil?
+      out << 'Release: '.ljust(width) + @packages[id].release
+    end
+
+    unless @packages[id].license.nil?
+      out += @packages[id].license._meta_ unless @packages[id].license._meta_.nil?
+      out << 'License: '.ljust(width) + @packages[id].license
+    end
+
+    unless @packages[id].summary.nil?
+      out += @packages[id].summary._meta_ unless @packages[id].summary._meta_.nil?
+      out << 'Summary: '.ljust(width) + @packages[id].summary
+    end
+
+    unless @packages[id].url.nil?
+      out += @packages[id].url._meta_ unless @packages[id].url._meta_.nil?
+      out << 'Url: '.ljust(width) + @packages[id].url
+    end
+
+    unless @packages[id].group.nil?
+      out += @packages[id].group._meta_ unless @packages[id].group._meta_.nil?
+      out << 'Group: '.ljust(width) + @packages[id].group
+    end
+
+    @packages[id].sources.keys.sort.each { |x|
+      out += @packages[id].sources[x]._meta_ unless @packages[id].sources[x]._meta_.nil?
+      out << "Source#{x}:".ljust(width) + @packages[id].sources[x]
+    }
+
+    @packages[id].patches.keys.sort.each { |x|
+      out += @packages[id].patches[x]._meta_ unless @packages[id].patches[x]._meta_.nil?
+      out << "Patch#{x}:".ljust(width) + @packages[id].patches[x];
+    }
+
+    @packages[id].buildrequires.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "BuildRequires:".ljust(width) + x
+    }
+
+    @packages[id].requires.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Requires:".ljust(width) + x
+    }
+
+    @packages[id].requires_pre.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Requires(pre):".ljust(width) + x
+    }
+
+    @packages[id].requires_preun.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Requires(preun):".ljust(width) + x
+    }
+
+    @packages[id].requires_post.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Requires(post):".ljust(width) + x
+    }
+
+    @packages[id].requires_postun.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Requires(postun):".ljust(width) + x
+    }
+
+    @packages[id].recommends.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Recommends:".ljust(width) + x
+    }
+
+    @packages[id].suggests.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Suggests:".ljust(width) + x
+    }
+
+    @packages[id].supplements.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Supplements:".ljust(width) + x
+    }
+
+    @packages[id].provides.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Provides:".ljust(width) + x
+    }
+
+    @packages[id].obsoletes.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Obsoletes:".ljust(width) + x
+    }
+
+    @packages[id].conflicts.each { |x|
+      out += x._meta_ unless x._meta_.nil?
+      out << "Conflicts:".ljust(width) + x
+    }
+
+    unless @packages[id].buildarch.nil?
+      out += @packages[id].buildarch._meta_ unless @packages[id].buildarch._meta_.nil?
+      out << 'BuildArch: '.ljust(width) + @packages[id].buildarch
+    end
+
+    out << ''
+
+    if id != ''
+      out << '%description -n ' + id
+    else
+      out << '%description'
+    end
+    out += @packages[id].description
+
+    out
+
+  end
+
+  def construct
+    out = []
+
+    out += @intro
+
+    @packages.keys.sort.each{ |x|
+      out << ''
+      out += construct_package(x)
+    }
+
+    unless @prep.nil?
+      out << ''
+      out << '%prep'
+      out += @prep
+    end
+
+    unless @build.nil?
+      out << ''
+      out << '%build'
+      out += @build
+    end
+
+    unless @install.nil?
+      out << ''
+      out << '%install'
+      out += @install
+    end
+
+    unless @check.nil?
+      out << ''
+      out << '%check'
+      out += @check
+    end
+
+    unless @clean.nil?
+      out << ''
+      out << '%clean'
+      out += @clean
+    end
+
+    # TODO: scriptlets!
+
+    @packages.keys.sort.each{ |x|
+      out << ''
+      if x != ''
+        out << '%files -n ' + x + @packages[x].files_include.inject('') { |sum, x| sum + ' -f ' + x }
+      else
+        out << '%files' + @packages[x].files_include.inject('') { |sum, x| sum + ' -f ' + x }
+      end
+      out += @packages[x].files
+    }
+
+    unless @changelog.nil?
+      out << ''
+      out << '%changelog'
+      out += @changelog
+    end
+
+    out.join("\n")
+  end
+
 end
 
 
@@ -347,4 +564,6 @@ spec = Spec.new
 lines = IO.readlines(ARGV[0])
 spec.parse(lines)
 
-puts spec.inspect
+spec.process
+
+puts spec.construct
