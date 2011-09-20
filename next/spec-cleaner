@@ -42,13 +42,21 @@ class String
   end
 end
 
-class Array
-  attr_reader :_meta_
-  def annotate!(meta)
-    @_meta_ = meta unless meta.empty?
-    self
+
+class Section < Array
+
+  @program = nil
+
+  def program=(p)
+    @program = p
   end
+
+  def program
+    @program.nil? ? '' : ' -p ' + @program
+  end
+
 end
+
 
 class Package
 
@@ -222,7 +230,7 @@ class Spec
   end
 
   def parse_section
-    section = []
+    section = Section.new
     loop do
       break if @lines.empty?
       line = @lines.shift
@@ -262,14 +270,14 @@ class Spec
     case line
       when /^%#{type}\s+-n\s+(\S+)\s+-p\s(.+)$/
         section = parse_section()
-        section.annotate!($2.strip)
+        section.program = $2.strip
         @packages['-n ' + $1].instance_variable_set('@'+type, section)
       when /^%#{type}\s+-n\s+(\S+)$/
         section = parse_section()
         @packages['-n ' + $1].instance_variable_set('@'+type, section)
       when /^%#{type}\s+-p\s(.+)$/
         section = parse_section()
-        section.annotate!($1.strip)
+        section.program = $1.strip
         @packages[''].instance_variable_set('@'+type, section)
       when /^%#{type}\s+(\S+)$/
         section = parse_section()
@@ -285,14 +293,14 @@ class Spec
     case line
       when /^%trigger#{type}\s+-n\s+(\S+)\s+-p\s(.+)\s+--\s+(\.+)$/
         section = parse_section()
-        section.annotate!($2.strip)
+        section.program = $2.strip
         @packages['-n ' + $1].instance_variable_get('@trigger'+type)[$3] = section
       when /^%trigger#{type}\s+-n\s+(\S+)\s+--\s+(.+)$/
         section = parse_section()
         @packages['-n ' + $1].instance_variable_get('@trigger'+type)[$2] = section
       when /^%trigger#{type}\s+-p\s(.+)\s+--\s+(.+)$/
         section = parse_section()
-        section.annotate!($1.strip)
+        section.program = $1.strip
         @packages[''].instance_variable_get('@trigger'+type)[$2] = section
       when /^%trigger#{type}\s+(\S+)\s+--\s+(.+)$/
         section = parse_section()
@@ -548,67 +556,67 @@ class Spec
 
       unless @packages[x].pretrans.nil?
         out << ''
-        out << '%pretrans' + (x.empty? ? '' : ' ' + x) + (@packages[x].pretrans._meta_.nil? ? '' : ' -p ' + @packages[x].pretrans._meta_)
+        out << '%pretrans' + (x.empty? ? '' : ' ' + x) + (@packages[x].pretrans.program)
         out += @packages[x].pretrans
       end
 
       unless @packages[x].pre.nil?
         out << ''
-        out << '%pre' + (x.empty? ? '' : ' ' + x) + (@packages[x].pre._meta_.nil? ? '' : ' -p ' + @packages[x].pre._meta_)
+        out << '%pre' + (x.empty? ? '' : ' ' + x) + (@packages[x].pre.program)
         out += @packages[x].pre
       end
 
       unless @packages[x].preun.nil?
         out << ''
-        out << '%preun' + (x.empty? ? '' : ' ' + x) + (@packages[x].preun._meta_.nil? ? '' : ' -p ' + @packages[x].preun._meta_)
+        out << '%preun' + (x.empty? ? '' : ' ' + x) + (@packages[x].preun.program)
         out += @packages[x].preun
       end
 
       unless @packages[x].post.nil?
         out << ''
-        out << '%post' + (x.empty? ? '' : ' ' + x) + (@packages[x].post._meta_.nil? ? '' : ' -p ' + @packages[x].post._meta_)
+        out << '%post' + (x.empty? ? '' : ' ' + x) + (@packages[x].post.program)
         out += @packages[x].post
       end
 
       unless @packages[x].postun.nil?
         out << ''
-        out << '%postun' + (x.empty? ? '' : ' ' + x) + (@packages[x].postun._meta_.nil? ? '' : ' -p ' + @packages[x].postun._meta_)
+        out << '%postun' + (x.empty? ? '' : ' ' + x) + (@packages[x].postun.program)
         out += @packages[x].postun
       end
 
       unless @packages[x].posttrans.nil?
         out << ''
-        out << '%posttrans' + (x.empty? ? '' : ' ' + x) + (@packages[x].posttrans._meta_.nil? ? '' : ' -p ' + @packages[x].posttrans._meta_)
+        out << '%posttrans' + (x.empty? ? '' : ' ' + x) + (@packages[x].posttrans.program)
         out += @packages[x].posttrans
       end
 
       unless @packages[x].verifyscript.nil?
         out << ''
-        out << '%verifyscript' + (x.empty? ? '' : ' ' + x) + (@packages[x].verifyscript._meta_.nil? ? '' : ' -p ' + @packages[x].verifyscript._meta_)
+        out << '%verifyscript' + (x.empty? ? '' : ' ' + x) + (@packages[x].verifyscript.program)
         out += @packages[x].verifyscript
       end
 
        @packages[x].triggerin.keys.sort.each{ |y|
         out << ''
-        out << '%triggerin' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerin[y]._meta_.nil? ? '' : ' -p ' + @packages[x].triggerin[y]._meta_) + ' -- ' + y
+        out << '%triggerin' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerin[y].program) + ' -- ' + y
         out += @packages[x].triggerin[y]
       }
 
       @packages[x].triggerun.keys.sort.each{ |y|
         out << ''
-        out << '%triggerun' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerun[y]._meta_.nil? ? '' : ' -p ' + @packages[x].triggerun[y]._meta_) + ' -- ' + y
+        out << '%triggerun' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerun[y].program) + ' -- ' + y
         out += @packages[x].triggerun[y]
       }
 
       @packages[x].triggerpostin.keys.sort.each{ |y|
         out << ''
-        out << '%triggerpostin' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerpostin[y]._meta_.nil? ? '' : ' -p ' + @packages[x].triggerpostin[y]._meta_) + ' -- ' + y
+        out << '%triggerpostin' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerpostin[y].program) + ' -- ' + y
         out += @packages[x].triggerpostin[y]
       }
 
       @packages[x].triggerpostun.keys.sort.each{ |y|
         out << ''
-        out << '%triggerpostun' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerpostun[y]._meta_.nil? ? '' : ' -p ' + @packages[x].triggerpostun[y]._meta_) + ' -- ' + y
+        out << '%triggerpostun' + (x.empty? ? '' : ' ' + x) + (@packages[x].triggerpostun[y].program) + ' -- ' + y
         out += @packages[x].triggerpostun[y]
       }
 
