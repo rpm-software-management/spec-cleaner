@@ -35,17 +35,20 @@
 #
 
 class String
-  attr_reader :_meta_
+
   def annotate!(meta)
-    @_meta_ = meta unless meta.empty?
+    @meta = meta unless meta.nil? or meta.empty?
     self
   end
+
+  def meta
+    @meta.nil? ? [] : @meta
+  end
+
 end
 
 
 class Section < Array
-
-  @program = nil
 
   def program=(p)
     @program = p
@@ -391,42 +394,42 @@ class Spec
     out << '%package ' + id unless id.empty?
 
     unless @packages[id].name.nil?
-      out += @packages[id].name._meta_ unless @packages[id].name._meta_.nil?
+      out += @packages[id].name.meta
       out << 'Name: '.ljust(width) + @packages[id].name
     end
 
     unless @packages[id].version.nil?
-      out += @packages[id].version._meta_ unless @packages[id].version._meta_.nil?
+      out += @packages[id].version.meta
       out << 'Version: '.ljust(width) + @packages[id].version
     end
 
     unless @packages[id].release.nil?
-      out += @packages[id].release._meta_ unless @packages[id].release._meta_.nil?
+      out += @packages[id].release.meta
       out << 'Release: '.ljust(width) + @packages[id].release
     end
 
     unless @packages[id].license.nil?
-      out += @packages[id].license._meta_ unless @packages[id].license._meta_.nil?
+      out += @packages[id].license.meta
       out << 'License: '.ljust(width) + @packages[id].license
     end
 
     unless @packages[id].summary.nil?
-      out += @packages[id].summary._meta_ unless @packages[id].summary._meta_.nil?
+      out += @packages[id].summary.meta
       out << 'Summary: '.ljust(width) + @packages[id].summary
     end
 
     unless @packages[id].url.nil?
-      out += @packages[id].url._meta_ unless @packages[id].url._meta_.nil?
+      out += @packages[id].url.meta
       out << 'Url: '.ljust(width) + @packages[id].url
     end
 
     unless @packages[id].group.nil?
-      out += @packages[id].group._meta_ unless @packages[id].group._meta_.nil?
+      out += @packages[id].group.meta
       out << 'Group: '.ljust(width) + @packages[id].group
     end
 
     @packages[id].sources.keys.sort.each { |x|
-      out += @packages[id].sources[x]._meta_ unless @packages[id].sources[x]._meta_.nil?
+      out += @packages[id].sources[x].meta
       if x == 0:
         out << "Source:".ljust(width) + @packages[id].sources[x]
       else
@@ -435,72 +438,72 @@ class Spec
     }
 
     @packages[id].patches.keys.sort.each { |x|
-      out += @packages[id].patches[x]._meta_ unless @packages[id].patches[x]._meta_.nil?
+      out += @packages[id].patches[x].meta
       out << "Patch#{x}:".ljust(width) + @packages[id].patches[x];
     }
 
     @packages[id].buildrequires.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "BuildRequires:".ljust(width) + x
     }
 
     @packages[id].requires.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Requires:".ljust(width) + x
     }
 
     @packages[id].requires_pre.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Requires(pre):".ljust(width) + x
     }
 
     @packages[id].requires_preun.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Requires(preun):".ljust(width) + x
     }
 
     @packages[id].requires_post.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Requires(post):".ljust(width) + x
     }
 
     @packages[id].requires_postun.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Requires(postun):".ljust(width) + x
     }
 
     @packages[id].recommends.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Recommends:".ljust(width) + x
     }
 
     @packages[id].suggests.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Suggests:".ljust(width) + x
     }
 
     @packages[id].supplements.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Supplements:".ljust(width) + x
     }
 
     @packages[id].provides.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Provides:".ljust(width) + x
     }
 
     @packages[id].obsoletes.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Obsoletes:".ljust(width) + x
     }
 
     @packages[id].conflicts.each { |x|
-      out += x._meta_ unless x._meta_.nil?
+      out += x.meta
       out << "Conflicts:".ljust(width) + x
     }
 
     unless @packages[id].buildarch.nil?
-      out += @packages[id].buildarch._meta_ unless @packages[id].buildarch._meta_.nil?
+      out += @packages[id].buildarch.meta
       out << 'BuildArch: '.ljust(width) + @packages[id].buildarch
     end
 
