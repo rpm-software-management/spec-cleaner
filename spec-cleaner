@@ -734,8 +734,12 @@ class RpmInstall(RpmSection):
 
 
 class RpmClean(RpmSection):
-    # if the section contains just rm -rf %{buildroot} then remove the whole section (including %clean)
-    pass
+    '''
+        Remove clean section
+    '''
+
+    def output(self, fout):
+        pass
 
 
 #######################################################################
