@@ -52,6 +52,7 @@ import shlex
 #######################################################################
 
 VERSION = '0.2'
+LICENSES_CHANGES = 'licenses_changes.txt'
 
 re_comment = re.compile('^$|^\s*#')
 re_define = re.compile('^\s*%define', re.IGNORECASE)
@@ -156,6 +157,22 @@ def replace_preamble_macros(s):
         s = s.replace('%{S:' + i + '}', '%{SOURCE' + i + '}')
         s = s.replace('%SOURCE' + i, '%{SOURCE' + i + '}')
     return s
+
+def read_licenses_changes():
+    licenses = {}
+    with open(LICENSES_CHANGES, 'r') as f:
+	# ignore first line containing 'First line' (WTF?)
+	f.readline()
+	# load and store the rest
+	for line in f:
+	    # strip newline
+	    line = line[:-1]
+	    # file has format
+	    # correct license string<tab>known bad license string
+	    # tab is used as separator
+	    pair = line.split('\t')
+	    licenses[pair[1]] = pair[0]
+    return licenses
 
 def replace_all(s):
     s = replace_buildroot(s)
@@ -330,44 +347,7 @@ class RpmPreamble(RpmSection):
     category_to_fixer = {
     }
 
-    license_fixes = {
-        'LGPL v2.0 only':     'LGPL-2.0',
-        'LGPLv2':             'LGPL-2.0',
-        'LGPLv2.0':           'LGPL-2.0',
-        'LGPL-2':             'LGPL-2.0',
-        'LGPL v2.0 or later': 'LGPL-2.0+',
-        'LGPLv2+':            'LGPL-2.0+',
-        'LGPLv2.0+':          'LGPL-2.0+',
-        'LGPL-2+':            'LGPL-2.0+',
-        'LGPL v2.1 only':     'LGPL-2.1',
-        'LGPLv2.1':           'LGPL-2.1',
-        'LGPL v2.1 or later': 'LGPL-2.1+',
-        'LGPLv2.1+':          'LGPL-2.1+',
-        'LGPL v3 only':       'LGPL-3.0',
-        'LGPLv3':             'LGPL-3.0',
-        'LGPL-3':             'LGPL-3.0',
-        'LGPL v3 or later':   'LGPL-3.0+',
-        'LGPLv3+':            'LGPL-3.0+',
-        'LGPL-3+':            'LGPL-3.0+',
-        'GPL v2 only':        'GPL-2.0',
-        'GPLv2':              'GPL-2.0',
-        'GPL-2':              'GPL-2.0',
-        'GPL v2 or later':    'GPL-2.0+',
-        'GPLv2+':             'GPL-2.0+',
-        'GPL-2+':             'GPL-2.0+',
-        'GPL v3 only':        'GPL-3.0',
-        'GPLv3':              'GPL-3.0',
-        'GPL-3':              'GPL-3.0',
-        'GPL v3 or later':    'GPL-3.0+',
-        'GPLv3+':             'GPL-3.0+',
-        'GPL-3+':             'GPL-3.0+',
-        'FDL 1.1':            'GFDL-1.1',
-        'FDLv1.1':            'GFDL-1.1',
-        'FDL 1.2':            'GFDL-1.2',
-        'FDLv1.2':            'GFDL-1.2',
-        'FDL 1.3':            'GFDL-1.3',
-        'FDLv1.3':            'GFDL-1.3'
-    }
+    license_fixes = read_licenses_changes()
 
     categories_order = [ 'name', 'version', 'release', 'license', 'summary', 'url', 'group', 'source', 'patch', 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements', 'provides_obsoletes', 'buildroot', 'buildarch', 'misc' ]
 
@@ -433,14 +413,19 @@ class RpmPreamble(RpmSection):
 
 
     def _fix_license(self, value):
-        licenses = value.split(';')
+	# split using 'or', 'and' and parenthesis, ignore empty strings
+	licenses = filter(lambda a: a != '', re.split('(\(|\)| and | or )', value))
+
         for (index, license) in enumerate(licenses):
             license = strip_useless_spaces(license)
+	    license = license.replace('ORlater','or later').replace('ORsim','or similar')
             if self.license_fixes.has_key(license):
                 license = self.license_fixes[license]
             licenses[index] = license
 
-        return [ ' ; '.join(licenses) ]
+	# create back new string with replaced licenses
+	s = ' '.join(licenses).replace("( ","(").replace(" )",")")
+        return [ s ]
 
     category_to_fixer['license'] = _fix_license
 
