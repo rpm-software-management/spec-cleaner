@@ -64,30 +64,44 @@ re_datadir = re.compile('%{_prefix}/share([/\s$])')
 re_mandir = re.compile('%{_datadir}/man([/\s$])')
 re_infodir = re.compile('%{_datadir}/info([/\s$])')
 
+macro_separators = '{\s/%\\.,-:\'('
+re_macro = re.compile(r'(^|([^%]))%([^' + macro_separators + ']+)(|([' + macro_separators + '])?)')
+keywords = [
+    'build',
+    'defattr',
+    'define',
+    'description',
+    'else',
+    'endif',
+    'files',
+    'changelog',
+    'check',
+    'if',
+    'ifarch',
+    'ifnarch',
+    'install',
+    'package',
+    'post',
+    'posttrans',
+    'postun',
+    'postun',
+    'pre',
+    'prep',
+    'preun',
+    'setup',
+    'triggerin',
+    'triggerpostun'
+    'triggerun',
+]
+re_keywords = re.compile('(' + '|'.join(keywords) + ')')
+re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords) + ')}')
 
 def strip_useless_spaces(s):
     return ' '.join(s.split())
 
-
 def replace_known_dirs(s):
-    s = s.replace('%_prefix', '%{_prefix}')
-    s = s.replace('%_usr', '%{_prefix}')
     s = s.replace('%{_usr}', '%{_prefix}')
-    s = s.replace('%_bindir', '%{_bindir}')
-    s = s.replace('%_sbindir', '%{_sbindir}')
-    s = s.replace('%_includedir', '%{_includedir}')
-    s = s.replace('%_datadir', '%{_datadir}')
-    s = s.replace('%_mandir', '%{_mandir}')
-    s = s.replace('%_infodir', '%{_infodir}')
-    s = s.replace('%_libdir', '%{_libdir}')
-    s = s.replace('%_libexecdir', '%{_libexecdir}')
-    s = s.replace('%_lib', '%{_lib}')
     s = s.replace('%{_prefix}/%{_lib}', '%{_libdir}')
-    s = s.replace('%_sysconfdir', '%{_sysconfdir}')
-    s = s.replace('%_localstatedir', '%{_localstatedir}')
-    s = s.replace('%_var', '%{_localstatedir}')
-    s = s.replace('%{_var}', '%{_localstatedir}')
-    s = s.replace('%_initddir', '%{_initddir}')
     # old typo in rpm macro
     s = s.replace('%_initrddir', '%{_initddir}')
     s = s.replace('%{_initrddir}', '%{_initddir}')
@@ -101,11 +115,23 @@ def replace_known_dirs(s):
 
     return s
 
+def embrace_macros(s):
+    # I don't think that this can be done within one regexp replacement
+    # if you have idea, send me a patch :)
+
+    # work only with non-commented part
+    sp = s.split('#')
+    # so, for now, put braces around everything, what looks like macro,
+    sp[0] = re_macro.sub(r'\1%{\3}\4', sp[0])
+
+    # and replace back known keywords to braceless state again
+    sp[0] = re_unbrace_keywords.sub(r'%\1', sp[0])
+    # re-create the line back
+    return '#'.join(sp)
 
 def replace_buildroot(s):
     s = s.replace('${RPM_BUILD_ROOT}', '%{buildroot}')
     s = s.replace('$RPM_BUILD_ROOT', '%{buildroot}')
-    s = s.replace('%buildroot', '%{buildroot}')
     s = s.replace('%{buildroot}/etc/init.d/', '%{buildroot}%{_initddir}/')
     s = s.replace('%{buildroot}/etc/', '%{buildroot}%{_sysconfdir}/')
     s = s.replace('%{buildroot}/usr/', '%{buildroot}%{_prefix}/')
@@ -117,7 +143,6 @@ def replace_buildroot(s):
 def replace_optflags(s):
     s = s.replace('${RPM_OPT_FLAGS}', '%{optflags}')
     s = s.replace('$RPM_OPT_FLAGS', '%{optflags}')
-    s = s.replace('%optflags', '%{optflags}')
     return s
 
 
@@ -132,11 +157,9 @@ def replace_utils(s):
     # take care of all utilities macros that bloat spec file
     r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p', 'awk':'gawk', 'cc':'gcc', 'cpp':'gcc -E', 'cxx':'g++', 'remsh':'rsh', }
     for i in r:
-      s = s.replace('%__' + i, r[i])
       s = s.replace('%{__' + i + '}', r[i])
 
     for i in [ 'aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz', ]:
-        s = s.replace('%__' + i, i)
         s = s.replace('%{__' + i + '}', i)
 
     return s
@@ -144,18 +167,13 @@ def replace_utils(s):
 
 def replace_buildservice(s):
     for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'suse', 'ubuntu']:
-        s = s.replace('%' + i + '_version', '0%{?' + i + '_version}').replace('00%{','0%{')
         s = s.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace('00%{','0%{')
     return s
 
 def replace_preamble_macros(s):
-    for i in ['name', 'version', 'release']:
-        s = s.replace('%' + i, '%{' + i + '}')
     for i in map(str,range(100)):
         s = s.replace('%{P:' + i + '}', '%{PATCH' + i + '}')
-        s = s.replace('%PATCH' + i, '%{PATCH' + i + '}')
         s = s.replace('%{S:' + i + '}', '%{SOURCE' + i + '}')
-        s = s.replace('%SOURCE' + i, '%{SOURCE' + i + '}')
     return s
 
 def read_licenses_changes():
@@ -175,6 +193,7 @@ def read_licenses_changes():
     return licenses
 
 def replace_all(s):
+    s = embrace_macros(s)
     s = replace_buildroot(s)
     s = replace_optflags(s)
     s = replace_known_dirs(s)
@@ -696,6 +715,7 @@ class RpmPrep(RpmSection):
         elif line.startswith('%patch ') or line == '%patch':
             line = line.replace('%patch','%patch0')
 
+        line = embrace_macros(line)
         RpmSection.add(self, line)
 
 
@@ -709,6 +729,7 @@ class RpmBuild(RpmSection):
 
     def add(self, line):
         if not re_comment.match(line):
+            line = embrace_macros(line)
             line = line.replace('%_smp_mflags'       , '%{?_smp_mflags}')
             line = line.replace('%{_smp_mflags}'     , '%{?_smp_mflags}')
             line = line.replace('%{?jobs:-j%jobs}'   , '%{?_smp_mflags}')
@@ -733,6 +754,7 @@ class RpmInstall(RpmSection):
     def add(self, line):
         # remove double spaces when comparing the line
         cmp_line = strip_useless_spaces(line)
+        cmp_line = embrace_macros(cmp_line)
         cmp_line = replace_buildroot(cmp_line)
 
         if cmp_line.find('DESTDIR=%{buildroot}') != -1:
