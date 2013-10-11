@@ -298,6 +298,7 @@ class RpmPreamble(RpmSection):
     re_obsoletes = re.compile('^Obsoletes:\s*(.*)', re.IGNORECASE)
     re_buildroot = re.compile('^\s*BuildRoot:', re.IGNORECASE)
     re_buildarch = re.compile('^\s*BuildArch:\s*(.*)', re.IGNORECASE)
+    re_epoch = re.compile('^\s*Epoch:\s*(.*)', re.IGNORECASE)
 
     re_requires_token = re.compile('(\s*(\S+(?:\s*(?:[<>]=?|=)\s*[^\s,]+)?),?)')
 
@@ -319,7 +320,8 @@ class RpmPreamble(RpmSection):
         'supplements': re_supplements,
         # for provides/obsoletes, we have a special case because we group them
         # for build root, we have a special match because we force its value
-        'buildarch': re_buildarch
+        'buildarch': re_buildarch,
+        'epoch': re_epoch
     }
 
     category_to_key = {
@@ -341,7 +343,8 @@ class RpmPreamble(RpmSection):
         # Provides/Obsoletes cannot be part of this since we want to keep them
         # mixed, so we'll have to specify the key when needed
         'buildroot': 'BuildRoot',
-        'buildarch': 'BuildArch'
+        'buildarch': 'BuildArch',
+        'epoch': 'Epoch'
     }
 
     category_to_fixer = {
@@ -429,6 +432,10 @@ class RpmPreamble(RpmSection):
 
     category_to_fixer['license'] = _fix_license
 
+    def _remove_tag(self, value):
+	return []
+
+    category_to_fixer['epoch'] = _remove_tag
 
     def _pkgname_to_pkgconfig(self, value):
         r = {
@@ -511,6 +518,7 @@ class RpmPreamble(RpmSection):
         else:
             values = [ value ]
 
+        # NOTE: _remove_tag relies on passing value = [] here
         for value in values:
             line = key + value
             self._add_line_to(category, line)
