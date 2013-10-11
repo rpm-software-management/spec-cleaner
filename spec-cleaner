@@ -297,7 +297,7 @@ class RpmPreamble(RpmSection):
     re_provides = re.compile('^Provides:\s*(.*)', re.IGNORECASE)
     re_obsoletes = re.compile('^Obsoletes:\s*(.*)', re.IGNORECASE)
     re_buildroot = re.compile('^\s*BuildRoot:', re.IGNORECASE)
-    re_buildarch = re.compile('^\s*BuildArch:\s*(.*)', re.IGNORECASE)
+    re_buildarch = re.compile('^\s*BuildArch(itectures)?:\s*(.*)', re.IGNORECASE)
     re_epoch = re.compile('^\s*Epoch:\s*(.*)', re.IGNORECASE)
 
     re_requires_token = re.compile('(\s*(\S+(?:\s*(?:[<>]=?|=)\s*[^\s,]+)?),?)')
@@ -604,7 +604,10 @@ class RpmPreamble(RpmSection):
             for (category, regexp) in self.category_to_re.iteritems():
                 match = regexp.match(line)
                 if match:
-                    self._add_line_value_to(category, match.group(1))
+		    # instead of matching first group as there is only one,
+		    # take the last group
+		    # (so I can have more advanced regexp for RPM tags)
+                    self._add_line_value_to(category, match.groups()[len(match.groups()) - 1])
                     return
 
             self._add_line_to('misc', line)
