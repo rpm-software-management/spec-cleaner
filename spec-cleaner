@@ -706,9 +706,8 @@ class RpmPrep(RpmSection):
         if line.startswith('%setup'):
             cmp_line = line.replace(' -q', '')
             cmp_line = cmp_line.replace(' -n %{name}-%{version}', '')
-            cmp_line = strip_useless_spaces(cmp_line)
-            if cmp_line == '%setup':
-                line = '%setup -q'
+            line = strip_useless_spaces(cmp_line)
+
         if self.re_patch.match(line):
             match = self.re_patch.match(line)
             line = strip_useless_spaces('%%patch%s %s %s' % (match.group(2), match.group(1), match.group(3)))
