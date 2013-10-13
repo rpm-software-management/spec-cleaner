@@ -756,6 +756,7 @@ class RpmInstall(RpmSection):
         cmp_line = embrace_macros(cmp_line)
         cmp_line = replace_buildroot(cmp_line)
 
+	# FIXME: this is very poor patching
         if cmp_line.find('DESTDIR=%{buildroot}') != -1:
             buf = cmp_line.replace('DESTDIR=%{buildroot}', '')
             buf = strip_useless_spaces(buf)
