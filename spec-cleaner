@@ -96,6 +96,7 @@ keywords = [
 re_keywords = re.compile('(' + '|'.join(keywords) + ')')
 re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords) + ')}')
 
+re_jobs = re.compile('%{(_smp_mflags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
 def strip_useless_spaces(s):
     return ' '.join(s.split())
 
@@ -729,13 +730,7 @@ class RpmBuild(RpmSection):
     def add(self, line):
         if not re_comment.match(line):
             line = embrace_macros(line)
-            line = line.replace('%_smp_mflags'       , '%{?_smp_mflags}')
-            line = line.replace('%{_smp_mflags}'     , '%{?_smp_mflags}')
-            line = line.replace('%{?jobs:-j%jobs}'   , '%{?_smp_mflags}')
-            line = line.replace('%{?jobs: -j%jobs}'  , '%{?_smp_mflags}')
-            line = line.replace('%{?jobs:-j %jobs}'  , '%{?_smp_mflags}')
-            line = line.replace('%{?jobs:-j%{jobs}}' , '%{?_smp_mflags}')
-            line = line.replace('%{?jobs:-j %{jobs}}', '%{?_smp_mflags}')
+	    line = re_jobs.sub('%{?_smp_mflags}', line)
 
         RpmSection.add(self, line)
 
