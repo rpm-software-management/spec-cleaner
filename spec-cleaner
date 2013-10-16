@@ -52,7 +52,7 @@ import shlex
 #######################################################################
 
 VERSION = '0.2'
-LICENSES_CHANGES = 'licenses_changes.txt'
+LICENSES_CHANGES = '/usr/share/spec-cleaner/licenses_changes.txt'
 
 re_comment = re.compile('^$|^\s*#')
 re_define = re.compile('^\s*%define', re.IGNORECASE)
