@@ -64,8 +64,8 @@ re_datadir = re.compile('%{_prefix}/share([/\s$])')
 re_mandir = re.compile('%{_datadir}/man([/\s$])')
 re_infodir = re.compile('%{_datadir}/info([/\s$])')
 
-macro_separators = '{\s/%\\.,-:\'('
-re_macro = re.compile(r'(^|([^%]))%([^' + macro_separators + ']+)(|([' + macro_separators + '])?)')
+re_macro = re.compile(r'(^|([^%]))%(\w+)(|(\W]))')
+
 keywords = [
     'build',
     'defattr',
@@ -97,6 +97,7 @@ re_keywords = re.compile('(' + '|'.join(keywords) + ')')
 re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords) + ')}')
 
 re_jobs = re.compile('%{(_smp_mflags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
+
 def strip_useless_spaces(s):
     return ' '.join(s.split())
 
