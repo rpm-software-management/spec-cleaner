@@ -911,9 +911,6 @@ class RpmSpecCleaner:
 
 
     def __init__(self, specfile, output, inline, force, diff, diff_prog):
-        if not specfile.endswith('.spec'):
-            raise RpmException('%s does not appear to be a spec file.' % specfile)
-
         if not os.path.exists(specfile):
             raise RpmException('%s does not exist.' % specfile)
 
