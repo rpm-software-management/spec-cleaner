@@ -191,9 +191,9 @@ def replace_preamble_macros(s):
 def read_licenses_changes():
     licenses = {}
     try:
-        f = open(LICENSE_CHANGES, 'r')
+        f = open(LICENSES_CHANGES, 'r')
     except IOError:
-        f = open('/usr/share/spec-cleaner/{0}'.format(LICENSE_CHANGES), 'r')
+        f = open('/usr/share/spec-cleaner/{0}'.format(LICENSES_CHANGES), 'r')
     # ignore first line containing 'First line' (WTF?)
     f.readline()
     # load and store the rest
@@ -514,38 +514,13 @@ class RpmPreamble(RpmSection):
             f = open(PKGCONFIG_CONVERSIONS, 'r')
         except IOError:
             f = open('/usr/share/spec-cleaner/{0}'.format(PKGCONFIG_CONVERSIONS), 'r')
-        r = {
-          'cairo-devel': 'cairo',
-          'dbus-1-devel': 'dbus-1',
-          'dbus-1-glib-devel': 'dbus-glib-1',
-          'gconf2-devel': 'gconf-2.0',
-          'gstreamer-0_10-devel': 'gstreamer-0.10',
-          'exo-devel': 'exo-1',
-          'glib2-devel': 'glib-2.0',
-          'gtk2-devel': 'gtk+-2.0',
-          'hal-devel': 'hal',
-          'ImageMagick-devel': 'ImageMagick',
-          'libapr1-devel': 'apr-1',
-          'libapr-util1-devel': 'apr-util-1',
-          'libexif-devel': 'libexif',
-          'libgarcon-devel': 'garcon-1',
-          'libglade2-devel': 'libglade-2.0',
-          'libgladeui-1_0-devel': 'gladeui-1.0',
-          'libgudev-1_0-devel': 'gudev-1.0',
-          'libical-devel': 'libical',
-          'libnotify-devel': 'libnotify',
-          'libwnck-devel': 'libwnck-1.0',
-          'libxfce4ui-devel': 'libxfce4ui-1',
-          'libxfce4util-devel': 'libxfce4util-1.0',
-          'libxfcegui4-devel': 'libxfcegui4-1.0',
-          'libxfconf-devel': 'libxfconf-0',
-          'libxklavier-devel': 'libxklavier',
-          'libxml2-devel': 'libxml-2.0',
-          'pango-devel': 'pango',
-          'startup-notification-devel': 'libstartup-notification-1.0',
-          'vte-devel': 'vte',
-          'xfce4-panel-devel': 'libxfce4panel-1.0',
-        }
+
+        r = {}
+        for line in f:
+            # the values are split by  ': '
+            pair = line.split(': ')
+            r[pair[0]] = pair[1]
+
         for i in r:
             value = value.replace(i, 'pkgconfig('+r[i]+')')
         return value
