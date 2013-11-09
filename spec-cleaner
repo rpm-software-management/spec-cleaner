@@ -54,7 +54,8 @@ import shlex
 #######################################################################
 
 VERSION = '0.3'
-LICENSES_CHANGES = '/usr/share/spec-cleaner/licenses_changes.txt'
+LICENSES_CHANGES = 'licenses_changes.txt'
+PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
 
 re_comment = re.compile('^$|^\s*#')
 re_define = re.compile('^\s*%define', re.IGNORECASE)
@@ -183,7 +184,12 @@ def replace_preamble_macros(s):
 
 def read_licenses_changes():
     licenses = {}
-    with open(LICENSES_CHANGES, 'r') as f:
+    licfile = LICENSES_CHANGES
+    try:
+        f = open(licfile, 'r')
+    except IOError:
+        licfile = '/usr/share/{0}'.format(LICENSE_CHANGES)
+        f = open(licfile, 'r')
     # ignore first line containing 'First line' (WTF?)
     f.readline()
     # load and store the rest
@@ -202,10 +208,10 @@ def parse_rpm_showrc():
     re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
     output = os.popen('rpm --showrc')
     for line in output.readlines():
-    line = line[:-1]
-    found_macro = re_rc_macrofunc.sub(r'\1', line)
-    if found_macro != line:
-        macros += [ found_macro ]
+        line = line[:-1]
+        found_macro = re_rc_macrofunc.sub(r'\1', line)
+        if found_macro != line:
+            macros += [ found_macro ]
     output.close()
     return macros
 
