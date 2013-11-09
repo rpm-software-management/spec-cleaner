@@ -184,12 +184,10 @@ def replace_preamble_macros(s):
 
 def read_licenses_changes():
     licenses = {}
-    licfile = LICENSES_CHANGES
     try:
-        f = open(licfile, 'r')
+        f = open(LICENSE_CHANGES, 'r')
     except IOError:
-        licfile = '/usr/share/{0}'.format(LICENSE_CHANGES)
-        f = open(licfile, 'r')
+        f = open('/usr/share/spec-cleaner/{0}'.format(LICENSE_CHANGES), 'r')
     # ignore first line containing 'First line' (WTF?)
     f.readline()
     # load and store the rest
