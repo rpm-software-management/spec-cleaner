@@ -2,7 +2,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
-# Copyright (c) 2009, Novell, Inc.
+# Copyright (c) 2013, SUSE LINUX Products GmbH, Nuernberg, Germany
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@
 #   Vincent Untz <vuntz@novell.com>
 #   Pavol Rusnak <prusnak@opensuse.org>
 #   Petr Uzel <petr.uzel@suse.cz>
+#   Tomas Cech <tcech@suse.cz>
+#   Tomas Chvatal <tchvatal@suse.cz>
 #
 
 import os
@@ -51,8 +53,9 @@ import shlex
 
 #######################################################################
 
-VERSION = '0.2'
-LICENSES_CHANGES = '/usr/share/spec-cleaner/licenses_changes.txt'
+VERSION = '0.3'
+LICENSES_CHANGES = 'licenses_changes.txt'
+PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
 
 re_comment = re.compile('^$|^\s*#')
 re_define = re.compile('^\s*%define', re.IGNORECASE)
@@ -63,6 +66,7 @@ re_includedir = re.compile('%{_prefix}/include([/\s$])')
 re_datadir = re.compile('%{_prefix}/share([/\s$])')
 re_mandir = re.compile('%{_datadir}/man([/\s$])')
 re_infodir = re.compile('%{_datadir}/info([/\s$])')
+re_docdir = re.compile('%{_datadir}/doc([/\s$])')
 
 re_macro = re.compile(r'(^|([^%]))%(\w+)(|(\W]))')
 
@@ -114,6 +118,7 @@ def replace_known_dirs(s):
     s = re_datadir.sub(r'%{_datadir}\1', s)
     s = re_mandir.sub(r'%{_mandir}\1', s)
     s = re_infodir.sub(r'%{_infodir}\1', s)
+    s = re_docdir.sub(r'%{_docdir}\1', s)
 
     return s
 
@@ -141,7 +146,6 @@ def replace_buildroot(s):
     s = s.replace('"%{buildroot}"', '%{buildroot}')
     return s
 
-
 def replace_optflags(s):
     s = s.replace('${RPM_OPT_FLAGS}', '%{optflags}')
     s = s.replace('$RPM_OPT_FLAGS', '%{optflags}')
@@ -150,7 +154,13 @@ def replace_optflags(s):
 
 def replace_remove_la(s):
     cmp_line = strip_useless_spaces(s)
-    if cmp_line in [ 'find %{buildroot} -type f -name "*.la" -exec %{__rm} -fv {} +', 'find %{buildroot} -type f -name "*.la" -delete' ]:
+    la_cleaners = [
+        'find %{buildroot} -type f -name "*.la" -exec %{__rm} -fv {} +',
+        'find %{buildroot} -type f -name "*.la" -exec rm -fv {} +',
+        'find %{buildroot} -type f -name "*.la" -delete',
+        'rm %{buildroot}%{_libdir}/*.la'
+    ]
+    if cmp_line in la_cleaners:
         s = 'find %{buildroot} -type f -name "*.la" -delete -print'
     return s
 
@@ -180,18 +190,21 @@ def replace_preamble_macros(s):
 
 def read_licenses_changes():
     licenses = {}
-    with open(LICENSES_CHANGES, 'r') as f:
-	# ignore first line containing 'First line' (WTF?)
-	f.readline()
-	# load and store the rest
-	for line in f:
-	    # strip newline
-	    line = line[:-1]
-	    # file has format
-	    # correct license string<tab>known bad license string
-	    # tab is used as separator
-	    pair = line.split('\t')
-	    licenses[pair[1]] = pair[0]
+    try:
+        f = open(LICENSES_CHANGES, 'r')
+    except IOError:
+        f = open('/usr/share/spec-cleaner/{0}'.format(LICENSES_CHANGES), 'r')
+    # ignore first line containing 'First line' (WTF?)
+    f.readline()
+    # load and store the rest
+    for line in f:
+        # strip newline
+        line = line[:-1]
+        # file has format
+        # correct license string<tab>known bad license string
+        # tab is used as separator
+        pair = line.split('\t')
+        licenses[pair[1]] = pair[0]
     return licenses
 
 def parse_rpm_showrc():
@@ -199,10 +212,10 @@ def parse_rpm_showrc():
     re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
     output = os.popen('rpm --showrc')
     for line in output.readlines():
-	line = line[:-1]
-	found_macro = re_rc_macrofunc.sub(r'\1', line)
-	if found_macro != line:
-	    macros += [ found_macro ]
+        line = line[:-1]
+        found_macro = re_rc_macrofunc.sub(r'\1', line)
+        if found_macro != line:
+            macros += [ found_macro ]
     output.close()
     return macros
 
@@ -253,17 +266,40 @@ class RpmSection(object):
 
 class RpmCopyright(RpmSection):
     '''
-        Adds default copyright notice if needed.
-        Remove initial empty lines.
-        Remove norootforbuild.
+        Always add default copyright from scratch to ensure latest and
+        greatest to be used.
+        Keep copyrights and some defines for later usage
     '''
 
+    re_copyright = re.compile('^# Copyright (c)\s*(.*)', re.IGNORECASE)
+
+    categories_order = [ 'pkgname', 'copyrights', 'buildrules' ]
+
+    def _add_pkg_header(self):
+        specname = 'FIXME'
+        self.lines.append('''#
+# spec file for package {0}
+#'''.format(specname))
 
     def _add_default_copyright(self):
-        self.lines.append(time.strftime('''#
+        year = time.strftime('%Y', time.localtime(time.time()))
+        copyright = '# Copyright (c) {0} SUSE LINUX Products GmbH, Nuernberg, Germany.'.format(year)
+        self.lines.append(copyright)
+
+    def _add_default_license(self):
+        self.lines.append('''#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-'''))
+''')
 
 
     def add(self, line):
@@ -279,7 +315,9 @@ class RpmCopyright(RpmSection):
 
     def output(self, fout):
         if not self.lines:
+            self._add_pkg_header()
             self._add_default_copyright()
+            self._add_default_license()
         RpmSection.output(self, fout)
 
 
@@ -449,60 +487,40 @@ class RpmPreamble(RpmSection):
 
 
     def _fix_license(self, value):
-	# split using 'or', 'and' and parenthesis, ignore empty strings
-	licenses = filter(lambda a: a != '', re.split('(\(|\)| and | or )', value))
+        # split using 'or', 'and' and parenthesis, ignore empty strings
+        licenses = filter(lambda a: a != '', re.split('(\(|\)| and | or )', value))
 
         for (index, license) in enumerate(licenses):
             license = strip_useless_spaces(license)
-	    license = license.replace('ORlater','or later').replace('ORsim','or similar')
+            license = license.replace('ORlater','or later').replace('ORsim','or similar')
             if self.license_fixes.has_key(license):
                 license = self.license_fixes[license]
             licenses[index] = license
 
-	# create back new string with replaced licenses
-	s = ' '.join(licenses).replace("( ","(").replace(" )",")")
+        # create back new string with replaced licenses
+        s = ' '.join(licenses).replace("( ","(").replace(" )",")")
         return [ s ]
 
     category_to_fixer['license'] = _fix_license
 
     def _remove_tag(self, value):
-	return []
+        return []
 
     category_to_fixer['epoch'] = _remove_tag
 
     def _pkgname_to_pkgconfig(self, value):
-        r = {
-          'cairo-devel': 'cairo',
-          'dbus-1-devel': 'dbus-1',
-          'dbus-1-glib-devel': 'dbus-glib-1',
-          'gconf2-devel': 'gconf-2.0',
-          'gstreamer-0_10-devel': 'gstreamer-0.10',
-          'exo-devel': 'exo-1',
-          'glib2-devel': 'glib-2.0',
-          'gtk2-devel': 'gtk+-2.0',
-          'hal-devel': 'hal',
-          'ImageMagick-devel': 'ImageMagick',
-          'libapr1-devel': 'apr-1',
-          'libapr-util1-devel': 'apr-util-1',
-          'libexif-devel': 'libexif',
-          'libgarcon-devel': 'garcon-1',
-          'libglade2-devel': 'libglade-2.0',
-          'libgladeui-1_0-devel': 'gladeui-1.0',
-          'libgudev-1_0-devel': 'gudev-1.0',
-          'libical-devel': 'libical',
-          'libnotify-devel': 'libnotify',
-          'libwnck-devel': 'libwnck-1.0',
-          'libxfce4ui-devel': 'libxfce4ui-1',
-          'libxfce4util-devel': 'libxfce4util-1.0',
-          'libxfcegui4-devel': 'libxfcegui4-1.0',
-          'libxfconf-devel': 'libxfconf-0',
-          'libxklavier-devel': 'libxklavier',
-          'libxml2-devel': 'libxml-2.0',
-          'pango-devel': 'pango',
-          'startup-notification-devel': 'libstartup-notification-1.0',
-          'vte-devel': 'vte',
-          'xfce4-panel-devel': 'libxfce4panel-1.0',
-        }
+        # conver the devel deps to pkgconfig ones
+        try:
+            f = open(PKGCONFIG_CONVERSIONS, 'r')
+        except IOError:
+            f = open('/usr/share/spec-cleaner/{0}'.format(PKGCONFIG_CONVERSIONS), 'r')
+
+        r = {}
+        for line in f:
+            # the values are split by  ': '
+            pair = line.split(': ')
+            r[pair[0]] = pair[1]
+
         for i in r:
             value = value.replace(i, 'pkgconfig('+r[i]+')')
         return value
@@ -637,9 +655,9 @@ class RpmPreamble(RpmSection):
             for (category, regexp) in self.category_to_re.iteritems():
                 match = regexp.match(line)
                 if match:
-		    # instead of matching first group as there is only one,
-		    # take the last group
-		    # (so I can have more advanced regexp for RPM tags)
+                    # instead of matching first group as there is only one,
+                    # take the last group
+                    # (so I can have more advanced regexp for RPM tags)
                     self._add_line_value_to(category, match.groups()[len(match.groups()) - 1])
                     return
 
@@ -743,7 +761,7 @@ class RpmBuild(RpmSection):
     def add(self, line):
         if not re_comment.match(line):
             line = embrace_macros(line)
-	    line = re_jobs.sub('%{?_smp_mflags}', line)
+        line = re_jobs.sub('%{?_smp_mflags}', line)
 
         RpmSection.add(self, line)
 
@@ -764,7 +782,7 @@ class RpmInstall(RpmSection):
         cmp_line = embrace_macros(cmp_line)
         cmp_line = replace_buildroot(cmp_line)
 
-	# FIXME: this is very poor patching
+        # FIXME: this is very poor patching
         if cmp_line.find('DESTDIR=%{buildroot}') != -1:
             buf = cmp_line.replace('DESTDIR=%{buildroot}', '')
             buf = strip_useless_spaces(buf)
@@ -933,10 +951,10 @@ class RpmSpecCleaner:
         self.diff = diff
         self.diff_prog = diff_prog
 
-	spec_macrofuncs = self.find_macros_with_arg(specfile)
+        spec_macrofuncs = self.find_macros_with_arg(specfile)
 
-	global re_unbrace_keywords
-	re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords + glob_macrofuncs + spec_macrofuncs) + ')}')
+        global re_unbrace_keywords
+        re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords + glob_macrofuncs + spec_macrofuncs) + ')}')
 
         self.fin = open(self.specfile)
 
@@ -1005,15 +1023,15 @@ class RpmSpecCleaner:
                 raise RpmException('Could not execute %s (%s)' % (self.diff_prog.split()[0], e.strerror))
 
     def find_macros_with_arg(self, spec):
-	macrofuncs = []
-	specfile = open(spec, 'r')
-	for line in specfile.readlines():
-	    line = line[:-1]
-	    found_macro = self.re_spec_macrofunc.sub(r'\1', line)
-	    if found_macro != line:
-		macrofuncs += [ found_macro ]
-	specfile.close()
-	return macrofuncs
+        macrofuncs = []
+        specfile = open(spec, 'r')
+        for line in specfile.readlines():
+            line = line[:-1]
+            found_macro = self.re_spec_macrofunc.sub(r'\1', line)
+            if found_macro != line:
+                macrofuncs += [ found_macro ]
+        specfile.close()
+        return macrofuncs
 
     def __del__(self):
         if self.fin:
