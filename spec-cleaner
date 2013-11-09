@@ -154,7 +154,13 @@ def replace_optflags(s):
 
 def replace_remove_la(s):
     cmp_line = strip_useless_spaces(s)
-    if cmp_line in [ 'find %{buildroot} -type f -name "*.la" -exec %{__rm} -fv {} +', 'find %{buildroot} -type f -name "*.la" -delete' ]:
+    la_cleaners = [
+        'find %{buildroot} -type f -name "*.la" -exec %{__rm} -fv {} +',
+        'find %{buildroot} -type f -name "*.la" -exec rm -fv {} +',
+        'find %{buildroot} -type f -name "*.la" -delete',
+        'rm %{buildroot}%{_libdir}/*.la'
+    ]
+    if cmp_line in la_cleaners:
         s = 'find %{buildroot} -type f -name "*.la" -delete -print'
     return s
 
@@ -503,6 +509,11 @@ class RpmPreamble(RpmSection):
     category_to_fixer['epoch'] = _remove_tag
 
     def _pkgname_to_pkgconfig(self, value):
+        # conver the devel deps to pkgconfig ones
+        try:
+            f = open(PKGCONFIG_CONVERSIONS, 'r')
+        except IOError:
+            f = open('/usr/share/spec-cleaner/{0}'.format(PKGCONFIG_CONVERSIONS), 'r')
         r = {
           'cairo-devel': 'cairo',
           'dbus-1-devel': 'dbus-1',
