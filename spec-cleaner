@@ -94,13 +94,15 @@ keywords = [
     'preun',
     'setup',
     'triggerin',
-    'triggerpostun'
+    'triggerpostun',
     'triggerun',
+    'fdupes',
 ]
 
 re_jobs = re.compile('%{(_smp_mflags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
 
 global re_unbrace_keywords
+global spec
 
 def strip_useless_spaces(s):
     return ' '.join(s.split())
@@ -276,7 +278,7 @@ class RpmCopyright(RpmSection):
     categories_order = [ 'pkgname', 'copyrights', 'buildrules' ]
 
     def _add_pkg_header(self):
-        specname = 'FIXME'
+        specname = os.path.splitext(spec)[0]
         self.lines.append('''#
 # spec file for package {0}
 #'''.format(specname))
@@ -1074,6 +1076,7 @@ The results it produces should always be checked by someone since it is not and 
         parser.print_help()
         return 1
 
+    global spec
     spec = os.path.expanduser(args[0])
     if options.output:
         options.output = os.path.expanduser(options.output)
