@@ -4,9 +4,7 @@ Misc:
    - (i.e. rewrite the code so RpmSection.add code is called before e.g. RpmBuild.add)
    - should fix make-params unit test
  + ban %{_bindir}/*, %{_sbindir}/* (?)
- + shouldn't check .spec suffix (?)
  + s/%doc %{(_mandir|_infodir)}/%{$1}/
- + use license abbreviatons from http://spdx.org/licenses/
  + do not break %(rpm ...) -- often used in BuildRequires/Requires
 
 Python stuff:
@@ -17,10 +15,6 @@ Python stuff:
 
 Things changed with rpm 4.7:
  + change Source: to Source0: (or vice versa?)
-
-Things changed with rpm 4.7 that we can do only if not caring about < 11.2:
- + remove %clean section if it's just removing the build root
- + remove BuildRoot
 
 Bugs:
   %attr, %ghost, etc. are not handled correctly
