@@ -191,7 +191,7 @@ def replace_preamble_macros(s):
 def read_licenses_changes():
     licenses = {}
     try:
-        f = open(LICENSES_CHANGES, 'r')
+        f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__)), LICENSES_CHANGES), 'r')
     except IOError:
         f = open('/usr/share/spec-cleaner/{0}'.format(LICENSES_CHANGES), 'r')
     # ignore first line containing 'First line' (WTF?)
@@ -511,7 +511,7 @@ class RpmPreamble(RpmSection):
     def _pkgname_to_pkgconfig(self, value):
         # conver the devel deps to pkgconfig ones
         try:
-            f = open(PKGCONFIG_CONVERSIONS, 'r')
+            f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__)), PKGCONFIG_CONVERSIONS), 'r')
         except IOError:
             f = open('/usr/share/spec-cleaner/{0}'.format(PKGCONFIG_CONVERSIONS), 'r')
 
