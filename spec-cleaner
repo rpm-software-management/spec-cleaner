@@ -273,9 +273,15 @@ class RpmCopyright(RpmSection):
         Keep copyrights and some defines for later usage
     '''
 
-    re_copyright = re.compile('^# Copyright (c)\s*(.*)', re.IGNORECASE)
+    re_copyright = re.compile('^#\s*Copyright\s*', re.IGNORECASE)
+    re_suse_copyright = re.compile('FIXME', re.IGNORECASE)
+    re_rootforbuild = re.compile('^#\s*needsrootforbuild\s*$', re.IGNORECASE)
+    re_binariesforbuld = re.compile('^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
+    re_nodebuginfo = re.compile('^#\s*nodebuginfo\s*$', re.IGNORECASE)
+    re_icecream = re.compile('^#\s*icecream\s*$', re.IGNORECASE)
 
-    categories_order = [ 'pkgname', 'copyrights', 'buildrules' ]
+    copyrights = []
+    buildrules = []
 
     def _add_pkg_header(self):
         specname = os.path.splitext(spec)[0]
@@ -283,10 +289,16 @@ class RpmCopyright(RpmSection):
 # spec file for package {0}
 #'''.format(specname))
 
-    def _add_default_copyright(self):
+    def _create_default_copyright(self):
         year = time.strftime('%Y', time.localtime(time.time()))
-        copyright = '# Copyright (c) {0} SUSE LINUX Products GmbH, Nuernberg, Germany.'.format(year)
+        return '# Copyright (c) {0} SUSE LINUX Products GmbH, Nuernberg, Germany.'.format(year)
+
+    def _add_copyright(self):
+        copyright = self._create_default_copyright()
         self.lines.append(copyright)
+
+        for i in self.copyrights:
+            self.lines.append(i)
 
     def _add_default_license(self):
         self.lines.append('''#
@@ -298,28 +310,37 @@ class RpmCopyright(RpmSection):
 # case the license is the MIT License). An "Open Source License" is a
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
-
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-''')
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#''')
 
+    def _add_buildrules(self):
+        for i in sorted(self.buildrules):
+            self.lines.append(i)
 
     def add(self, line):
         if not self.lines and not line:
             return
-
-        if line.startswith('# norootforbuild') or \
-           line.startswith('# usedforbuild'):
+        if self.re_copyright.match(line) and not self.re_suse_copyright.match(line):
+            self.copyrights.append(line)
+        elif self.re_rootforbuild.match(line):
+            self.buildrules.append('# rootforbuild')
+        elif self.re_binariesforbuld.match(line):
+            self.buildrules.append('# binariesforbuild')
+        elif self.re_nodebuginfo.match(line):
+            self.buildrules.append('# nodebuginfo')
+        elif self.re_icecream.match(line):
+            self.buildrules.append('# icecream')
+        else:
+            # anything not in our rules gets tossed out
             return
 
-        RpmSection.add(self, line)
-
-
     def output(self, fout):
-        if not self.lines:
-            self._add_pkg_header()
-            self._add_default_copyright()
-            self._add_default_license()
+        self._add_pkg_header()
+        self._add_copyright()
+        self._add_default_license()
+        self._add_buildrules()
+        self.lines.append("")
         RpmSection.output(self, fout)
 
 
