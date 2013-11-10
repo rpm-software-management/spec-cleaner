@@ -94,13 +94,22 @@ keywords = [
     'preun',
     'setup',
     'triggerin',
-    'triggerpostun'
+    'triggerpostun',
     'triggerun',
+    'fdupes',
+    'find_lang',
+    'suse_update_desktop_file',
+    'attr',
+    'dir',
+    'doc',
+    'ghost',
+    'configure'
 ]
 
 re_jobs = re.compile('%{(_smp_mflags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
 
 global re_unbrace_keywords
+global spec
 
 def strip_useless_spaces(s):
     return ' '.join(s.split())
@@ -158,6 +167,7 @@ def replace_remove_la(s):
         'find %{buildroot} -type f -name "*.la" -exec %{__rm} -fv {} +',
         'find %{buildroot} -type f -name "*.la" -exec rm -fv {} +',
         'find %{buildroot} -type f -name "*.la" -delete',
+        'find %{buildroot} -name *.la -delete',
         'rm %{buildroot}%{_libdir}/*.la'
     ]
     if cmp_line in la_cleaners:
@@ -191,7 +201,7 @@ def replace_preamble_macros(s):
 def read_licenses_changes():
     licenses = {}
     try:
-        f = open(LICENSES_CHANGES, 'r')
+        f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__)), LICENSES_CHANGES), 'r')
     except IOError:
         f = open('/usr/share/spec-cleaner/{0}'.format(LICENSES_CHANGES), 'r')
     # ignore first line containing 'First line' (WTF?)
@@ -271,20 +281,32 @@ class RpmCopyright(RpmSection):
         Keep copyrights and some defines for later usage
     '''
 
-    re_copyright = re.compile('^# Copyright (c)\s*(.*)', re.IGNORECASE)
+    re_copyright = re.compile('^#\s*Copyright\s*', re.IGNORECASE)
+    re_suse_copyright = re.compile('SUSE LINUX Products GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
+    re_rootforbuild = re.compile('^#\s*needsrootforbuild\s*$', re.IGNORECASE)
+    re_binariesforbuld = re.compile('^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
+    re_nodebuginfo = re.compile('^#\s*nodebuginfo\s*$', re.IGNORECASE)
+    re_icecream = re.compile('^#\s*icecream\s*$', re.IGNORECASE)
 
-    categories_order = [ 'pkgname', 'copyrights', 'buildrules' ]
+    copyrights = []
+    buildrules = []
 
     def _add_pkg_header(self):
-        specname = 'FIXME'
+        specname = os.path.splitext(spec)[0]
         self.lines.append('''#
 # spec file for package {0}
 #'''.format(specname))
 
-    def _add_default_copyright(self):
+    def _create_default_copyright(self):
         year = time.strftime('%Y', time.localtime(time.time()))
-        copyright = '# Copyright (c) {0} SUSE LINUX Products GmbH, Nuernberg, Germany.'.format(year)
+        return '# Copyright (c) {0} SUSE LINUX Products GmbH, Nuernberg, Germany.'.format(year)
+
+    def _add_copyright(self):
+        copyright = self._create_default_copyright()
         self.lines.append(copyright)
+
+        for i in self.copyrights:
+            self.lines.append(i)
 
     def _add_default_license(self):
         self.lines.append('''#
@@ -296,28 +318,37 @@ class RpmCopyright(RpmSection):
 # case the license is the MIT License). An "Open Source License" is a
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
-
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-''')
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#''')
 
+    def _add_buildrules(self):
+        for i in sorted(self.buildrules):
+            self.lines.append(i)
 
     def add(self, line):
         if not self.lines and not line:
             return
-
-        if line.startswith('# norootforbuild') or \
-           line.startswith('# usedforbuild'):
+        if self.re_copyright.match(line) and not self.re_suse_copyright.search(line):
+            self.copyrights.append(line)
+        elif self.re_rootforbuild.match(line):
+            self.buildrules.append('# rootforbuild')
+        elif self.re_binariesforbuld.match(line):
+            self.buildrules.append('# binariesforbuild')
+        elif self.re_nodebuginfo.match(line):
+            self.buildrules.append('# nodebuginfo')
+        elif self.re_icecream.match(line):
+            self.buildrules.append('# icecream')
+        else:
+            # anything not in our rules gets tossed out
             return
 
-        RpmSection.add(self, line)
-
-
     def output(self, fout):
-        if not self.lines:
-            self._add_pkg_header()
-            self._add_default_copyright()
-            self._add_default_license()
+        self._add_pkg_header()
+        self._add_copyright()
+        self._add_default_license()
+        self._add_buildrules()
+        self.lines.append("")
         RpmSection.output(self, fout)
 
 
@@ -511,7 +542,7 @@ class RpmPreamble(RpmSection):
     def _pkgname_to_pkgconfig(self, value):
         # conver the devel deps to pkgconfig ones
         try:
-            f = open(PKGCONFIG_CONVERSIONS, 'r')
+            f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__)), PKGCONFIG_CONVERSIONS), 'r')
         except IOError:
             f = open('/usr/share/spec-cleaner/{0}'.format(PKGCONFIG_CONVERSIONS), 'r')
 
@@ -519,7 +550,7 @@ class RpmPreamble(RpmSection):
         for line in f:
             # the values are split by  ': '
             pair = line.split(': ')
-            r[pair[0]] = pair[1]
+            r[pair[0]] = pair[1][:-1]
 
         for i in r:
             value = value.replace(i, 'pkgconfig('+r[i]+')')
@@ -1074,6 +1105,7 @@ The results it produces should always be checked by someone since it is not and 
         parser.print_help()
         return 1
 
+    global spec
     spec = os.path.expanduser(args[0])
     if options.output:
         options.output = os.path.expanduser(options.output)
