@@ -3,18 +3,12 @@ Misc:
  + global changes should be done before local changes
    - (i.e. rewrite the code so RpmSection.add code is called before e.g. RpmBuild.add)
    - should fix make-params unit test
- + ban %{_bindir}/*, %{_sbindir}/* (?)
  + s/%doc %{(_mandir|_infodir)}/%{$1}/
  + do not break %(rpm ...) -- often used in BuildRequires/Requires
 
-Python stuff:
- + replace %py_ver with %python_version
- + replace %py_sitedir with %python_sitearch (user might want to change this to %python_sitelib if the package is noarch)
- + print a warning if %py_libdir is found
- + kill (or just print a warning?) if %py_requires is found: if it's a python module, nothing is needed. If it's not, plain python Requires is what we want.
-
 Things changed with rpm 4.7:
- + change Source: to Source0: (or vice versa?)
+ + change Source: to Source0 only if >1 sources
+ + change Patch: to Patch0 always
 
 Bugs:
   buildroot is not placed corectly in the list, see the vlc.spec
