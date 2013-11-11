@@ -819,7 +819,7 @@ class RpmInstall(RpmSection):
             buf = strip_useless_spaces(buf)
             if buf == 'make install' or buf == 'make  install':
                 line = '%make_install'
-        elif cmp_line == '%makeinstall':
+        elif cmp_line == '%{makeinstall}':
             line = '%make_install'
         elif cmp_line == 'rm -rf %{buildroot}':
             return
