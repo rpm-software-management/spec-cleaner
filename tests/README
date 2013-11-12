@@ -1,0 +1,10 @@
+This is test folder for spec-cleaner repository.
+
+There are 3 folders in, out and tmp.
+
+For each spec in the in folder there should be respective
+spec in out folder with desired formatting.
+
+The tmp folder is used for holding the generated spec file
+which if differ from out content will fail the testsuite.
+
