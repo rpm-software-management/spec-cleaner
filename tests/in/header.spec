@@ -20,5 +20,7 @@
 # norootforbuild
 #  icecream
 # binariesforbuild
+#  needsbinariesforbuild  
 # nodebuginfo
 # rootforbuild
+# needsrootforbuild

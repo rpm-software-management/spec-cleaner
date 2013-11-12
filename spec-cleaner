@@ -282,7 +282,7 @@ class RpmCopyright(RpmSection):
         Keep copyrights and some defines for later usage
     '''
 
-    re_copyright = re.compile('^#\s*Copyright\s*', re.IGNORECASE)
+    re_copyright = re.compile('^#\s*Copyright\ \(c\)\s*', re.IGNORECASE)
     re_suse_copyright = re.compile('SUSE LINUX Products GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
     re_rootforbuild = re.compile('^#\s*needsrootforbuild\s*$', re.IGNORECASE)
     re_binariesforbuld = re.compile('^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
@@ -293,7 +293,7 @@ class RpmCopyright(RpmSection):
     buildrules = []
 
     def _add_pkg_header(self):
-        specname = os.path.splitext(spec)[0]
+        specname = os.path.splitext(os.path.basename(spec))[0]
         self.lines.append('''#
 # spec file for package {0}
 #'''.format(specname))
@@ -333,9 +333,9 @@ class RpmCopyright(RpmSection):
         if self.re_copyright.match(line) and not self.re_suse_copyright.search(line):
             self.copyrights.append(line)
         elif self.re_rootforbuild.match(line):
-            self.buildrules.append('# rootforbuild')
+            self.buildrules.append('# needsrootforbuild')
         elif self.re_binariesforbuld.match(line):
-            self.buildrules.append('# binariesforbuild')
+            self.buildrules.append('# needsbinariesforbuild')
         elif self.re_nodebuginfo.match(line):
             self.buildrules.append('# nodebuginfo')
         elif self.re_icecream.match(line):

@@ -15,8 +15,8 @@
 
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-# binariesforbuild
 # icecream
+# needsbinariesforbuild
+# needsrootforbuild
 # nodebuginfo
-# rootforbuild
 
