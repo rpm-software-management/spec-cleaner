@@ -21,27 +21,26 @@ TMP="$(mktemp)"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 URL="http://download.opensuse.org/distribution/${1}/repo/oss/suse/"
 
-echo "Working in \"${TEMPDIR}\""
+#echo "Working in \"${TEMPDIR}\""
 pushd "${TEMPDIR}" &> /dev/null
-    echo
-    echo "Downloading repomd.xml file..."
+    #echo
+    #echo "Downloading repomd.xml file..."
     verify_fetch "${URL}repodata/repomd.xml"
-    wget "${URL}repodata/repomd.xml" -O repomd.xml
+    wget "${URL}repodata/repomd.xml" -O repomd.xml > /dev/null
 
     PRIMARY="${URL}$(grep primary.xml.gz repomd.xml |awk -F'"' '{print $2}')"
     rm repomd.xml
 
-    echo
-    echo "Downloading primary.xml..."
+    #echo
+    #echo "Downloading primary.xml..."
     verify_fetch "${PRIMARY}"
-    wget "${PRIMARY}" -O primary.xml.gz
+    wget "${PRIMARY}" -O primary.xml.gz > /dev/null
 
-    echo
-    echo "Generating pkgconfig_conversions.txt..."
+    #echo
+    #echo "Generating pkgconfig_conversions.txt..."
     zcat primary.xml.gz > "$TMP"
-    sed -nf "${DIR}"/pkgconfig-update.sed "$TMP" | sort | uniq > pkgconfig_conversions.txt
+    sed -nf "${DIR}"/pkgconfig-update.sed "$TMP" | sort | uniq
 popd &> /dev/null
 
-cp "${TEMPDIR}"/pkgconfig_conversions.txt "${DIR}"/pkgconfig_conversions.txt
 rm -rf ${TMP}
 rm -rf ${TEMDIR}
