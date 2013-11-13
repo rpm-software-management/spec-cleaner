@@ -175,7 +175,7 @@ find %{buildroot} -type f -name "*.la" -delete -print
 find %{buildroot} -type f -name "*.la" -delete -print
 find %{buildroot} -type f -name "*.la" -delete -print
 find %{buildroot} -type f -name "*.la" -delete -print
-find %{buildroot} -type f -name "*.la" -delete -print
+rm -f "%{buildroot}/%{_lib}/security"/*.{a,la} "%{buildroot}/%{_libdir}"/*.la
 find %{buildroot} -type f -name "*.la" -delete -print
 find %{buildroot} -type f -name "*.la" -delete -print
 find %{buildroot} -type f -name "*.la" -delete -print

@@ -163,11 +163,12 @@ def replace_optflags(s):
 
 def replace_remove_la(s):
     re_rm = re.compile('rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.+\.la;?$')
-    re_find = re.compile('find\s+"?(%{buildroot}|\$b)("?\S?/?)*\s*.*\s+-i?name\s+["\'\\\\]?\*.la($|.*[^\\\\]$)')
+    re_find = re.compile('find\s+"?(%{buildroot}|\$b)("?\S?/?)*\s*.*\s+-i?name\s+["\'\\\\]?\*\.la($|.*[^\\\\]$)')
     re_find_double = re.compile('-i?name')
+    re_rm_double = re.compile('(\.|{)a')
 
     cmp_line = strip_useless_spaces(s)
-    if re_rm.search(cmp_line) or ( re_find.search(cmp_line) and len(re_find_double.split(cmp_line)) == 2):
+    if (re_rm.search(cmp_line) and len(re_rm_double.split(cmp_line)) == 1) or ( re_find.search(cmp_line) and len(re_find_double.split(cmp_line)) == 2):
         s = 'find %{buildroot} -type f -name "*.la" -delete -print'
     return s
 
