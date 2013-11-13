@@ -20,7 +20,7 @@ check: spec-cleaner pkgconfig_conversions.txt licenses_changes.txt
 		TEST="`   echo $$i | sed 's|^tests/in/\(.*\).spec|\1|'`" ;\
 		spec-cleaner -f $$i -o "$$NEW"; \
 		echo -n " * test '$$TEST': ";\
-		if [ "`diff "$$CORRECT" "$$NEW"`" ]; then \
+		if [ "`diff "$$CORRECT" "$$NEW" 2>&1`" ]; then \
 			echo "failed" ;\
 			FAILED="$$FAILED $$TEST" ;\
 		else\
@@ -29,7 +29,7 @@ check: spec-cleaner pkgconfig_conversions.txt licenses_changes.txt
 	done ;\
 	echo ;\
 	if [ "$$FAILED" ]; then \
-		echo "These `echo $$FAILED | wc -w` tests out of `echo tests/in/*.spec | wc -w` failed:" ;\
+		echo "`echo $$FAILED | wc -w` tests out of `echo tests/in/*.spec | wc -w` failed:" ;\
 		echo "  $$FAILED" ;\
 		echo ;\
 		exit 1 ;\
