@@ -161,20 +161,15 @@ def replace_optflags(s):
     s = s.replace('$RPM_OPT_FLAGS', '%{optflags}')
     return s
 
-
 def replace_remove_la(s):
+    re_rm = re.compile('rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.+\.la;?$')
+    re_find = re.compile('find\s+"?(%{buildroot}|\$b)("?\S?/?)*\s*.*\s+-i?name\s+["\'\\\\]?\*.la($|.*[^\\\\]$)')
+    re_find_double = re.compile('-i?name')
+
     cmp_line = strip_useless_spaces(s)
-    la_cleaners = [
-        'find %{buildroot} -type f -name "*.la" -exec %{__rm} -fv {} +',
-        'find %{buildroot} -type f -name "*.la" -exec rm -fv {} +',
-        'find %{buildroot} -type f -name "*.la" -delete',
-        'find %{buildroot} -name *.la -delete',
-        'rm %{buildroot}%{_libdir}/*.la'
-    ]
-    if cmp_line in la_cleaners:
+    if re_rm.search(cmp_line) or ( re_find.search(cmp_line) and len(re_find_double.split(cmp_line)) == 2):
         s = 'find %{buildroot} -type f -name "*.la" -delete -print'
     return s
-
 
 def replace_utils(s):
     # take care of all utilities macros that bloat spec file
@@ -186,7 +181,6 @@ def replace_utils(s):
         s = s.replace('%{__' + i + '}', i)
 
     return s
-
 
 def replace_buildservice(s):
     for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'suse', 'ubuntu']:
@@ -235,10 +229,10 @@ def replace_all(s):
     s = replace_buildroot(s)
     s = replace_optflags(s)
     s = replace_known_dirs(s)
-    s = replace_remove_la(s)
     s = replace_utils(s)
     s = replace_buildservice(s)
     s = replace_preamble_macros(s)
+    s = replace_remove_la(s)
     return s
 
 
