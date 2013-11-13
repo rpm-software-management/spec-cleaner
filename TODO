@@ -12,7 +12,7 @@ Things changed with rpm 4.7:
 
 Bugs:
   buildroot is not placed corectly in the list, see the vlc.spec
-  patches get {} wrapping, not good
+  some cases don't get the fuzzy mapping, see the lafileextended test
   conditional dependencies should be sorted at the end of the buildrequires, not the fact now
   %attr, %ghost, etc. are not handled correctly
   $RPM_BUILD_ROOT_REPLACEMENT is changed to %{buildroot}_REPLACEMENT
