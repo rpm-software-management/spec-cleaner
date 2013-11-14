@@ -45,7 +45,7 @@ def process_args(argv):
     # print help if there is no argument
     if len(argv) < 1:
         parser.print_help()
-        return 1
+        sys.exit(0)
 
     return parser.parse_args(args=argv)
 
