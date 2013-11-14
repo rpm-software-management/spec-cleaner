@@ -1,44 +1,11 @@
 #!/usr/bin/env python
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-#
 # Copyright (c) 2013, SUSE LINUX Products GmbH, Nuernberg, Germany
 # All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-#  * Redistributions of source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
-#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
-#    may be used to endorse or promote products derived from this software
-#    without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-#
-# (Licensed under the simplified BSD license)
-#
-# Authors:
-#   Vincent Untz <vuntz@novell.com>
-#   Pavol Rusnak <prusnak@opensuse.org>
-#   Petr Uzel <petr.uzel@suse.cz>
-#   Tomas Cech <tcech@suse.cz>
-#   Tomas Chvatal <tchvatal@suse.cz>
-#
+# See COPYING for details.
+
+__version__ = '0.3'
 
 import os
 import sys
@@ -77,7 +44,8 @@ global spec
 
 def open_datafile(FILE):
     try:
-        f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__)), FILE), 'r')
+        # the .. is appended as we are in spec_cleaner sub_folder
+        f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__ + '/../data/')), FILE), 'r')
     except IOError:
         f = open('/usr/share/spec-cleaner/{0}'.format(FILE), 'r')
     return f
@@ -166,7 +134,7 @@ def replace_preamble_macros(s):
 
 def read_licenses_changes():
     licenses = {}
-    
+
     f = open_datafile(LICENSES_CHANGES)
     # ignore first line containing 'First line' (WTF?)
     f.readline()
@@ -944,9 +912,9 @@ class RpmSpecCleaner:
         self.diff_prog = diff_prog
 
         spec_macrofuncs = self.find_macros_with_arg(specfile)
-        
+
         f = open_datafile(BRACKETING_EXCLUDES)
-        
+
         keywords= []
         for line in f:
             keywords.append(line[:-1])
@@ -1114,7 +1082,6 @@ The results it produces should always be checked by someone since it is not and 
 
 if __name__ == '__main__':
     try:
-        res = main(sys.argv)
-        sys.exit(res)
+        sys.exit(main(sys.argv))
     except KeyboardInterrupt:
         pass
