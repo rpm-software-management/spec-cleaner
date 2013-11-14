@@ -5,9 +5,9 @@ LIBEXECDIR ?= $(PREFIX)/libexec
 LIBDIR ?= $(PREFIX)/lib
 SITEDIR ?= $(LIBDIR)/python2.7/site-packages
 
-all: pkgconfig_conversions.txt
+all: data/pkgconfig_conversions.txt
 
-pkgconfig_conversions.txt: pkgconfig-update.sed pkgconfig-update.sh
+data/pkgconfig_conversions.txt: pkgconfig-update.sed pkgconfig-update.sh
 	@sh pkgconfig-update.sh 13.1 > $@
 
 install: bin/spec-cleaner
@@ -22,7 +22,9 @@ install: bin/spec-cleaner
 	install -m 755 obs/format_spec_file $(DESTDIR)$(LIBEXECDIR)/obs/service/ ; \
 	install -m 644 obs/format_spec_file.service $(DESTDIR)$(LIBEXECDIR)/obs/service/
 	@install -d $(DESTDIR)$(SITEDIR)/spec_cleaner ; \
-	install -m 755 spec_cleaner/__init__.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/
+	install -m 755 spec_cleaner/__init__.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/cleaner.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmexception.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/
 
 test: check
 
@@ -55,4 +57,4 @@ check: spec_cleaner/__init__.py
 clean:
 	rm -rf tests/tmp/*
 
-.PHONY: install check test
+.PHONY: install check test clean
