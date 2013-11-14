@@ -10,7 +10,9 @@ import tempfile
 import subprocess
 import shlex
 
+from rpmsection import Section
 from rpmexception import RpmException
+from rpmcopyright import RpmCopyright
 
 LICENSES_CHANGES = 'licenses_changes.txt'
 PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
@@ -164,123 +166,14 @@ def replace_all(s):
     s = replace_remove_la(s)
     return s
 
-
 #######################################################################
 
-
-class RpmException(Exception):
-    pass
 
 
 #######################################################################
 
 
-class RpmSection(object):
-    '''
-        Basic cleanup: we remove trailing spaces.
-    '''
-
-    def __init__(self):
-        self.lines = []
-        self.previous_line = None
-
-    def add(self, line):
-        line = line.rstrip()
-        line = replace_all(line)
-        self.lines.append(line)
-        self.previous_line = line
-
-    def output(self, fout):
-        for line in self.lines:
-            fout.write(line + '\n')
-
-
-#######################################################################
-
-
-class RpmCopyright(RpmSection):
-    '''
-        Always add default copyright from scratch to ensure latest and
-        greatest to be used.
-        Keep copyrights and some defines for later usage
-    '''
-
-    re_copyright = re.compile('^#\s*Copyright\ \(c\)\s*', re.IGNORECASE)
-    re_suse_copyright = re.compile('SUSE LINUX Products GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
-    re_rootforbuild = re.compile('^#\s*needsrootforbuild\s*$', re.IGNORECASE)
-    re_binariesforbuld = re.compile('^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
-    re_nodebuginfo = re.compile('^#\s*nodebuginfo\s*$', re.IGNORECASE)
-    re_icecream = re.compile('^#\s*icecream\s*$', re.IGNORECASE)
-
-    copyrights = []
-    buildrules = []
-
-    def _add_pkg_header(self):
-        #specname = os.path.splitext(os.path.basename(spec))[0] FIXME
-        specname = 'temporaryplaceholder'
-        self.lines.append('''#
-# spec file for package {0}
-#'''.format(specname))
-
-    def _create_default_copyright(self):
-        year = time.strftime('%Y', time.localtime(time.time()))
-        return '# Copyright (c) {0} SUSE LINUX Products GmbH, Nuernberg, Germany.'.format(year)
-
-    def _add_copyright(self):
-        copyright = self._create_default_copyright()
-        self.lines.append(copyright)
-
-        for i in self.copyrights:
-            self.lines.append(i)
-
-    def _add_default_license(self):
-        self.lines.append('''#
-# All modifications and additions to the file contributed by third parties
-# remain the property of their copyright owners, unless otherwise agreed
-# upon. The license for this file, and modifications and additions to the
-# file, is the same license as for the pristine package itself (unless the
-# license for the pristine package is not an Open Source License, in which
-# case the license is the MIT License). An "Open Source License" is a
-# license that conforms to the Open Source Definition (Version 1.9)
-# published by the Open Source Initiative.
-
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
-#''')
-
-    def _add_buildrules(self):
-        for i in sorted(self.buildrules):
-            self.lines.append(i)
-
-    def add(self, line):
-        if not self.lines and not line:
-            return
-        if self.re_copyright.match(line) and not self.re_suse_copyright.search(line):
-            self.copyrights.append(line)
-        elif self.re_rootforbuild.match(line):
-            self.buildrules.append('# needsrootforbuild')
-        elif self.re_binariesforbuld.match(line):
-            self.buildrules.append('# needsbinariesforbuild')
-        elif self.re_nodebuginfo.match(line):
-            self.buildrules.append('# nodebuginfo')
-        elif self.re_icecream.match(line):
-            self.buildrules.append('# icecream')
-        else:
-            # anything not in our rules gets tossed out
-            return
-
-    def output(self, fout):
-        self._add_pkg_header()
-        self._add_copyright()
-        self._add_default_license()
-        self._add_buildrules()
-        self.lines.append("")
-        RpmSection.output(self, fout)
-
-
-#######################################################################
-
-
-class RpmPreamble(RpmSection):
+class RpmPreamble(Section):
     '''
         Only keep one empty line for many consecutive ones.
         Reorder lines.
@@ -389,7 +282,7 @@ class RpmPreamble(RpmSection):
 
 
     def __init__(self):
-        RpmSection.__init__(self)
+        Section.__init__(self)
         self._start_paragraph()
 
 
@@ -404,7 +297,7 @@ class RpmPreamble(RpmSection):
         t = type(group)
 
         if t == str:
-            RpmSection.add(self, group)
+            Section.add(self, group)
         elif t == list:
             for subgroup in group:
                 self._add_group(subgroup)
@@ -619,7 +512,7 @@ class RpmPreamble(RpmSection):
 
     def output(self, fout):
         self._end_paragraph()
-        RpmSection.output(self, fout)
+        Section.output(self, fout)
 
 
 #######################################################################
@@ -631,14 +524,14 @@ class RpmPreamble(RpmSection):
 #######################################################################
 
 
-class RpmDescription(RpmSection):
+class RpmDescription(Section):
     '''
         Only keep one empty line for many consecutive ones.
         Remove Authors from description.
     '''
 
     def __init__(self):
-        RpmSection.__init__(self)
+        Section.__init__(self)
         self.removing_authors = False
         # Tracks the use of a macro. When this happens and we're still in a
         # description, we actually don't know where we are so we just put all
@@ -661,13 +554,13 @@ class RpmDescription(RpmSection):
             self.removing_authors = True
             return
 
-        RpmSection.add(self, line)
+        Section.add(self, line)
 
 
 #######################################################################
 
 
-class RpmPrep(RpmSection):
+class RpmPrep(Section):
     '''
         Try to simplify to %setup -q when possible.
         Replace %patch with %patch0
@@ -688,13 +581,13 @@ class RpmPrep(RpmSection):
             line = line.replace('%patch','%patch0')
 
         line = embrace_macros(line)
-        RpmSection.add(self, line)
+        Section.add(self, line)
 
 
 #######################################################################
 
 
-class RpmBuild(RpmSection):
+class RpmBuild(Section):
     '''
         Replace %{?jobs:-j%jobs} (suse-ism) with %{?_smp_mflags}
     '''
@@ -704,13 +597,13 @@ class RpmBuild(RpmSection):
             line = embrace_macros(line)
         line = re_jobs.sub('%{?_smp_mflags}', line)
 
-        RpmSection.add(self, line)
+        Section.add(self, line)
 
 
 #######################################################################
 
 
-class RpmInstall(RpmSection):
+class RpmInstall(Section):
     '''
         Remove commands that wipe out the build root.
         Use %make_install macro.
@@ -734,13 +627,13 @@ class RpmInstall(RpmSection):
         elif cmp_line == 'rm -rf %{buildroot}':
             return
 
-        RpmSection.add(self, line)
+        Section.add(self, line)
 
 
 #######################################################################
 
 
-class RpmClean(RpmSection):
+class RpmClean(Section):
     '''
         Remove clean section
     '''
@@ -752,13 +645,13 @@ class RpmClean(RpmSection):
 #######################################################################
 
 
-class RpmScriptlets(RpmSection):
+class RpmScriptlets(Section):
     '''
         Do %post -p /sbin/ldconfig when possible.
     '''
 
     def __init__(self):
-        RpmSection.__init__(self)
+        Section.__init__(self)
         self.cache = []
 
 
@@ -774,24 +667,24 @@ class RpmScriptlets(RpmSection):
                     return
                 else:
                     for cached in self.cache:
-                        RpmSection.add(self, cached)
+                        Section.add(self, cached)
                     self.cache = None
 
-        RpmSection.add(self, line)
+        Section.add(self, line)
 
 
     def output(self, fout):
         if self.cache:
-            RpmSection.add(self, self.cache[0] + ' -p /sbin/ldconfig')
-            RpmSection.add(self, '')
+            Section.add(self, self.cache[0] + ' -p /sbin/ldconfig')
+            Section.add(self, '')
 
-        RpmSection.output(self, fout)
+        Section.output(self, fout)
 
 
 #######################################################################
 
 
-class RpmFiles(RpmSection):
+class RpmFiles(Section):
     """
         Replace additional /usr, /etc and /var because we're sure we can use
         macros there.
@@ -807,7 +700,7 @@ class RpmFiles(RpmSection):
     re_dir = re.compile('^\s*%dir\s*(\S+)\s*')
 
     def __init__(self):
-        RpmSection.__init__(self)
+        Section.__init__(self)
         self.dir_on_previous_line = None
 
 
@@ -818,11 +711,11 @@ class RpmFiles(RpmSection):
 
         if self.dir_on_previous_line:
             if line == self.dir_on_previous_line + '/*':
-                RpmSection.add(self, self.dir_on_previous_line + '/')
+                Section.add(self, self.dir_on_previous_line + '/')
                 self.dir_on_previous_line = None
                 return
             else:
-                RpmSection.add(self, '%dir ' + self.dir_on_previous_line)
+                Section.add(self, '%dir ' + self.dir_on_previous_line)
                 self.dir_on_previous_line = None
 
         match = self.re_dir.match(line)
@@ -830,13 +723,13 @@ class RpmFiles(RpmSection):
             self.dir_on_previous_line = match.group(1)
             return
 
-        RpmSection.add(self, line)
+        Section.add(self, line)
 
 
 #######################################################################
 
 
-class RpmChangelog(RpmSection):
+class RpmChangelog(Section):
     '''
         Remove changelog entries.
     '''
@@ -844,7 +737,7 @@ class RpmChangelog(RpmSection):
     def add(self, line):
         # only add the first line (%changelog)
         if len(self.lines) == 0:
-            RpmSection.add(self, line)
+            Section.add(self, line)
 
 
 #######################################################################
@@ -859,7 +752,7 @@ class RpmPackage(RpmPreamble):
         # The first line (%package) should always be added and is different
         # from the lines we handle in RpmPreamble.
         if self.previous_line is None:
-            RpmSection.add(self, line)
+            Section.add(self, line)
             return
 
         RpmPreamble.add(self, line)
@@ -895,10 +788,7 @@ class RpmSpecCleaner:
     ]
 
 
-    def __init__(self, specfile, output, inline, force, diff, diff_prog):
-        if not os.path.exists(specfile):
-            raise RpmException('%s does not exist.' % specfile)
-
+    def __init__(self, specfile, output, inline, diff, diff_prog):
         self.specfile = specfile
         self.output = output
         self.inline = inline
@@ -923,8 +813,6 @@ class RpmSpecCleaner:
         self.fin = open(self.specfile)
 
         if self.output:
-            if not force and os.path.exists(self.output):
-                raise RpmException('%s already exists.' % self.output)
             self.fout = open(self.output, 'w')
         elif self.inline:
             io = cStringIO.StringIO()
@@ -961,7 +849,7 @@ class RpmSpecCleaner:
             return None
 
 
-        self.current_section = RpmCopyright()
+        self.current_section = RpmCopyright(self.specfile)
 
         while True:
             line = self.fin.readline()

@@ -11,7 +11,7 @@ import os
 import sys
 import argparse
 
-from rpmexception import RpmException
+from rpmexception import RpmWrongArgs, RpmException
 from cleaner import RpmSpecCleaner
 
 
@@ -48,28 +48,44 @@ def process_args(argv):
         parser.print_help()
         sys.exit(0)
 
-    return parser.parse_args(args=argv)
+    options = parser.parse_args(args=argv)
+
+    # the spec must exist for us to do anything
+    if not os.path.exists(options.spec):
+        raise RpmWrongArgs('{0} does not exist.'.format(options.spec))
+
+    # the path for output must exist and the file must not be there unless
+    # force is specified
+    if options.output:
+        options.output = os.path.expanduser(options.output)
+        if not options.force and os.path.exists(options.output):
+                raise RpmWrongArgs('{0} already exists.'.format(options.output))
+
+    return options
 
 
 def main(argv):
     """
-    Main function that calls argument parsing and then creates
-    RpmSpecCleaner object that works with passed spec file.
+    Main function that calls argument parsing ensures their sanity
+    and then creates RpmSpecCleaner object that works with passed spec file.
     :param argv: passed arguments
     """
 
-    options = process_args(argv)
+    try:
+        options = process_args(argv)
+    except RpmWrongArgs, e:
+        sys.stderr.write('ERROR: {0}\n'.format(e))
+        return 1
 
     try:
         cleaner = RpmSpecCleaner(options.spec,
-                                 os.path.expanduser(options.output),
+                                 options.output,
                                  options.inline,
-                                 options.force,
                                  options.diff,
                                  options.diff_prog)
         cleaner.run()
     except RpmException, e:
-        print >> sys.stderr, '%s' % e
+        sys.stderr.write('ERROR: {0}\n'.format(e))
         return 1
 
     return 0

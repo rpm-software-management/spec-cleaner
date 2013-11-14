@@ -24,7 +24,9 @@ install: bin/spec-cleaner
 	@install -d $(DESTDIR)$(SITEDIR)/spec_cleaner ; \
 	install -m 755 spec_cleaner/__init__.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
 	install -m 755 spec_cleaner/cleaner.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
-	install -m 755 spec_cleaner/rpmexception.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/
+	install -m 755 spec_cleaner/rpmcopyright.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmexception.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmsection.py $(DESTDIR)$(SITEDIR)/spec_cleaner/
 
 test: check
 

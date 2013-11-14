@@ -1,9 +1,28 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+import sys
 
-class RpmException(Exception):
+
+class RpmBaseException(Exception):
     """
-    Class wrapping Exception class so if needed we can do more
-    trickery in here
+    Class wrapping Exception class so we throw neat exceptions.
     """
-    pass
+
+    def __init__(self, args=()):
+        Exception.__init__(self)
+        self.args = args
+
+    def __str__(self):
+        return ''.join(self.args)
+
+
+class RpmWrongArgs(RpmBaseException):
+    """
+    Exception raised by wrong arguments pased by cli
+    """
+
+
+class RpmException(RpmBaseException):
+    """
+    Exception raised by wrong arguments pased by cli
+    """
