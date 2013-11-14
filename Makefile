@@ -14,7 +14,8 @@ install: pkgconfig_conversions.txt licenses_changes.txt spec-cleaner
 	install -m 755 spec-cleaner $(DESTDIR)/$(BINDIR)
 	@install -d $(DESTDIR)$(DATADIR)/spec-cleaner ; \
 	install -m 644 licenses_changes.txt $(DESTDIR)$(DATADIR)/spec-cleaner ; \
-	install -m 644 pkgconfig_conversions.txt $(DESTDIR)$(DATADIR)/spec-cleaner/
+	install -m 644 pkgconfig_conversions.txt $(DESTDIR)$(DATADIR)/spec-cleaner/ ; \
+	install -m 644 excludes-bracketing.txt $(DESTDIR)$(DATADIR)/spec-cleaner/
 	@install -d $(DESTDIR)$(LIBEXECDIR)/obs/service/ ; \
 	install -m 644 format_spec_file.service $(DESTDIR)$(LIBEXECDIR)/obs/service/ ; \
 	install -m 755 format_spec_file $(DESTDIR)$(LIBEXECDIR)/obs/service/ ; \

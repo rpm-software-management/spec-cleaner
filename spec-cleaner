@@ -56,6 +56,7 @@ import shlex
 VERSION = '0.3'
 LICENSES_CHANGES = 'licenses_changes.txt'
 PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
+BRACKETING_EXCLUDES = 'excludes-bracketing.txt'
 
 re_comment = re.compile('^$|^\s*#')
 re_define = re.compile('^\s*%define', re.IGNORECASE)
@@ -69,48 +70,17 @@ re_infodir = re.compile('%{_datadir}/info([/\s$])')
 re_docdir = re.compile('%{_datadir}/doc([/\s$])')
 
 re_macro = re.compile(r'(^|([^%]))%(\w+)(|(\W]))')
-
-keywords = [
-    'build',
-    'defattr',
-    'define',
-    'description',
-    'else',
-    'endif',
-    'files',
-    'changelog',
-    'check',
-    'if',
-    'ifarch',
-    'ifnarch',
-    'install',
-    'package',
-    'post',
-    'posttrans',
-    'postun',
-    'postun',
-    'pre',
-    'prep',
-    'preun',
-    'setup',
-    'triggerin',
-    'triggerpostun',
-    'triggerun',
-    'fdupes',
-    'find_lang',
-    'suse_update_desktop_file',
-    'attr',
-    'dir',
-    'doc',
-    'ghost',
-    'configure',
-    'patch[0-9]*'
-]
-
 re_jobs = re.compile('%{(_smp_mflags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
 
 global re_unbrace_keywords
 global spec
+
+def open_datafile(FILE):
+    try:
+        f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__)), FILE), 'r')
+    except IOError:
+        f = open('/usr/share/spec-cleaner/{0}'.format(FILE), 'r')
+    return f
 
 def strip_useless_spaces(s):
     return ' '.join(s.split())
@@ -196,10 +166,8 @@ def replace_preamble_macros(s):
 
 def read_licenses_changes():
     licenses = {}
-    try:
-        f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__)), LICENSES_CHANGES), 'r')
-    except IOError:
-        f = open('/usr/share/spec-cleaner/{0}'.format(LICENSES_CHANGES), 'r')
+    
+    f = open_datafile(LICENSES_CHANGES)
     # ignore first line containing 'First line' (WTF?)
     f.readline()
     # load and store the rest
@@ -537,10 +505,7 @@ class RpmPreamble(RpmSection):
 
     def _pkgname_to_pkgconfig(self, value):
         # conver the devel deps to pkgconfig ones
-        try:
-            f = open('{0}/{1}'.format(os.path.dirname(os.path.realpath(__file__)), PKGCONFIG_CONVERSIONS), 'r')
-        except IOError:
-            f = open('/usr/share/spec-cleaner/{0}'.format(PKGCONFIG_CONVERSIONS), 'r')
+        f = open_datafile(PKGCONFIG_CONVERSIONS)
 
         r = {}
         for line in f:
@@ -979,6 +944,12 @@ class RpmSpecCleaner:
         self.diff_prog = diff_prog
 
         spec_macrofuncs = self.find_macros_with_arg(specfile)
+        
+        f = open_datafile(BRACKETING_EXCLUDES)
+        
+        keywords= []
+        for line in f:
+            keywords.append(line[:-1])
 
         global re_unbrace_keywords
         re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords + glob_macrofuncs + spec_macrofuncs) + ')}')
