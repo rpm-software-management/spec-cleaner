@@ -14,6 +14,7 @@ import argparse
 from rpmexception import RpmException
 from cleaner import RpmSpecCleaner
 
+
 def process_args(argv):
     """
     Process the parsed arguments and return the result
@@ -48,6 +49,7 @@ def process_args(argv):
         sys.exit(0)
 
     return parser.parse_args(args=argv)
+
 
 def main(argv):
     """
