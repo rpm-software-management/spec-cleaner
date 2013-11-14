@@ -24,9 +24,11 @@ class RpmCopyright(Section):
     copyrights = []
     buildrules = []
 
-    def __init__(self, spec):
-        Section.__init__(self)
+
+    def __init__(self, re_unbrace_keywords, spec):
+        Section.__init__(self, re_unbrace_keywords)
         self.spec = spec
+
 
     def _add_pkg_header(self):
         specname = os.path.splitext(os.path.basename(self.spec))[0]
@@ -34,9 +36,11 @@ class RpmCopyright(Section):
 # spec file for package {0}
 #'''.format(specname))
 
+
     def _create_default_copyright(self):
         year = time.strftime('%Y', time.localtime(time.time()))
         return '# Copyright (c) {0} SUSE LINUX Products GmbH, Nuernberg, Germany.'.format(year)
+
 
     def _add_copyright(self):
         copyright = self._create_default_copyright()
@@ -44,6 +48,7 @@ class RpmCopyright(Section):
 
         for i in self.copyrights:
             self.lines.append(i)
+
 
     def _add_default_license(self):
         self.lines.append('''#
@@ -59,9 +64,11 @@ class RpmCopyright(Section):
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #''')
 
+
     def _add_buildrules(self):
         for i in sorted(self.buildrules):
             self.lines.append(i)
+
 
     def add(self, line):
         if not self.lines and not line:
@@ -80,10 +87,12 @@ class RpmCopyright(Section):
             # anything not in our rules gets tossed out
             return
 
+
     def output(self, fout):
         self._add_pkg_header()
         self._add_copyright()
         self._add_default_license()
         self._add_buildrules()
+        # trailing enter
         self.lines.append("")
         Section.output(self, fout)

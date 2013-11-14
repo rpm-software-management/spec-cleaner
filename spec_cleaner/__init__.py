@@ -12,7 +12,7 @@ import sys
 import argparse
 
 from rpmexception import RpmWrongArgs, RpmException
-from cleaner import RpmSpecCleaner
+from rpmcleaner import RpmSpecCleaner
 
 
 def process_args(argv):

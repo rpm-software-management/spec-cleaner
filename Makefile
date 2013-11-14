@@ -23,10 +23,19 @@ install: bin/spec-cleaner
 	install -m 644 obs/format_spec_file.service $(DESTDIR)$(LIBEXECDIR)/obs/service/
 	@install -d $(DESTDIR)$(SITEDIR)/spec_cleaner ; \
 	install -m 755 spec_cleaner/__init__.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
-	install -m 755 spec_cleaner/cleaner.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmcleaner.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
 	install -m 755 spec_cleaner/rpmcopyright.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
 	install -m 755 spec_cleaner/rpmexception.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
-	install -m 755 spec_cleaner/rpmsection.py $(DESTDIR)$(SITEDIR)/spec_cleaner/
+	install -m 755 spec_cleaner/rpmsection.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/fileutils.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmbuild.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmdescription.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmfiles.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpminstall.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmpreamble.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmprep.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmprune.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 755 spec_cleaner/rpmscriplets.py $(DESTDIR)$(SITEDIR)/spec_cleaner/
 
 test: check
 
