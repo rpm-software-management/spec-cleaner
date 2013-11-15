@@ -14,21 +14,8 @@ class RpmCopyright(Section):
     that are still relevant. Everything else is ignored.
     """
 
-    re_copyright = re.compile('^#\s*Copyright\ \(c\)\s*', re.IGNORECASE)
-    re_suse_copyright = re.compile('SUSE LINUX Products GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
-    re_rootforbuild = re.compile('^#\s*needsrootforbuild\s*$', re.IGNORECASE)
-    re_binariesforbuld = re.compile('^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
-    re_nodebuginfo = re.compile('^#\s*nodebuginfo\s*$', re.IGNORECASE)
-    re_icecream = re.compile('^#\s*icecream\s*$', re.IGNORECASE)
-
     copyrights = []
     buildrules = []
-
-
-    def __init__(self, re_unbrace_keywords, spec):
-        Section.__init__(self, re_unbrace_keywords)
-        self.spec = spec
-
 
     def _add_pkg_header(self):
         specname = os.path.splitext(os.path.basename(self.spec))[0]
@@ -73,15 +60,15 @@ class RpmCopyright(Section):
     def add(self, line):
         if not self.lines and not line:
             return
-        if self.re_copyright.match(line) and not self.re_suse_copyright.search(line):
+        if self.reg.re_copyright.match(line) and not self.reg.re_suse_copyright.search(line):
             self.copyrights.append(line)
-        elif self.re_rootforbuild.match(line):
+        elif self.reg.re_rootforbuild.match(line):
             self.buildrules.append('# needsrootforbuild')
-        elif self.re_binariesforbuld.match(line):
+        elif self.reg.re_binariesforbuld.match(line):
             self.buildrules.append('# needsbinariesforbuild')
-        elif self.re_nodebuginfo.match(line):
+        elif self.reg.re_nodebuginfo.match(line):
             self.buildrules.append('# nodebuginfo')
-        elif self.re_icecream.match(line):
+        elif self.reg.re_icecream.match(line):
             self.buildrules.append('# icecream')
         else:
             # anything not in our rules gets tossed out

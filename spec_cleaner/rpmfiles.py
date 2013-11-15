@@ -14,20 +14,15 @@ class RpmFiles(Section):
         '%{_includedir}/mux/'
     """
 
-    re_etcdir = re.compile('(^|\s)/etc/')
-    re_usrdir = re.compile('(^|\s)/usr/')
-    re_vardir = re.compile('(^|\s)/var/')
-    re_dir = re.compile('^\s*%dir\s*(\S+)\s*')
-
-    def __init__(self, re_unbrace_keywords):
-        Section.__init__(self, re_unbrace_keywords)
+    def __init__(self, specfile):
+        Section.__init__(self, specfile)
         self.dir_on_previous_line = None
 
 
     def add(self, line):
-        line = self.re_etcdir.sub(r'\1%{_sysconfdir}/', line)
-        line = self.re_usrdir.sub(r'\1%{_prefix}/', line)
-        line = self.re_vardir.sub(r'\1%{_localstatedir}/', line)
+        line = self.reg.re_etcdir.sub(r'\1%{_sysconfdir}/', line)
+        line = self.reg.re_usrdir.sub(r'\1%{_prefix}/', line)
+        line = self.reg.re_vardir.sub(r'\1%{_localstatedir}/', line)
 
         if self.dir_on_previous_line:
             if line == self.dir_on_previous_line + '/*':
@@ -38,7 +33,7 @@ class RpmFiles(Section):
                 Section.add(self, '%dir ' + self.dir_on_previous_line)
                 self.dir_on_previous_line = None
 
-        match = self.re_dir.match(line)
+        match = self.reg.re_dir.match(line)
         if match:
             self.dir_on_previous_line = match.group(1)
             return

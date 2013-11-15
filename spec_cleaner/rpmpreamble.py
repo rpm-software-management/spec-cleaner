@@ -34,54 +34,6 @@ class RpmPreamble(Section):
         line, even if we reorder the lines.
     """
 
-    re_if = re.compile('^\s*(?:%if\s|%ifarch\s|%ifnarch\s|%else\s*$|%endif\s*$)', re.IGNORECASE)
-
-    re_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
-    re_version = re.compile('^Version:\s*(\S*)', re.IGNORECASE)
-    re_release = re.compile('^Release:\s*(\S*)', re.IGNORECASE)
-    re_license = re.compile('^License:\s*(.*)', re.IGNORECASE)
-    re_summary = re.compile('^Summary:\s*([^\.]*).*', re.IGNORECASE)
-    re_url = re.compile('^Url:\s*(\S*)', re.IGNORECASE)
-    re_group = re.compile('^Group:\s*(.*)', re.IGNORECASE)
-    re_source = re.compile('^Source(\d*):\s*(\S*)', re.IGNORECASE)
-    re_patch = re.compile('^((?:#[#\s]*)?)Patch(\d*):\s*(\S*)', re.IGNORECASE)
-    re_buildrequires = re.compile('^BuildRequires:\s*(.*)', re.IGNORECASE)
-    re_prereq = re.compile('^PreReq:\s*(.*)', re.IGNORECASE)
-    re_requires = re.compile('^Requires:\s*(.*)', re.IGNORECASE)
-    re_recommends = re.compile('^Recommends:\s*(.*)', re.IGNORECASE)
-    re_suggests = re.compile('^Suggests:\s*(.*)', re.IGNORECASE)
-    re_supplements = re.compile('^Supplements:\s*(.*)', re.IGNORECASE)
-    re_provides = re.compile('^Provides:\s*(.*)', re.IGNORECASE)
-    re_obsoletes = re.compile('^Obsoletes:\s*(.*)', re.IGNORECASE)
-    re_buildroot = re.compile('^\s*BuildRoot:', re.IGNORECASE)
-    re_buildarch = re.compile('^\s*BuildArch(itectures)?:\s*(.*)', re.IGNORECASE)
-    re_epoch = re.compile('^\s*Epoch:\s*(.*)', re.IGNORECASE)
-    re_define = re.compile('^\s*%define', re.IGNORECASE)
-    re_comment = re.compile('^$|^\s*#')
-
-    re_requires_token = re.compile('(\s*(\S+(?:\s*(?:[<>]=?|=)\s*[^\s,]+)?),?)')
-
-    category_to_re = {
-        'name': re_name,
-        'version': re_version,
-        'release': re_release,
-        'license': re_license,
-        'summary': re_summary,
-        'url': re_url,
-        'group': re_group,
-        # for source, we have a special match to keep the source number
-        # for patch, we have a special match to keep the patch number
-        'buildrequires': re_buildrequires,
-        'prereq': re_prereq,
-        'requires': re_requires,
-        'recommends': re_recommends,
-        'suggests': re_suggests,
-        'supplements': re_supplements,
-        # for provides/obsoletes, we have a special case because we group them
-        # for build root, we have a special match because we force its value
-        'buildarch': re_buildarch,
-        'epoch': re_epoch
-    }
 
     category_to_key = {
         'name': 'Name',
@@ -115,13 +67,33 @@ class RpmPreamble(Section):
     categories_with_package_tokens = categories_with_sorted_package_tokens[:]
     categories_with_package_tokens.append('provides_obsoletes')
 
-    re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
 
-
-    def __init__(self, re_unbrace_keywords):
-        Section.__init__(self, re_unbrace_keywords)
-        self.license_fixes = self.read_licenses_changes()
+    def __init__(self, specfile):
+        Section.__init__(self, specfile)
+        self.license_fixes = self._read_licenses_changes()
         self._start_paragraph()
+
+        self.category_to_re = {
+            'name': self.reg.re_name,
+            'version': self.reg.re_version,
+            'release': self.reg.re_release,
+            'license': self.reg.re_license,
+            'summary': self.reg.re_summary,
+            'url': self.reg.re_url,
+            'group': self.reg.re_group,
+            # for source, we have a special match to keep the source number
+            # for patch, we have a special match to keep the patch number
+            'buildrequires': self.reg.re_buildrequires,
+            'prereq': self.reg.re_prereq,
+            'requires': self.reg.re_requires,
+            'recommends': self.reg.re_recommends,
+            'suggests': self.reg.re_suggests,
+            'supplements': self.reg.re_supplements,
+            # for provides/obsoletes, we have a special case because we group them
+            # for build root, we have a special match because we force its value
+            'buildarch': self.reg.re_buildarch,
+            'epoch': self.reg.re_epoch
+        }
 
 
     def _start_paragraph(self):
@@ -188,31 +160,31 @@ class RpmPreamble(Section):
         s = ' '.join(licenses).replace("( ","(").replace(" )",")")
         return [ s ]
 
-    category_to_fixer['license'] = _fix_license
 
     def _remove_tag(self, value):
         return []
 
-    category_to_fixer['epoch'] = _remove_tag
 
     def _pkgname_to_pkgconfig(self, value):
         # conver the devel deps to pkgconfig ones
         files = FileUtils()
-        f = files.open_datafile(PKGCONFIG_CONVERSIONS)
+        files.open_datafile(PKGCONFIG_CONVERSIONS)
 
         r = {}
-        for line in f:
+        for line in files.f:
             # the values are split by  ': '
             pair = line.split(': ')
             r[pair[0]] = pair[1][:-1]
+        files.close()
 
         for i in r:
             value = value.replace(i, 'pkgconfig('+r[i]+')')
         return value
 
+
     def _fix_list_of_packages(self, value):
-        if self.re_requires_token.match(value):
-            tokens = [ item[1] for item in self.re_requires_token.findall(value) ]
+        if self.reg.re_requires_token.match(value):
+            tokens = [ item[1] for item in self.reg.re_requires_token.findall(value) ]
             for (index, token) in enumerate(tokens):
                 token = token.replace('%{version}-%{release}', '%{version}')
                 token = token.replace(' ','')
@@ -224,6 +196,10 @@ class RpmPreamble(Section):
             return tokens
         else:
             return [ value ]
+
+    # fillup fixer the easy way
+    category_to_fixer['license'] = _fix_license
+    category_to_fixer['epoch'] = _remove_tag
 
     for i in categories_with_package_tokens:
         category_to_fixer[i] = _fix_list_of_packages
@@ -271,6 +247,26 @@ class RpmPreamble(Section):
         self.previous_line = line
 
 
+    def _read_licenses_changes(self):
+        licenses = {}
+
+        files = FileUtils()
+        f = files.open_datafile(LICENSES_CHANGES)
+        # ignore first line containing 'First line' (WTF?)
+        files.f.readline()
+        # load and store the rest
+        for line in files.f:
+            # strip newline
+            line = line[:-1]
+            # file has format
+            # correct license string<tab>known bad license string
+            # tab is used as separator
+            pair = line.split('\t')
+            licenses[pair[1]] = pair[0]
+        files.close()
+        return licenses
+
+
     def add(self, line):
         if len(line) == 0:
             if not self.previous_line or len(self.previous_line) == 0:
@@ -283,7 +279,7 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.re_if.match(line):
+        elif self.reg.re_if.match(line):
             # %if/%else/%endif marks the end of the previous paragraph
             # We append the line at the end of the previous paragraph, though,
             # since it will stay at the end there. If putting it at the
@@ -294,20 +290,20 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.re_comment.match(line) or self.re_define.match(line):
+        elif self.reg.re_comment.match(line) or self.reg.re_define.match(line):
             self.current_group.append(line)
             self.previous_line = line
             return
 
-        elif self.re_autoreqprov.match(line):
+        elif self.reg.re_autoreqprov.match(line):
             return
 
-        elif self.re_source.match(line):
-            match = self.re_source.match(line)
+        elif self.reg.re_source.match(line):
+            match = self.reg.re_source.match(line)
             self._add_line_value_to('source', match.group(2), key = 'Source%s' % match.group(1))
             return
 
-        elif self.re_patch.match(line):
+        elif self.reg.re_patch.match(line):
             # FIXME: this is not perfect, but it's good enough for most cases
             if not self.previous_line or not self.re_comment.match(self.previous_line):
                 self.current_group.append('# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines')
@@ -321,17 +317,17 @@ class RpmPreamble(Section):
             self._add_line_value_to('source', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
             return
 
-        elif self.re_provides.match(line):
+        elif self.reg.re_provides.match(line):
             match = self.re_provides.match(line)
             self._add_line_value_to('provides_obsoletes', match.group(1), key = 'Provides')
             return
 
-        elif self.re_obsoletes.match(line):
+        elif self.reg.re_obsoletes.match(line):
             match = self.re_obsoletes.match(line)
             self._add_line_value_to('provides_obsoletes', match.group(1), key = 'Obsoletes')
             return
 
-        elif self.re_buildroot.match(line):
+        elif self.reg.re_buildroot.match(line):
             if len(self.paragraph['buildroot']) == 0:
                 self._add_line_value_to('buildroot', '%{_tmppath}/%{name}-%{version}-build')
             return
@@ -347,25 +343,6 @@ class RpmPreamble(Section):
                     return
 
             self._add_line_to('misc', line)
-
-    def read_licenses_changes(self):
-        licenses = {}
-
-        files = FileUtils()
-        f = files.open_datafile(LICENSES_CHANGES)
-        # ignore first line containing 'First line' (WTF?)
-        f.readline()
-        # load and store the rest
-        for line in f:
-            # strip newline
-            line = line[:-1]
-            # file has format
-            # correct license string<tab>known bad license string
-            # tab is used as separator
-            pair = line.split('\t')
-            licenses[pair[1]] = pair[0]
-        return licenses
-
 
 
     def output(self, fout):

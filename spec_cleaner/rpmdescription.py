@@ -9,8 +9,8 @@ class RpmDescription(Section):
     Remove Authors from description.
     """
 
-    def __init__(self):
-        Section.__init__(self)
+    def __init__(self, specfile):
+        Section.__init__(self, specfile)
         self.removing_authors = False
         # Tracks the use of a macro. When this happens and we're still in a
         # description, we actually don't know where we are so we just put all

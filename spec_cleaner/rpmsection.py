@@ -2,6 +2,8 @@
 
 import re
 
+from rpmregexp import RegexpSingle
+
 class Section(object):
     """
     Basic object for parsing each section of spec file.
@@ -14,14 +16,20 @@ class Section(object):
     """
 
 
-    def __init__(self, re_unbrace_keywords):
+    def __init__(self, specfile):
         self.lines = []
         self.previous_line = None
-        self.re_unbrace_keywords = re_unbrace_keywords
+        self.spec = specfile
+        self.reg = RegexpSingle(specfile)
 
 
-    def add(self, line):
-        # cleanup all known troubles
+    def _complete_cleanup(self, line):
+        """
+        Function that just calls all the cleanups in proper order so it
+        can be called beforehand if we override add phase and want to
+        do our replaces after cleanup.
+        """
+
         line = line.rstrip()
         line = self.embrace_macros(line)
         line = self.replace_buildroot(line)
@@ -30,6 +38,16 @@ class Section(object):
         line = self.replace_utils(line)
         line = self.replace_buildservice(line)
         line = self.replace_preamble_macros(line)
+
+        return line
+
+
+    def add(self, line):
+        """
+        Run the cleanup and add the line to the list of lines
+        """
+
+        line = self._complete_cleanup(line)
 
         # append to the file
         self.lines.append(line)
@@ -56,7 +74,6 @@ class Section(object):
         on whitelist.
         Whitelist is passed from caller object
         """
-        re_macro = re.compile(r'(^|([^%]))%(\w+)(|(\W]))')
 
         # I don't think that this can be done within one regexp replacement
         # if you have idea, send me a patch :)
@@ -64,10 +81,10 @@ class Section(object):
         # work only with non-commented part
         sp = line.split('#')
         # so, for now, put braces around everything, what looks like macro,
-        sp[0] = re_macro.sub(r'\1%{\3}\4', sp[0])
+        sp[0] = self.reg.re_macro.sub(r'\1%{\3}\4', sp[0])
 
         # and replace back known keywords to braceless state again
-        sp[0] = self.re_unbrace_keywords.sub(r'%\1', sp[0])
+        sp[0] = self.reg.re_unbrace_keywords.sub(r'%\1', sp[0])
         # re-create the line back
         return '#'.join(sp)
 

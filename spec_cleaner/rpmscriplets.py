@@ -9,8 +9,8 @@ class RpmScriptlets(Section):
     '''
 
 
-    def __init__(self):
-        Section.__init__(self)
+    def __init__(self, specfile):
+        Section.__init__(self, specfile)
         self.cache = []
 
 

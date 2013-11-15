@@ -11,20 +11,17 @@ class RpmPrep(Section):
     '''
 
 
-    re_patch = re.compile('^%patch\s*(.*)-P\s*(\d*)\s*(.*)')
-
-
     def add(self, line):
         if line.startswith('%setup'):
-            cmp_line = line.replace(' -q', '')
-            cmp_line = cmp_line.replace(' -n %{name}-%{version}', '')
-            line = self.strip_useless_spaces(cmp_line)
+            line = line.replace(' -qn', '-q -n')
+            line = line.replace(' -q', '')
+            line = line.replace(' -n %{name}-%{version}', '')
+            line = self.strip_useless_spaces(line)
 
-        if self.re_patch.match(line):
+        if self.reg.re_patch.match(line):
             match = self.re_patch.match(line)
             line = self.strip_useless_spaces('%%patch%s %s %s' % (match.group(2), match.group(1), match.group(3)))
         elif line.startswith('%patch ') or line == '%patch':
             line = line.replace('%patch','%patch0')
 
-        line = embrace_macros(line)
         Section.add(self, line)

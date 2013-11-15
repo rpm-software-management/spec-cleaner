@@ -12,38 +12,31 @@ class RpmInstall(Section):
         Replace %makeinstall (suse-ism).
     '''
 
-    re_rm = re.compile('rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.+\.la;?$')
-    re_find = re.compile('find\s+"?(%{buildroot}|\$b)("?\S?/?)*\s*.*\s+-i?name\s+["\'\\\\]?\*\.la($|.*[^\\\\]$)')
-    re_find_double = re.compile('-i?name')
-    re_rm_double = re.compile('(\.|{)a')
-
     def add(self, line):
         # remove double spaces when comparing the line
-        cmp_line = self.strip_useless_spaces(line)
-        cmp_line = self.embrace_macros(cmp_line)
-        cmp_line = self.replace_buildroot(cmp_line)
+        line = self._complete_cleanup(line)
 
-        cmp_line = self.replace_remove_la(cmp_line)
+        line = self._replace_remove_la(line)
 
         # FIXME: this is very poor patching
-        if cmp_line.find('DESTDIR=%{buildroot}') != -1:
+        if line.find('DESTDIR=%{buildroot}') != -1:
             buf = cmp_line.replace('DESTDIR=%{buildroot}', '')
             buf = self.strip_useless_spaces(buf)
             if buf == 'make install' or buf == 'make  install':
                 line = '%make_install'
-        elif cmp_line == '%{makeinstall}':
+        elif line == '%{makeinstall}':
             line = '%make_install'
-        elif cmp_line == 'rm -rf %{buildroot}':
+        elif line == 'rm -rf %{buildroot}':
             return
 
         Section.add(self, line)
 
 
-    def replace_remove_la(self, line):
+    def _replace_remove_la(self, line):
         """
         Replace all known variations of la file deletion with one unified
         """
-        if (self.re_rm.search(cmp_line) and len(self.re_rm_double.split(cmp_line)) == 1) or \
-                (self.re_find.search(cmp_line) and len(self.re_find_double.split(cmp_line)) == 2):
+        if (self.reg.re_rm.search(line) and len(self.reg.re_rm_double.split(line)) == 1) or \
+                (self.reg.re_find.search(line) and len(self.reg.re_find_double.split(line)) == 2):
             line = 'find %{buildroot} -type f -name "*.la" -delete -print'
         return line
