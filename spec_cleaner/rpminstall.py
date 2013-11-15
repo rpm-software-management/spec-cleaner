@@ -13,9 +13,7 @@ class RpmInstall(Section):
     '''
 
     def add(self, line):
-        # remove double spaces when comparing the line
         line = self._complete_cleanup(line)
-
         line = self._replace_remove_la(line)
 
         # FIXME: this is very poor patching

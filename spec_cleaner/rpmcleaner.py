@@ -41,9 +41,8 @@ class RpmSpecCleaner:
         self.inline = inline
         self.diff = diff
         self.diff_prog = diff_prog
-
-        # load regexp singleton
         self.reg = RegexpSingle(specfile)
+        self.fin = open(self.specfile)
 
         # Section starts detection
         self.section_starts = [
@@ -57,8 +56,6 @@ class RpmSpecCleaner:
             (self.reg.re_spec_files, RpmFiles),
             (self.reg.re_spec_changelog, RpmChangelog)
         ]
-
-        self.fin = open(self.specfile)
 
         if self.output:
             self.fout = open(self.output, 'w')
@@ -80,22 +77,31 @@ class RpmSpecCleaner:
             self.fout = sys.stdout
 
     def _detect_new_section(self, line):
-        if isinstance(self.current_section, RpmCopyright):
-            if not self.reg.re_comment.match(line):
-                return RpmPreamble
-
+        # firs try to verify if we start some specific section
         for (regexp, newclass) in self.section_starts:
             if regexp.match(line):
                 return newclass
 
+        # later if we still are here and we are just doing copyright
+        # and we are not on commented line anymore, just jump to Preamble
+        if isinstance(self.current_section, RpmCopyright):
+            if not self.reg.re_comment.match(line):
+                return RpmPreamble
+
+        # we are staying in the section
         return None
 
 
     def run(self):
+        # We always start with Copyright
         self.current_section = RpmCopyright(self.specfile)
 
+        # FIXME: we need to store the content localy and then reorder
+        #        to maintain the specs all the same (eg somebody put
+        #        filelist to the top).
         while True:
             line = self.fin.readline()
+            # Stop at the end of the file
             if len(line) == 0:
                 break
             # Remove \n to make it easier to parse things
