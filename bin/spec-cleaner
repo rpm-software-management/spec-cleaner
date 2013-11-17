@@ -7,7 +7,7 @@
 
 import sys
 
-from spec_cleaner import run
+from spec_cleaner import main
 
 try:
     sys.exit(main(sys.argv[1:]))
