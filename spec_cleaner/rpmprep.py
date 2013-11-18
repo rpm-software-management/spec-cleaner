@@ -12,6 +12,7 @@ class RpmPrep(Section):
 
 
     def add(self, line):
+        # FIXME: rewrite to regexp that matches various setup lines we have
         if line.startswith('%setup'):
             line = line.replace(' -qn', '-q -n')
             line = line.replace(' -q', '')
