@@ -193,7 +193,7 @@ class RpmPreamble(Section):
             # then add each pkgconfig to the list
             #print pkgconf_list
             for j in pkgconf_list:
-                pkgconfig.append(' pkgconfig({0}){1}'.format(j, version))
+                pkgconfig.append('pkgconfig({0}){1}'.format(j, version))
         return pkgconfig
 
 
