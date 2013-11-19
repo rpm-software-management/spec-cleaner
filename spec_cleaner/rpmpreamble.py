@@ -177,23 +177,44 @@ class RpmPreamble(Section):
             r[pair[0]] = pair[1][:-1]
         files.close()
 
-        for i in r:
-            value = value.replace(i, 'pkgconfig('+r[i]+')')
-        return value
+        # we just want the pkgname if we have version string there
+        # and for the pkgconfig deps we need to put the version into
+        # the braces
+        split = value.split()
+        pkgname = value.split()[0]
+        version = value.replace(pkgname,'')
+        pkgconfig = []
+        if not pkgname in r:
+            # first check if the pacakge is in the replacements
+            return [ value ]
+        else:
+            # first split the pkgconfig data
+            pkgconf_list = r[pkgname].split()
+            # then add each pkgconfig to the list
+            #print pkgconf_list
+            for j in pkgconf_list:
+                pkgconfig.append(' pkgconfig({0}){1}'.format(j, version))
+        return pkgconfig
 
 
     def _fix_list_of_packages(self, value):
         if self.reg.re_requires_token.match(value):
             tokens = [ item[1] for item in self.reg.re_requires_token.findall(value) ]
-            for (index, token) in enumerate(tokens):
+            # first loop over all and do formatting as we can get more deps for one
+            expanded = []
+            for token in tokens:
                 token = token.replace('%{version}-%{release}', '%{version}')
+                # cleanup whitespace
                 token = token.replace(' ','')
+                # rpm actually allows ',' separated list of deps
+                token = token.replace(',','')
                 token = re.sub(r'([<>]=?|=)', r' \1 ', token)
                 token = self._pkgname_to_pkgconfig(token)
-                tokens[index] = token
+                expanded += token
+            # and then sort them :)
+            expanded.sort()
 
-            tokens.sort()
-            return tokens
+            return expanded
         else:
             return [ value ]
 
