@@ -12,17 +12,32 @@ class RpmPrep(Section):
 
 
     def add(self, line):
-        # FIXME: rewrite to regexp that matches various setup lines we have
+        line = self._complete_cleanup(line)
+        line = self._cleanup_setup(line)
+        line = self._prepare_patch(line)
+        Section.add(self, line)
+
+    def _cleanup_setup(self, line):
+        """
+        Remove the useless stuff from %setup line
+        """
+        # NOTE: not using regexp as this covers 99% cases for now
         if line.startswith('%setup'):
-            line = line.replace(' -qn', '-q -n')
+            line = line.replace(' -qn', ' -q -n')
             line = line.replace(' -q', '')
             line = line.replace(' -n %{name}-%{version}', '')
+            line = line.replace(' -n "%{name}-%{version}"', '')
             line = self.strip_useless_spaces(line)
 
-        if self.reg.re_patch.match(line):
-            match = self.re_patch.match(line)
-            line = self.strip_useless_spaces('%%patch%s %s %s' % (match.group(2), match.group(1), match.group(3)))
-        elif line.startswith('%patch ') or line == '%patch':
-            line = line.replace('%patch','%patch0')
+        return line
 
-        Section.add(self, line)
+    def _prepare_patch(self, line):
+        """
+        Prepend %patch with 0 and cleanup useless whitespace
+        """
+        if line.startswith('%patch ') or line == '%patch':
+            line = line.replace('%patch','%patch0')
+        if self.reg.re_patch_prep.match(line):
+            line = self.strip_useless_spaces('%%patch%s %s %s' % (match.group(2), match.group(1), match.group(3)))
+
+        return line

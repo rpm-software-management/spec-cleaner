@@ -15,12 +15,16 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
-Source0:         testfile.tar.bz2
+Source0:        testfile.tar.bz2
 Source2:        testfile2.tar.bz2
 # PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines
 Patch0:         test
+# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines
 Patch10:        test2
 
+%prep
 %setup
+%setup -a1
+%setup -b2
 %patch10 -p4
-%patch -p1
+%patch0 -p1

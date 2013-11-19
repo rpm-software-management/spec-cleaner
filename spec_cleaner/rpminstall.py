@@ -16,6 +16,10 @@ class RpmInstall(Section):
         line = self._complete_cleanup(line)
         line = self._replace_remove_la(line)
 
+        # we do not want to cleanup buildroot, it is already clean
+        if not self.previous_line and line == 'rm -rf %{buildroot}':
+            return
+
         # FIXME: this is very poor patching
         if line.find('DESTDIR=%{buildroot}') != -1:
             buf = cmp_line.replace('DESTDIR=%{buildroot}', '')
@@ -24,8 +28,6 @@ class RpmInstall(Section):
                 line = '%make_install'
         elif line == '%{makeinstall}':
             line = '%make_install'
-        elif line == 'rm -rf %{buildroot}':
-            return
 
         Section.add(self, line)
 

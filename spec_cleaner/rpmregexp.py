@@ -73,7 +73,7 @@ class RegexpSingle(object):
     re_rm_double = re.compile('(\.|{)a')
 
     # rpmprep
-    re_patch = re.compile('^%patch\s*(.*)-P\s*(\d*)\s*(.*)')
+    re_patch_prep = re.compile('^%patch\s*(.*)-P\s*(\d*)\s*(.*)')
 
     # comment detection
     re_comment = re.compile('^$|^\s*#')
