@@ -81,7 +81,15 @@ class Section(object):
         # work only with non-commented part
         sp = line.split('#')
         # so, for now, put braces around everything, what looks like macro,
-        sp[0] = self.reg.re_macro.sub(r'\1%{\3}\4', sp[0])
+        previous = sp[0]
+
+        while True:
+            sp[0] = self.reg.re_macro.sub(r'\1%{\3}\4', sp[0])
+
+            if sp[0] == previous:
+                break
+            else:
+                previous = sp[0]
 
         # and replace back known keywords to braceless state again
         sp[0] = self.reg.re_unbrace_keywords.sub(r'%\1', sp[0])
