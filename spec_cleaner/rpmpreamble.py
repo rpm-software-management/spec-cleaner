@@ -313,7 +313,7 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_comment.match(line)
+        elif self.reg.re_comment.match(line):
             self.current_group.append(line)
             self.previous_line = line
             return
