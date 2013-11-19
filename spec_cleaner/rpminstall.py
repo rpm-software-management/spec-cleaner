@@ -17,7 +17,7 @@ class RpmInstall(Section):
         line = self._replace_remove_la(line)
 
         # we do not want to cleanup buildroot, it is already clean
-        if not self.previous_line and line == 'rm -rf %{buildroot}':
+        if self.previous_line is None and line == 'rm -rf %{buildroot}':
             return
 
         # FIXME: this is very poor patching
