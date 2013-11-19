@@ -61,7 +61,7 @@ class RpmPreamble(Section):
     category_to_fixer = {
     }
 
-    categories_order = [ 'name', 'version', 'release', 'license', 'summary', 'url', 'group', 'source', 'patch', 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements', 'provides_obsoletes', 'buildroot', 'buildarch', 'misc' ]
+    categories_order = [ 'define', 'name', 'version', 'release', 'license', 'summary', 'url', 'group', 'source', 'patch', 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements', 'provides_obsoletes', 'buildroot', 'buildarch', 'misc' ]
 
     categories_with_sorted_package_tokens = [ 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements' ]
     categories_with_package_tokens = categories_with_sorted_package_tokens[:]
@@ -151,7 +151,8 @@ class RpmPreamble(Section):
 
         for (index, license) in enumerate(licenses):
             license = self.strip_useless_spaces(license)
-            license = license.replace('ORlater','or later').replace('ORsim','or similar')
+            license = license.replace('ORlater','or later')
+            license = license.replace('ORsim','or similar')
             if self.license_fixes.has_key(license):
                 license = self.license_fixes[license]
             licenses[index] = license
@@ -289,6 +290,7 @@ class RpmPreamble(Section):
 
 
     def add(self, line):
+        line = self._complete_cleanup(line)
         if len(line) == 0:
             if not self.previous_line or len(self.previous_line) == 0:
                 return
@@ -311,9 +313,14 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_comment.match(line) or self.reg.re_define.match(line):
+        elif self.reg.re_comment.match(line)
             self.current_group.append(line)
             self.previous_line = line
+            return
+
+        elif self.reg.re_define.match(line):
+            match = self.reg.re_define.match(line)
+            self._add_line_value_to('define', match.group(2), key = '%define%s' % match.group(1))
             return
 
         elif self.reg.re_autoreqprov.match(line):
