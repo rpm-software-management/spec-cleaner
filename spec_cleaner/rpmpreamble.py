@@ -4,6 +4,7 @@ import re
 
 from rpmsection import Section
 from fileutils import FileUtils
+from rpmexception import RpmException
 
 
 LICENSES_CHANGES = 'licenses_changes.txt'
@@ -36,6 +37,7 @@ class RpmPreamble(Section):
 
 
     category_to_key = {
+        'define': '%define',
         'name': 'Name',
         'version': 'Version',
         'release': 'Release',
@@ -104,6 +106,9 @@ class RpmPreamble(Section):
 
 
     def _add_group(self, group):
+        """
+        Actually write the group to the file
+        """
         t = type(group)
 
         if t == str:
@@ -319,8 +324,7 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_define.match(line):
-            match = self.reg.re_define.match(line)
-            self._add_line_value_to('define', match.group(2), key = '%define%s' % match.group(1))
+            self._add_line_to('define', line)
             return
 
         elif self.reg.re_autoreqprov.match(line):
@@ -334,7 +338,7 @@ class RpmPreamble(Section):
         elif self.reg.re_patch.match(line):
             # FIXME: this is not perfect, but it's good enough for most cases
             if not self.previous_line or not self.reg.re_comment.match(self.previous_line):
-                self.current_group.append('# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines')
+                self._add_line_to('patch', '# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines')
 
             match = self.reg.re_patch.match(line)
             # convert Patch: to Patch0:
@@ -342,7 +346,7 @@ class RpmPreamble(Section):
                 zero = '0'
             else:
                 zero = ''
-            self._add_line_value_to('source', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
+            self._add_line_value_to('patch', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
             return
 
         elif self.reg.re_provides.match(line):
