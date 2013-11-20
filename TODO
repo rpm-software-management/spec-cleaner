@@ -1,7 +1,3 @@
 Misc:
- + global changes should be done before local changes
-   - (i.e. rewrite the code so RpmSection.add code is called before e.g. RpmBuild.add)
-   - should fix make-params unit test
  + s/%doc %{(_mandir|_infodir)}/%{$1}/
- + do not break %(rpm ...) -- often used in BuildRequires/Requires
  + set fake date for 2013 to tests so they won't break with each year.
