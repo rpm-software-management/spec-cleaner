@@ -19,6 +19,7 @@ class RegexpSingle(object):
     re_spec_build = re.compile('^%build\s*$', re.IGNORECASE)
     re_spec_install = re.compile('^%install\s*$', re.IGNORECASE)
     re_spec_clean = re.compile('^%clean\s*$', re.IGNORECASE)
+    re_spec_check = re.compile('^%check\s*$', re.IGNORECASE)
     re_spec_scriptlets = re.compile('(?:^%pretrans\s*)|(?:^%pre\s*)|(?:^%post\s*)|(?:^%preun\s*)|(?:^%postun\s*)|(?:^%posttrans\s*)', re.IGNORECASE)
     re_spec_files = re.compile('^%files\s*', re.IGNORECASE)
     re_spec_changelog = re.compile('^%changelog\s*$', re.IGNORECASE)
@@ -78,7 +79,8 @@ class RegexpSingle(object):
     re_rm_double = re.compile('(\.|{)a')
 
     # rpmprep
-    re_patch_prep = re.compile('^%patch\s*(.*)-P\s*(\d*)\s*(.*)')
+    # FIXME: this is uttery wrong
+    re_patch_prep = re.compile('^%patch?\s*(-P\s*\d+|-p\d+)+\s*(.*)')
 
     # comment detection
     re_comment = re.compile('^$|^\s*#')

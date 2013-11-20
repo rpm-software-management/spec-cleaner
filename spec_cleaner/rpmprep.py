@@ -33,11 +33,18 @@ class RpmPrep(Section):
 
     def _prepare_patch(self, line):
         """
-        Prepend %patch with 0 and cleanup useless whitespace
+        Convert patchlines to something pretty
         """
+        # -p0 is default
+        line = line.replace('-p0', '')
+        # %patch0 is desired
         if line.startswith('%patch ') or line == '%patch':
             line = line.replace('%patch','%patch0')
+
+        # convert the %patch -P 50 -p10 to %patch50 -p10
+        # this apply only if there is ONE -P on the line, not multiple ones
         if self.reg.re_patch_prep.match(line):
+            match = self.reg.re_patch_prep.match(line)
             line = self.strip_useless_spaces('%%patch%s %s %s' % (match.group(2), match.group(1), match.group(3)))
 
         return line

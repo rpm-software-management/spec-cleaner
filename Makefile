@@ -36,7 +36,8 @@ install: bin/spec-cleaner
 	install -m 644 spec_cleaner/rpmprep.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
 	install -m 644 spec_cleaner/rpmprune.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
 	install -m 644 spec_cleaner/rpmscriplets.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
-	install -m 644 spec_cleaner/rpmregexp.py $(DESTDIR)$(SITEDIR)/spec_cleaner/
+	install -m 644 spec_cleaner/rpmregexp.py $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
+	install -m 644 spec_cleaner/rpmcheck.py $(DESTDIR)$(SITEDIR)/spec_cleaner/
 
 test: check
 

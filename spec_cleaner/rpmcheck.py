@@ -3,15 +3,15 @@
 from rpmsection import Section
 
 
-class RpmBuild(Section):
+class RpmCheck(Section):
     """
-        Replace various troublemakers in build phase
+        Replace various troublemakers in check phase
     """
 
     def add(self, line):
         line = self._complete_cleanup(line)
 
-        # smp_mflags for jobs
+        # smp_mflags for jobs as tests are usually able to run in parallel
         if not self.reg.re_comment.match(line):
             line = self.embrace_macros(line)
         line = self.reg.re_jobs.sub('%{?_smp_mflags}', line)
@@ -22,9 +22,5 @@ class RpmBuild(Section):
             # if there are no smp_flags or jobs spec just append it
             if line.find('%{?_smp_mflags}') == -1 and line.find('-j') == -1:
                 line = '{0} {1}'.format(line, '%{?_smp_mflags}')
-
-        # if user uses cmake directly just recommend him using the macros
-        if line.startswith('cmake'):
-            self.lines.append('# FIXME: you should use %cmake macros')
 
         Section.add(self, line)

@@ -16,6 +16,7 @@ from rpmpreamble import RpmPreamble
 from rpmpreamble import RpmPackage
 from rpmprep import RpmPrep
 from rpmbuild import RpmBuild
+from rpmcheck import RpmCheck
 from rpminstall import RpmInstall
 from rpmscriplets import RpmScriptlets
 from rpmfiles import RpmFiles
@@ -52,6 +53,7 @@ class RpmSpecCleaner:
             (self.reg.re_spec_build, RpmBuild),
             (self.reg.re_spec_install, RpmInstall),
             (self.reg.re_spec_clean, RpmClean),
+            (self.reg.re_spec_check, RpmCheck),
             (self.reg.re_spec_scriptlets, RpmScriptlets),
             (self.reg.re_spec_files, RpmFiles),
             (self.reg.re_spec_changelog, RpmChangelog)
