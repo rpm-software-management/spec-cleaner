@@ -30,8 +30,10 @@ class RegexpSingle(object):
     re_release = re.compile('^Release:\s*(\S*)', re.IGNORECASE)
     re_license = re.compile('^License:\s*(.*)', re.IGNORECASE)
     re_summary = re.compile('^Summary:\s*([^\.]*).*', re.IGNORECASE)
+    re_summary_localized = re.compile('^Summary(\(\S+\)):\s*([^\.]*).*', re.IGNORECASE)
     re_url = re.compile('^Url:\s*(\S*)', re.IGNORECASE)
     re_group = re.compile('^Group:\s*(.*)', re.IGNORECASE)
+    re_vendor = re.compile('^Vendor:\s*(.*)', re.IGNORECASE)
     re_source = re.compile('^Source(\d*):\s*(\S*)', re.IGNORECASE)
     re_patch = re.compile('^((?:#[#\s]*)?)Patch(\d*):\s*(\S*)', re.IGNORECASE)
     re_buildrequires = re.compile('^BuildRequires:\s*(.*)', re.IGNORECASE)
@@ -53,7 +55,7 @@ class RegexpSingle(object):
     re_jobs = re.compile('%{(_smp_mflags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
 
     # rpmcopyright
-    re_copyright = re.compile('^#\s*Copyright\ \(c\)\s*', re.IGNORECASE)
+    re_copyright = re.compile('^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
     re_suse_copyright = re.compile('SUSE LINUX Products GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
     re_rootforbuild = re.compile('^#\s*needsrootforbuild\s*$', re.IGNORECASE)
     re_binariesforbuld = re.compile('^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)

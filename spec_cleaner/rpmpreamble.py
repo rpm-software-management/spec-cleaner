@@ -18,7 +18,6 @@ class RpmPreamble(Section):
         Fix bad licenses.
         Use one line per BuildRequires/Requires/etc.
         Use %{version} instead of %{version}-%{release} for BuildRequires/etc.
-        Remove AutoReqProv.
         Standardize BuildRoot.
 
         This one is a bit tricky since we reorder things. We have a notion of
@@ -31,7 +30,7 @@ class RpmPreamble(Section):
         A group is a list of lines where the first few ones are either %define
         or comment lines, and the last one is a normal line.
 
-        This means that the %define and comments will stay attached to one
+        This means that comments will stay attached to one
         line, even if we reorder the lines.
     """
 
@@ -43,6 +42,7 @@ class RpmPreamble(Section):
         'release': 'Release',
         'license': 'License',
         'summary': 'Summary',
+        # The localized summary can contain various values, so it can't be here
         'url': 'Url',
         'group': 'Group',
         'source': 'Source',
@@ -60,26 +60,66 @@ class RpmPreamble(Section):
         'epoch': 'Epoch'
     }
 
-    category_to_fixer = {
-    }
+    categories_order = [
+        'define',
+        'name',
+        'version',
+        'release',
+        'license',
+        'summary',
+        'summary_localized',
+        'url',
+        'group',
+        'source',
+        'patch',
+        'buildrequires',
+        'prereq',
+        'requires',
+        'recommends',
+        'suggests',
+        'supplements',
+        'provides_obsoletes',
+        'buildroot',
+        'buildarch',
+        'misc',
+    ]
 
-    categories_order = [ 'define', 'name', 'version', 'release', 'license', 'summary', 'url', 'group', 'source', 'patch', 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements', 'provides_obsoletes', 'buildroot', 'buildarch', 'misc' ]
+    # categories that are sorted based on value in them
+    categories_with_sorted_package_tokens = [
+        'buildrequires',
+        'prereq',
+        'requires',
+        'recommends',
+        'suggests',
+        'supplements',
+    ]
 
-    categories_with_sorted_package_tokens = [ 'buildrequires', 'prereq', 'requires', 'recommends', 'suggests', 'supplements' ]
-    categories_with_package_tokens = categories_with_sorted_package_tokens[:]
-    categories_with_package_tokens.append('provides_obsoletes')
+    # categories that are sorted based on key value (eg Patch0 before Patch1)
+    categories_with_sorted_keyword_tokens = [
+        'source',
+        'patch',
+    ]
 
 
     def __init__(self, specfile):
         Section.__init__(self, specfile)
-        self.license_fixes = self._read_licenses_changes()
+        # dict of license replacement options
+        self.license_conversions = self._read_licenses_changes()
+        # dict of pkgconfig conversions
+        self.pkgconfig_conversions = self._read_pkgconfig_changes()
+        # start the object
         self._start_paragraph()
+        # initialize list of groups that need to pass over conversion fixer
+        self.categories_with_package_tokens = self.categories_with_sorted_package_tokens[:]
+        # these packages actually need fixing after we sent the values to reorder them
+        self.categories_with_package_tokens.append('provides_obsoletes')
 
+        # simple categories matching
         self.category_to_re = {
+            'define': self.reg.re_define,
             'name': self.reg.re_name,
             'version': self.reg.re_version,
-            'release': self.reg.re_release,
-            'license': self.reg.re_license,
+            # license need fix replacment
             'summary': self.reg.re_summary,
             'url': self.reg.re_url,
             'group': self.reg.re_group,
@@ -94,7 +134,13 @@ class RpmPreamble(Section):
             # for provides/obsoletes, we have a special case because we group them
             # for build root, we have a special match because we force its value
             'buildarch': self.reg.re_buildarch,
-            'epoch': self.reg.re_epoch
+        }
+
+        # deprecated matches that we no longer want to show up
+        self.category_to_clean = {
+            'vendor': self.reg.re_vendor,
+            'autoreqprov': self.reg.re_autoreqprov,
+            'epoch': self.reg.re_epoch,
         }
 
 
@@ -107,7 +153,7 @@ class RpmPreamble(Section):
 
     def _add_group(self, group):
         """
-        Actually write the group to the file
+        Actually store the lines from groups to resulting output
         """
         t = type(group)
 
@@ -120,26 +166,44 @@ class RpmPreamble(Section):
             raise RpmException('Unknown type of group in preamble: %s' % t)
 
 
-    def _end_paragraph(self):
-        def sort_helper_key(a):
-            t = type(a)
-            if t == str:
-                key = a
-            elif t == list:
-                key = a[-1]
-            else:
-                raise RpmException('Unknown type during sort: %s' % t)
+    def _sort_helper_key(self, a):
+        t = type(a)
+        if t == str:
+            key = a
+        elif t == list:
+            key = a[-1]
+        else:
+            raise RpmException('Unknown type during sort: %s' % t)
 
-            # Put pkgconfig()-style packages at the end of the list, after all
-            # non-pkgconfig()-style packages
-            if key.find('pkgconfig(') != -1:
-                return '1'+key
-            else:
-                return '0'+key
+        # Special case is the category grouping where we have to get the number in
+        # after the value
+        if self.reg.re_patch.match(key):
+            match = self.reg.re_patch.match(key)
+            key = int(match.group(2))
+        elif self.reg.re_source.match(key):
+            match = self.reg.re_source.match(key)
+            value = match.group(1)
+            if value == '':
+                value = '0'
+            key = int(value)
+        # Put pkgconfig()-style packages at the end of the list, after all
+        # non-pkgconfig()-style packages
+        elif key.find('pkgconfig(') != -1:
+            key = '1'+key
+        else:
+            key = '0'+key
+        return key
+
+
+    def _end_paragraph(self):
 
         for i in self.categories_order:
             if i in self.categories_with_sorted_package_tokens:
-                self.paragraph[i].sort(key=sort_helper_key)
+                self.paragraph[i].sort(key=self._sort_helper_key)
+            if i in self.categories_with_sorted_keyword_tokens:
+                #print self.paragraph[i]
+                self.paragraph[i].sort(key=self._sort_helper_key)
+                #print self.paragraph[i]
             for group in self.paragraph[i]:
                 self._add_group(group)
         if self.current_group:
@@ -158,31 +222,15 @@ class RpmPreamble(Section):
             license = self.strip_useless_spaces(license)
             license = license.replace('ORlater','or later')
             license = license.replace('ORsim','or similar')
-            if self.license_fixes.has_key(license):
-                license = self.license_fixes[license]
+            if self.license_conversions.has_key(license):
+                license = self.license_conversions[license]
             licenses[index] = license
 
         # create back new string with replaced licenses
         s = ' '.join(licenses).replace("( ","(").replace(" )",")")
-        return [ s ]
-
-
-    def _remove_tag(self, value):
-        return []
-
+        return s
 
     def _pkgname_to_pkgconfig(self, value):
-        # conver the devel deps to pkgconfig ones
-        files = FileUtils()
-        files.open_datafile(PKGCONFIG_CONVERSIONS)
-
-        r = {}
-        for line in files.f:
-            # the values are split by  ': '
-            pair = line.split(': ')
-            r[pair[0]] = pair[1][:-1]
-        files.close()
-
         # we just want the pkgname if we have version string there
         # and for the pkgconfig deps we need to put the version into
         # the braces
@@ -190,12 +238,12 @@ class RpmPreamble(Section):
         pkgname = value.split()[0]
         version = value.replace(pkgname,'')
         pkgconfig = []
-        if not pkgname in r:
+        if not pkgname in self.pkgconfig_conversions:
             # first check if the pacakge is in the replacements
             return [ value ]
         else:
             # first split the pkgconfig data
-            pkgconf_list = r[pkgname].split()
+            pkgconf_list = self.pkgconfig_conversions[pkgname].split()
             # then add each pkgconfig to the list
             #print pkgconf_list
             for j in pkgconf_list:
@@ -224,14 +272,6 @@ class RpmPreamble(Section):
         else:
             return [ value ]
 
-    # fillup fixer the easy way
-    category_to_fixer['license'] = _fix_license
-    category_to_fixer['epoch'] = _remove_tag
-
-    for i in categories_with_package_tokens:
-        category_to_fixer[i] = _fix_list_of_packages
-
-
     def _add_line_value_to(self, category, value, key = None):
         """
             Change a key-value line, to make sure we have the right spacing.
@@ -252,12 +292,11 @@ class RpmPreamble(Section):
         while len(key) < keylen:
             key += ' '
 
-        if self.category_to_fixer.has_key(category):
-            values = self.category_to_fixer[category](self, value)
+        if category in self.categories_with_package_tokens:
+            values = self._fix_list_of_packages(value)
         else:
             values = [ value ]
 
-        # NOTE: _remove_tag relies on passing value = [] here
         for value in values:
             line = key + value
             self._add_line_to(category, line)
@@ -273,6 +312,17 @@ class RpmPreamble(Section):
 
         self.previous_line = line
 
+    def _read_pkgconfig_changes(self):
+        pkgconfig = {}
+
+        files = FileUtils()
+        files.open_datafile(PKGCONFIG_CONVERSIONS)
+        for line in files.f:
+            # the values are split by  ': '
+            pair = line.split(': ')
+            pkgconfig[pair[0]] = pair[1][:-1]
+        files.close()
+        return pkgconfig
 
     def _read_licenses_changes(self):
         licenses = {}
@@ -316,13 +366,6 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_define.match(line):
-            self._add_line_to('define', line)
-            return
-
-        elif self.reg.re_autoreqprov.match(line):
-            return
-
         elif self.reg.re_source.match(line):
             match = self.reg.re_source.match(line)
             self._add_line_value_to('source', match.group(2), key = 'Source%s' % match.group(1))
@@ -331,7 +374,8 @@ class RpmPreamble(Section):
         elif self.reg.re_patch.match(line):
             # FIXME: this is not perfect, but it's good enough for most cases
             if not self.previous_line or not self.reg.re_comment.match(self.previous_line):
-                self._add_line_to('patch', '# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines')
+                self.current_group.append('# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines')
+                self.previous_line = line
 
             match = self.reg.re_patch.match(line)
             # convert Patch: to Patch0:
@@ -353,11 +397,44 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_buildroot.match(line):
+            # we only are fine with buildroot only once
             if len(self.paragraph['buildroot']) == 0:
                 self._add_line_value_to('buildroot', '%{_tmppath}/%{name}-%{version}-build')
             return
 
+        elif self.reg.re_license.match(line):
+            # first convert the license string to proper format and then append it
+            match = self.reg.re_license.match(line)
+            value = match.groups()[len(match.groups()) - 1]
+            value = self._fix_license(value)
+            self._add_line_value_to('license', value)
+            return
+
+
+        elif self.reg.re_release.match(line):
+            # the release is always 0
+            self._add_line_value_to('release', '0')
+            return
+
+        elif self.reg.re_summary_localized.match(line):
+            match = self.reg.re_summary_localized.match(line)
+            # we need to know what language we need
+            language = match.group(1)
+            # and what value is there
+            content = match.group(2)
+            self._add_line_value_to('summary_localized', content, key = 'Summary{0}'.format(language))
+            return
+
+        # loop for all other matching categories which
+        # do not require special attention
         else:
+            # cleanup
+            for (category, regexp) in self.category_to_clean.iteritems():
+                match = regexp.match(line)
+                if match:
+                    return
+
+            # simple matching
             for (category, regexp) in self.category_to_re.iteritems():
                 match = regexp.match(line)
                 if match:

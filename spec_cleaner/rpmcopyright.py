@@ -61,6 +61,9 @@ class RpmCopyright(Section):
         if not self.lines and not line:
             return
         if self.reg.re_copyright.match(line) and not self.reg.re_suse_copyright.search(line):
+            match = self.reg.re_copyright.match(line)
+            # always replace whitespace garbage on copyright line
+            line = '# Copyright (c) {0}'.format(match.group(1))
             self.copyrights.append(line)
         elif self.reg.re_rootforbuild.match(line):
             self.buildrules.append('# needsrootforbuild')

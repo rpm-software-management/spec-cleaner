@@ -18,13 +18,13 @@
 
 Name:           din
 Version:        5.2.1
-Release:        0.1
+Release:        0
 License:        GPL-2.0+
 Summary:        A synth of a 3rd kind
 Summary(de):    Ein Synthesizer der dritten Art
 Url:            http://www.dinisnoise.org/
 Group:          Productivity/Multimedia/Sound/Midi
-Source0:        %{name}-%{version}.tar.bz2
+Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.png
 BuildRequires:  Mesa
 BuildRequires:  autoconf
@@ -41,5 +41,4 @@ Requires:       Mesa
 Requires:       fftw3
 Requires:       jack
 Requires:       tcl >= 8.5
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 

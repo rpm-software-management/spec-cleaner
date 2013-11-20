@@ -15,7 +15,9 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
-Source0:        testfile.tar.bz2
+# this is crazy define
+%define:        root %{version}
+Source:         testfile.tar.bz2
 Source2:        testfile2.tar.bz2
 Source15:       anothersource.tar.xz
 # PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines
