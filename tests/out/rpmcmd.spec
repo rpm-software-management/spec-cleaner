@@ -1,5 +1,5 @@
 #
-# spec file for package sourcespatches
+# spec file for package rpmcmd
 #
 # Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
 #
@@ -15,19 +15,8 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
-# this is crazy define
-%define root %{version}
-Source:         testfile.tar.bz2
-Source2:        testfile2.tar.bz2
-Source15:       anothersource.tar.xz
-# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines
-Patch0:         test
-# This patch is improperly described but we are okay with it
-Patch10:        test2
-
-%prep
-%setup
-%setup -a1
-%setup -b2
-%patch10 -p4
-%patch0 -p1
+%define version %(rpm -q --qf '%{VERSION}' kernel-source)
+Requires:       mozilla-nspr >= %(rpm -q --queryformat '%{VERSION}' mozilla-nspr)
+Requires:       mozilla-nss >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss)
+Requires:       mozilla-nspr-devel >= %(rpm -q --queryformat '%{VERSION}' mozilla-nspr-devel)
+Requires:       mozilla-nss-devel >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss-devel)
