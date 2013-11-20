@@ -137,7 +137,7 @@ class RpmPreamble(Section):
             'buildarch': self.reg.re_buildarch,
         }
 
-        # deprecated matches that we no longer want to show up
+        # deprecated definitions that we no longer want to see
         self.category_to_clean = {
             'vendor': self.reg.re_vendor,
             'autoreqprov': self.reg.re_autoreqprov,

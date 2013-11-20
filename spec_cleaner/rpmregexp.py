@@ -50,6 +50,7 @@ class RegexpSingle(object):
     re_buildarch = re.compile('^\s*BuildArch(itectures)?:\s*(.*)', re.IGNORECASE)
     re_epoch = re.compile('^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_define = re.compile('^\s*%define\s*(.*)', re.IGNORECASE)
+    # FIXME: this is broken
     re_requires_token = re.compile('(\s*(\S+(?:\s*(?:[<>]=?|=)\s*[^\s,]+)?),?)')
     re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
 
