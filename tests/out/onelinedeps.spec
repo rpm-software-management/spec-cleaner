@@ -22,3 +22,4 @@ BuildRequires:  pkg3
 Requires:       gtk2
 Requires:       yast
 Requires:       zypper
+

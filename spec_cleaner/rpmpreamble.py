@@ -296,15 +296,8 @@ class RpmPreamble(Section):
 
     def add(self, line):
         line = self._complete_cleanup(line)
+        # if the line is empty just skip it we don't need new section for it
         if len(line) == 0:
-            if not self.previous_line or len(self.previous_line) == 0:
-                return
-
-            # we put the empty line in the current group (so we don't list it),
-            # and write the paragraph
-            self.current_group.append(line)
-            self._end_paragraph()
-            self.previous_line = line
             return
 
         elif self.reg.re_if.match(line):
@@ -379,6 +372,8 @@ class RpmPreamble(Section):
 
     def output(self, fout):
         self._end_paragraph()
+        # append empty line to the end of the section
+        self.lines.append('')
         Section.output(self, fout)
 
 
