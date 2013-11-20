@@ -1,12 +1,6 @@
 Misc:
- + PreReq: -> Requires(pre): (user might want to check if Requires(post/preun/...) is not a better choice
  + global changes should be done before local changes
    - (i.e. rewrite the code so RpmSection.add code is called before e.g. RpmBuild.add)
    - should fix make-params unit test
  + s/%doc %{(_mandir|_infodir)}/%{$1}/
  + do not break %(rpm ...) -- often used in BuildRequires/Requires
-
-Bugs:
-  buildroot is not placed corectly in the list, see the vlc.spec
-  conditional dependencies should be sorted at the end of the buildrequires, not the fact now
-  %attr, %ghost, etc. are not handled correctly

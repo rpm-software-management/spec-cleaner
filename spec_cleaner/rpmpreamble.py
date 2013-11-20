@@ -48,7 +48,7 @@ class RpmPreamble(Section):
         'source': 'Source',
         'patch': 'Patch',
         'buildrequires': 'BuildRequires',
-        'prereq': 'Requires(pre)',
+        'prereq': 'PreReq',
         'requires': 'Requires',
         'recommends': 'Recommends',
         'suggests': 'Suggests',
@@ -73,8 +73,9 @@ class RpmPreamble(Section):
         'source',
         'patch',
         'buildrequires',
-        'prereq',
         'requires',
+        'prereq',
+        'requires_phase', # this is Requires(pre/post/...)
         'recommends',
         'suggests',
         'supplements',
@@ -126,7 +127,7 @@ class RpmPreamble(Section):
             # for source, we have a special match to keep the source number
             # for patch, we have a special match to keep the patch number
             'buildrequires': self.reg.re_buildrequires,
-            'prereq': self.reg.re_prereq,
+            # for prereq we append warning comment so we don't mess it there
             'requires': self.reg.re_requires,
             'recommends': self.reg.re_recommends,
             'suggests': self.reg.re_suggests,
@@ -196,14 +197,14 @@ class RpmPreamble(Section):
 
 
     def _end_paragraph(self):
-
+        # sort based on category order
         for i in self.categories_order:
+            # sort-out within the ordered groups based on the key
             if i in self.categories_with_sorted_package_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
+            # sort-out within the ordered groups based on the keyword
             if i in self.categories_with_sorted_keyword_tokens:
-                #print self.paragraph[i]
                 self.paragraph[i].sort(key=self._sort_helper_key)
-                #print self.paragraph[i]
             for group in self.paragraph[i]:
                 self._add_group(group)
         if self.current_group:
@@ -289,6 +290,10 @@ class RpmPreamble(Section):
             raise RpmException('Unhandled category in preamble: %s' % category)
 
         key += ':'
+        # if the key is already longer then just add one space
+        if len(key) >= keylen:
+            key += ' '
+        # fillup rest of the alignment if key is shorter than muster
         while len(key) < keylen:
             key += ' '
 
@@ -384,6 +389,19 @@ class RpmPreamble(Section):
             else:
                 zero = ''
             self._add_line_value_to('patch', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
+            return
+
+        elif self.reg.re_prereq.match(line):
+            match = self.reg.re_prereq.match(line)
+            # add the comment about using proper macro which needs investingaton
+            self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
+            self._add_line_value_to('prereq', match.group(1))
+            return
+
+        elif self.reg.re_requires_phase.match(line):
+            match = self.reg.re_requires_phase.match(line)
+            # Put the requires content properly as key for formatting
+            self._add_line_value_to('prereq', match.group(2), key = 'Requires{0}'.format(match.group(1)))
             return
 
         elif self.reg.re_provides.match(line):

@@ -39,6 +39,7 @@ class RegexpSingle(object):
     re_buildrequires = re.compile('^BuildRequires:\s*(.*)', re.IGNORECASE)
     re_prereq = re.compile('^PreReq:\s*(.*)', re.IGNORECASE)
     re_requires = re.compile('^Requires:\s*(.*)', re.IGNORECASE)
+    re_requires_phase = re.compile('^Requires(\(\S+\)):\s*(.*)', re.IGNORECASE)
     re_recommends = re.compile('^Recommends:\s*(.*)', re.IGNORECASE)
     re_suggests = re.compile('^Suggests:\s*(.*)', re.IGNORECASE)
     re_supplements = re.compile('^Supplements:\s*(.*)', re.IGNORECASE)
