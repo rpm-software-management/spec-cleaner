@@ -24,16 +24,8 @@ class RpmInstall(Section):
 
         # do not use install macros as we have trouble with it for now
         # we can convert it later on
-        if line == '%{makeinstall}':
+        if self.reg.re_install.match(line):
             line = install_command
-        if line == '%make_install':
-            line = install_command
-        # FIXME: this is very poor patching
-        if line.find('DESTDIR=%{buildroot}') != -1:
-            buf = line.replace('DESTDIR=%{buildroot}', '')
-            buf = self.strip_useless_spaces(buf)
-            if buf == 'make install' or buf == 'make  install':
-                line = install_command
 
         Section.add(self, line)
 
