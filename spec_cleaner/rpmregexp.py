@@ -67,6 +67,7 @@ class RegexpSingle(object):
     re_dir = re.compile('^\s*%dir\s*(\S+)\s*')
 
     # rpminstall
+    re_clean = re.compile('rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?$')
     re_rm = re.compile('rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.+\.la;?$')
     re_find = re.compile('find\s+"?(%{buildroot}|\$b)("?\S?/?)*\s*.*\s+-i?name\s+["\'\\\\]?\*\.la($|.*[^\\\\]$)')
     re_find_double = re.compile('-i?name')
