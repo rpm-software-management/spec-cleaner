@@ -38,7 +38,7 @@ class RpmPrep(Section):
         # -p0 is default
         line = line.replace('-p0', '')
         # %patch0 is desired
-        if line.startswith('%patch ') or line == '%patch':
+        if (line.startswith('%patch ') or line == '%patch') and not '-P' in line:
             line = line.replace('%patch','%patch0')
 
         # convert the %patch -P 50 -p10 to %patch50 -p10

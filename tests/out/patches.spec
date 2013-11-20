@@ -44,3 +44,5 @@ Patch99:        f
 %patch10
 %patch11 -p1
 %patch12
+%patch11 -p3
+%patch -P20 -P30

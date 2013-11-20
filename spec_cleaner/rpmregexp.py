@@ -80,8 +80,7 @@ class RegexpSingle(object):
     re_rm_double = re.compile('(\.|{)a')
 
     # rpmprep
-    # FIXME: this is uttery wrong
-    re_patch_prep = re.compile('^%patch?\s*(-P\s*\d+|-p\d+)+\s*(.*)')
+    re_patch_prep = re.compile('^%patch\s*([^P]*)-P\s*(\d*)\s*([^P]*)$')
 
     # comment detection
     re_comment = re.compile('^$|^\s*#')
