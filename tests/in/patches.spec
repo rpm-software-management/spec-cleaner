@@ -17,5 +17,5 @@ Patch12: i
 %patch1
 %patch -p1
 %patch -P 10
-%patch -p1  -P 	11	 
+%patch -p1  -P 	11
 %patch  -P12 	-p0
