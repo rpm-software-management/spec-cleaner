@@ -5,6 +5,7 @@ config
 defattr
 define
 description
+desktop_database_post*
 dir
 doc
 else
