@@ -1,6 +1,7 @@
 attr
 build
 configure
+config
 defattr
 define
 description
@@ -17,6 +18,7 @@ check
 if
 ifarch
 ifnarch
+include
 install
 make_install
 package
