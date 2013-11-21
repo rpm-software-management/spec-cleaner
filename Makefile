@@ -47,7 +47,7 @@ check: spec_cleaner/__init__.py
 		CORRECT="`echo $$i | sed 's|^tests/in|tests/out|'`" ; \
 		NEW="`    echo $$i | sed 's|^tests/in|tests/tmp|'`" ; \
 		TEST="`   echo $$i | sed 's|^tests/in/\(.*\).spec|\1|'`" ; \
-		python spec_cleaner/__init__.py -f $$i -o "$$NEW" ; \
+		python spec_cleaner/__init__.py -f $$i | sed "s|`date +%%Y`|2013|" > "$$NEW" ; \
 		echo -n " * test '$$TEST': " ; \
 		if [ "`diff "$$CORRECT" "$$NEW" 2>&1`" ]; then \
 			echo "failed" ; \

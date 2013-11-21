@@ -1,3 +1,2 @@
 Misc:
  + s/%doc %{(_mandir|_infodir)}/%{$1}/
- + set fake date for 2013 to tests so they won't break with each year.
