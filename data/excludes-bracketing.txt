@@ -27,6 +27,7 @@ postun
 pre
 prep
 preun
+requires_eq
 setup
 suse_update_desktop_file
 triggerin

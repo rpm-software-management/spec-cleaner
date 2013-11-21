@@ -50,9 +50,11 @@ class RegexpSingle(object):
     re_buildarch = re.compile('^\s*BuildArch(itectures)?:\s*(.*)', re.IGNORECASE)
     re_epoch = re.compile('^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_define = re.compile('^\s*%define\s*(.*)', re.IGNORECASE)
-    # FIXME: this is broken
     re_requires_token = re.compile('(\s*([\w_\-+%{}]+(\s*[<>=]+\s*[\w_\-{}%.]+)?)\s*)')
     re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
+    # here we need to grab all submacros with rpm calls so just match almost everything
+    re_rpm_command = re.compile('%\(rpm\s*')
+    re_requires_eq = re.compile('^\s*%requires_eq\s*(.*)')
 
     # rpmbuild
     re_jobs = re.compile('%{(_smp_mflags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')

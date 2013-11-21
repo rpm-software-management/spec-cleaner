@@ -49,6 +49,7 @@ class RpmPreamble(Section):
         'buildrequires': 'BuildRequires',
         'prereq': 'PreReq',
         'requires': 'Requires',
+        'requires_eq': '%requires_eq',
         'recommends': 'Recommends',
         'suggests': 'Suggests',
         'supplements': 'Supplements',
@@ -73,6 +74,7 @@ class RpmPreamble(Section):
         'patch',
         'buildrequires',
         'requires',
+        'requires_eq',
         'prereq',
         'requires_phase', # this is Requires(pre/post/...)
         'recommends',
@@ -89,6 +91,7 @@ class RpmPreamble(Section):
         'buildrequires',
         'prereq',
         'requires',
+        'requires_eq',
         'recommends',
         'suggests',
         'supplements',
@@ -252,6 +255,12 @@ class RpmPreamble(Section):
 
     def _fix_list_of_packages(self, value):
         if self.reg.re_requires_token.match(value):
+            # we do fix the package list only if there is no rpm call there on line
+            # otherwise print there warning about nicer content and skip
+            if self.reg.re_rpm_command.search(value):
+                self.current_group.append('# FIXME: Use %requires_eq macro instead')
+                return [ value ]
+
             tokens = [ item[1] for item in self.reg.re_requires_token.findall(value) ]
             # first loop over all and do formatting as we can get more deps for one
             expanded = []
@@ -287,7 +296,9 @@ class RpmPreamble(Section):
         else:
             raise RpmException('Unhandled category in preamble: %s' % category)
 
-        key += ':'
+        # append : only if the thing is not known macro
+        if not key.startswith('%'):
+            key += ':'
         # if the key is already longer then just add one space
         if len(key) >= keylen:
             key += ' '
@@ -391,6 +402,11 @@ class RpmPreamble(Section):
 
         elif self.reg.re_define.match(line):
             self._add_line_to('define', line)
+            return
+
+        elif self.reg.re_requires_eq.match(line):
+            match = self.reg.re_requires_eq.match(line)
+            self._add_line_value_to('requires_eq', match.group(1))
             return
 
         elif self.reg.re_prereq.match(line):
