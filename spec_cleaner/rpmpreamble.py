@@ -27,8 +27,8 @@ class RpmPreamble(Section):
         %if/%else/%endif also mark paragraphs. It contains categories.
         A category is a list of lines on the same topic. It contains a list of
         groups.
-        A group is a list of lines where the first few ones are either %define
-        or comment lines, and the last one is a normal line.
+        A group is a list of lines where the first few ones are comment lines,
+        and the last one is a normal line.
 
         This means that comments will stay attached to one
         line, even if we reorder the lines.
@@ -36,7 +36,6 @@ class RpmPreamble(Section):
 
 
     category_to_key = {
-        'define': '%define',
         'name': 'Name',
         'version': 'Version',
         'release': 'Release',
@@ -117,7 +116,6 @@ class RpmPreamble(Section):
 
         # simple categories matching
         self.category_to_re = {
-            'define': self.reg.re_define,
             'name': self.reg.re_name,
             'version': self.reg.re_version,
             # license need fix replacment
@@ -389,6 +387,10 @@ class RpmPreamble(Section):
             else:
                 zero = ''
             self._add_line_value_to('patch', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
+            return
+
+        elif self.reg.re_define.match(line):
+            self._add_line_to('define', line)
             return
 
         elif self.reg.re_prereq.match(line):
