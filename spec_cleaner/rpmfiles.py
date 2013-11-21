@@ -7,35 +7,14 @@ from rpmsection import Section
 
 class RpmFiles(Section):
     """
-        Replace additional /usr, /etc and /var because we're sure we can use
-        macros there.
-
-        Replace '%dir %{_includedir}/mux' and '%{_includedir}/mux/*' with
-        '%{_includedir}/mux/'
+        Class that does replacements on the %files section.
     """
 
-    def __init__(self, specfile):
-        Section.__init__(self, specfile)
-        self.dir_on_previous_line = None
-
-
     def add(self, line):
-        line = self.reg.re_etcdir.sub(r'\1%{_sysconfdir}/', line)
-        line = self.reg.re_usrdir.sub(r'\1%{_prefix}/', line)
-        line = self.reg.re_vardir.sub(r'\1%{_localstatedir}/', line)
-
-        if self.dir_on_previous_line:
-            if line == self.dir_on_previous_line + '/*':
-                Section.add(self, self.dir_on_previous_line + '/')
-                self.dir_on_previous_line = None
-                return
-            else:
-                Section.add(self, '%dir ' + self.dir_on_previous_line)
-                self.dir_on_previous_line = None
-
-        match = self.reg.re_dir.match(line)
-        if match:
-            self.dir_on_previous_line = match.group(1)
-            return
+        # if it is 2nd line and it is not defattr just set there some default
+        if self.previous_line and \
+                self.previous_line.startswith('%files') and \
+                not line.startswith('%defattr'):
+            self.lines.append('%defattr(-,root,root)')
 
         Section.add(self, line)
