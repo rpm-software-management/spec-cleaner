@@ -423,12 +423,12 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_provides.match(line):
-            match = self.re_provides.match(line)
+            match = self.reg.re_provides.match(line)
             self._add_line_value_to('provides_obsoletes', match.group(1), key = 'Provides')
             return
 
         elif self.reg.re_obsoletes.match(line):
-            match = self.re_obsoletes.match(line)
+            match = self.reg.re_obsoletes.match(line)
             self._add_line_value_to('provides_obsoletes', match.group(1), key = 'Obsoletes')
             return
 
