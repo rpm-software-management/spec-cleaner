@@ -29,6 +29,7 @@ posttrans
 postun
 pre
 prep
+pretrans
 preun
 requires_eq
 restart_on_update
