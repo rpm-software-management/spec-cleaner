@@ -51,7 +51,7 @@ class RegexpSingle(object):
     re_epoch = re.compile('^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_define = re.compile('^\s*%define\s*(.*)', re.IGNORECASE)
     # FIXME: this is broken
-    re_requires_token = re.compile('(\s*(\S+(?:\s*(?:[<>]=?|=)\s*[^\s,]+)?),?)')
+    re_requires_token = re.compile('(\s*([\w_\-+%{}]+(\s*[<>=]+\s*[\w_\-{}%.]+)?)\s*)')
     re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
 
     # rpmbuild
