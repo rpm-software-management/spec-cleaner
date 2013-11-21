@@ -10,6 +10,7 @@ dir
 doc
 else
 endif
+exclude
 fdupes
 files
 find_lang
