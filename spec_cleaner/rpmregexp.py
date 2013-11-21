@@ -67,12 +67,6 @@ class RegexpSingle(object):
     re_nodebuginfo = re.compile('^#\s*nodebuginfo\s*$', re.IGNORECASE)
     re_icecream = re.compile('^#\s*icecream\s*$', re.IGNORECASE)
 
-    # rpmfiles
-    re_etcdir = re.compile('(^|\s)/etc/')
-    re_usrdir = re.compile('(^|\s)/usr/')
-    re_vardir = re.compile('(^|\s)/var/')
-    re_dir = re.compile('^\s*%dir\s*(\S+)\s*')
-
     # rpminstall
     re_clean = re.compile('rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?$')
     re_install = re.compile('{0}*(%make_install|%{{makeinstall}}|make{0}+install){0}*'.format('(DESTDIR=%{buildroot}|%{\?_smp_mflags}|\s|V=1|VERBOSE=1|-j\d+)'))
