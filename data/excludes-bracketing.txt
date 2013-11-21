@@ -31,9 +31,11 @@ pre
 prep
 preun
 requires_eq
+restart_on_update
 setup
-services_add_*
-services_del_*
+service_add_*
+service_del_*
+stop_on_removal
 suse_update_desktop_file
 systemd_requires
 triggerin
