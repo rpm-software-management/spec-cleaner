@@ -32,7 +32,10 @@ prep
 preun
 requires_eq
 setup
+services_add_*
+services_del_*
 suse_update_desktop_file
+systemd_requires
 triggerin
 triggerpostun
 triggerun
