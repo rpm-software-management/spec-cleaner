@@ -33,6 +33,7 @@ Requires:       rrr >= %{version}
 Requires:       zzz
 # FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         aaa < 3.2.1
+# FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         bbb
 PreReq:         eee = %{version}
 PreReq:         iii <= 4.2.1
