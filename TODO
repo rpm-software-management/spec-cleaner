@@ -1,2 +1,0 @@
-Misc:
- + s/%doc %{(_mandir|_infodir)}/%{$1}/
