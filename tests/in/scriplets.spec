@@ -1,5 +1,5 @@
 %post
-/sbin/ldcofing
+/sbin/ldconfig
 
 %post -n %{_libname}
 /sbin/ldconfig

@@ -5,36 +5,16 @@ from rpmsection import Section
 
 class RpmScriptlets(Section):
     '''
-        Do %post -p /sbin/ldconfig when possible.
+        Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig
     '''
 
-
-    def __init__(self, specfile):
-        Section.__init__(self, specfile)
-        self.cache = []
-
-
-    def add(self, line):
-        if len(self.lines) == 0:
-            if not self.cache:
-                if line.find(' -p ') == -1 and line.find(' -f ') == -1:
-                    self.cache.append(line)
-                    return
-            else:
-                if line in ['', '/sbin/ldconfig' ]:
-                    self.cache.append(line)
-                    return
-                else:
-                    for cached in self.cache:
-                        Section.add(self, cached)
-                    self.cache = None
-
-        Section.add(self, line)
-
-
     def output(self, fout):
-        if self.cache:
-            Section.add(self, self.cache[0] + ' -p /sbin/ldconfig')
-            Section.add(self, '')
-
+        # if we have 2 or 3 lines where last one is empty
+        nolines = len(self.lines)
+        if nolines == 2 or ( nolines == 3 and self.lines[2] == '') \
+            and self.lines[1] == '/sbin/ldconfig':
+            pkg = self.lines[0]
+            self.lines = []
+            self.lines.append('{0} -p /sbin/ldconfig'.format(pkg))
+            self.lines.append('')
         Section.output(self, fout)

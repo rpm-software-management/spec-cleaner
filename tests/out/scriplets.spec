@@ -15,7 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
-%post -p /sbin/ldcofing
+%post -p /sbin/ldconfig
 
 %post -n %{_libname} -p /sbin/ldconfig
 
