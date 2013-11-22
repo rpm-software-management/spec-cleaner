@@ -224,3 +224,4 @@ find %{buildroot} -type f -name "*.la" -delete -print
 find %{buildroot} -type f -name "*.la" -delete -print
 find %{buildroot} -type f -name "*.la" -delete -print
 find %{buildroot} -type f -name "*.la" -delete -print
+rm -fv %{buildroot}%{_libdir}/libapparmor.la %{buildroot}%{_libdir}/libimmunix.la
