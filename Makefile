@@ -61,7 +61,7 @@ check: spec_cleaner/__init__.py
 		echo "`echo $$FAILED | wc -w` tests out of `echo tests/in/*.spec | wc -w` failed:" ; \
 		echo "  $$FAILED" ; \
 		echo ; \
-		echo "Check errors by running"; \
+		echo "Check errors by running:"; \
 		for i in $$FAILED; do echo "  diff -Naru tests/out/$$i.spec tests/tmp/$$i.spec"; done; \
 		echo ; \
 		exit 1 ; \
