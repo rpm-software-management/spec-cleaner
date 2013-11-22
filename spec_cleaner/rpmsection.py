@@ -104,11 +104,12 @@ class Section(object):
         # FIXME: use regexp to prevent $RPM_BUILD_ROOT_REPLACEMENT
         line = line.replace('${RPM_BUILD_ROOT}', '%{buildroot}')
         line = line.replace('$RPM_BUILD_ROOT', '%{buildroot}')
+        line = line.replace('"%{buildroot}"', '%{buildroot}')
         line = line.replace('%{buildroot}/etc/init.d/', '%{buildroot}%{_initddir}/')
         line = line.replace('%{buildroot}/etc/', '%{buildroot}%{_sysconfdir}/')
+        line = line.replace('%{buildroot}/usr/%{_lib}', '%{buildroot}%{_libdir}')
         line = line.replace('%{buildroot}/usr/', '%{buildroot}%{_prefix}/')
         line = line.replace('%{buildroot}/var/', '%{buildroot}%{_localstatedir}/')
-        line = line.replace('"%{buildroot}"', '%{buildroot}')
         return line
 
 
