@@ -5,7 +5,16 @@ import os
 
 from fileutils import FileUtils
 
+class Singleton:
+  def __init__(self, klass):
+    self.klass = klass
+    self.instance = None
+  def __call__(self, *args, **kwds):
+    if self.instance == None:
+      self.instance = self.klass(*args, **kwds)
+    return self.instance
 
+@Singleton
 class RegexpSingle(object):
     """
         Singleton containing all regular expressions compiled in one run.
@@ -146,15 +155,7 @@ class RegexpSingle(object):
         global_macrofuncs = self._parse_rpm_showrc()
         spec_macrofuncs = self._find_macros_with_arg(specfile)
 
+        print keywords
+        print global_macrofuncs
+        print spec_macrofuncs
         self.re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords + global_macrofuncs + spec_macrofuncs) + ')}')
-
-
-    # singleton creation
-    _instance = None
-
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(RegexpSingle, cls).__new__(
-                                cls, *args, **kwargs)
-        return cls._instance
