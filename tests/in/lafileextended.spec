@@ -18,7 +18,7 @@ find %{buildroot}%{_libdir} -name '*.la' -delete
 find  %{buildroot}%{_libdir} -name '*.la' -delete -print
 find %{buildroot}%{_libdir} -name "*.la" -delete -print
 find %{buildroot}%{_libdir} -name '*.la' -delete -print
-find %{buildroot}%{_libdir} -name '*.la' -delete -print >/dev/null 2>&1 || 
+find %{buildroot}%{_libdir} -name '*.la' -delete -print >/dev/null 2>&1 ||
 find %{buildroot}/%{_libdir} -name '*.la' -exec rm {} \;
 find %{buildroot}%{_libdir} -name '*.la' -exec rm {} \;
 find %{buildroot}%{_libdir} -name \*.la -exec rm '{}' \;
@@ -207,3 +207,4 @@ rm -v %{buildroot}%{_libdir}/ntrack/modules/*.la
 rm -vf %{buildroot}%{_libdir}/*.la
 %{__rm} -vf %{buildroot}%{_libdir}/*.la
 %{__rm} -vf %{buildroot}%{_libdir}/%{pkg_name}/*.la
+rm -fv %{buildroot}%{_libdir}/libapparmor.la %{buildroot}%{_libdir}/libimmunix.la
