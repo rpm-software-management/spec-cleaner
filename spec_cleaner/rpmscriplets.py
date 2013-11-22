@@ -12,7 +12,7 @@ class RpmScriptlets(Section):
         # if we have 2 or 3 lines where last one is empty
         nolines = len(self.lines)
         if nolines == 2 or ( nolines == 3 and self.lines[2] == '') \
-            and self.lines[1] == '/sbin/ldconfig':
+                and self.lines[1] == '/sbin/ldconfig':
             pkg = self.lines[0]
             self.lines = []
             self.lines.append('{0} -p /sbin/ldconfig'.format(pkg))
