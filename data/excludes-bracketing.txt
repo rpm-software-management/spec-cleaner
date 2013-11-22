@@ -5,7 +5,7 @@ config
 defattr
 define
 description
-desktop_database_post*
+desktop_database_post[^\s]*
 dir
 doc
 else
@@ -21,7 +21,7 @@ if
 ifarch
 ifnarch
 include
-insserv_*
+insserv_[^\s]*
 install
 make_install
 package
@@ -36,8 +36,8 @@ preun
 requires_eq
 restart_on_update
 setup
-service_add_*
-service_del_*
+service_add_[^\s]*
+service_del_[^\s]*
 stop_on_removal
 suse_update_desktop_file
 systemd_requires

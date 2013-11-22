@@ -154,5 +154,4 @@ class RegexpSingle(object):
         keywords = self._load_keywords_whitelist()
         global_macrofuncs = self._parse_rpm_showrc()
         spec_macrofuncs = self._find_macros_with_arg(specfile)
-
         self.re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords + global_macrofuncs + spec_macrofuncs) + ')}')
