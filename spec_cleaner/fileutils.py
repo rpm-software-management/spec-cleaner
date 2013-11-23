@@ -27,7 +27,7 @@ class FileUtils:
             # the .. is appended as we are in spec_cleaner sub_folder
             try:
                 f = open('{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), FILE), 'r')
-            except IOError, e:
+            except IOError as e:
                 raise RpmException(e)
 
         self.f = f

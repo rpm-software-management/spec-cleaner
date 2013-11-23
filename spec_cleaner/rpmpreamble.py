@@ -220,13 +220,13 @@ class RpmPreamble(Section):
 
     def _fix_license(self, value):
         # split using 'or', 'and' and parenthesis, ignore empty strings
-        licenses = filter(lambda a: a != '', re.split('(\(|\)| and | or )', value))
+        licenses = [a for a in re.split('(\(|\)| and | or )', value) if a != '']
 
         for (index, license) in enumerate(licenses):
             license = self.strip_useless_spaces(license)
             license = license.replace('ORlater','or later')
             license = license.replace('ORsim','or similar')
-            if self.license_conversions.has_key(license):
+            if license in self.license_conversions:
                 license = self.license_conversions[license]
             licenses[index] = license
 
@@ -294,7 +294,7 @@ class RpmPreamble(Section):
 
         if key:
             pass
-        elif self.category_to_key.has_key(category):
+        elif category in self.category_to_key:
             key = self.category_to_key[category]
         else:
             raise RpmException('Unhandled category in preamble: %s' % category)
@@ -468,13 +468,13 @@ class RpmPreamble(Section):
         # do not require special attention
         else:
             # cleanup
-            for (category, regexp) in self.category_to_clean.iteritems():
+            for (category, regexp) in self.category_to_clean.items():
                 match = regexp.match(line)
                 if match:
                     return
 
             # simple matching
-            for (category, regexp) in self.category_to_re.iteritems():
+            for (category, regexp) in self.category_to_re.items():
                 match = regexp.match(line)
                 if match:
                     # instead of matching first group as there is only one,
