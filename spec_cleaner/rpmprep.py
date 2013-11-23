@@ -28,6 +28,7 @@ class RpmPrep(Section):
             line = line.replace(' -n %{name}-%{version}', '')
             line = line.replace(' -n "%{name}-%{version}"', '')
             line = self.strip_useless_spaces(line)
+            line = line.replace('%setup', '%setup -q')
 
         return line
 

@@ -26,8 +26,8 @@ Patch0:         test
 Patch10:        test2
 
 %prep
-%setup
-%setup -a1
-%setup -b2
+%setup -q
+%setup -q -a1
+%setup -q -b2
 %patch10 -p4
 %patch0 -p1
