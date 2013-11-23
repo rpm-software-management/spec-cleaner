@@ -23,7 +23,7 @@ def process_args(argv):
 
     parser = argparse.ArgumentParser(prog='spec-cleaner',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description='Cleans the given spec file according to some arbitrary style guide and prints the result.')
+                                     description='Cleans the given spec file according to style guide and returns the result.')
 
     # Make the -d, -i, and -o exclusive as we can do only one of those
     output_group = parser.add_mutually_exclusive_group()
@@ -38,6 +38,8 @@ def process_args(argv):
                         help='overwrite the output file if already exist.')
     output_group.add_argument('-i', '--inline', action='store_true', default=False,
                         help='inline the changes directly to the parsed file.')
+    parser.add_argument('-n', '--no-pkgconfig', action='store_true', default=False,
+                        help='do not convert dependencies to their pkgconfig counterparts.')
     output_group.add_argument('-o', '--output', default='',
                         help='specify the output file for the cleaned spec content.')
     parser.add_argument('-v', '--version', action='version', version=__version__,
@@ -80,6 +82,7 @@ def main(argv):
     try:
         cleaner = RpmSpecCleaner(options.spec,
                                  options.output,
+                                 options.no_pkgconfig,
                                  options.inline,
                                  options.diff,
                                  options.diff_prog)
