@@ -11,10 +11,16 @@ class RpmFiles(Section):
     """
 
     def add(self, line):
+        line = self._complete_cleanup(line)
+        line = self.strip_useless_spaces(line)
         # if it is 2nd line and it is not defattr just set there some default
         if self.previous_line and \
                 self.previous_line.startswith('%files') and \
                 not line.startswith('%defattr'):
             self.lines.append('%defattr(-,root,root)')
+
+        # toss out empty lines
+        if line == '':
+            return
 
         Section.add(self, line)

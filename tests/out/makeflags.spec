@@ -18,3 +18,4 @@
 %build
 make %{?_smp_mflags}
 make -j1
+

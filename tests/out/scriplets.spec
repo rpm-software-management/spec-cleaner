@@ -22,3 +22,4 @@
 %post
 /sbin/ldconfig
 someothercommand
+

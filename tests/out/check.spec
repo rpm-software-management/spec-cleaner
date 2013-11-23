@@ -19,3 +19,4 @@
 make V=1 check RUNTEST=true %{?_smp_mflags}
 make -j1 check
 make test V=1 %{?_smp_mflags}
+

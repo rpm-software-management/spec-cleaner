@@ -31,3 +31,4 @@ Patch10:        test2
 %setup -q -b2
 %patch10 -p4
 %patch0 -p1
+
