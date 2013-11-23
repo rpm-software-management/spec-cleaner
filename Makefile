@@ -42,12 +42,26 @@ install: bin/spec-cleaner
 test: check
 
 check: spec_cleaner/__init__.py
-	@echo "Running tests:" ; \
+	@echo "Running tests in python2:" ; \
 	for i in tests/in/*.spec; do \
 		CORRECT="`echo $$i | sed 's|^tests/in|tests/out|'`" ; \
 		NEW="`    echo $$i | sed 's|^tests/in|tests/tmp|'`" ; \
 		TEST="`   echo $$i | sed 's|^tests/in/\(.*\).spec|\1|'`" ; \
-		python spec_cleaner/__init__.py -f $$i | sed "s|`date +%%Y`|2013|" > "$$NEW" ; \
+		python2 spec_cleaner/__init__.py -f $$i | sed "s|`date +%%Y`|2013|" > "$$NEW" ; \
+		echo -n " * test '$$TEST': " ; \
+		if [ "`diff "$$CORRECT" "$$NEW" 2>&1`" ]; then \
+			echo "failed" ; \
+			FAILED="$$FAILED $$TEST" ; \
+		else \
+			echo "passed" ; \
+		fi ; \
+	done ; \
+	echo "Running tests in python3:" ; \
+	for i in tests/in/*.spec; do \
+		CORRECT="`echo $$i | sed 's|^tests/in|tests/out|'`" ; \
+		NEW="`    echo $$i | sed 's|^tests/in|tests/tmp|'`" ; \
+		TEST="`   echo $$i | sed 's|^tests/in/\(.*\).spec|\1|'`" ; \
+		python3 spec_cleaner/__init__.py -f $$i | sed "s|`date +%%Y`|2013|" > "$$NEW" ; \
 		echo -n " * test '$$TEST': " ; \
 		if [ "`diff "$$CORRECT" "$$NEW" 2>&1`" ]; then \
 			echo "failed" ; \
