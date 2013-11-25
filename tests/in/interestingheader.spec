@@ -13,7 +13,7 @@ BuildRequires:  libSDL-devel
 BuildRequires:  autoconf
 BuildRequires:  update-desktop-files
 
-Summary:        A synth of a 3rd kind
+Summary:        .spec file cleaner
 Summary(de):    Ein Synthesizer der dritten Art
 Name:           din
 Version:        5.2.1

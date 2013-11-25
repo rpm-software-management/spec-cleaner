@@ -275,7 +275,10 @@ class RpmPreamble(Section):
                 token = re.sub(r'([<>]=?|=)', r' \1 ', token)
                 if self.pkgconfig:
                     token = self._pkgname_to_pkgconfig(token)
-                expanded += token
+                if isinstance(token, str):
+                    expanded.append(token)
+                else:
+                    expanded += token
             # and then sort them :)
             expanded.sort()
 

@@ -39,8 +39,8 @@ class RegexpSingle(object):
     re_version = re.compile('^Version:\s*(\S*)', re.IGNORECASE)
     re_release = re.compile('^Release:\s*(\S*)', re.IGNORECASE)
     re_license = re.compile('^License:\s*(.*)', re.IGNORECASE)
-    re_summary = re.compile('^Summary:\s*([^\.]*).*', re.IGNORECASE)
-    re_summary_localized = re.compile('^Summary(\(\S+\)):\s*([^\.]*).*', re.IGNORECASE)
+    re_summary = re.compile('^Summary:\s*(.*)', re.IGNORECASE)
+    re_summary_localized = re.compile('^Summary(\(\S+\)):\s*(.*)', re.IGNORECASE)
     re_url = re.compile('^Url:\s*(\S*)', re.IGNORECASE)
     re_group = re.compile('^Group:\s*(.*)', re.IGNORECASE)
     re_vendor = re.compile('^Vendor:\s*(.*)', re.IGNORECASE)
@@ -78,7 +78,7 @@ class RegexpSingle(object):
 
     # rpminstall
     re_clean = re.compile('rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?$')
-    re_install = re.compile('{0}*(%make_install|%{{makeinstall}}|make{0}+install){0}*'.format('(DESTDIR=%{buildroot}|%{\?_smp_mflags}|\s|V=1|VERBOSE=1|-j\d+)'))
+    re_install = re.compile('{0}*(%make_install|%{{makeinstall}}|make{0}+install){0}*$'.format('(DESTDIR=%{buildroot}|%{\?_smp_mflags}|\s|V=1|VERBOSE=1|-j\d+)'))
     re_rm = re.compile('rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.*\*\.la;?$')
     re_find = re.compile('find\s+"?(%{buildroot}|\$b)("?\S?/?)*\s*.*\s+-i?name\s+["\'\\\\]?\*\.la($|.*[^\\\\]$)')
     re_find_double = re.compile('-i?name')
