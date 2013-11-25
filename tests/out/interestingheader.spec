@@ -19,11 +19,11 @@
 Name:           din
 Version:        5.2.1
 Release:        0
-License:        GPL-2.0+
 Summary:        .spec file cleaner
 Summary(de):    Ein Synthesizer der dritten Art
-Url:            http://www.dinisnoise.org/
+License:        GPL-2.0+
 Group:          Productivity/Multimedia/Sound/Midi
+Url:            http://www.dinisnoise.org/
 Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.png
 BuildRequires:  Mesa
