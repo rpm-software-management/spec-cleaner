@@ -36,10 +36,10 @@ class RpmSpecCleaner:
     current_section = None
 
 
-    def __init__(self, specfile, output, no_pkgconfig, inline, diff, diff_prog):
+    def __init__(self, specfile, output, pkgconfig, inline, diff, diff_prog):
         self.specfile = specfile
         self.output = output
-        self.no_pkgconfig = no_pkgconfig
+        self.pkgconfig = pkgconfig
         self.inline = inline
         self.diff = diff
         self.diff_prog = diff_prog
@@ -115,7 +115,7 @@ class RpmSpecCleaner:
                 self.current_section.output(self.fout)
                 # we need to sent pkgconfig option to preamble and package
                 if new_class == RpmPreamble or new_class == RpmPackage:
-                    self.current_section = new_class(self.specfile, self.no_pkgconfig)
+                    self.current_section = new_class(self.specfile, self.pkgconfig)
                 else:
                     self.current_section = new_class(self.specfile)
 

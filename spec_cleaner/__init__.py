@@ -32,14 +32,14 @@ def process_args(argv):
                         help='spec file to beautify')
     output_group.add_argument('-d', '--diff', action='store_true', default=False,
                         help='run the diff program to show differences between new and orginal specfile.')
-    parser.add_argument('-p', '--diff-prog', default='vimdiff',
+    parser.add_argument('--diff-prog', default='vimdiff',
                         help='specify the diff binary to call with diff option.')
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='overwrite the output file if already exist.')
     output_group.add_argument('-i', '--inline', action='store_true', default=False,
                         help='inline the changes directly to the parsed file.')
-    parser.add_argument('-n', '--no-pkgconfig', action='store_true', default=False,
-                        help='do not convert dependencies to their pkgconfig counterparts.')
+    parser.add_argument('-p', '--pkgconfig', action='store_true', default=False,
+                        help='convert dependencies to their pkgconfig counterparts, requires bit of cleanup in spec afterwards.')
     output_group.add_argument('-o', '--output', default='',
                         help='specify the output file for the cleaned spec content.')
     parser.add_argument('-v', '--version', action='version', version=__version__,
@@ -82,7 +82,7 @@ def main(argv):
     try:
         cleaner = RpmSpecCleaner(options.spec,
                                  options.output,
-                                 options.no_pkgconfig,
+                                 options.pkgconfig,
                                  options.inline,
                                  options.diff,
                                  options.diff_prog)

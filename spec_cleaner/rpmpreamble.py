@@ -104,10 +104,10 @@ class RpmPreamble(Section):
     ]
 
 
-    def __init__(self, specfile, no_pkgconfig):
+    def __init__(self, specfile, pkgconfig):
         Section.__init__(self, specfile)
         # do we want pkgconfig
-        self.no_pkgconfig = no_pkgconfig
+        self.pkgconfig = pkgconfig
         # dict of license replacement options
         self.license_conversions = self._read_licenses_changes()
         # dict of pkgconfig conversions
@@ -273,7 +273,7 @@ class RpmPreamble(Section):
                 # rpm actually allows ',' separated list of deps
                 token = token.replace(',','')
                 token = re.sub(r'([<>]=?|=)', r' \1 ', token)
-                if not self.no_pkgconfig:
+                if self.pkgconfig:
                     token = self._pkgname_to_pkgconfig(token)
                 expanded += token
             # and then sort them :)
