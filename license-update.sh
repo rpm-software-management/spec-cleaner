@@ -35,7 +35,7 @@ pushd "${TEMPDIR}" &> /dev/null
         LC_ALL=C
         sort -o licenses_changes.txt -u licenses_changes.txt
     )
-    cat licenses_changes.txt
+    grep -v '^$' licenses_changes.txt
 popd &> /dev/null
 
 rm -rf ${TEMPDIR}

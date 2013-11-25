@@ -1,4 +1,3 @@
-
 AAL	AAL
 AAL+	AAL+
 AFL-1.1	AFL-1.1
