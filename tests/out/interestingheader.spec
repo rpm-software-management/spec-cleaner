@@ -20,7 +20,7 @@ Name:           din
 Version:        5.2.1
 Release:        0
 License:        GPL-2.0+
-Summary:        A synth of a 3rd kind
+Summary:        .spec file cleaner
 Summary(de):    Ein Synthesizer der dritten Art
 Url:            http://www.dinisnoise.org/
 Group:          Productivity/Multimedia/Sound/Midi
