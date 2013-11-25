@@ -5,10 +5,13 @@ LIBEXECDIR ?= $(PREFIX)/libexec
 LIBDIR ?= $(PREFIX)/lib
 SITEDIR ?= $(LIBDIR)/python2.7/site-packages
 
-all: data/pkgconfig_conversions.txt
+all: data/pkgconfig_conversions.txt data/licenses_changes.txt
 
 data/pkgconfig_conversions.txt: pkgconfig-update.sed pkgconfig-update.sh
 	@sh pkgconfig-update.sh 13.1 > $@
+
+data/licenses_changes.txt: license-update.sh
+	@sh license-update.sh > $@
 
 install: bin/spec-cleaner
 	@echo "Installing package to $(DESTDIR)" ; \

@@ -349,9 +349,6 @@ class RpmPreamble(Section):
 
         files = FileUtils()
         f = files.open_datafile(LICENSES_CHANGES)
-        # ignore first line containing 'First line' (WTF?)
-        files.f.readline()
-        # load and store the rest
         for line in files.f:
             # strip newline
             line = line[:-1]

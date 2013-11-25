@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 verify_fetch() {
     if [[ -z ${1} ]]; then
         echo "Specify the URL to verify"
         exit 1
     fi
-    if [[ $(curl -o /dev/null --silent --head --write-out '%{http_code}\n' "${1}") != 302 ]]; then
+    local curl=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' "${1}")
+    if [[ ! ( ${curl} == 302 || ${curl} == 200 ) ]]; then
         echo "Unable to download the repodata from \"${1}\""
         exit 1
     fi
@@ -42,5 +43,4 @@ pushd "${TEMPDIR}" &> /dev/null
     sed -nf "${DIR}"/pkgconfig-update.sed "$TMP" | sort | uniq
 popd &> /dev/null
 
-rm -rf ${TMP}
-rm -rf ${TEMDIR}
+rm -rf ${TEMPDIR}
