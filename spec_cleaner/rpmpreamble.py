@@ -368,11 +368,11 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_if.match(line):
-            # %if/%else/%endif marks the end of the previous paragraph
-            # We append the line at the end of the previous paragraph, though,
-            # since it will stay at the end there. If putting it at the
-            # beginning of the next paragraph, it will likely move (with the
-            # misc category).
+            # If we match the if else or endif we create subgroup
+            # this is basically our class again until we match
+            # else where we mark end of paragraph or endif
+            # which mark the end of our subclass and that we can
+            # return the data to our main class for at-bottom placement
             self.current_group.append(line)
             self._end_paragraph()
             self.previous_line = line
