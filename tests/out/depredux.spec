@@ -15,5 +15,8 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+Name:           depredux
+# comment one
+# comment two
 BuildRequires:  pkgconfig(libva)
 

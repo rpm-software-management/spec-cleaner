@@ -199,12 +199,59 @@ class RpmPreamble(Section):
         return key
 
 
+    def _sort_uniq(self, seq):
+        def check_list(x):
+            if type(x) == list:
+                return True
+            else:
+                return False
+
+        seen = {}
+        result = []
+        for item in seq:
+            marker = item
+            # We can have list there with comment
+            # So if list found just grab latest in the sublist
+            if check_list(marker):
+                marker = marker[-1]
+            if marker in seen:
+                # Not a list, no comment to preserve
+                if not check_list(item):
+                    continue
+                # Here we need to preserve comment content
+                # As the list is already sorted we can count on it to be
+                # seen in previous run.
+                # match the current and then based on wether the previous
+                # value is a list we append or convert to list entirely
+                prev = result[-1]
+                if check_list(prev):
+                    # Remove last line of the appending
+                    # list which is the actual dupe value
+                    item.pop()
+                    # Remove it from orginal
+                    prev.pop()
+                    # join together
+                    prev += item
+                    # append the value back
+                    prev.append(marker)
+                    result[-1] = prev
+                else:
+                    # Easy as there was no list
+                    # just replace it with our value
+                    result[-1] = item
+                continue
+            seen[marker] = 1
+            result.append(item)
+        return result
+
+
     def _end_paragraph(self):
         # sort based on category order
         for i in self.categories_order:
             # sort-out within the ordered groups based on the key
             if i in self.categories_with_sorted_package_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
+                self.paragraph[i] = self._sort_uniq(self.paragraph[i])
             # sort-out within the ordered groups based on the keyword
             if i in self.categories_with_sorted_keyword_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
