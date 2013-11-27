@@ -63,16 +63,16 @@ class RpmSpecCleaner:
         if self.output:
             self.fout = open(self.output, 'w')
         elif self.inline:
-            io = io.StringIO()
+            fifo = io.BytesIO()
             while True:
                 bytes = self.fin.read(500 * 1024)
                 if len(bytes) == 0:
                     break
-                io.write(bytes)
+                fifo.write(bytes)
 
             self.fin.close()
-            io.seek(0)
-            self.fin = io
+            fifo.seek(0)
+            self.fin = fifo
             self.fout = open(self.specfile, 'w')
         elif self.diff:
             self.fout = tempfile.NamedTemporaryFile(prefix=self.specfile+'.', suffix='.spec')
