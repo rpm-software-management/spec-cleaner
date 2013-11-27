@@ -40,7 +40,7 @@ if [ "x${MYSPECFILES}" = "x " ]; then
 fi
 
 for i in ${MYSPECFILES}; do
-    if [! -w "${i}" ]; then
+    if [ ! -w "${i}" ]; then
         echo "WARNING: spec file \"${i}\" is not writeable."
         continue
     fi
