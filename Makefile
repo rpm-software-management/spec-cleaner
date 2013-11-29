@@ -22,8 +22,8 @@ install: bin/spec-cleaner
 	install -m 644 data/pkgconfig_conversions.txt $(DESTDIR)$(DATADIR)/spec-cleaner/ ; \
 	install -m 644 data/excludes-bracketing.txt $(DESTDIR)$(DATADIR)/spec-cleaner/
 	@install -d $(DESTDIR)$(LIBEXECDIR)/obs/service/ ; \
-	install -m 755 obs/format_spec_file $(DESTDIR)$(LIBEXECDIR)/obs/service/ ; \
-	install -m 644 obs/format_spec_file.service $(DESTDIR)$(LIBEXECDIR)/obs/service/
+	install -m 755 obs/clean_spec_file $(DESTDIR)$(LIBEXECDIR)/obs/service/ ; \
+	install -m 644 obs/clean_spec_file.service $(DESTDIR)$(LIBEXECDIR)/obs/service/
 	@install -d $(DESTDIR)$(SITEDIR)/spec_cleaner ; \
 	install -m 755 spec_cleaner/__init__.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
 	install -m 644 spec_cleaner/rpmcleaner.py  $(DESTDIR)$(SITEDIR)/spec_cleaner/ ; \
