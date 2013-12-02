@@ -34,7 +34,9 @@ class RegexpSingle(object):
     re_spec_changelog = re.compile('^%changelog\s*$', re.IGNORECASE)
 
     # rpmpreamble
-    re_if = re.compile('^\s*(?:%if\s|%ifarch\s|%ifnarch\s|%else\s*$|%endif\s*$)', re.IGNORECASE)
+    re_if = re.compile('^\s*(?:%if\s|%ifarch\s|%ifnarch\s)', re.IGNORECASE)
+    re_else = re.compile('^\s*%else\s*$', re.IGNORECASE)
+    re_endif = re.compile('^\s*%endif\s*$', re.IGNORECASE)
     re_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
     re_version = re.compile('^Version:\s*(\S*)', re.IGNORECASE)
     re_release = re.compile('^Release:\s*(\S*)', re.IGNORECASE)

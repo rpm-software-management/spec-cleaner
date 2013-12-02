@@ -34,6 +34,11 @@ class RpmPreamble(Section):
         line, even if we reorder the lines.
     """
 
+    # If we are in the ifdef subsection or not.
+    _subparagraph = False
+
+    # Old storage
+    _oldstore = {}
 
     category_to_key = {
         'name': 'Name',
@@ -84,6 +89,7 @@ class RpmPreamble(Section):
         'buildroot',
         'buildarch',
         'misc',
+        'conditions',
     ]
 
     # categories that are sorted based on value in them
@@ -155,17 +161,24 @@ class RpmPreamble(Section):
         self.current_group = []
 
 
+    def _start_subparagraph(self):
+        # store the main content and clean up
+        self._oldstore = self.paragraph
+        self._start_paragraph()
+
+
     def _add_group(self, group):
         """
         Actually store the lines from groups to resulting output
         """
         t = type(group)
-
         if t == str:
-            Section.add(self, group)
+            return [ group ]
         elif t == list:
+            x = []
             for subgroup in group:
-                self._add_group(subgroup)
+                x += self._add_group(subgroup)
+            return x
         else:
             raise RpmException('Unknown type of group in preamble: %s' % t)
 
@@ -245,7 +258,16 @@ class RpmPreamble(Section):
         return result
 
 
+    def _end_subparagraph(self):
+        self._subparagraph = False
+        #print self.paragraph
+        lines = self._end_paragraph()
+        self.paragraph = self._oldstore
+        self.paragraph['conditions'].append(lines)
+
+
     def _end_paragraph(self):
+        lines = []
         # sort based on category order
         for i in self.categories_order:
             # sort-out within the ordered groups based on the key
@@ -256,13 +278,14 @@ class RpmPreamble(Section):
             if i in self.categories_with_sorted_keyword_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
             for group in self.paragraph[i]:
-                self._add_group(group)
+                lines += self._add_group(group)
+
         if self.current_group:
             # the current group was not added to any category. It's just some
             # random stuff that should be at the end anyway.
-            self._add_group(self.current_group)
+            lines += self._add_group(self.current_group)
 
-        self._start_paragraph()
+        return lines
 
 
     def _fix_license(self, value):
@@ -280,6 +303,7 @@ class RpmPreamble(Section):
         # create back new string with replaced licenses
         s = ' '.join(licenses).replace("( ","(").replace(" )",")")
         return s
+
 
     def _pkgname_to_pkgconfig(self, value):
         # we just want the pkgname if we have version string there
@@ -414,14 +438,27 @@ class RpmPreamble(Section):
         if len(line) == 0:
             return
 
+        # If we match the if else or endif we create subgroup
+        # this is basically our class again until we match
+        # else where we mark end of paragraph or endif
+        # which mark the end of our subclass and that we can
+        # return the data to our main class for at-bottom placement
         elif self.reg.re_if.match(line):
-            # If we match the if else or endif we create subgroup
-            # this is basically our class again until we match
-            # else where we mark end of paragraph or endif
-            # which mark the end of our subclass and that we can
-            # return the data to our main class for at-bottom placement
-            self.current_group.append(line)
-            self._end_paragraph()
+            self._add_line_to('conditions', line)
+            self._start_subparagraph()
+            self.previous_line = line
+            return
+
+        elif self.reg.re_else.match(line):
+            self._end_subparagraph()
+            self._add_line_to('conditions', line)
+            self._start_subparagraph()
+            self.previous_line = line
+            return
+
+        elif self.reg.re_endif.match(line):
+            self._end_subparagraph()
+            self._add_line_to('conditions', line)
             self.previous_line = line
             return
 
@@ -534,7 +571,8 @@ class RpmPreamble(Section):
 
 
     def output(self, fout):
-        self._end_paragraph()
+        lines = self._end_paragraph()
+        self.lines += lines
         # append empty line to the end of the section
         self.lines.append('')
         Section.output(self, fout)

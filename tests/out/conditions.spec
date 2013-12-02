@@ -17,8 +17,8 @@
 
 Version:        2.8.2
 Release:        0
-License:        GPL-2.0+
 Summary:        AppArmor userlevel parser utility
+License:        GPL-2.0+
 Group:          Productivity/Networking/Security
 Source0:        apparmor-%{version}.tar.gz
 Source1:        apparmor-%{version}.tar.gz.asc

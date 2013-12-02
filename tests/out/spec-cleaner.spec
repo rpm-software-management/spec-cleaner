@@ -25,14 +25,14 @@ Group:          Development/Tools/Other
 Url:            http://github.com/openSUSE/spec-cleaner
 Source0:        https://github.com/openSUSE/%{name}/archive/%{name}-%{version}.tar.gz
 BuildRequires:  python
-%if 0%{?suse_version} > 01220
-BuildRequires:  python3
-%endif
 Requires:       python-base
 Provides:       obs-service-format_spec_file = %{version}
 Obsoletes:      obs-service-format_spec_file < %{version}
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildArch:      noarch
+%if 0%{?suse_version} > 01220
+BuildRequires:  python3
+%endif
 
 %description
 This script cleans spec file according to some arbitrary style guide. The
