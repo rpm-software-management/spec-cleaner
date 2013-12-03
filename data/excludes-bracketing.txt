@@ -13,6 +13,7 @@ endif
 exclude
 fdupes
 files
+fillup_[^\s]*
 find_lang
 ghost
 changelog
