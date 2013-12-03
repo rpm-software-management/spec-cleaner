@@ -38,7 +38,7 @@ class RpmPreamble(Section):
     _subparagraph = False
 
     # Old storage
-    _oldstore = {}
+    _oldstore = []
 
     category_to_key = {
         'name': 'Name',
@@ -163,7 +163,7 @@ class RpmPreamble(Section):
 
     def _start_subparagraph(self):
         # store the main content and clean up
-        self._oldstore = self.paragraph
+        self._oldstore.append(self.paragraph)
         self._start_paragraph()
 
 
@@ -260,7 +260,7 @@ class RpmPreamble(Section):
 
     def _end_subparagraph(self):
         lines = self._end_paragraph()
-        self.paragraph = self._oldstore
+        self.paragraph = self._oldstore.pop(-1)
         self.paragraph['conditions'].append(lines)
 
 
