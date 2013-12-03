@@ -37,5 +37,8 @@ PreReq:         aaa_base
 %if %{with editor}
 BuildRequires:  gcc-c++
 BuildRequires:  update-desktop-files
+%ifarch ppc64
+Requires:       naughty-stuff
+%endif
 %endif
 

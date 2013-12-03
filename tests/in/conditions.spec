@@ -13,6 +13,9 @@ PreReq:         aaa_base
 BuildRequires:  pkg-config
 BuildRequires:  python
 %if %{with editor}
+%ifarch ppc64
+Requires:       naughty-stuff
+%endif
 BuildRequires:  gcc-c++
 BuildRequires:  update-desktop-files
 %endif
