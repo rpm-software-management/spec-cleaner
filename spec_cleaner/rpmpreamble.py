@@ -259,8 +259,6 @@ class RpmPreamble(Section):
 
 
     def _end_subparagraph(self):
-        self._subparagraph = False
-        #print self.paragraph
         lines = self._end_paragraph()
         self.paragraph = self._oldstore
         self.paragraph['conditions'].append(lines)
