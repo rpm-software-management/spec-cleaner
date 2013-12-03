@@ -45,3 +45,4 @@ systemd_requires
 triggerin
 triggerpostun
 triggerun
+yast_[^\s]*
