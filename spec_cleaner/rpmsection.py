@@ -111,11 +111,6 @@ class Section(object):
         line = line.replace('${RPM_BUILD_ROOT}', '%{buildroot}')
         line = line.replace('$RPM_BUILD_ROOT', '%{buildroot}')
         line = line.replace('"%{buildroot}"', '%{buildroot}')
-        line = line.replace('%{buildroot}/etc/init.d/', '%{buildroot}%{_initddir}/')
-        line = line.replace('%{buildroot}/etc/', '%{buildroot}%{_sysconfdir}/')
-        line = line.replace('%{buildroot}/usr/%{_lib}', '%{buildroot}%{_libdir}')
-        line = line.replace('%{buildroot}/usr/', '%{buildroot}%{_prefix}/')
-        line = line.replace('%{buildroot}/var/', '%{buildroot}%{_localstatedir}/')
         return line
 
 
@@ -141,6 +136,12 @@ class Section(object):
         re_infodir = re.compile('%{_datadir}/info([/\s$])')
         re_docdir = re.compile('%{_datadir}/doc([/\s$])')
 
+        # few hardcoded things
+        line = line.replace('/etc/init.d/', '%{_initddir}/')
+        line = line.replace('/etc/', '%{_sysconfdir}/')
+        line = line.replace('/usr/%{_lib}', '%{_libdir}')
+        line = line.replace('/usr/', '%{_prefix}/')
+        line = line.replace('/var/', '%{_localstatedir}/')
         line = line.replace('%{_usr}', '%{_prefix}')
         line = line.replace('%{_prefix}/%{_lib}', '%{_libdir}')
         # old typo in rpm macro
