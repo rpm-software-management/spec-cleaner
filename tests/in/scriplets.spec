@@ -1,3 +1,5 @@
+%post -n %libname -p /sbin/ldconfig
+
 %post
 /sbin/ldconfig
 
