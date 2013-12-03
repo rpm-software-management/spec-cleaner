@@ -62,7 +62,7 @@ class RegexpSingle(object):
     re_epoch = re.compile('^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_define = re.compile('^\s*%define\s*(.*)', re.IGNORECASE)
     re_requires_token = re.compile('(\s*([^<>=\s]+(\s*[<>=]+\s*[^<>=\s]+)?)\s*)')
-    re_autoreqprov = re.compile('^\s*AutoReqProv:\s*on\s*$', re.IGNORECASE)
+    re_autoreqprov = re.compile('^\s*AutoReqProv:.*$', re.IGNORECASE)
     # here we need to grab all submacros with rpm calls so just match almost everything
     re_rpm_command = re.compile('%\(rpm\s*')
     re_requires_eq = re.compile('^\s*%requires_eq\s*(.*)')
