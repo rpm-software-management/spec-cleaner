@@ -37,12 +37,11 @@ preun
 requires_eq
 restart_on_update
 setup
-service_add_[^\s]*
-service_del_[^\s]*
+service_(add|del)_[^\s]*
 stop_on_removal
 suse_update_desktop_file
 systemd_requires
 triggerin
 triggerpostun
 triggerun
-yast_[^\s]*
+yast_(build|install)[^\s]*
