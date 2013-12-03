@@ -27,6 +27,7 @@ install
 make_install
 package
 patch[0-9]*
+perl_process_[^\s]*
 post
 posttrans
 postun
