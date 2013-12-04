@@ -43,6 +43,9 @@ class RpmSpecCleaner:
         self.inline = inline
         self.diff = diff
         self.diff_prog = diff_prog
+        #run gvim(diff) in foreground mode
+        if self.diff_prog.startswith("gvim") and not " -f" in self.diff_prog:
+            self.diff_prog += " -f"
         self.reg = RegexpSingle(specfile)
         self.fin = open(self.specfile)
 
