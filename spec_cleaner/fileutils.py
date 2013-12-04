@@ -22,11 +22,11 @@ class FileUtils:
         """
 
         try:
-            f = open('/usr/share/spec-cleaner/{0}'.format(FILE), 'r')
+            f = open('{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), FILE), 'r')
         except IOError:
             # the .. is appended as we are in spec_cleaner sub_folder
             try:
-                f = open('{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), FILE), 'r')
+                f = open('/usr/share/spec-cleaner/{0}'.format(FILE), 'r')
             except IOError as e:
                 raise RpmException(e)
 

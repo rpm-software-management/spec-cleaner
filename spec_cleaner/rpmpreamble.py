@@ -478,7 +478,7 @@ class RpmPreamble(Section):
             self._add_line_value_to('patch', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
             return
 
-        elif self.reg.re_define.match(line):
+        elif self.reg.re_define.match(line) or self.reg.re_global.match(line):
             self._add_line_to('define', line)
             return
 

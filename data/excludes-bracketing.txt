@@ -16,6 +16,7 @@ files
 fillup_[^\s]*
 find_lang
 ghost
+global
 changelog
 check
 if

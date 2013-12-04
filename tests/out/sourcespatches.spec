@@ -17,6 +17,7 @@
 
 # this is crazy define
 %define root %{version}
+%global test somethingelse
 Source:         testfile.tar.bz2
 Source2:        testfile2.tar.bz2
 Source15:       anothersource.tar.xz
