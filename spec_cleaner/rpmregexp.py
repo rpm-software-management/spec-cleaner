@@ -64,7 +64,7 @@ class RegexpSingle(object):
     re_requires_token = re.compile('(\s*([^<>=\s]+(\s*[<>=]+\s*[^<>=\s]+)?)\s*)')
     re_autoreqprov = re.compile('^\s*AutoReqProv:.*$', re.IGNORECASE)
     # here we need to grab all submacros with rpm calls so just match almost everything
-    re_rpm_command = re.compile('%\(rpm\s*')
+    re_rpm_command = re.compile('%\(.*\)')
     re_requires_eq = re.compile('^\s*%requires_eq\s*(.*)')
 
     # rpmbuild
