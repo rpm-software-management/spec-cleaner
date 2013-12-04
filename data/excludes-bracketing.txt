@@ -45,4 +45,5 @@ systemd_requires
 triggerin
 triggerpostun
 triggerun
+verify
 yast_(build|install)[^\s]*
