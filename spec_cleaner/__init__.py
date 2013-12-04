@@ -5,7 +5,7 @@
 # All rights reserved.
 # See COPYING for details.
 
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 
 import os
 import sys
