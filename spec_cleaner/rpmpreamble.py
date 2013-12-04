@@ -17,7 +17,6 @@ class RpmPreamble(Section):
         Reorder lines.
         Fix bad licenses.
         Use one line per BuildRequires/Requires/etc.
-        Use %{version} instead of %{version}-%{release} for BuildRequires/etc.
         Standardize BuildRoot.
 
         This one is a bit tricky since we reorder things. We have a notion of
@@ -336,7 +335,6 @@ class RpmPreamble(Section):
             # first loop over all and do formatting as we can get more deps for one
             expanded = []
             for token in tokens:
-                token = token.replace('%{version}-%{release}', '%{version}')
                 # cleanup whitespace
                 token = token.replace(' ','')
                 # rpm actually allows ',' separated list of deps
