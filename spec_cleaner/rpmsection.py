@@ -31,13 +31,15 @@ class Section(object):
         """
 
         line = line.rstrip()
-        line = self.embrace_macros(line)
-        line = self.replace_buildroot(line)
-        line = self.replace_optflags(line)
-        line = self.replace_known_dirs(line)
-        line = self.replace_utils(line)
-        line = self.replace_buildservice(line)
-        line = self.replace_preamble_macros(line)
+
+        if not line.startswith('#'):
+            line = self.embrace_macros(line)
+            line = self.replace_buildroot(line)
+            line = self.replace_optflags(line)
+            line = self.replace_known_dirs(line)
+            line = self.replace_utils(line)
+            line = self.replace_buildservice(line)
+            line = self.replace_preamble_macros(line)
 
         return line
 
