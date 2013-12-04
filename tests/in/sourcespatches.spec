@@ -14,5 +14,6 @@ Patch: test
 %setup -qn %name-%version
 %setup -q -n "%name-%version" -a1
 %setup -n "%name-%version" -q -b2
+%setup -q -n %{name}-%{version}-src
 %patch10 -p4
 %patch -p1

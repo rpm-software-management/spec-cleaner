@@ -25,8 +25,7 @@ class RpmPrep(Section):
         if line.startswith('%setup'):
             line = line.replace(' -qn', ' -q -n')
             line = line.replace(' -q', '')
-            line = line.replace(' -n %{name}-%{version}', '')
-            line = line.replace(' -n "%{name}-%{version}"', '')
+            line = self.reg.re_setup.sub(' ', line)
             line = self.strip_useless_spaces(line)
             line = line.replace('%setup', '%setup -q')
 

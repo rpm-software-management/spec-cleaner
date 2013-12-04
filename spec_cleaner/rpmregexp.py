@@ -88,6 +88,7 @@ class RegexpSingle(object):
 
     # rpmprep
     re_patch_prep = re.compile('^%patch\s*([^P]*)-P\s*(\d*)\s*([^P]*)$')
+    re_setup = re.compile('\s*-n\s+"?%{name}-%{version}"?($|\s)')
 
     # comment detection
     re_comment = re.compile('^$|^\s*#')
