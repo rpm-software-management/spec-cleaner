@@ -33,6 +33,7 @@ file formats, audio and video codecs, and subtitle types.
 %{_bindir}/%{name}
 %doc %{_mandir}/man1/%{name}.1*
 %{_datadir}/applications/%{name}.desktop
+
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 
 %changelog

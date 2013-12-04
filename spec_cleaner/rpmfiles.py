@@ -19,8 +19,8 @@ class RpmFiles(Section):
                 not line.startswith('%defattr'):
             self.lines.append('%defattr(-,root,root)')
 
-        # toss out empty lines
-        if line == '':
+        # toss out empty lines if there are more than one in succession
+        if line == '' and ( not self.previous_line or self.previous_line == ''):
             return
 
         Section.add(self, line)
