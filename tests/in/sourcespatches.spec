@@ -4,6 +4,7 @@ Source15: anothersource.tar.xz
 source: testfile.tar.bz2
 # This patch is improperly described but we are okay with it
 Patch10: test2
+%bcond_with self_hosting
 Source2: testfile2.tar.bz2
 Patch: test
 # this is crazy define

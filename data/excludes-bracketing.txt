@@ -1,4 +1,5 @@
 attr
+bcond_with
 build
 configure
 config
