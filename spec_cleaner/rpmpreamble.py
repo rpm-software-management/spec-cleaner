@@ -33,9 +33,6 @@ class RpmPreamble(Section):
         line, even if we reorder the lines.
     """
 
-    # If we are in the ifdef subsection or not.
-    _subparagraph = False
-
     # Old storage
     _oldstore = []
 
@@ -453,7 +450,8 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_endif.match(line):
-            self._end_subparagraph()
+            if len(self._oldstore) > 0:
+                self._end_subparagraph()
             self._add_line_to('conditions', line)
             self.previous_line = line
             return
