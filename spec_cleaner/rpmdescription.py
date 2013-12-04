@@ -19,7 +19,6 @@ class RpmDescription(Section):
 
 
     def add(self, line):
-        line = line.lstrip()
         if self.previous_line != None and len(line) > 0 and line[0] == '%':
             self.unknown_line = True
 
