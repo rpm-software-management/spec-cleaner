@@ -20,7 +20,6 @@
 Source:         testfile.tar.bz2
 Source2:        testfile2.tar.bz2
 Source15:       anothersource.tar.xz
-# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines
 Patch0:         test
 # This patch is improperly described but we are okay with it
 Patch10:        test2

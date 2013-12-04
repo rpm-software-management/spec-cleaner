@@ -471,11 +471,6 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_patch.match(line):
-            # FIXME: this is not perfect, but it's good enough for most cases
-            if not self.previous_line or not self.reg.re_comment.match(self.previous_line):
-                self.current_group.append('# PATCH-MISSING-TAG -- See http://wiki.opensuse.org/openSUSE:Packaging_Patches_guidelines')
-                self.previous_line = line
-
             match = self.reg.re_patch.match(line)
             # convert Patch: to Patch0:
             if match.group(2) == '':
