@@ -5,6 +5,7 @@ import sys
 import tempfile
 import subprocess
 import shlex
+import os.path
 
 from rpmsection import Section
 from rpmexception import RpmException
@@ -78,7 +79,7 @@ class RpmSpecCleaner:
             self.fin = fifo
             self.fout = open(self.specfile, 'w')
         elif self.diff:
-            self.fout = tempfile.NamedTemporaryFile(prefix=self.specfile+'.', suffix='.spec')
+            self.fout = tempfile.NamedTemporaryFile(prefix=os.path.split(self.specfile)[-1]+'.', suffix='.spec')
         else:
             self.fout = sys.stdout
 
