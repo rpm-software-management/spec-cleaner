@@ -20,6 +20,7 @@ ghost
 global
 changelog
 check
+icon_theme_cache_post[^\s]*
 if
 ifarch
 ifnarch
@@ -27,6 +28,7 @@ include
 insserv_[^\s]*
 install
 make_install
+mime_database_post[^\s]*
 package
 patch[0-9]*
 perl_process_[^\s]*
