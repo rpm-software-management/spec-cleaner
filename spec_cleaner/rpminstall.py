@@ -8,7 +8,6 @@ from rpmsection import Section
 class RpmInstall(Section):
     '''
         Remove commands that wipe out the build root.
-        Use %make_install macro.
         Replace %makeinstall (suse-ism).
     '''
 

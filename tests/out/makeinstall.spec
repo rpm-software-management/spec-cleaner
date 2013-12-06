@@ -17,7 +17,7 @@
 
 %install
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
-make DESTDIR=%{buildroot} install %{?_smp_mflags}
+%make_install
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
