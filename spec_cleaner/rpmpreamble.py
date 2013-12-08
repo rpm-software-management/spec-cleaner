@@ -36,6 +36,9 @@ class RpmPreamble(Section):
     # Old storage
     _oldstore = []
 
+    # Is the parsed variable multiline (ending with \)
+    _multiline = False
+
     category_to_key = {
         'name': 'Name',
         'version': 'Version',
@@ -350,6 +353,7 @@ class RpmPreamble(Section):
         else:
             return [ value ]
 
+
     def _add_line_value_to(self, category, value, key = None):
         """
             Change a key-value line, to make sure we have the right spacing.
@@ -396,6 +400,7 @@ class RpmPreamble(Section):
 
         self.previous_line = line
 
+
     def _read_pkgconfig_changes(self):
         pkgconfig = {}
 
@@ -407,6 +412,7 @@ class RpmPreamble(Section):
             pkgconfig[pair[0]] = pair[1][:-1]
         files.close()
         return pkgconfig
+
 
     def _read_licenses_changes(self):
         licenses = {}
@@ -428,7 +434,17 @@ class RpmPreamble(Section):
     def add(self, line):
         line = self._complete_cleanup(line)
         # if the line is empty just skip it we don't need new section for it
+        # we do this only in headers so it must be here
         if len(line) == 0:
+            return
+
+        # if it is multiline variable then we need to append to previous content
+        # also multiline is allowed only for define lines so just cheat and know ahead
+        elif self._multiline:
+            self._add_line_to('define', line)
+            # if it is no longer trailed with backslash stop
+            if not line.endswith('\\'):
+                self._multiline = False
             return
 
         # If we match the if else or endif we create subgroup
@@ -478,6 +494,8 @@ class RpmPreamble(Section):
 
         elif self.reg.re_define.match(line) or self.reg.re_global.match(line) or self.reg.re_bcond_with.match(line):
             self._add_line_to('define', line)
+            if line.endswith('\\'):
+                self._multiline = True
             return
 
         elif self.reg.re_requires_eq.match(line):

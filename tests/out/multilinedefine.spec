@@ -46,4 +46,3 @@ else \
 fi;
 Name:           multilinedefine
 
-
