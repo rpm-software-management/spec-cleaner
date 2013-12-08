@@ -35,6 +35,7 @@ class RpmSpecCleaner:
     fin = None
     fout = None
     current_section = None
+    _previous_line = None
 
 
     def __init__(self, specfile, output, pkgconfig, inline, diff, diff_prog):
@@ -83,6 +84,7 @@ class RpmSpecCleaner:
         else:
             self.fout = sys.stdout
 
+
     def _detect_new_section(self, line):
         # firs try to verify if we start some specific section
         for (regexp, newclass) in self.section_starts:
@@ -93,6 +95,9 @@ class RpmSpecCleaner:
         # and we are not on commented line anymore, just jump to Preamble
         if isinstance(self.current_section, RpmCopyright):
             if not self.reg.re_comment.match(line):
+                return RpmPreamble
+            # if we got two whitespaces then the copyright also ended
+            if self._previous_line == '' and line == '':
                 return RpmPreamble
 
         # we are staying in the section
@@ -124,6 +129,7 @@ class RpmSpecCleaner:
                     self.current_section = new_class(self.specfile)
 
             self.current_section.add(line)
+            self._previous_line = line
 
         self.current_section.output(self.fout)
         self.fout.flush()

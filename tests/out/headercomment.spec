@@ -20,3 +20,4 @@
 # There are almost no SUSE specific modifications available
 # in the upstream, so we utilize the ones used by redhat
 %define distro redhat
+
