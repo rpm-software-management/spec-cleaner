@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %define postInstall() \
 . %{_sysconfdir}/selinux/config; \
 if [ -e %{_sysconfdir}/selinux/%{2}/.rebuild ]; then \

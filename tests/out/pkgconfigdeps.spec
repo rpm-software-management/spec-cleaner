@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 BuildRequires:  gtk2
 BuildRequires:  pkgconfig(gail) >= 2.13
 BuildRequires:  pkgconfig(gdk-2.0) >= 2.13

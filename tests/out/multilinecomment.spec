@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 BuildRequires:  aaaa
 # this is comment
 # and another one

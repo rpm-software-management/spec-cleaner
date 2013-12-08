@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 BuildRequires:  aaa < 3.2.1
 BuildRequires:  bbb
 BuildRequires:  eee = %{version}-%{release}

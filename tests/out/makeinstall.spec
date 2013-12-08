@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %install
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
 %make_install

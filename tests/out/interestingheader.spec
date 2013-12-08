@@ -16,6 +16,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 Name:           din
 Version:        5.2.1
 Release:        0

@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %package -n something-lang
 # FIXME: consider using %lang_package macro
 Summary:        Something

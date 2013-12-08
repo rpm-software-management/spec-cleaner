@@ -83,6 +83,7 @@ class RpmCopyright(Section):
         self._add_copyright()
         self._add_default_license()
         self._add_buildrules()
-        # trailing enter
-        self.lines.append("")
+        # trailing enters # prep_spec does two so do the same
+        self.lines.append('')
+        self.lines.append('')
         Section.output(self, fout)

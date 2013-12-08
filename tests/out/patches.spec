@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 Patch0:         c
 Patch0:         e
 Patch1:         d

@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %bcond_with self_hosting
 # this is crazy define
 %define root %{version}

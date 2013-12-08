@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %files
 %defattr(-,root,root)
 %{_bindir}/test

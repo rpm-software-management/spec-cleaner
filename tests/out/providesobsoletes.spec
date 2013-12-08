@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %package -n %{libname}
 Summary:        Library for Importing WordPerfect (tm) Documents
 Group:          System/Libraries

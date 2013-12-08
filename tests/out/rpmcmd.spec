@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %define version %(rpm -q --qf '%{VERSION}' kernel-source)
 # FIXME: Use %requires_eq macro instead
 Requires:       ant = %(echo `rpm -q --queryformat '%{VERSION}' ant`)

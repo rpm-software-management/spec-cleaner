@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %files
 %defattr(-,root,root)
 %dir %attr(0710,root,lp) %{_var}/spool/cups

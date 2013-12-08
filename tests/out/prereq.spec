@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 # FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         deprecatedrequires
 Requires(post): asomething

@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 Version:        2.8.2
 Release:        0
 Summary:        AppArmor userlevel parser utility

@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 BuildRequires:  aaa_base
 BuildRequires:  pkg1
 BuildRequires:  pkg2

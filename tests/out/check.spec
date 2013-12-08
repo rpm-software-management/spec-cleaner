@@ -15,6 +15,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 %check
 make V=1 check RUNTEST=true %{?_smp_mflags}
 make -j1 check

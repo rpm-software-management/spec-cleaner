@@ -16,6 +16,7 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+
 Name:           spec-cleaner
 Version:        0.4.1
 Release:        0
