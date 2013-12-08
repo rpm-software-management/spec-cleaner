@@ -142,7 +142,6 @@ class RpmSpecCleaner:
                 raise RpmException('Could not execute %s (%s)' % (self.diff_prog.split()[0], e.strerror))
 
 
-
     def __del__(self):
         """
         We need to close the input and output files
