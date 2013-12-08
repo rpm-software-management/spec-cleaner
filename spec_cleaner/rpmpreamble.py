@@ -39,10 +39,6 @@ class RpmPreamble(Section):
     # Is the parsed variable multiline (ending with \)
     _multiline = False
 
-    # Is the condition started here, otherwise
-    # it is global we should not "screw" with
-    _condition_started = False
-
     category_to_key = {
         'name': 'Name',
         'version': 'Version',
@@ -93,7 +89,6 @@ class RpmPreamble(Section):
         'buildarch',
         'misc',
         'conditions',
-        'global_conditions',
     ]
 
     # categories that are sorted based on value in them
@@ -459,30 +454,21 @@ class RpmPreamble(Section):
         # return the data to our main class for at-bottom placement
         elif self.reg.re_if.match(line):
             self._add_line_to('conditions', line)
-            self._condition_started = True
             self._start_subparagraph()
             self.previous_line = line
             return
 
         elif self.reg.re_else.match(line):
-            if  self._condition_started:
-                self._end_subparagraph()
-                self._add_line_to('conditions', line)
-                self._start_subparagraph()
-            else:
-                self._add_line_to('global_conditions', '')
-                self._add_line_to('global_conditions', line)
+            self._end_subparagraph()
+            self._add_line_to('conditions', line)
+            self._start_subparagraph()
             self.previous_line = line
             return
 
         elif self.reg.re_endif.match(line):
-            if  self._condition_started:
-                self._condition_started = False
+            if len(self._oldstore) > 0:
                 self._end_subparagraph()
-                self._add_line_to('conditions', line)
-            else:
-                self._add_line_to('global_conditions', '')
-                self._add_line_to('global_conditions', line)
+            self._add_line_to('conditions', line)
             self.previous_line = line
             return
 
