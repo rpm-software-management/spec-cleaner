@@ -273,7 +273,10 @@ class RpmPreamble(Section):
         # and if we find the defines we put it on top.
         if endif:
             if self._condition_define:
-                self._condition_define = False
+                # in case the nested condition contains define we consider all parents
+                # to require to be on top too
+                if len(self._oldstore) == 0:
+                    self._condition_define = False
                 self.paragraph['define_conditions'] += self.paragraph['conditions']
             else:
                 self.paragraph['build_conditions'] += self.paragraph['conditions']
