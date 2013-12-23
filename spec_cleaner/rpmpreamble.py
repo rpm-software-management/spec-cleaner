@@ -39,6 +39,9 @@ class RpmPreamble(Section):
     # Is the parsed variable multiline (ending with \)
     _multiline = False
 
+    # Is the condition with define or just regular one
+    _condition_define = False
+
     category_to_key = {
         'name': 'Name',
         'version': 'Version',
@@ -66,6 +69,7 @@ class RpmPreamble(Section):
 
     categories_order = [
         'define',
+        'define_conditions',
         'name',
         'version',
         'release',
@@ -88,6 +92,7 @@ class RpmPreamble(Section):
         'buildroot',
         'buildarch',
         'misc',
+        'build_conditions',
         'conditions',
     ]
 
@@ -257,10 +262,22 @@ class RpmPreamble(Section):
         return result
 
 
-    def _end_subparagraph(self):
+    def _end_subparagraph(self, endif = False):
         lines = self._end_paragraph()
+        if len(self.paragraph['define']) > 0:
+            self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph['conditions'].append(lines)
+
+        # If we are on endif we check the condition content
+        # and if we find the defines we put it on top.
+        if endif:
+            if self._condition_define:
+                self._condition_define = False
+                self.paragraph['define_conditions'] += self.paragraph['conditions']
+            else:
+                self.paragraph['build_conditions'] += self.paragraph['conditions']
+            self.paragraph['conditions'] = []
 
 
     def _end_paragraph(self):
@@ -304,7 +321,7 @@ class RpmPreamble(Section):
 
     def _pkgname_to_pkgconfig(self, value):
         # we just want the pkgname if we have version string there
-        # and for the pkgconfig deps we need to put the version into
+        ## and for the pkgconfig deps we need to put the version into
         # the braces
         split = value.split()
         pkgname = value.split()[0]
@@ -459,16 +476,15 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_else.match(line):
-            self._end_subparagraph()
             self._add_line_to('conditions', line)
+            self._end_subparagraph()
             self._start_subparagraph()
             self.previous_line = line
             return
 
         elif self.reg.re_endif.match(line):
-            if len(self._oldstore) > 0:
-                self._end_subparagraph()
             self._add_line_to('conditions', line)
+            self._end_subparagraph(True)
             self.previous_line = line
             return
 
