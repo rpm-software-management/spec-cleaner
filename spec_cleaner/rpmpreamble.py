@@ -324,7 +324,7 @@ class RpmPreamble(Section):
 
     def _pkgname_to_pkgconfig(self, value):
         # we just want the pkgname if we have version string there
-        ## and for the pkgconfig deps we need to put the version into
+        # and for the pkgconfig deps we need to put the version into
         # the braces
         split = value.split()
         pkgname = value.split()[0]
