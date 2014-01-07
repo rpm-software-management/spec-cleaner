@@ -9,6 +9,7 @@ description
 desktop_database_post[^\s]*
 dir
 doc
+docdir
 else
 endif
 exclude
@@ -49,5 +50,6 @@ systemd_requires
 triggerin
 triggerpostun
 triggerun
+undefine
 verify[^\s]*
 yast_(build|install)[^\s]*
