@@ -136,7 +136,7 @@ class Section(object):
         re_datadir = re.compile('%{_prefix}/share([/\s$])')
         re_mandir = re.compile('%{_datadir}/man([/\s$])')
         re_infodir = re.compile('%{_datadir}/info([/\s$])')
-        re_docdir = re.compile('%{_datadir}/doc([/\s$])')
+        re_docdir = re.compile('%{_datadir}/doc/packages([/\s$])')
 
         # few hardcoded things
         line = line.replace('/etc/init.d/', '%{_initddir}/')
