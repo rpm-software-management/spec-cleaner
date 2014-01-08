@@ -51,7 +51,7 @@ check: spec_cleaner/__init__.py
 			CORRECT="`echo $$i | sed 's|^tests/in|tests/out|'`" ; \
 			NEW="`    echo $$i | sed 's|^tests/in|tests/tmp|'`" ; \
 			TEST="`   echo $$i | sed 's|^tests/in/\(.*\).spec|\1|'`" ; \
-			python2 spec_cleaner/__init__.py -p -f $$i | sed "s|`date +%%Y`|2013|" > "$$NEW" ; \
+			python2 spec_cleaner/__init__.py -p -f $$i | sed "s|`date +%Y`|2013|" > "$$NEW" ; \
 			echo -n " * test '$$TEST': " ; \
 			if [ "`diff "$$CORRECT" "$$NEW" 2>&1`" ]; then \
 				echo "failed" ; \
@@ -67,7 +67,7 @@ check: spec_cleaner/__init__.py
 			CORRECT="`echo $$i | sed 's|^tests/in|tests/out|'`" ; \
 			NEW="`    echo $$i | sed 's|^tests/in|tests/tmp|'`" ; \
 			TEST="`   echo $$i | sed 's|^tests/in/\(.*\).spec|\1|'`" ; \
-			python3 spec_cleaner/__init__.py -p -f $$i | sed "s|`date +%%Y`|2013|" > "$$NEW" ; \
+			python3 spec_cleaner/__init__.py -p -f $$i | sed "s|`date +%Y`|2013|" > "$$NEW" ; \
 			echo -n " * test '$$TEST': " ; \
 			if [ "`diff "$$CORRECT" "$$NEW" 2>&1`" ]; then \
 				echo "failed" ; \
