@@ -86,12 +86,15 @@ class RpmSpecCleaner:
 
 
     def _detect_new_section(self, line):
-        # firs try to verify if we start some specific section
+        # Detect if we have multiline value from preamble
+        if hasattr(self.current_section, 'multiline') and self.current_section.multiline:
+            return None
+        # try to verify if we start some specific section
         for (regexp, newclass) in self.section_starts:
             if regexp.match(line):
                 return newclass
 
-        # later if we still are here and we are just doing copyright
+        # if we still are here and we are just doing copyright
         # and we are not on commented line anymore, just jump to Preamble
         if isinstance(self.current_section, RpmCopyright):
             if not self.reg.re_comment.match(line):

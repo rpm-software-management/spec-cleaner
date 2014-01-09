@@ -37,7 +37,7 @@ class RpmPreamble(Section):
     _oldstore = []
 
     # Is the parsed variable multiline (ending with \)
-    _multiline = False
+    multiline = False
 
     # Is the condition with define or just regular one
     _condition_define = False
@@ -460,11 +460,11 @@ class RpmPreamble(Section):
 
         # if it is multiline variable then we need to append to previous content
         # also multiline is allowed only for define lines so just cheat and know ahead
-        elif self._multiline:
+        elif self.multiline:
             self._add_line_to('define', line)
             # if it is no longer trailed with backslash stop
             if not line.endswith('\\'):
-                self._multiline = False
+                self.multiline = False
             return
 
         # If we match the if else or endif we create subgroup
@@ -514,7 +514,7 @@ class RpmPreamble(Section):
         elif self.reg.re_define.match(line) or self.reg.re_global.match(line) or self.reg.re_bcond_with.match(line):
             self._add_line_to('define', line)
             if line.endswith('\\'):
-                self._multiline = True
+                self.multiline = True
             return
 
         elif self.reg.re_requires_eq.match(line):
