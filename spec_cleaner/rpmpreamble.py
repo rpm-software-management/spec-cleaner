@@ -39,6 +39,9 @@ class RpmPreamble(Section):
     # Is the parsed variable multiline (ending with \)
     multiline = False
 
+    # Are we inside of conditional or not
+    condition = False
+
     # Is the condition with define or just regular one
     _condition_define = False
 
@@ -474,19 +477,25 @@ class RpmPreamble(Section):
         # return the data to our main class for at-bottom placement
         elif self.reg.re_if.match(line):
             self._add_line_to('conditions', line)
+            self.condition = True
             self._start_subparagraph()
             self.previous_line = line
             return
 
         elif self.reg.re_else.match(line):
-            self._add_line_to('conditions', line)
-            self._end_subparagraph()
-            self._start_subparagraph()
+            if self.condition:
+                self._add_line_to('conditions', line)
+                self._end_subparagraph()
+                self._start_subparagraph()
             self.previous_line = line
             return
 
         elif self.reg.re_endif.match(line):
             self._add_line_to('conditions', line)
+            # Set conditions to false only if we are
+            # closing last of the nested ones
+            if len(self._oldstore) == 1:
+                self.condition = False
             self._end_subparagraph(True)
             self.previous_line = line
             return

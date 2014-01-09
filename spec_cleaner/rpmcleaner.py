@@ -36,6 +36,7 @@ class RpmSpecCleaner:
     fout = None
     current_section = None
     _previous_line = None
+    _previous_nonempty_line = None
 
 
     def __init__(self, specfile, output, pkgconfig, inline, diff, diff_prog):
@@ -89,9 +90,27 @@ class RpmSpecCleaner:
         # Detect if we have multiline value from preamble
         if hasattr(self.current_section, 'multiline') and self.current_section.multiline:
             return None
+
+        # Detect if we match condition and that is from global space
+        # Ie like in the optional packages where if is before class definition
+        # For the "if" we need to detect it more smartly:
+        #   check if the current line is starting new section, and if so
+        #   if previous non-empty-uncommented line was starting the condition
+        #   we end up the condition section in preamble (if applicable) and proceed to output
+        if self.reg.re_else.match(line) or self.reg.re_endif.match(line):
+            if hasattr(self.current_section, 'condition') and not self.current_section.condition:
+                # If we have to break out we go ahead with small class
+                # which just print the one evil line
+                return Section
+
         # try to verify if we start some specific section
         for (regexp, newclass) in self.section_starts:
             if regexp.match(line):
+                # check if we are in if conditional and act accordingly if we change sections
+                if self._previous_nonempty_line and self.reg.re_if.match(self._previous_nonempty_line):
+                    if hasattr(self.current_section, 'condition'):
+                        self.current_section.condition = False
+                        self.current_section._end_subparagraph(True)
                 return newclass
 
         # if we still are here and we are just doing copyright
@@ -133,6 +152,8 @@ class RpmSpecCleaner:
 
             self.current_section.add(line)
             self._previous_line = line
+            if line != '' or not line.startswith('#'):
+                self._previous_nonempty_line = line
 
         self.current_section.output(self.fout)
         self.fout.flush()
