@@ -28,6 +28,7 @@ ifnarch
 include
 insserv_[^\s]*
 install
+lang_package
 make_install
 mime_database_post[^\s]*
 package
