@@ -1,6 +1,8 @@
 attr
 bcond_with
 build
+cmake
+cmake_[^\s]*
 configure
 config
 defattr
