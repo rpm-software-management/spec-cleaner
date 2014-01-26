@@ -30,6 +30,8 @@ ifnarch
 include
 insserv_[^\s]*
 install
+install_info
+install_info_delete
 lang_package
 make_install
 mime_database_post[^\s]*
