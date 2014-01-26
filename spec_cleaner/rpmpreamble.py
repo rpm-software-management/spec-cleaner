@@ -62,6 +62,7 @@ class RpmPreamble(Section):
         'requires_eq': '%requires_eq',
         'recommends': 'Recommends',
         'suggests': 'Suggests',
+        'enhances': 'Enhances',
         'supplements': 'Supplements',
         # Provides/Obsoletes cannot be part of this since we want to keep them
         # mixed, so we'll have to specify the key when needed
@@ -90,6 +91,7 @@ class RpmPreamble(Section):
         'requires_phase', # this is Requires(pre/post/...)
         'recommends',
         'suggests',
+        'enhances',
         'supplements',
         'provides_obsoletes',
         'buildroot',
@@ -107,6 +109,7 @@ class RpmPreamble(Section):
         'requires_eq',
         'recommends',
         'suggests',
+        'enhances',
         'supplements',
     ]
 
@@ -147,6 +150,7 @@ class RpmPreamble(Section):
             'requires': self.reg.re_requires,
             'recommends': self.reg.re_recommends,
             'suggests': self.reg.re_suggests,
+            'ehnances': self.reg.re_enhances,
             'supplements': self.reg.re_supplements,
             # for provides/obsoletes, we have a special case because we group them
             # for build root, we have a special match because we force its value
