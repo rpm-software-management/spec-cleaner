@@ -635,6 +635,8 @@ SUSE-GPL-3.0+-with-openssl-exception	GPLv3+ with openssl linking exception
 SUSE-GPL-3.0+-with-openssl-exception+	SUSE-GPL-3.0+-with-openssl-exception+
 SUSE-GPL-3.0-with-FLOSS-exception	GPL-3.0 with exceptions for certain FLOSS licenses
 SUSE-GPL-3.0-with-FLOSS-exception+	SUSE-GPL-3.0-with-FLOSS-exception+
+SUSE-GPL-3.0-with-font-exception	SUSE-GPL-3.0-with-font-exception
+SUSE-GPL-3.0-with-font-exception+	SUSE-GPL-3.0-with-font-exception+
 SUSE-GPL-3.0-with-openssl-exception	GPLv3 with openssl linking exception (see e.g. courier-authlib 0.64.0)
 SUSE-GPL-3.0-with-openssl-exception+	SUSE-GPL-3.0-with-openssl-exception+
 SUSE-GPL-3.0-with-template-exception	See e.g. dh-make from debian (debian/copyright)
