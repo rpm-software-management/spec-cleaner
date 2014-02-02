@@ -1,0 +1,3 @@
+Name: nonewline
+
+%changelog
