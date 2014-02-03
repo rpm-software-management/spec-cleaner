@@ -354,8 +354,9 @@ class RpmPreamble(Section):
         if self.reg.re_requires_token.match(value):
             # we do fix the package list only if there is no rpm call there on line
             # otherwise print there warning about nicer content and skip
-            if self.reg.re_rpm_command.search(value) and not self.previous_line.startswith('#'):
-                self.current_group.append('# FIXME: Use %requires_eq macro instead')
+            if self.reg.re_rpm_command.search(value):
+                if not self.previous_line.startswith('#'):
+                    self.current_group.append('# FIXME: Use %requires_eq macro instead')
                 return [ value ]
 
             tokens = [ item[1] for item in self.reg.re_requires_token.findall(value) ]
