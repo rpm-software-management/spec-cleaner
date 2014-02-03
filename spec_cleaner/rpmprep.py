@@ -1,8 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-import re
-
 from rpmsection import Section
+
 
 class RpmPrep(Section):
     '''
