@@ -139,7 +139,8 @@ class RpmSpecCleaner:
             if len(line) == 0:
                 break
             # Remove \n to make it easier to parse things
-            line = line[:-1]
+            line = line.rstrip('\n')
+            line = line.rstrip('\r')
 
             new_class = self._detect_new_section(line)
             if new_class:
