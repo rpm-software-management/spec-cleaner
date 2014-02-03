@@ -445,7 +445,7 @@ class RpmPreamble(Section):
         licenses = {}
 
         files = FileUtils()
-        f = files.open_datafile(LICENSES_CHANGES)
+        files.open_datafile(LICENSES_CHANGES)
         for line in files.f:
             # strip newline
             line = line[:-1]
