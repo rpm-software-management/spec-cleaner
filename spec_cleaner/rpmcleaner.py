@@ -133,8 +133,7 @@ class RpmSpecCleaner:
         # FIXME: we need to store the content localy and then reorder
         #        to maintain the specs all the same (eg somebody put
         #        filelist to the top).
-        while True:
-            line = self.fin.readline()
+        for line in self.fin:
             # Stop at the end of the file
             if len(line) == 0:
                 break

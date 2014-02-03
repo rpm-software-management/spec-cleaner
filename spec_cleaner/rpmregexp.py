@@ -131,7 +131,7 @@ class RegexpSingle(object):
         macros = []
         re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
         output = os.popen('rpm --showrc')
-        for line in output.readlines():
+        for line in output:
             line = line[:-1]
             found_macro = re_rc_macrofunc.sub(r'\1', line)
             if found_macro != line:
@@ -148,7 +148,7 @@ class RegexpSingle(object):
 
         files = FileUtils()
         files.open(spec, 'r')
-        for line in files.f.readlines():
+        for line in files.f:
             line = line[:-1]
             found_macro = self.re_spec_macrofunc.sub(r'\1', line)
             if found_macro != line:
