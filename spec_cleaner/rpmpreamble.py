@@ -333,7 +333,6 @@ class RpmPreamble(Section):
         # we just want the pkgname if we have version string there
         # and for the pkgconfig deps we need to put the version into
         # the braces
-        split = value.split()
         pkgname = value.split()[0]
         version = value.replace(pkgname,'')
         pkgconfig = []
@@ -446,7 +445,7 @@ class RpmPreamble(Section):
         licenses = {}
 
         files = FileUtils()
-        f = files.open_datafile(LICENSES_CHANGES)
+        files.open_datafile(LICENSES_CHANGES)
         for line in files.f:
             # strip newline
             line = line[:-1]

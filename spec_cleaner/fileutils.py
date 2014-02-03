@@ -40,8 +40,8 @@ class FileUtils:
 
         try:
             f = open(FILE, mode)
-        except IOError:
-            raise RpmException(e)
+        except IOError as error:
+            raise RpmException(error)
 
         self.f = f
 
