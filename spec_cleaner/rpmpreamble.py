@@ -449,7 +449,7 @@ class RpmPreamble(Section):
         f = files.open_datafile(LICENSES_CHANGES)
         for line in files.f:
             # strip newline
-            line = line[:-1]
+            line = line.rstrip('\n')
             # file has format
             # correct license string<tab>known bad license string
             # tab is used as separator
