@@ -131,7 +131,8 @@ class Section(object):
         """
         re_bindir = re.compile('%{_prefix}/bin([/\s$])')
         re_sbindir = re.compile('%{_prefix}/sbin([/\s$])')
-        re_libexecdir = re.compile('%{_prefix}/lib([/\s$])')
+        #NOTE(saschpe): %_libexedir on 11.1-Evergreen (x86_64) is %{_prefix}/lib64, thus rather not change it until EG is EOL:
+        #re_libexecdir = re.compile('%{_prefix}/lib([/\s$])')
         re_includedir = re.compile('%{_prefix}/include([/\s$])')
         re_datadir = re.compile('%{_prefix}/share([/\s$])')
         re_mandir = re.compile('%{_datadir}/man([/\s$])')
@@ -152,7 +153,7 @@ class Section(object):
 
         line = re_bindir.sub(r'%{_bindir}\1', line)
         line = re_sbindir.sub(r'%{_sbindir}\1', line)
-        line = re_libexecdir.sub(r'%{_libexecdir}\1', line)
+        #line = re_libexecdir.sub(r'%{_libexecdir}\1', line)
         line = re_includedir.sub(r'%{_includedir}\1', line)
         line = re_datadir.sub(r'%{_datadir}\1', line)
         line = re_mandir.sub(r'%{_mandir}\1', line)
