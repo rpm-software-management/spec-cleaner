@@ -1,5 +1,5 @@
 attr
-bcond_with
+bcond_with[^\s]*
 build
 cmake
 cmake_[^\s]*
