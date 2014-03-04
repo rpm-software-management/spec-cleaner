@@ -38,6 +38,8 @@ make_install
 mime_database_post[^\s]*
 package
 patch[0-9]*
+perl_gen_filelist
+perl_make_install
 perl_process_[^\s]*
 post
 posttrans
