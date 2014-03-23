@@ -21,6 +21,7 @@ fillup_[^\s]*
 find_lang
 ghost
 global
+gpg_verify
 changelog
 check
 icon_theme_cache_post[^\s]*
