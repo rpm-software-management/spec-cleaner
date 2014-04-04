@@ -21,7 +21,10 @@ class RpmBuild(Section):
         if line.startswith('make'):
             # if there are no smp_flags or jobs spec just append it
             if line.find('%{?_smp_mflags}') == -1 and line.find('-j') == -1:
-                line = '{0} {1}'.format(line, '%{?_smp_mflags}')
+                # Don't append %_smp_mflags if the line ends with a backslash,
+                # it would break the formatting
+                if not line.endswith('\\'):
+                    line = '{0} {1}'.format(line, '%{?_smp_mflags}')
 
         # if user uses cmake directly just recommend him using the macros
         if line.startswith('cmake'):
