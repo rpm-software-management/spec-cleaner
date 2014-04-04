@@ -18,5 +18,7 @@
 
 %build
 make %{?_smp_mflags}
+make PREFIX=/ \
+     STATIC=""
 make -j1
 
