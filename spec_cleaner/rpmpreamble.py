@@ -150,7 +150,7 @@ class RpmPreamble(Section):
             'requires': self.reg.re_requires,
             'recommends': self.reg.re_recommends,
             'suggests': self.reg.re_suggests,
-            'ehnances': self.reg.re_enhances,
+            'enhances': self.reg.re_enhances,
             'supplements': self.reg.re_supplements,
             # for provides/obsoletes, we have a special case because we group them
             # for build root, we have a special match because we force its value
