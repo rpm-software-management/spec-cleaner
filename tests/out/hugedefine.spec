@@ -19,8 +19,8 @@
 %define langpack(c:Ei:L:l:Mm:n:p:r:S:s:TXx:) \
 %define project LibreOffice \
 %define lang %{-l:%{-l*}}%{!-l:%{error:Language code not defined}} \
-%define _langpack_lang %{-L:%{-L*}}%{!-L:%{lang}} \
-%define pkgname l10n-%{lang} \
+%define _langpack_lang %{-L:%{-L*}}%{!-L:%lang} \
+%define pkgname l10n-%lang \
 %define langname %{-n:%{-n*}}%{!-n:%{error:Language name not defined}} \
 \
 %global langpack_langs %{langpack_langs} %{_langpack_lang} %{-i:%{-i*}} \
@@ -29,14 +29,14 @@
 Summary:        %{langname} Localization Files for LibreOffice \
 Group:          Productivity/Office/Suite \
 Requires:       %{name} = %{version} \
-Provides:       locale(libreoffice:%{lang}) \
+Provides:       locale(libreoffice:%lang) \
 BuildArch:      noarch \
-%{-m:Requires: libreoffice-thesaurus-%{-m*}}%{!-m:%{-M:Requires: libreoffice-thesaurus-%{lang}}} \
+%{-m:Requires: libreoffice-thesaurus-%{-m*}}%{!-m:%{-M:Requires: libreoffice-thesaurus-%lang}} \
 %{-r:Requires: %{-r*}} \
 %{-p:Provides: %{name}-l10n-%{-p*}} \
 %{-T: \
-Provides: %{name}-help-%{lang} = %{version} \
-Obsoletes: %{name}-help-%{lang} < %{version} \
+Provides: %{name}-help-%lang = %{version} \
+Obsoletes: %{name}-help-%lang < %{version} \
 } \
 \
 %description %{pkgname} \
