@@ -359,6 +359,9 @@ class RpmPreamble(Section):
                 return [ value ]
 
             tokens = [ item[1] for item in self.reg.re_requires_token.findall(value) ]
+            # Split based on ',' here as it breaks up pattern matching later on
+            tokens = [ item.split(',') for item in tokens ]
+            tokens = [ item for sublist in tokens for item in sublist ]
             # first loop over all and do formatting as we can get more deps for one
             expanded = []
             for token in tokens:
@@ -367,6 +370,8 @@ class RpmPreamble(Section):
                 # rpm actually allows ',' separated list of deps
                 token = token.replace(',','')
                 token = re.sub(r'([<>]=?|=)', r' \1 ', token)
+                if not token:
+                    continue
                 if self.pkgconfig:
                     token = self._pkgname_to_pkgconfig(token)
                 if isinstance(token, str):
