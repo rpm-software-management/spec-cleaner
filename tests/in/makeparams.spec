@@ -26,6 +26,7 @@ make %{?jobs:-j%{jobs}}
 make %_smp_mflags
 make %{_smp_mflags}
 make %{?_smp_mflags}
+make check ||:
 
 %install
 %__make DESTDIR=%{buildroot} install

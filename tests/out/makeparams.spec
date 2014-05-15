@@ -44,6 +44,7 @@ make %{?_smp_mflags}
 make %{?_smp_mflags}
 make %{?_smp_mflags}
 make %{?_smp_mflags}
+make check ||:
 
 %install
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
