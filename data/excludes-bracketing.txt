@@ -1,3 +1,4 @@
+add_maven_depmap
 attr
 bcond_with[^\s]*
 build
