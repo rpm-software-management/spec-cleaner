@@ -28,6 +28,6 @@ class RpmBuild(Section):
 
         # if user uses cmake directly just recommend him using the macros
         if line.startswith('cmake'):
-            self.lines.append('# FIXME: you should use %cmake macros')
+            self.lines.append('# FIXME: you should use %%cmake macros')
 
         Section.add(self, line)
