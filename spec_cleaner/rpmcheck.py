@@ -21,7 +21,6 @@ class RpmCheck(Section):
         if line.startswith('make'):
             # if there are no smp_flags or jobs spec
             if line.find('%{?_smp_mflags}') == -1 and line.find('-j') == -1:
-                print("TESTING: {0}".format(line))
                 # Don't append %_smp_mflags if the line ends with a backslash,
                 # it would break the formatting
                 if not line.endswith('\\') and not '||' in line:
