@@ -30,6 +30,7 @@ make check ||:
 make %{?_smp_flags} VERBOSE=1
 
 %install
+%makeinstall install-etc
 %__make DESTDIR=%{buildroot} install
 %__make DESTDIR=%buildroot install
 %{__make} DESTDIR=%{buildroot} install

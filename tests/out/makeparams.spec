@@ -48,6 +48,7 @@ make check ||:
 make %{?_smp_mflags} VERBOSE=1
 
 %install
+make DESTDIR=%{buildroot} install %{?_smp_mflags} install-etc
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
