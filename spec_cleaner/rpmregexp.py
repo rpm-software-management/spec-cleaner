@@ -71,7 +71,7 @@ class RegexpSingle(object):
     re_requires_eq = re.compile('^\s*%requires_eq\s*(.*)')
 
     # rpmbuild
-    re_jobs = re.compile('%{(_smp_mflags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
+    re_jobs = re.compile('%{(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
 
     # rpmcopyright
     re_copyright = re.compile('^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
