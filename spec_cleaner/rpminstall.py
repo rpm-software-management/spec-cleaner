@@ -1,7 +1,5 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-import string
-
 from rpmsection import Section
 
 
@@ -27,7 +25,7 @@ class RpmInstall(Section):
             line = install_command
 
         # we can deal with additional params for %makeinstall so replace that too
-        line = string.replace(line, '%{makeinstall}', install_command)
+        line = line.replace('%{makeinstall}', install_command)
 
         Section.add(self, line)
 
