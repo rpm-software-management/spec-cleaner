@@ -807,3 +807,4 @@ eCos-2.0	eCos-2.0
 eCos-2.0+	eCos-2.0+
 gSOAP-1.3b	gSOAP-1.3b
 gSOAP-1.3b+	gSOAP-1.3b+
+or later	+
