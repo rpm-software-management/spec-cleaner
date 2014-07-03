@@ -313,6 +313,7 @@ class RpmPreamble(Section):
 
 
     def _fix_license(self, value):
+        value = value.replace(' or later', '+')
         # split using 'or', 'and' and parenthesis, ignore empty strings
         licenses = [a for a in re.split('(\(|\)| and | or )', value) if a != '']
 
