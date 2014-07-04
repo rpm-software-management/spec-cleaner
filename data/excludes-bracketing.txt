@@ -51,6 +51,7 @@ pre
 prep
 pretrans
 preun
+py_compile
 requires_eq
 restart_on_update
 setup
