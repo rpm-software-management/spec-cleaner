@@ -122,6 +122,14 @@ class RpmSpecCleaner:
             if self._previous_line == '' and line == '':
                 return RpmPreamble
 
+        # If we are in clean section and encounter whitespace
+        # we need to stop deleting
+        # This avoids deleting %if before %files section that could
+        # be deleted otherwise
+        if isinstance(self.current_section, RpmClean):
+           if line == '':
+               return RpmPreamble
+
         # we are staying in the section
         return None
 
