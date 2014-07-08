@@ -15,7 +15,7 @@ BuildRequires:  python
 %if %{with editor}
 %ifarch ppc64
 Requires:       naughty-stuff
-%endif
+%endif # test commentary
 BuildRequires:  gcc-c++
 BuildRequires:  update-desktop-files
 %endif

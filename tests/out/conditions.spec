@@ -40,6 +40,6 @@ BuildRequires:  gcc-c++
 BuildRequires:  update-desktop-files
 %ifarch ppc64
 Requires:       naughty-stuff
-%endif
+%endif # test commentary
 %endif
 
