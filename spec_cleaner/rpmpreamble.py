@@ -74,6 +74,7 @@ class RpmPreamble(Section):
     categories_order = [
         'define',
         'define_conditions',
+        'bconds',
         'name',
         'version',
         'release',
@@ -529,7 +530,11 @@ class RpmPreamble(Section):
             self._add_line_value_to('patch', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
             return
 
-        elif self.reg.re_define.match(line) or self.reg.re_global.match(line) or self.reg.re_bcond_with.match(line):
+        elif self.reg.re_bcond_with.match(line):
+            self._add_line_to('bconds', line)
+            return
+
+        elif self.reg.re_define.match(line) or self.reg.re_global.match(line):
             self._add_line_to('define', line)
             if line.endswith('\\'):
                 self.multiline = True
