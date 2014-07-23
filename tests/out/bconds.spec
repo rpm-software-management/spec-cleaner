@@ -16,6 +16,7 @@
 #
 
 
+%{!?aarch64:%global aarch64 aarch64 arm64 armv8}
 %global jit_arches %ix86 x86_64 %{aarch64} ppc64 ppc64le
 %global test_arches %ix86 x86_64 ppc64 ppc64le
 %global icedtea_version 2.5.1
