@@ -59,4 +59,7 @@
 %endif
 %bcond_with bootstrap
 %bcond_with zero
+%if %{with zero}
+%define something 1
+%endif
 
