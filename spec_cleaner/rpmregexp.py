@@ -69,7 +69,7 @@ class RegexpSingle(object):
     # here we need to grab all submacros with rpm calls so just match almost everything
     re_rpm_command = re.compile('%\(.*\)')
     re_requires_eq = re.compile('^\s*%requires_eq\s*(.*)')
-    re_onelinecond = re.compile('^\s*%{(!)?\?\S+\%*}')
+    re_onelinecond = re.compile('^\s*%{!?[^?]*\?[^:]+:[^}]+}')
 
     # rpmbuild
     re_jobs = re.compile('%{(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
