@@ -39,8 +39,8 @@
 %ifnarch %{jit_arches}
 %global _with_zero 1
 %endif
-%bcond_with bootstrap
 %bcond_with zero
+%bcond_without bootstrap
 %if %{with zero}
 %define something 1
 %endif

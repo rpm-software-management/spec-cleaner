@@ -63,12 +63,13 @@ class RegexpSingle(object):
     re_epoch = re.compile('^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_define = re.compile('^\s*%define\s*(.*)', re.IGNORECASE)
     re_global = re.compile('^\s*%global\s*(.*)', re.IGNORECASE)
-    re_bcond_with = re.compile('^\s*%bcond_with\s*(.*)', re.IGNORECASE)
+    re_bcond_with = re.compile('^\s*%bcond_with(out)?\s*(.*)', re.IGNORECASE)
     re_requires_token = re.compile('(\s*([^<>=\s]+(\s*[<>=]+\s*[^<>=\s]+)?)\s*)')
     re_autoreqprov = re.compile('^\s*AutoReqProv:.*$', re.IGNORECASE)
     # here we need to grab all submacros with rpm calls so just match almost everything
     re_rpm_command = re.compile('%\(.*\)')
     re_requires_eq = re.compile('^\s*%requires_eq\s*(.*)')
+    re_onelinecond = re.compile('^\s*%{(!)?\?\S+\%*}')
 
     # rpmbuild
     re_jobs = re.compile('%{(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
