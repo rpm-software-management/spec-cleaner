@@ -8,6 +8,7 @@ configure
 config
 defattr
 define
+defined
 description
 desktop_database_post[^\s]*
 dir
