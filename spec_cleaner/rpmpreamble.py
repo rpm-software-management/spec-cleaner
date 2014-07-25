@@ -42,8 +42,11 @@ class RpmPreamble(Section):
     # Are we inside of conditional or not
     condition = False
 
-    # Is the condition with define or just regular one
+    # Is the condition with define/global variables
     _condition_define = False
+
+    # Is the condition based probably on bcond evaluation
+    _condition_bcond = False
 
     category_to_key = {
         'name': 'Name',
@@ -75,6 +78,7 @@ class RpmPreamble(Section):
         'define',
         'define_conditions',
         'bconds',
+        'bcond_conditions',
         'name',
         'version',
         'release',
@@ -281,13 +285,24 @@ class RpmPreamble(Section):
         # and if we find the defines we put it on top.
         if endif:
             if self._condition_define:
+                # If we have define conditions and possible bcond start
+                # we need to put it bellow bcond definitions as otherwise
+                # the switches do not have any effect
+                if self._condition_bcond:
+                    self.paragraph['bcond_conditions'] += self.paragraph['conditions']
+                else:
+                    self.paragraph['define_conditions'] += self.paragraph['conditions']
                 # in case the nested condition contains define we consider all parents
-                # to require to be on top too
+                # to require to be on top too;
                 if len(self._oldstore) == 0:
                     self._condition_define = False
-                self.paragraph['define_conditions'] += self.paragraph['conditions']
             else:
                 self.paragraph['build_conditions'] += self.paragraph['conditions']
+
+            # bcond must be reseted when on top and can be set even outside of the
+            # define scope. So reset it here always
+            if len(self._oldstore) == 0:
+                self._condition_bcond = False
             self.paragraph['conditions'] = []
 
 
@@ -488,6 +503,9 @@ class RpmPreamble(Section):
         elif self.reg.re_if.match(line):
             self._add_line_to('conditions', line)
             self.condition = True
+            # check for possibility of the bcond conditional
+            if "%{with" in line or "%{without" in line:
+                self._condition_bcond = True
             self._start_subparagraph()
             self.previous_line = line
             return
