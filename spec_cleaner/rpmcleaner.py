@@ -127,8 +127,8 @@ class RpmSpecCleaner:
         # This avoids deleting %if before %files section that could
         # be deleted otherwise
         if isinstance(self.current_section, RpmClean):
-           if line == '':
-               return RpmPreamble
+           if line.strip() == '':
+               return Section
 
         # we are staying in the section
         return None
@@ -150,6 +150,7 @@ class RpmSpecCleaner:
             line = line.rstrip('\r')
 
             new_class = self._detect_new_section(line)
+            # print("class: '{0}' line: '{1}'".format(new_class, line))
             if new_class:
                 self.current_section.output(self.fout)
                 # we need to sent pkgconfig option to preamble and package

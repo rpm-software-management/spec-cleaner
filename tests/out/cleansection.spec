@@ -19,6 +19,7 @@
 %install
 install bla
 
+
 %ifarch x86
 
 %files -n something
