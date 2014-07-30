@@ -16,6 +16,8 @@
 #
 
 
+BuildRequires:  %{rubygem fast_gettext}
+BuildRequires:  %{rubygem rails >= 3.2}
 BuildRequires:  aaa < 3.2.1
 BuildRequires:  bbb
 BuildRequires:  eee = %{version}-%{release}
