@@ -56,8 +56,9 @@ preun
 py_compile
 requires_eq
 restart_on_update
-setup
 service_(add|del)_[^\s]*
+setup
+set_permissions
 stop_on_removal
 suse_update_desktop_file
 systemd_requires
