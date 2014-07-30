@@ -42,4 +42,3 @@
 %triggerin -- lighttpd
 %restart_on_update hawk
 %endif
-
