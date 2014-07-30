@@ -373,6 +373,10 @@ class RpmPreamble(Section):
                 if not self.previous_line.startswith('#'):
                     self.current_group.append('# FIXME: Use %requires_eq macro instead')
                 return [ value ]
+            # we also skip all various rpm-macroed content as it is usually not easy
+            # to determine how that should be split
+            if value.startswith('%'):
+                return [ value ]
 
             tokens = [ item[1] for item in self.reg.re_requires_token.findall(value) ]
             # Split based on ',' here as it breaks up pattern matching later on
