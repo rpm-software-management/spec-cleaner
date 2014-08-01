@@ -1,3 +1,6 @@
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y rpm
 language: python
 python:
   - "2.7"
