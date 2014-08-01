@@ -117,7 +117,7 @@ check: spec_cleaner/__init__.py
 		echo "  $$FAILED_VERIFY" ; \
 		echo ; \
 		echo "Check errors by running:"; \
-		for i in $$FAILED_VERIFY; do echo "  diff -Naru tests/out/$$i.spec tests/tmp/$$i.spec"; done; \
+		for i in $$FAILED_VERIFY; do echo "  diff -Naru tests/out/$$i.spec tests/tmp2/$$i.spec"; done; \
 		echo ; \
 		exit 1 ; \
 	else \
