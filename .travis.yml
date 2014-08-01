@@ -4,7 +4,7 @@ python:
   - "3.3"
 install:
   - pip install python-coveralls
-  - apt-get install -y rpm
+  - sudo apt-get install -y rpm
 script:
   - make test
 after_success:
