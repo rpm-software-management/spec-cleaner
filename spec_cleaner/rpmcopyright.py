@@ -77,7 +77,7 @@ class RpmCopyright(Section):
             return
 
 
-    def output(self, fout):
+    def output(self, fout, newline = True):
         self._add_pkg_header()
         self._add_copyright()
         self._add_default_license()
@@ -85,4 +85,4 @@ class RpmCopyright(Section):
         # trailing enters # prep_spec does two so do the same
         self.lines.append('')
         self.lines.append('')
-        Section.output(self, fout)
+        Section.output(self, fout, newline)

@@ -642,10 +642,10 @@ class RpmPreamble(Section):
             self._add_line_to('misc', line)
 
 
-    def output(self, fout):
+    def output(self, fout, newline = True):
         lines = self._end_paragraph()
         self.lines += lines
-        Section.output(self, fout)
+        Section.output(self, fout, newline)
 
 
 class RpmPackage(RpmPreamble):

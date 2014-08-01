@@ -56,16 +56,23 @@ class Section(object):
         self.previous_line = line
 
 
-    def output(self, fout):
+    def output(self, fout, newline = True):
         # Always append one empty line at the end if it is not present
         # and changelog is trailing part of our spec so do not put nothing
         # bellow
         # Also if we are jumping away just after writing one macroed line
         # we don't want to create new line
-        if self.lines[-1] != '' and \
-              self.lines[-1] != '%changelog' and not \
-              self.lines[-1].startswith('%if'):
-            self.lines.append('')
+        if len(self.lines) >= 1:
+            if self.lines[-1] != '' and \
+                  self.lines[-1] != '%changelog' and not \
+                  self.lines[-1].startswith('%if') and \
+                  newline:
+                self.lines.append('')
+            # remove the newlines around ifs if they are not wanted
+            if self.lines[-1] == '' and \
+                  (self.lines[-2].startswith('%if') or
+                  self.lines[-2].startswith('%else')):
+                self.lines.pop()
 
         for line in self.lines:
             fout.write(line + '\n')

@@ -97,8 +97,10 @@ class RpmSpecCleaner:
         #   check if the current line is starting new section, and if so
         #   if previous non-empty-uncommented line was starting the condition
         #   we end up the condition section in preamble (if applicable) and proceed to output
-        if self.reg.re_else.match(line) or self.reg.re_endif.match(line):
-            if hasattr(self.current_section, 'condition') and not self.current_section.condition:
+        if self.reg.re_else.match(line) or self.reg.re_endif.match(line) or \
+             (type(self.current_section) is Section and self.reg.re_if.match(line)):
+            if not hasattr(self.current_section, 'condition') or \
+                  (hasattr(self.current_section, 'condition') and not self.current_section.condition):
                 # If we have to break out we go ahead with small class
                 # which just print the one evil line
                 return Section
@@ -152,7 +154,12 @@ class RpmSpecCleaner:
             new_class = self._detect_new_section(line)
             #sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
-                self.current_section.output(self.fout)
+                # We don't want to print newlines before %else and %endif
+                if new_class == Section and self.reg.re_else.match(line) or self.reg.re_endif.match(line):
+                    newline = False
+                else:
+                    newline = True
+                self.current_section.output(self.fout, newline)
                 # we need to sent pkgconfig option to preamble and package
                 if new_class == RpmPreamble or new_class == RpmPackage:
                     self.current_section = new_class(self.specfile, self.pkgconfig)

@@ -9,7 +9,7 @@ class RpmClean(Section):
     """
 
 
-    def output(self, fout):
+    def output(self, fout, newline = True):
         pass
 
 

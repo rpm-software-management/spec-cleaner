@@ -60,6 +60,19 @@ check: spec_cleaner/__init__.py
 				echo "passed" ; \
 			fi ; \
 		done ; \
+		for i in tests/out/*.spec; do \
+			CORRECT="`echo $$i`" ; \
+			NEW="`    echo $$i | sed 's|^tests/out|tests/tmp2|'`" ; \
+			TEST="`   echo $$i | sed 's|^tests/out/\(.*\).spec|\1|'`" ; \
+			python2 spec_cleaner/__init__.py -p -f $$i | sed "s|`date +%Y`|2013|" > "$$NEW" ; \
+			echo -n " * test verify '$$TEST': " ; \
+			if [ "`diff "$$CORRECT" "$$NEW" 2>&1`" ]; then \
+				echo "failed" ; \
+				FAILED_VERIFY="$$FAILED_VERIFY $$TEST" ; \
+			else \
+				echo "passed" ; \
+			fi ; \
+		done ; \
 	fi ; \
 	if [ -x /usr/bin/python3 ]; then \
 		echo "Running tests in python3:" ; \
@@ -76,6 +89,19 @@ check: spec_cleaner/__init__.py
 				echo "passed" ; \
 			fi ; \
 		done ; \
+		for i in tests/out/*.spec; do \
+			CORRECT="`echo $$i`" ; \
+			NEW="`    echo $$i | sed 's|^tests/out|tests/tmp2|'`" ; \
+			TEST="`   echo $$i | sed 's|^tests/out/\(.*\).spec|\1|'`" ; \
+			python3 spec_cleaner/__init__.py -p -f $$i | sed "s|`date +%Y`|2013|" > "$$NEW" ; \
+			echo -n " * test verify '$$TEST': " ; \
+			if [ "`diff "$$CORRECT" "$$NEW" 2>&1`" ]; then \
+				echo "failed" ; \
+				FAILED_VERIFY="$$FAILED_VERIFY $$TEST" ; \
+			else \
+				echo "passed" ; \
+			fi ; \
+		done ; \
 	fi ; \
 	echo ; \
 	if [ "$$FAILED" ]; then \
@@ -84,6 +110,14 @@ check: spec_cleaner/__init__.py
 		echo ; \
 		echo "Check errors by running:"; \
 		for i in $$FAILED; do echo "  diff -Naru tests/out/$$i.spec tests/tmp/$$i.spec"; done; \
+		echo ; \
+		exit 1 ; \
+	elif [ "$$FAILED_VERIFY" ]; then \
+		echo "`echo $$FAILED_VERIFY | wc -w` verification tests out of `echo tests/out/*.spec | wc -w` failed:" ; \
+		echo "  $$FAILED_VERIFY" ; \
+		echo ; \
+		echo "Check errors by running:"; \
+		for i in $$FAILED_VERIFY; do echo "  diff -Naru tests/out/$$i.spec tests/tmp/$$i.spec"; done; \
 		echo ; \
 		exit 1 ; \
 	else \

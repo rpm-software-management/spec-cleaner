@@ -8,7 +8,7 @@ class RpmScriptlets(Section):
         Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig
     '''
 
-    def output(self, fout):
+    def output(self, fout, newline = True):
         # if we have 2 or 3 lines where last one is empty
         nolines = len(self.lines)
         if nolines == 2 or ( nolines == 3 and self.lines[2] == ''):
@@ -17,4 +17,4 @@ class RpmScriptlets(Section):
                 self.lines = []
                 self.lines.append('{0} -p /sbin/ldconfig'.format(pkg))
                 self.lines.append('')
-        Section.output(self, fout)
+        Section.output(self, fout, newline)
