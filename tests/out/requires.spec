@@ -38,12 +38,10 @@ Requires:       zzz
 Requires:       pkgconfig(glib-2.0)
 # FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         aaa < 3.2.1
-# FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         bbb
 PreReq:         eee = %{version}-%{release}
 PreReq:         iii <= 4.2.1
 PreReq:         jjj > %{version}
-# FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         kkk
 PreReq:         rrr >= %{version}
 PreReq:         zzz
