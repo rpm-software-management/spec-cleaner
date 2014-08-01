@@ -319,12 +319,11 @@ class RpmPreamble(Section):
                 self.paragraph[i].sort(key=self._sort_helper_key)
             for group in self.paragraph[i]:
                 lines += self._add_group(group)
-
         if self.current_group:
             # the current group was not added to any category. It's just some
             # random stuff that should be at the end anyway.
             lines += self._add_group(self.current_group)
-
+            self.current_group = ''
         return lines
 
 
