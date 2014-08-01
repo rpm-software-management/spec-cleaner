@@ -109,10 +109,9 @@ class RpmSpecCleaner:
         for (regexp, newclass) in self.section_starts:
             if regexp.match(line):
                 # check if we are in if conditional and act accordingly if we change sections
-                if self._previous_nonempty_line and self.reg.re_if.match(self._previous_nonempty_line):
-                    if hasattr(self.current_section, 'condition'):
-                        self.current_section.condition = False
-                        self.current_section._end_subparagraph(True)
+                if hasattr(self.current_section, 'condition') and self.current_section.condition:
+                    self.current_section.condition = False
+                    self.current_section._end_subparagraph(True)
                 return newclass
 
         # if we still are here and we are just doing copyright
@@ -152,6 +151,8 @@ class RpmSpecCleaner:
             line = line.rstrip('\r')
 
             new_class = self._detect_new_section(line)
+            # Following line is debug output with class info
+            # USE: 'spec-cleaner file > /dev/null' to see the stderr output
             #sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
                 # We don't want to print newlines before %else and %endif

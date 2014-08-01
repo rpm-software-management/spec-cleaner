@@ -29,7 +29,7 @@ class RegexpSingle(object):
     re_spec_install = re.compile('^%install\s*$', re.IGNORECASE)
     re_spec_clean = re.compile('^%clean\s*$', re.IGNORECASE)
     re_spec_check = re.compile('^%check\s*$', re.IGNORECASE)
-    re_spec_scriptlets = re.compile('(?:^%pretrans\s*)|(?:^%pre\s*)|(?:^%post\s*)|(?:^%preun\s*)|(?:^%postun\s*)|(?:^%posttrans\s*)', re.IGNORECASE)
+    re_spec_scriptlets = re.compile('(?:^%pretrans\s*)|(?:^%pre\s*)|(?:^%post\s*)|(?:^%verifyscript\s*)|(?:^%preun\s*)|(?:^%postun\s*)|(?:^%posttrans\s*)', re.IGNORECASE)
     re_spec_files = re.compile('^%files\s*', re.IGNORECASE)
     re_spec_changelog = re.compile('^%changelog\s*$', re.IGNORECASE)
 
