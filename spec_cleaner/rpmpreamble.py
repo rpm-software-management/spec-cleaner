@@ -283,7 +283,7 @@ class RpmPreamble(Section):
 
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
-        if endif:
+        if endif or not self.condition:
             if self._condition_define:
                 # If we have define conditions and possible bcond start
                 # we need to put it bellow bcond definitions as otherwise
@@ -645,8 +645,6 @@ class RpmPreamble(Section):
     def output(self, fout):
         lines = self._end_paragraph()
         self.lines += lines
-        # append empty line to the end of the section
-        self.lines.append('')
         Section.output(self, fout)
 
 

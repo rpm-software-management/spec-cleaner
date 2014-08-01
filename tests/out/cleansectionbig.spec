@@ -16,7 +16,6 @@
 #
 
 
-
 %if 0%{?suse_version}
 # TODO(must): Determine sensible non-SUSE versions of these,
 # in particular restart_on_update and stop_on_removal.
@@ -42,3 +41,4 @@
 %triggerin -- lighttpd
 %restart_on_update hawk
 %endif
+

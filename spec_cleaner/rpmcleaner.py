@@ -150,7 +150,7 @@ class RpmSpecCleaner:
             line = line.rstrip('\r')
 
             new_class = self._detect_new_section(line)
-            # print("class: '{0}' line: '{1}'".format(new_class, line))
+            #sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
                 self.current_section.output(self.fout)
                 # we need to sent pkgconfig option to preamble and package
@@ -158,6 +158,13 @@ class RpmSpecCleaner:
                     self.current_section = new_class(self.specfile, self.pkgconfig)
                 else:
                     self.current_section = new_class(self.specfile)
+                # skip empty line adding if we are switching sections
+                if self._previous_line == '' and line == '':
+                    continue
+
+            # Do not store data from clean and skip out here
+            if isinstance(self.current_section, RpmClean):
+                continue
 
             self.current_section.add(line)
             self._previous_line = line
