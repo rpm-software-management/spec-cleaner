@@ -1,5 +1,4 @@
 language: python
-install: make get-deps
 python:
   - "2.7"
   - "3.3"
