@@ -167,6 +167,7 @@ CC-BY-SA-3.0	CC BY-SA 3.0
 CC-BY-SA-3.0	CC BY-SA V3.0
 CC-BY-SA-3.0	CC-BY-SA-3.0
 CC-BY-SA-3.0+	CC-BY-SA-3.0+
+CC-BY-SA-4.0	http://creativecommons.org/licenses/by-sa/4.0/legalcode
 CC0-1.0	CC0-1.0
 CC0-1.0+	CC0-1.0+
 CDDL-1.0	CDDL
@@ -514,6 +515,7 @@ OLDAP-2.8	OLDAP-2.8
 OLDAP-2.8	openldap 2.8
 OLDAP-2.8+	OLDAP-2.8+
 OPL-1.0	OPL-1.0
+OPL-1.0	Open Publication License 1.0
 OPL-1.0+	OPL-1.0+
 OSL-1.0	OSL-1.0
 OSL-1.0+	OSL-1.0+
@@ -561,6 +563,7 @@ RSCPL+	RSCPL+
 Ruby	GPL-2.0+ or Ruby
 Ruby	GPLv2+ or Ruby
 Ruby	Ruby
+Ruby	same as ruby's
 Ruby+	Ruby+
 SAX-PD	SAX-PD
 SAX-PD+	SAX-PD+
@@ -598,6 +601,8 @@ SUSE-DMTF	Distributed Management Task Force ( see https://fedoraproject.org/wiki
 SUSE-DMTF+	SUSE-DMTF+
 SUSE-Docbook-XSL	Copyright (C) 1999-2007 Norman Walsh
 SUSE-Docbook-XSL+	SUSE-Docbook-XSL+
+SUSE-EULA	SUSE End User License Agreement
+SUSE-EULA+	SUSE-EULA+
 SUSE-Egenix-1.1.0	Egenix Public License Agreement 1.1.0 (e.g. python-egenix-mx-base) http://www.egenix.com/products/python/mxBase/eGenix.com-Public-License-1.1.0.pdf
 SUSE-Egenix-1.1.0+	SUSE-Egenix-1.1.0+
 SUSE-FHS	See for example, the "FHS" license here: https://launchpad.net/ubuntu/precise/+source/debian-policy/+copyright
@@ -623,6 +628,8 @@ SUSE-GPL-2.0-with-FLOSS-exception	SUSE-GPL-2.0-with-FLOSS-exception
 SUSE-GPL-2.0-with-FLOSS-exception+	SUSE-GPL-2.0-with-FLOSS-exception+
 SUSE-GPL-2.0-with-OSI-exception	GPL-2.0 with linking exception for OSI licenses (see elfutils e.g.)
 SUSE-GPL-2.0-with-OSI-exception+	SUSE-GPL-2.0-with-OSI-exception+
+SUSE-GPL-2.0-with-linking-exception	Copyright holder expressly allows GPL-2.0 component to be linked with components which are not GPL compatible
+SUSE-GPL-2.0-with-linking-exception+	SUSE-GPL-2.0-with-linking-exception+
 SUSE-GPL-2.0-with-openssl-exception	SPDX does not have this exception
 SUSE-GPL-2.0-with-openssl-exception+	SUSE-GPL-2.0-with-openssl-exception+
 SUSE-GPL-2.0-with-plugin-exception	Many GPL-2.0 licensed applications grant an exception that permits non-free plugins (e.g. from gstreamer) to be linked against them
@@ -671,12 +678,16 @@ SUSE-LGPL-2.1-with-digia-exception-1.1	qtcreator November 2012
 SUSE-LGPL-2.1-with-digia-exception-1.1+	SUSE-LGPL-2.1-with-digia-exception-1.1+
 SUSE-LGPL-2.1-with-nokia-exception-1.1	Part of the license choice in libqt4
 SUSE-LGPL-2.1-with-nokia-exception-1.1+	SUSE-LGPL-2.1-with-nokia-exception-1.1+
+SUSE-LGPL-3.0-with-openssl-exception	e.g python-psycopg2
+SUSE-LGPL-3.0-with-openssl-exception+	SUSE-LGPL-3.0-with-openssl-exception+
 SUSE-Liberation	LiberationFontsLicense (Fedora calls this the Liberation license - it will be easier to get it upstream if we adopt that)
 SUSE-Liberation+	SUSE-Liberation+
 SUSE-MakeIndex	http://pastebin.com/CYB22gju (the license used in csindex)
 SUSE-MakeIndex+	SUSE-MakeIndex+
 SUSE-Manpages	Manpages licenses (linux man pages e.g.)
 SUSE-Manpages+	SUSE-Manpages+
+SUSE-Matplotlib	E.g. python -matplotlib -> LICENSE/LICENSE
+SUSE-Matplotlib+	SUSE-Matplotlib+
 SUSE-MgOpen	MgOpen Fonts license (similar to Bitstream Vera but with additional language)
 SUSE-MgOpen+	SUSE-MgOpen+
 SUSE-NetCDF	SUSE-NetCDF
@@ -733,10 +744,10 @@ SUSE-TGPPL-1.0	https://zooko.com/uri/URI:DIR2-RO:d23ekhh2b4xashf53ycrfoynkq:y4vp
 SUSE-TGPPL-1.0+	SUSE-TGPPL-1.0+
 SUSE-TeX	http://en.wikipedia.org/wiki/TeX#License
 SUSE-TeX+	SUSE-TeX+
+SUSE-Ubuntu-Font-License-1.0	http://font.ubuntu.com/licence/
+SUSE-Ubuntu-Font-License-1.0+	SUSE-Ubuntu-Font-License-1.0+
 SUSE-Vim	SUSE-Vim
 SUSE-Vim+	SUSE-Vim+
-SUSE-WTFPL-2.0	http://sam.zoy.org/wtfpl/
-SUSE-WTFPL-2.0+	SUSE-WTFPL-2.0+
 SUSE-XFree86-with-font-exception	XFree86 with exception to clarify that a document embedding such fonts does not need to be licensed under the XFree86 license
 SUSE-XFree86-with-font-exception+	SUSE-XFree86-with-font-exception+
 SUSE-XSL-Lint	http://pastebin.com/cFxX3zCb (probably deprecated but found in docbook-dsssl-stylesheets)
@@ -757,6 +768,7 @@ Sleepycat	Sleepycat
 Sleepycat+	Sleepycat+
 SugarCRM-1.1.3	SugarCRM-1.1.3
 SugarCRM-1.1.3+	SugarCRM-1.1.3+
+Unicode	http://www.unicode.org/copyright.html
 Unlicense	Unlicense
 Unlicense+	Unlicense+
 VSL-1.0	VSL-1.0
@@ -764,6 +776,7 @@ VSL-1.0+	VSL-1.0+
 W3C	W3C
 W3C	W3C Software License
 W3C+	W3C+
+WTFPL	SUSE-WTFPL-2.0
 WTFPL	WTFPL
 WTFPL+	WTFPL+
 WXwindows	WXwindows
