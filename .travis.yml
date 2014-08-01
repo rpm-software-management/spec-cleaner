@@ -1,9 +1,7 @@
 language: python
+install: make get-deps
 python:
-  - 2.7
-
+  - "2.7"
+  - "3.3"
 script:
   - make test
-
-after_success:
-  - coveralls
