@@ -6,6 +6,6 @@ install:
   - pip install python-coveralls mock
   - sudo apt-get install -y rpm
 script:
-  - nosetests --with-coverage --cover-package=osclib --cover-inclusive
+  - nosetests --with-coverage --cover-package=spec_cleaner --cover-inclusive
 after_success:
   - coveralls
