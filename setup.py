@@ -4,6 +4,11 @@
 from setuptools import setup
 from spec_cleaner import __version__
 
+test_requires = [
+    'mock',
+    'nose',
+]
+
 setup(
     name='spec_cleaner',
     description = 'RPM .spec files cleaner',
@@ -23,6 +28,9 @@ setup(
     license = 'License :: OSI Approved :: BSD License',
     platforms = ['Linux'],
     keywords = ['SUSE', 'RPM', '.spec', 'cleaner'],
+
+    tests_require=test_requires,
+    test_suite="nose.collector",
 
     packages = ['spec_cleaner'],
     package_data = {'spec_cleaner' : [ "data/*.txt" ]},
