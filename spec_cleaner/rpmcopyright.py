@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import os
-import time
+import datetime
 
 from rpmsection import Section
 
@@ -24,7 +24,7 @@ class RpmCopyright(Section):
 
 
     def _create_default_copyright(self):
-        year = time.strftime('%Y', time.localtime(time.time()))
+        year = datetime.datetime.now().year
         return '# Copyright (c) {0} SUSE LINUX Products GmbH, Nuernberg, Germany.'.format(year)
 
 

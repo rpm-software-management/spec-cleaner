@@ -6,6 +6,9 @@ import unittest
 import os
 import tempfile
 import difflib
+import datetime
+from mock import patch
+
 from spec_cleaner import RpmSpecCleaner
 
 class TestCompare(unittest.TestCase):
@@ -70,10 +73,12 @@ class TestCompare(unittest.TestCase):
 
         return test_files
 
-    def _run_individual_test(self, infile):
+    @patch('spec_cleaner.rpmcopyright.datetime')
+    def _run_individual_test(self, infile, datetime_mock):
         """
         Run the cleaner as specified and store the output for further comparison.
         """
+        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 01, 01))
         cleaner = RpmSpecCleaner(infile, self.tmp_file.name, True, False, False, 'vimdiff')
         cleaner.run()
 
