@@ -33,21 +33,6 @@ class RpmPreamble(Section):
         line, even if we reorder the lines.
     """
 
-    # Old storage
-    _oldstore = []
-
-    # Is the parsed variable multiline (ending with \)
-    multiline = False
-
-    # Are we inside of conditional or not
-    condition = False
-
-    # Is the condition with define/global variables
-    _condition_define = False
-
-    # Is the condition based probably on bcond evaluation
-    _condition_bcond = False
-
     category_to_key = {
         'name': 'Name',
         'version': 'Version',
@@ -127,6 +112,16 @@ class RpmPreamble(Section):
 
     def __init__(self, specfile, pkgconfig):
         Section.__init__(self, specfile)
+        # Old storage
+        self._oldstore = []
+        # Is the parsed variable multiline (ending with \)
+        self.multiline = False
+        # Are we inside of conditional or not
+        self.condition = False
+        # Is the condition with define/global variables
+        self._condition_define = False
+        # Is the condition based probably on bcond evaluation
+        self._condition_bcond = False
         # do we want pkgconfig
         self.pkgconfig = pkgconfig
         # dict of license replacement options

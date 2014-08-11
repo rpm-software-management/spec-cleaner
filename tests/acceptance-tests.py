@@ -4,6 +4,7 @@
 
 import unittest
 import os
+import shutil
 import tempfile
 import difflib
 import datetime
@@ -23,7 +24,14 @@ class TestCompare(unittest.TestCase):
 
         self.input_dir = self._get_input_dir()
         self.fixtures_dir = self._get_fixtures_dir()
-        self.tmp_file = tempfile.NamedTemporaryFile()
+        self.tmp_dir = tempfile.mkdtemp()
+        self.tmp_file_rerun = tempfile.NamedTemporaryFile()
+
+    def tearDown(self):
+        """
+        Remove the tmp directory
+        """
+        shutil.rmtree(self.tmp_dir)
 
     def _difftext(self, lines1, lines2, junk=None):
         junk = junk or (' ', '\t')
@@ -73,20 +81,25 @@ class TestCompare(unittest.TestCase):
 
         return test_files
 
-    @patch('spec_cleaner.rpmcopyright.datetime')
-    def _run_individual_test(self, infile, datetime_mock):
+    def _run_individual_test(self, infile, outfile):
         """
         Run the cleaner as specified and store the output for further comparison.
         """
-        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 01, 01))
-        cleaner = RpmSpecCleaner(infile, self.tmp_file.name, True, False, False, 'vimdiff')
+        cleaner = RpmSpecCleaner(infile, outfile, True, False, False, 'vimdiff')
         cleaner.run()
 
-    def test_input_files(self):
+    @patch('spec_cleaner.rpmcopyright.datetime')
+    def test_input_files(self, datetime_mock):
+        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 01, 01))
         for test in self._obtain_list_of_tests():
             infile = os.path.join(self.input_dir, test)
             compare = os.path.join(self.fixtures_dir, test)
+            tmp_file = os.path.join(self.tmp_dir, test)
 
-            self._run_individual_test(infile)
+            # first try to generate cleaned content from messed up
+            self._run_individual_test(infile, tmp_file)
+            self.assertStreamEqual(open(compare), open(tmp_file))
 
-            self.assertStreamEqual(open(compare), open (self.tmp_file.name))
+            # second run it again while ensuring it didn't change
+            self._run_individual_test(tmp_file, self.tmp_file_rerun.name)
+            self.assertStreamEqual(open(compare), open (self.tmp_file_rerun.name))

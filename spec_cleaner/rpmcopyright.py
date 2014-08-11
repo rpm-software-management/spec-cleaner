@@ -13,8 +13,10 @@ class RpmCopyright(Section):
     that are still relevant. Everything else is ignored.
     """
 
-    copyrights = []
-    buildrules = []
+    def __init__(self, specfile):
+        Section.__init__(self, specfile)
+        self.copyrights = []
+        self.buildrules = []
 
     def _add_pkg_header(self):
         specname = os.path.splitext(os.path.basename(self.spec))[0]
