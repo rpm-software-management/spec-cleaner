@@ -3,9 +3,9 @@ python:
   - "2.7"
   - "3.3"
 install:
-  - pip install python-coveralls
+  - pip install python-coveralls mock
   - sudo apt-get install -y rpm
 script:
-  - make test
+  - nosetests --with-coverage --cover-package=osclib --cover-inclusive
 after_success:
-  coveralls
+  - coveralls
