@@ -25,6 +25,9 @@ setup(
     keywords = ['SUSE', 'RPM', '.spec', 'cleaner'],
 
     packages = ['spec_cleaner'],
+    package_data = {'spec_cleaner' : [ "data/*.txt" ]},
+
+    data_files=[('/usr/libexec/obs/service/', ['obs/*'])],
 
     entry_points = {
         'console_scripts': ['spec-cleaner = spec_cleaner.main:main']},

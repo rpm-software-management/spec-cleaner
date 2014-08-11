@@ -1,0 +1,5 @@
+include AUTHORS COPYING README.rst
+include obs/*
+include data/*.txt
+recursive-include tests *
+include pkgconfig-update.* license-update.sh Makefile
