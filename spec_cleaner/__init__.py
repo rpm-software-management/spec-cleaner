@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 # Copyright (c) 2013, SUSE LINUX Products GmbH, Nuernberg, Germany
