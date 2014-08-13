@@ -2,9 +2,9 @@
 
 import re
 
-from rpmsection import Section
-from fileutils import FileUtils
-from rpmexception import RpmException
+from .rpmsection import Section
+from .fileutils import FileUtils
+from .rpmexception import RpmException
 
 
 LICENSES_CHANGES = 'licenses_changes.txt'

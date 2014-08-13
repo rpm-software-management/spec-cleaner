@@ -3,7 +3,7 @@
 import re
 import os
 
-from fileutils import FileUtils
+from .fileutils import FileUtils
 
 class Singleton:
   def __init__(self, klass):

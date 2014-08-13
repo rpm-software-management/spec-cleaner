@@ -1,6 +1,6 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-from rpmsection import Section
+from .rpmsection import Section
 
 
 class RpmDescription(Section):

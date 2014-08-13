@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 # We basically extend rpmcheck
-from rpmcheck import RpmCheck
+from .rpmcheck import RpmCheck
 
 
 class RpmBuild(RpmCheck):

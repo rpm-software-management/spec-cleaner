@@ -2,7 +2,7 @@
 
 import re
 
-from rpmregexp import RegexpSingle
+from .rpmregexp import RegexpSingle
 
 class Section(object):
     """

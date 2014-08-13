@@ -3,7 +3,7 @@
 import os
 import datetime
 
-from rpmsection import Section
+from .rpmsection import Section
 
 
 class RpmCopyright(Section):

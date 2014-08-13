@@ -2,7 +2,7 @@
 
 import os
 
-from rpmexception import RpmException
+from .rpmexception import RpmException
 
 
 class FileUtils:

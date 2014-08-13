@@ -7,21 +7,21 @@ import subprocess
 import shlex
 import os.path
 
-from rpmsection import Section
-from rpmexception import RpmException
-from rpmcopyright import RpmCopyright
-from rpmdescription import RpmDescription
-from rpmprune import RpmClean
-from rpmprune import RpmChangelog
-from rpmpreamble import RpmPreamble
-from rpmpreamble import RpmPackage
-from rpmprep import RpmPrep
-from rpmbuild import RpmBuild
-from rpmcheck import RpmCheck
-from rpminstall import RpmInstall
-from rpmscriplets import RpmScriptlets
-from rpmfiles import RpmFiles
-from rpmregexp import RegexpSingle
+from .rpmsection import Section
+from .rpmexception import RpmException
+from .rpmcopyright import RpmCopyright
+from .rpmdescription import RpmDescription
+from .rpmprune import RpmClean
+from .rpmprune import RpmChangelog
+from .rpmpreamble import RpmPreamble
+from .rpmpreamble import RpmPackage
+from .rpmprep import RpmPrep
+from .rpmbuild import RpmBuild
+from .rpmcheck import RpmCheck
+from .rpminstall import RpmInstall
+from .rpmscriplets import RpmScriptlets
+from .rpmfiles import RpmFiles
+from .rpmregexp import RegexpSingle
 
 
 class RpmSpecCleaner:
