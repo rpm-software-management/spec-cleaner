@@ -34,9 +34,10 @@ setup(
     test_suite="nose.collector",
 
     packages = ['spec_cleaner'],
-    package_data = {'spec_cleaner' : [ "data/*.txt" ]},
 
-    data_files=[('/usr/libexec/obs/service/', glob.glob('obs/*'))],
+    data_files=[('/usr/libexec/obs/service/', glob.glob('obs/*')),
+                ('/usr/share/spec-cleaner/', glob.glob('data/*')),
+    ],
 
     entry_points = {
         'console_scripts': ['spec-cleaner = spec_cleaner.main:main']},
