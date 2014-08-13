@@ -90,7 +90,7 @@ class TestCompare(unittest.TestCase):
 
     @patch('spec_cleaner.rpmcopyright.datetime')
     def test_input_files(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 01, 01))
+        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
         for test in self._obtain_list_of_tests():
             infile = os.path.join(self.input_dir, test)
             compare = os.path.join(self.fixtures_dir, test)
@@ -98,8 +98,10 @@ class TestCompare(unittest.TestCase):
 
             # first try to generate cleaned content from messed up
             self._run_individual_test(infile, tmp_file)
-            self.assertStreamEqual(open(compare), open(tmp_file))
+            with open(compare) as ref, open(tmp_file) as test:
+                self.assertStreamEqual(ref, test)
 
             # second run it again while ensuring it didn't change
             self._run_individual_test(tmp_file, self.tmp_file_rerun.name)
-            self.assertStreamEqual(open(compare), open (self.tmp_file_rerun.name))
+            with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
+                self.assertStreamEqual(ref, test)
