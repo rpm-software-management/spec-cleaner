@@ -65,15 +65,14 @@ def process_args(argv):
     return options
 
 
-def main(argv):
+def main():
     """
     Main function that calls argument parsing ensures their sanity
     and then creates RpmSpecCleaner object that works with passed spec file.
-    :param argv: passed arguments
     """
 
     try:
-        options = process_args(argv)
+        options = process_args(sys.argv[1:])
     except RpmWrongArgs as e:
         sys.stderr.write('ERROR: {0}\n'.format(e))
         return 1
@@ -91,9 +90,3 @@ def main(argv):
         return 1
 
     return 0
-
-if __name__ == '__main__':
-    try:
-        sys.exit(main(sys.argv[1:]))
-    except KeyboardInterrupt:
-        pass
