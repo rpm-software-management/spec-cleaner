@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup
+import glob
 from spec_cleaner import __version__
 
 test_requires = [
@@ -35,7 +36,7 @@ setup(
     packages = ['spec_cleaner'],
     package_data = {'spec_cleaner' : [ "data/*.txt" ]},
 
-    data_files=[('/usr/libexec/obs/service/', ['obs/*'])],
+    data_files=[('/usr/libexec/obs/service/', glob.glob('obs/*'))],
 
     entry_points = {
         'console_scripts': ['spec-cleaner = spec_cleaner.main:main']},
