@@ -1,0 +1,3 @@
+%build
+cmake . \
+	-DIHATECMAKE=OFF
