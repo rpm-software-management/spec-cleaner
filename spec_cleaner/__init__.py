@@ -11,8 +11,8 @@ import os
 import sys
 import argparse
 
-from rpmexception import RpmWrongArgs, RpmException
-from rpmcleaner import RpmSpecCleaner
+from .rpmexception import RpmWrongArgs, RpmException
+from .rpmcleaner import RpmSpecCleaner
 
 
 def process_args(argv):
