@@ -40,6 +40,6 @@ setup(
     ],
 
     entry_points = {
-        'console_scripts': ['spec-cleaner = spec_cleaner.main:main']},
+        'console_scripts': ['spec-cleaner = spec_cleaner:main']},
 )
 
