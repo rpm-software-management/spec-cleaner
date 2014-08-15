@@ -54,7 +54,7 @@ prep
 pretrans
 preun
 py_compile
-requires_eq
+requires_[^\s]*
 restart_on_update
 service_(add|del)_[^\s]*
 setup
