@@ -19,13 +19,15 @@ TEMPDIR="$(mktemp -d)"
 #echo "Working in \"${TEMPDIR}\""
 pushd "${TEMPDIR}" &> /dev/null
     verify_fetch "${DOCS}"
+    # download
     curl -s "${DOCS}" | grep -v "New format" > licenses_changes.txt
-    grep ^SUSE- licenses_changes.txt | awk -F' ' '{print $1}' | while read l; do
+    # for all licenses add variant with '+' at the end
+    sed -n '/New format/d;s@^\(SUSE-[^[:blank:]]*\)[[:blank:]].*@\1@p' licenses_changes.txt | while read l; do
         echo -e "${l}+\t${l}+\n" >> licenses_changes.txt
     done
 
     verify_fetch "${SPDX}"
-    for i in `w3m -dump -cols 1000 "${SPDX}" | grep "License Text" | sed -e 's, *Y *License Text,,; s, *License Text,,; s,.* ,,;'`; do
+    for i in `w3m -dump -cols 1000 "${SPDX}" | sed -ne '/License Text/{s, *Y *License Text,,; s, *License Text,,; s,.* ,,;p}'`; do
         echo -e "${i}\t${i}\n" >> licenses_changes.txt
         if [[ ${i:-1} != '+' ]] ; then
             echo -e "${i}+\t${i}+\n" >> licenses_changes.txt
