@@ -23,7 +23,7 @@ class RpmCheck(Section):
             if line.find('%{?_smp_mflags}') == -1 and line.find('-j') == -1:
                 # Don't append %_smp_mflags if the line ends with a backslash,
                 # it would break the formatting
-                if not line.endswith('\\') and not '||' in line:
-                    line = '{0} {1}'.format(line, '%{?_smp_mflags}')
+                if not line.endswith('\\'):
+                    line = self.reg.re_make.sub(r'\1make %{?_smp_mflags}\3', line)
 
         Section.add(self, line)

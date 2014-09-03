@@ -73,6 +73,7 @@ class RegexpSingle(object):
 
     # rpmbuild
     re_jobs = re.compile('%{(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
+    re_make = re.compile('(^|(.*\s)?)make($|(\s.*)?)')
 
     # rpmcopyright
     re_copyright = re.compile('^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
