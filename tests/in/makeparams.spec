@@ -27,6 +27,7 @@ make %_smp_mflags
 make %{_smp_mflags}
 make %{?_smp_mflags}
 make check ||:
+make && mv mtr xmtr
 make %{?_smp_flags} VERBOSE=1
 
 %install
