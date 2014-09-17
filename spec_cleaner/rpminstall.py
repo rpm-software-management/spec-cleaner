@@ -10,7 +10,8 @@ class RpmInstall(Section):
     '''
 
     def add(self, line):
-        install_command = 'make DESTDIR=%{buildroot} install %{?_smp_mflags}'
+        install_command = 'make DESTDIR=%{buildroot} install'
+        parallel_arg = ' %{?_smp_mflags}'
 
         line = self._complete_cleanup(line)
         line = self._replace_remove_la(line)
@@ -22,10 +23,14 @@ class RpmInstall(Section):
         # do not use install macros as we have trouble with it for now
         # we can convert it later on
         if self.reg.re_install.match(line):
-            line = install_command
+            # in case there is -j1 we need to ensure we are single threaded
+            if line.find('-j1') != -1:
+                line = install_command + ' -j1'
+            else:
+                line = install_command + parallel_arg
 
         # we can deal with additional params for %makeinstall so replace that too
-        line = line.replace('%{makeinstall}', install_command)
+        line = line.replace('%{makeinstall}', install_command + parallel_arg)
 
         Section.add(self, line)
 
