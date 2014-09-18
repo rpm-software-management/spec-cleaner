@@ -8,6 +8,7 @@ import shutil
 import tempfile
 import difflib
 import datetime
+import shutil
 from mock import patch
 
 from spec_cleaner import RpmSpecCleaner
@@ -105,3 +106,19 @@ class TestCompare(unittest.TestCase):
             self._run_individual_test(tmp_file, self.tmp_file_rerun.name)
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
                 self.assertStreamEqual(ref, test)
+
+    @patch('spec_cleaner.rpmcopyright.datetime')
+    def test_inline_function(self, datetime_mock):
+        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
+        # grab first test ; copy it to tmp and then run inlining there
+        test = self._obtain_list_of_tests()[0]
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.fixtures_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
+        shutil.copyfile(infile, tmp_file)
+
+        cleaner = RpmSpecCleaner(tmp_file, '', True, True, False, 'vimdiff')
+        cleaner.run()
+
+        with open(compare) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
