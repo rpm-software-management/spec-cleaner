@@ -1,6 +1,10 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-import io
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 import sys
 import tempfile
 import subprocess
@@ -69,12 +73,12 @@ class RpmSpecCleaner:
         if self.output:
             self.fout = open(self.output, 'w')
         elif self.inline:
-            fifo = io.BytesIO()
+            fifo = StringIO()
             while True:
-                bytes = self.fin.read(500 * 1024)
-                if len(bytes) == 0:
+                string = self.fin.read(500 * 1024)
+                if len(string) == 0:
                     break
-                fifo.write(bytes)
+                fifo.write(string)
 
             self.fin.close()
             fifo.seek(0)
