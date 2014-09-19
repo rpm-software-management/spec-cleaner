@@ -147,9 +147,6 @@ class RpmSpecCleaner:
         #        to maintain the specs all the same (eg somebody put
         #        filelist to the top).
         for line in self.fin:
-            # Stop at the end of the file
-            if len(line) == 0:
-                break
             # Remove \n to make it easier to parse things
             line = line.rstrip('\n')
             line = line.rstrip('\r')
