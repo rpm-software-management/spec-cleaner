@@ -115,7 +115,8 @@ class RpmSpecCleaner:
                 # check if we are in if conditional and act accordingly if we change sections
                 if hasattr(self.current_section, 'condition') and self.current_section.condition:
                     self.current_section.condition = False
-                    self.current_section._end_subparagraph(True)
+                    if hasattr(self.current_section, '_end_subparagraph'):
+                         self.current_section._end_subparagraph(True)
                 return newclass
 
         # if we still are here and we are just doing copyright

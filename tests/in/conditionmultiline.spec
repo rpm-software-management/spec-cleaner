@@ -1,3 +1,4 @@
+BuildRequires: something
 
 %build
  bash ../configure \

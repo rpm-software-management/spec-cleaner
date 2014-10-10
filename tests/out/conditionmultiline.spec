@@ -16,6 +16,8 @@
 #
 
 
+BuildRequires:  something
+
 %build
  bash ../configure \
  %ifnarch %{jit_arches}

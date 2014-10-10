@@ -21,6 +21,8 @@ class Section(object):
         self.previous_line = None
         self.spec = specfile
         self.reg = RegexpSingle(specfile)
+        # Are we inside of conditional or not
+        self.condition = False
 
 
     def _complete_cleanup(self, line):
@@ -44,12 +46,25 @@ class Section(object):
         return line
 
 
+    def _check_conditions(self, line):
+        """
+        Check if we are in condition that is contained or not
+        """
+        if self.reg.re_if.match(line):
+            self.condition = True
+        if self.reg.re_endif.match(line):
+            self.condition = False
+
+
     def add(self, line):
         """
         Run the cleanup and add the line to the list of lines
         """
 
         line = self._complete_cleanup(line)
+
+        # condtions detect
+        self._check_conditions(line)
 
         # append to the file
         self.lines.append(line)
