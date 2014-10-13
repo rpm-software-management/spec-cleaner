@@ -22,5 +22,5 @@ class RpmWrongArgs(RpmBaseException):
 
 class RpmException(RpmBaseException):
     """
-    Exception raised by wrong arguments pased by cli
+    Exception raised by wrong parsed content from rpm
     """
