@@ -110,7 +110,7 @@ class TestCompare(unittest.TestCase):
     @patch('spec_cleaner.rpmcopyright.datetime')
     def test_inline_function(self, datetime_mock):
         datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
-        # grab first test ; copy it to tmp and then run inlining there
+
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
         compare = os.path.join(self.fixtures_dir, test)
@@ -122,3 +122,15 @@ class TestCompare(unittest.TestCase):
 
         with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
+
+    @patch('spec_cleaner.rpmcopyright.datetime')
+    @patch('subprocess.call')
+    def test_diff_function(self, datetime_mock, subprocess_mock):
+        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
+        subprocess_mock.subprocess.call.return_value = True
+
+        test = self._obtain_list_of_tests()[0]
+        infile = os.path.join(self.input_dir, test)
+
+        cleaner = RpmSpecCleaner(infile, '', True, False, True, 'vimdiff')
+        cleaner.run()
