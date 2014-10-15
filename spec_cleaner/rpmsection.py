@@ -215,7 +215,7 @@ class Section(object):
 
     def replace_preamble_macros(self, line):
         """
-        Replace %{S:0} for %{SOURCE:0} and so on.
+        Replace %{S:0} for %{SOURCE0} and so on.
         """
         for i in map(str,list(range(100))):
             line = line.replace('%{P:' + i + '}', '%{PATCH' + i + '}')
