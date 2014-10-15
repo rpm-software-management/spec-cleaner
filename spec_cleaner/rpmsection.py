@@ -217,7 +217,7 @@ class Section(object):
         """
         Replace %{S:0} for %{SOURCE0} and so on.
         """
-        for i in map(str,list(range(100))):
-            line = line.replace('%{P:' + i + '}', '%{PATCH' + i + '}')
-            line = line.replace('%{S:' + i + '}', '%{SOURCE' + i + '}')
+        line = re.sub(r'%{P:(\d+)}', r'%{PATCH\1}', line)
+        line = re.sub(r'%{S:(\d+)}', r'%{SOURCE\1}', line)
+
         return line
