@@ -1,0 +1,10 @@
+Source1: something
+Source2: somethingelse
+Source200: ou
+Source300: godknowswhat
+
+%setup -q
+cp %{S:1} %{buildroot}
+cp %{S:2} %{buildroot}
+cp %{S:200} %{buildroot}
+cp %{S:300} %{buildroot}
