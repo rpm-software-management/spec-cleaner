@@ -37,8 +37,10 @@ install_info
 install_info_delete
 jpackage_script
 ix86
+kf5_makeinstall
 lang
 lang_package
+make_jobs
 make_install
 make_jobs
 mime_database_post[^\s]*
