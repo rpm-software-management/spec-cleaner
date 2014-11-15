@@ -1,10 +1,10 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-# Copyright (c) 2013, SUSE LINUX Products GmbH, Nuernberg, Germany
+# Copyright (c) 2014, SUSE LINUX Products GmbH, Nuernberg, Germany
 # All rights reserved.
 # See COPYING for details.
 
-__version__ = '0.6.4'
+__version__ = '0.6.5'
 
 import os
 import sys
