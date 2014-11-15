@@ -84,10 +84,11 @@ class Section(object):
                   newline:
                 self.lines.append('')
             # remove the newlines around ifs if they are not wanted
-            if self.lines[-1] == '' and \
-                  (self.lines[-2].startswith('%if') or
-                  self.lines[-2].startswith('%else')):
-                self.lines.pop()
+            if len(self.lines) >= 2:
+                if self.lines[-1] == '' and \
+                      (self.lines[-2].startswith('%if') or
+                      self.lines[-2].startswith('%else')):
+                    self.lines.pop()
 
         for line in self.lines:
             fout.write(line + '\n')
@@ -219,5 +220,4 @@ class Section(object):
         """
         line = re.sub(r'%{P:(\d+)}', r'%{PATCH\1}', line)
         line = re.sub(r'%{S:(\d+)}', r'%{SOURCE\1}', line)
-
         return line
