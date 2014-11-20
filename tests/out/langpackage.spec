@@ -31,3 +31,9 @@ Group:          Whatever
 Summary:        Something
 Group:          Whatever
 
+%package -n %{_name}
+Summary:        Evolution Plugin for RSS Feeds Support
+Group:          Productivity/Networking/Email/Clients
+Recommends:     %{_name}-lang
+Provides:       %{name} = %{version}
+
