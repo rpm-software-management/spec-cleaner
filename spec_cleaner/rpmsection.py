@@ -23,6 +23,7 @@ class Section(object):
         self.reg = RegexpSingle(specfile)
         # Are we inside of conditional or not
         self.condition = False
+        self._condition_counter = 0
 
 
     def _complete_cleanup(self, line):
@@ -51,8 +52,13 @@ class Section(object):
         Check if we are in condition that is contained or not
         """
         if self.reg.re_if.match(line):
-            self.condition = True
+            self._condition_counter += 1
         if self.reg.re_endif.match(line):
+            self._condition_counter -= 1
+
+        if self._condition_counter > 0:
+            self.condition = True
+        else:
             self.condition = False
 
 
