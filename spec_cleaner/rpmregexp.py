@@ -38,7 +38,7 @@ class RegexpSingle(object):
     re_else = re.compile('^\s*%else(\s.*|)$', re.IGNORECASE)
     re_endif = re.compile('^\s*%endif(\s.*|)$', re.IGNORECASE)
     re_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
-    re_version = re.compile('^Version:\s*(\S*)', re.IGNORECASE)
+    re_version = re.compile('^Version:\s*(.*)', re.IGNORECASE)
     re_release = re.compile('^Release:\s*(\S*)', re.IGNORECASE)
     re_license = re.compile('^License:\s*(.*)', re.IGNORECASE)
     re_summary = re.compile('^Summary:\s*(.*)', re.IGNORECASE)
