@@ -26,7 +26,7 @@ BuildRequires:  something
      --with-libpng=system \
      --with-lcms=system \
      --with-stdc++lib=dynamic \
- %ifnarch %{arm}
+ %ifnarch %arm
      --with-num-cores="$NUM_PROC" \
  %endif
  make -j1
@@ -65,7 +65,7 @@ BuildRequires:  something
 %endif
     --with-xerces2-jar=%{_javadir}/xerces-j2-bootstrap.jar \
     --with-openjdk-src-zip=%{SOURCE1} \
-%ifnarch %{arm} %{aarch64}
+%ifnarch %arm %aarch64
     --with-parallel-jobs=${NUMCPUS} \
 %else
     --with-parallel-jobs=1 \
