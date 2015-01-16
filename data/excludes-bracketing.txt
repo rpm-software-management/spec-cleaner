@@ -21,6 +21,8 @@ fdupes
 files
 fillup_[^\s]*
 find_lang
+gem_install
+gem_packages
 ghost
 global
 gpg_verify
