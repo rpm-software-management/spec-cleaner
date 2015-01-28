@@ -45,6 +45,7 @@ class RpmPreamble(Section):
         'source': 'Source',
         'patch': 'Patch',
         'buildrequires': 'BuildRequires',
+        'conflicts': 'Conflicts',
         'prereq': 'PreReq',
         'requires': 'Requires',
         'requires_eq': '%requires_eq',
@@ -83,6 +84,7 @@ class RpmPreamble(Section):
         'suggests',
         'enhances',
         'supplements',
+        'conflicts',
         'provides_obsoletes',
         'buildroot',
         'buildarch',
@@ -101,6 +103,7 @@ class RpmPreamble(Section):
         'suggests',
         'enhances',
         'supplements',
+        'conflicts',
     ]
 
     # categories that are sorted based on key value (eg Patch0 before Patch1)
@@ -146,6 +149,7 @@ class RpmPreamble(Section):
             # for source, we have a special match to keep the source number
             # for patch, we have a special match to keep the patch number
             'buildrequires': self.reg.re_buildrequires,
+            'conflicts': self.reg.re_conflicts,
             # for prereq we append warning comment so we don't mess it there
             'requires': self.reg.re_requires,
             'recommends': self.reg.re_recommends,

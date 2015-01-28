@@ -56,6 +56,7 @@ class RegexpSingle(object):
     re_suggests = re.compile('^Suggests:\s*(.*)', re.IGNORECASE)
     re_enhances = re.compile('^Enhances:\s*(.*)', re.IGNORECASE)
     re_supplements = re.compile('^Supplements:\s*(.*)', re.IGNORECASE)
+    re_conflicts = re.compile('^Conflicts:\s*(.*)', re.IGNORECASE)
     re_provides = re.compile('^Provides:\s*(.*)', re.IGNORECASE)
     re_obsoletes = re.compile('^Obsoletes:\s*(.*)', re.IGNORECASE)
     re_buildroot = re.compile('^\s*BuildRoot:', re.IGNORECASE)
