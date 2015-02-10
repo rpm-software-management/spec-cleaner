@@ -39,6 +39,9 @@ insserv_[^\s]*
 install
 install_info
 install_info_delete
+jar
+java
+javac
 jpackage_script
 ix86
 kf5_makeinstall
