@@ -8,6 +8,7 @@ cmake
 cmake_[^\s]*
 configure
 config
+create_exclude_filelist
 defattr
 define
 defined
@@ -44,6 +45,8 @@ java
 javac
 jpackage_script
 ix86
+kde4_makeinstall
+kde_post_install
 kf5_makeinstall
 lang
 lang_package
