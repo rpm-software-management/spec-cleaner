@@ -78,7 +78,7 @@ class RegexpSingle(object):
 
     # rpmcopyright
     re_copyright = re.compile('^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
-    re_suse_copyright = re.compile('SUSE LINUX Products GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
+    re_suse_copyright = re.compile('SUSE LINUX (Products )?GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
     re_rootforbuild = re.compile('^#\s*needsrootforbuild\s*$', re.IGNORECASE)
     re_binariesforbuld = re.compile('^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
     re_nodebuginfo = re.compile('^#\s*nodebuginfo\s*$', re.IGNORECASE)
