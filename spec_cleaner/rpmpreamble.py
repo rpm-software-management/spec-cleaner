@@ -555,9 +555,14 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_define.match(line) or self.reg.re_global.match(line) or self.reg.re_onelinecond.match(line):
-            self._add_line_to('define', line)
             if line.endswith('\\'):
                 self.multiline = True
+            # if we are kernel and not multiline we need to be at bottom, so
+            # lets use misc section, otherwise go for define
+            if not self.multiline and line.find("kernel_module") >= 0:
+                self._add_line_to('misc', line)
+            else:
+                self._add_line_to('define', line)
             return
 
         elif self.reg.re_requires_eq.match(line):
