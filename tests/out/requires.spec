@@ -33,6 +33,7 @@ Requires:       iii <= 4.2.1
 Requires:       jjj > %{version}
 Requires:       kkk
 Requires:       perl(DBD::SQLite)
+Requires:       php5 >= %{phpversion}
 Requires:       rrr >= %{version}
 Requires:       zzz
 Requires:       pkgconfig(glib-2.0)
