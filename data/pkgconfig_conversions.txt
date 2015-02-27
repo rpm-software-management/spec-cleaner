@@ -30,6 +30,7 @@ babl-devel: babl
 banshee-devel: banshee-collection-indexer banshee-core banshee-hyena banshee-hyena-data-sqlite banshee-hyena-gui banshee-lastfm banshee-lastfm-gui banshee-mono-media banshee-musicbrainz banshee-nowplaying banshee-services banshee-thickclient banshee-webbrowser 
 bash-completion: bash-completion 
 bayonne2-devel: libbayonne 
+belle-sip-devel: belle-sip 
 bigreqsproto-devel: bigreqsproto
 blitz-devel: blitz 
 bluez-devel: bluez 
@@ -558,7 +559,7 @@ libimobiledevice-devel: libimobiledevice-1.0
 libindicator-devel: indicator-0.4 
 libindicator3-devel: indicator3-0.4 
 libindi-devel: libindi 
-libinfinity-devel: libinfgtk3-0.6 libinfinity-0.6 libinfinoted-plugin-manager-0.6 libinftext-0.6 libinftextgtk3-0.6 
+libinfinity-devel: libinfgtk-0.5 libinfinity-0.5 libinftext-0.5 libinftextgtk-0.5 
 libini_config-devel: ini_config 
 libinput-devel: libinput 
 libiodbc-devel: libiodbc 
@@ -1039,6 +1040,7 @@ lightdm-gobject-devel: liblightdm-gobject-1
 lightdm-qt-devel: liblightdm-qt-3 
 lightdm-qt5-devel: liblightdm-qt5-3 
 link-grammar-devel: link-grammar 
+linphone-devel: linphone 
 lockdev-devel: lockdev 
 log4cplus-devel: log4cplus 
 log4net: log4net 
@@ -1089,6 +1091,7 @@ mono-nunit: mono-nunit
 mono-qt4-devel: qtscript-sharp qttest-sharp qtuitools-sharp qtwebkit-sharp qyoto 
 mono-reactive: reactive 
 monotorrent: monotorrent 
+mono-uia-devel: mono-uia 
 mono-upnp-devel: mono.ssdp mono.upnp mono.upnp.dcp.mediaserver1 mono.upnp.dcp.mediaserver1.filesystem mono.upnp.dcp.mediaserver1.gtkclient mono.upnp.dcp.msmediareceiverregistrar1 
 mono-wcf: wcf 
 mono-web: aspnetwebstack 
@@ -1151,6 +1154,7 @@ orbit2-devel: ORBit-2.0 ORBit-CosNaming-2.0 ORBit-idl-2.0 ORBit-imodule-2.0
 orc: orc-0.4 
 ortp-devel: ortp 
 PackageKit-Qt-devel: packagekitqt4 
+PackageKit-Qt5-devel: packagekitqt5 
 pango-devel: pango pangocairo pangoft2 pangoxft 
 pangomm-devel: pangomm-1.4 
 pangox-devel: pangox 

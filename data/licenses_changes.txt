@@ -654,7 +654,7 @@ OML+	OML+
 OML	SUSE-OML
 OpenSSL	OpenSSL
 OpenSSL+	OpenSSL+
-OPL-1.0	Open Publication License 1.0
+OPL-1.0	Open Public License 1.0
 OPL-1.0	OPL-1.0
 OPL-1.0+	OPL-1.0+
 OSL-1.0	OSL-1.0
@@ -856,6 +856,8 @@ SUSE-Oasis-Specification-Notice	Oasis-Specification-Notice
 SUSE-Oasis-Specification-Notice+	SUSE-Oasis-Specification-Notice+
 SUSE-OldFSFDocLicense+	SUSE-OldFSFDocLicense+
 SUSE-OldFSFDocLicense	Tracked by Fedora as OldFSFDocLicense (see https://fedoraproject.org/wiki/Licensing:OldFSFDocLicense?rd=Licensing/OldFSFDocLicense)
+SUSE-OpenPublication-1.0	http://opencontent.org/openpub/ - note this is not the OPL-1.0
+SUSE-OpenPublication-1.0+	SUSE-OpenPublication-1.0+
 SUSE-Permissive-Modify-By-Patch	Similar to SUSE-Permissive but copyright holder has specified that modification is only allowed by patch
 SUSE-Permissive-Modify-By-Patch+	SUSE-Permissive-Modify-By-Patch+
 SUSE-Permissive	Must not be copyleft. Must not contain patent clauses of any nature. Most not limit ability to copy, modifiy, distribute (through multiple tiers of distribution) and distribute modified versions. Must not impose obligations such as 'advertising clauses' or anything that could be viewed as an 'additional restriction' under GPL-2.0+ or GPL-3.0+. Must not impose obligations such as modification by patch only, or reciprocal clauses.
@@ -876,6 +878,8 @@ SUSE-Redistributable-Content+	SUSE-Redistributable-Content+
 SUSE-Redistributable-Content	This license can _only_ be used for content (i.e. no code, no documentation). Provided there are no restrictions on free (re)distribution of the content, use this license. SUSE-Firmware is a subset of this category.
 SUSE-Repoze	http://repoze.org/license.html
 SUSE-Repoze+	SUSE-Repoze+
+SUSE-Scrot	Scrot license (advertising clause)
+SUSE-Scrot+	SUSE-Scrot+
 SUSE-Sendmail	Sendmail License (http://www.sendmail.org/ftp/LICENSE)
 SUSE-Sendmail+	SUSE-Sendmail+
 SUSE-SGI-FreeB-2.0	Fedora calls this MIT (it is very similar to the MIT)
