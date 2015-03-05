@@ -37,10 +37,12 @@ def process_args(argv):
                         help='overwrite the output file if already exist.')
     output_group.add_argument('-i', '--inline', action='store_true', default=False,
                         help='inline the changes directly to the parsed file.')
-    parser.add_argument('-p', '--pkgconfig', action='store_true', default=False,
-                        help='convert dependencies to their pkgconfig counterparts, requires bit of cleanup in spec afterwards.')
+    parser.add_argument('-m', '--minimal', action='store_true', default=False,
+                        help='run in minimal mode that does not do anything intrusive (ie. just sets the Copyright)')
     output_group.add_argument('-o', '--output', default='',
                         help='specify the output file for the cleaned spec content.')
+    parser.add_argument('-p', '--pkgconfig', action='store_true', default=False,
+                        help='convert dependencies to their pkgconfig counterparts, requires bit more of cleanup in spec afterwards.')
     parser.add_argument('-v', '--version', action='version', version=__version__,
                         help='show package version and exit')
 
@@ -83,7 +85,8 @@ def main():
                                  options.pkgconfig,
                                  options.inline,
                                  options.diff,
-                                 options.diff_prog)
+                                 options.diff_prog,
+                                 options.minimal)
         cleaner.run()
     except RpmException as e:
         sys.stderr.write('ERROR: {0}\n'.format(e))

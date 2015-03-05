@@ -43,13 +43,14 @@ class RpmSpecCleaner:
     _previous_nonempty_line = None
 
 
-    def __init__(self, specfile, output, pkgconfig, inline, diff, diff_prog):
+    def __init__(self, specfile, output, pkgconfig, inline, diff, diff_prog, minimal):
         self.specfile = specfile
         self.output = output
         self.pkgconfig = pkgconfig
         self.inline = inline
         self.diff = diff
         self.diff_prog = diff_prog
+        self.minimal = minimal
         #run gvim(diff) in foreground mode
         if self.diff_prog.startswith("gvim") and not " -f" in self.diff_prog:
             self.diff_prog += " -f"
@@ -157,20 +158,28 @@ class RpmSpecCleaner:
             # USE: 'spec-cleaner file > /dev/null' to see the stderr output
             #sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
-                # We don't want to print newlines before %else and %endif
-                if new_class == Section and self.reg.re_else.match(line) or self.reg.re_endif.match(line):
-                    newline = False
+                # If we are on minimal approach do not do anything else
+                # than trivial whitespacing
+                if self.minimal:
+                    if isinstance(self.current_section, RpmCopyright):
+                        new_class = Section
+                        self.current_section.output(self.fout, False)
+                        self.current_section = new_class(self.specfile)
                 else:
-                    newline = True
-                self.current_section.output(self.fout, newline)
-                # we need to sent pkgconfig option to preamble and package
-                if new_class == RpmPreamble or new_class == RpmPackage:
-                    self.current_section = new_class(self.specfile, self.pkgconfig)
-                else:
-                    self.current_section = new_class(self.specfile)
-                # skip empty line adding if we are switching sections
-                if self._previous_line == '' and line == '':
-                    continue
+                    # We don't want to print newlines before %else and %endif
+                    if new_class == Section and self.reg.re_else.match(line) or self.reg.re_endif.match(line):
+                        newline = False
+                    else:
+                        newline = True
+                    self.current_section.output(self.fout, newline)
+                    # we need to sent pkgconfig option to preamble and package
+                    if new_class == RpmPreamble or new_class == RpmPackage:
+                        self.current_section = new_class(self.specfile, self.pkgconfig)
+                    else:
+                        self.current_section = new_class(self.specfile)
+                    # skip empty line adding if we are switching sections
+                    if self._previous_line == '' and line == '':
+                        continue
 
             # Do not store data from clean and skip out here
             if isinstance(self.current_section, RpmClean):

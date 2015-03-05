@@ -93,7 +93,7 @@ class TestCompare(unittest.TestCase):
         """
         Run the cleaner as specified and store the output for further comparison.
         """
-        cleaner = RpmSpecCleaner(infile, outfile, True, False, False, 'vimdiff')
+        cleaner = RpmSpecCleaner(infile, outfile, True, False, False, 'vimdiff', False)
         cleaner.run()
 
 
@@ -126,7 +126,7 @@ class TestCompare(unittest.TestCase):
         tmp_file = os.path.join(self.tmp_dir, test)
         shutil.copyfile(infile, tmp_file)
 
-        cleaner = RpmSpecCleaner(tmp_file, '', True, True, False, 'vimdiff')
+        cleaner = RpmSpecCleaner(tmp_file, '', True, True, False, 'vimdiff', False)
         cleaner.run()
 
         with open(compare) as ref, open(tmp_file) as test:
@@ -139,7 +139,7 @@ class TestCompare(unittest.TestCase):
 
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
-        cleaner = RpmSpecCleaner(infile, '', True, False, False, 'gvimdiff')
+        cleaner = RpmSpecCleaner(infile, '', True, False, False, 'gvimdiff', False)
         cleaner.run()
 
 
@@ -151,6 +151,5 @@ class TestCompare(unittest.TestCase):
 
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
-
-        cleaner = RpmSpecCleaner(infile, '', True, False, True, 'gvimdiff')
+        cleaner = RpmSpecCleaner(infile, '', True, False, True, 'gvimdiff', False)
         cleaner.run()
