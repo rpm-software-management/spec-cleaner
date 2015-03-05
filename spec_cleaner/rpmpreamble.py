@@ -387,6 +387,9 @@ class RpmPreamble(Section):
                 token = token.replace(' ','')
                 # rpm actually allows ',' separated list of deps
                 token = token.replace(',','')
+                # there is allowed syntax => and =< ; hidious
+                token = token.replace('=<', '<=')
+                token = token.replace('=>', '>=')
                 token = re.sub(r'([<>]=?|=)', r' \1 ', token)
                 if not token:
                     continue
