@@ -25,6 +25,7 @@ class TestCompare(unittest.TestCase):
 
         self.input_dir = self._get_input_dir()
         self.fixtures_dir = self._get_fixtures_dir()
+        self.minimal_fixtures_dir = self._get_minimal_fixtures_dir()
         self.tmp_dir = tempfile.mkdtemp()
         self.tmp_file_rerun = tempfile.NamedTemporaryFile()
 
@@ -75,6 +76,13 @@ class TestCompare(unittest.TestCase):
         return os.path.join(os.getcwd(), 'tests/out/')
 
 
+    def _get_minimal_fixtures_dir(self):
+        """
+        Return path for representative output specs
+        """
+        return os.path.join(os.getcwd(), 'tests/out-minimal/')
+
+
     def _obtain_list_of_tests(self):
         """
         Generate list of tests we are going to use according to what is on hdd
@@ -112,6 +120,27 @@ class TestCompare(unittest.TestCase):
 
             # second run it again while ensuring it didn't change
             self._run_individual_test(tmp_file, self.tmp_file_rerun.name)
+            with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
+                self.assertStreamEqual(ref, test)
+
+
+    @patch('spec_cleaner.rpmcopyright.datetime')
+    def test_minimal_output(self, datetime_mock):
+        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
+        for test in self._obtain_list_of_tests():
+            infile = os.path.join(self.input_dir, test)
+            compare = os.path.join(self.minimal_fixtures_dir, test)
+            tmp_file = os.path.join(self.tmp_dir, test)
+
+            # first try to generate cleaned content from messed up
+            cleaner = RpmSpecCleaner(infile, tmp_file, True, False, False, 'vimdiff', True)
+            cleaner.run()
+            with open(compare) as ref, open(tmp_file) as test:
+                self.assertStreamEqual(ref, test)
+
+            # second run it again while ensuring it didn't change
+            cleaner = RpmSpecCleaner(infile, self.tmp_file_rerun.name, True, False, False, 'vimdiff', True)
+            cleaner.run()
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
                 self.assertStreamEqual(ref, test)
 
