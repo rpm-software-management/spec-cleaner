@@ -162,6 +162,7 @@ class Section(object):
         """
         Replace hardcoded stuff like /usr/share -> %{_datadir}
         """
+        re_prefix = re.compile('(?<!\w)/usr(/|\s|$)')
         re_bindir = re.compile('%{_prefix}/bin([/\s$])')
         re_sbindir = re.compile('%{_prefix}/sbin([/\s$])')
         re_libexecdir = re.compile('%{_prefix}/lib([/\s$])')
@@ -177,12 +178,12 @@ class Section(object):
         line = line.replace('/usr/%{_lib}', '%{_libdir}')
         line = line.replace('/usr/', '%{_prefix}/')
         line = line.replace('/var/', '%{_localstatedir}/')
-        line = line.replace('%{_usr}', '%{_prefix}')
         line = line.replace('%{_prefix}/%{_lib}', '%{_libdir}')
         # old typo in rpm macro
         line = line.replace('%_initrddir', '%{_initddir}')
         line = line.replace('%{_initrddir}', '%{_initddir}')
 
+        line = re_prefix.sub(r'%{_prefix}\1', line)
         line = re_bindir.sub(r'%{_bindir}\1', line)
         line = re_sbindir.sub(r'%{_sbindir}\1', line)
         line = re_libexecdir.sub(r'%{_libexecdir}\1', line)
