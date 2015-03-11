@@ -27,6 +27,7 @@ find_lang
 gem_install
 gem_packages
 ghost
+glib2_gsettings_schema_[^\s]*
 global
 gpg_verify
 changelog
