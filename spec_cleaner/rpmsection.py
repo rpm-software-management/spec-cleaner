@@ -162,6 +162,7 @@ class Section(object):
         """
         Replace hardcoded stuff like /usr/share -> %{_datadir}
         """
+        re_prefix = re.compile('(?<!\w)/usr(/|\s|$)')
         re_bindir = re.compile('%{_prefix}/bin([/\s$])')
         re_sbindir = re.compile('%{_prefix}/sbin([/\s$])')
         re_libexecdir = re.compile('%{_prefix}/lib([/\s$])')
@@ -170,19 +171,14 @@ class Section(object):
         re_mandir = re.compile('%{_datadir}/man([/\s$])')
         re_infodir = re.compile('%{_datadir}/info([/\s$])')
         re_docdir = re.compile('%{_datadir}/doc/packages([/\s$])')
-
-        # few hardcoded things
-        line = line.replace('/etc/init.d/', '%{_initddir}/')
-        line = line.replace('/etc/', '%{_sysconfdir}/')
-        line = line.replace('/usr/%{_lib}', '%{_libdir}')
-        line = line.replace('/usr/', '%{_prefix}/')
-        line = line.replace('/var/', '%{_localstatedir}/')
-        line = line.replace('%{_usr}', '%{_prefix}')
-        line = line.replace('%{_prefix}/%{_lib}', '%{_libdir}')
+        re_initdir = re.compile('/etc/init.d([/\s$])')
+        re_sysconfdir = re.compile('/etc([/\s$])')
+        re_localstatedir = re.compile('/var([/\s$])')
+        re_libdir = re.compile('%{_prefix}/%{_lib}([/\s$])')
         # old typo in rpm macro
-        line = line.replace('%_initrddir', '%{_initddir}')
-        line = line.replace('%{_initrddir}', '%{_initddir}')
+        re_initddir = re.compile('%{?_initrddir}?([/\s$])')
 
+        line = re_prefix.sub(r'%{_prefix}\1', line)
         line = re_bindir.sub(r'%{_bindir}\1', line)
         line = re_sbindir.sub(r'%{_sbindir}\1', line)
         line = re_libexecdir.sub(r'%{_libexecdir}\1', line)
@@ -191,6 +187,11 @@ class Section(object):
         line = re_mandir.sub(r'%{_mandir}\1', line)
         line = re_infodir.sub(r'%{_infodir}\1', line)
         line = re_docdir.sub(r'%{_docdir}\1', line)
+        line = re_initdir.sub(r'%{_initddir}\1', line)
+        line = re_sysconfdir.sub(r'%{_sysconfdir}\1', line)
+        line = re_localstatedir.sub(r'%{_localstatedir}\1', line)
+        line = re_libdir.sub(r'%{_libdir}\1', line)
+        line = re_initddir.sub(r'%{_initddir}\1', line)
 
         return line
 
