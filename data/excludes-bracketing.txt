@@ -60,6 +60,8 @@ patch[0-9]*
 perl_gen_filelist
 perl_make_install
 perl_process_[^\s]*
+pom_remove_dep
+pom_add_dep
 post
 posttrans
 postun
