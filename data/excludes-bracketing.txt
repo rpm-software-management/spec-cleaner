@@ -86,6 +86,7 @@ systemd_requires
 triggerin
 triggerpostun
 triggerun
+udev_rules_update
 undefine
 verify[^\s]*
 yast_(build|install)[^\s]*
