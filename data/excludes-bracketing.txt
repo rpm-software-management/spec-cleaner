@@ -72,6 +72,7 @@ preun
 py_compile
 qmake
 qmake5
+reconfigure_fonts_[^\s]*
 requires_[^\s]*
 restart_on_update
 run_permissions
