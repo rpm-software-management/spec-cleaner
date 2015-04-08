@@ -108,6 +108,22 @@ class RegexpSingle(object):
     # macro func detection
     re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
 
+    # cleaning path regexps
+    re_prefix = re.compile('(?<!\w)/usr(/|\s|$)')
+    re_bindir = re.compile('%{_prefix}/bin([/\s$])')
+    re_sbindir = re.compile('%{_prefix}/sbin([/\s$])')
+    re_libexecdir = re.compile('%{_prefix}/lib([/\s$])')
+    re_includedir = re.compile('%{_prefix}/include([/\s$])')
+    re_datadir = re.compile('%{_prefix}/share([/\s$])')
+    re_mandir = re.compile('%{_datadir}/man([/\s$])')
+    re_infodir = re.compile('%{_datadir}/info([/\s$])')
+    re_docdir = re.compile('%{_datadir}/doc/packages([/\s$])')
+    re_initdir = re.compile('/etc/init.d([/\s$])')
+    re_sysconfdir = re.compile('/etc([/\s$])')
+    re_localstatedir = re.compile('/var([/\s$])')
+    re_libdir = re.compile('%{_prefix}/%{_lib}([/\s$])')
+    # old typo in rpm macro
+    re_initddir = re.compile('%{?_initrddir}?([/\s$])')
 
     # unbrace keywords love
     def _load_keywords_whitelist(self):
