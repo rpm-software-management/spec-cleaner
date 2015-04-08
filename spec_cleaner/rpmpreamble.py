@@ -57,7 +57,6 @@ class RpmPreamble(Section):
         # mixed, so we'll have to specify the key when needed
         'buildroot': 'BuildRoot',
         'buildarch': 'BuildArch',
-        'epoch': 'Epoch'
     }
 
     categories_order = [
@@ -166,6 +165,9 @@ class RpmPreamble(Section):
             'vendor': self.reg.re_vendor,
             'autoreqprov': self.reg.re_autoreqprov,
             'epoch': self.reg.re_epoch,
+            'icon': self.reg.re_icon,
+            'copyright': self.reg.re_copyright,
+            'packager': self.reg.re_packager,
         }
 
 
