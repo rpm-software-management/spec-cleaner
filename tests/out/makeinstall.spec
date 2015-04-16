@@ -22,6 +22,7 @@ make DESTDIR=%{buildroot} install %{?_smp_mflags}
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
 make DESTDIR=%{buildroot} install -j1
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
+$RPM_BUILD_ROOT_REPLACEMENT != %{buildroot} == %{buildroot} == %{buildroot}
 make DESTDIR=%{buildroot} install %{?_smp_mflags}
 make DESTDIR=%{buildroot} install %{?_smp_mflags} \
 

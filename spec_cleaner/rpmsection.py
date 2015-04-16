@@ -142,10 +142,7 @@ class Section(object):
         Replace RPM_BUILD_ROOT for buildroot
         Replace few hard written dirs for further processing with their macro names.
         """
-        # FIXME: use regexp to prevent $RPM_BUILD_ROOT_REPLACEMENT
-        line = line.replace('${RPM_BUILD_ROOT}', '%{buildroot}')
-        line = line.replace('$RPM_BUILD_ROOT', '%{buildroot}')
-        line = line.replace('"%{buildroot}"', '%{buildroot}')
+        line = self.reg.re_rpmbuildroot.sub(r'%{buildroot}\2', line)
         return line
 
 
