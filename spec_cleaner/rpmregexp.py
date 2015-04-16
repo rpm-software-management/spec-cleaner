@@ -124,6 +124,7 @@ class RegexpSingle(object):
     re_libdir = re.compile('%{_prefix}/%{_lib}([/\s$])')
     # old typo in rpm macro
     re_initddir = re.compile('%{?_initrddir}?([/\s$])')
+    re_rpmbuildroot = re.compile('(\${?RPM_BUILD_ROOT}?|"%{?buildroot}?")([/\s%]|$)')
 
     # unbrace keywords love
     def _load_keywords_whitelist(self):
