@@ -131,13 +131,27 @@ class RpmSpecCleaner:
 
         # If we actually start matching global content again we need to
         # switch back to preamble, ie %define after %description/etc.
+        # This is seriously ugly but can't think of cleaner way
+        # WARN: Keep in sync with rpmregexps for rpmpreamble section
         if not isinstance(self.current_section, RpmPreamble) and \
              not isinstance(self.current_section, RpmPackage):
             if self.reg.re_define.match(line) or self.reg.re_global.match(line) or \
                  self.reg.re_bcond_with.match(line) or \
                  self.reg.re_requires.match(line) or self.reg.re_requires_phase.match(line) or \
                  self.reg.re_buildrequires.match(line) or self.reg.re_prereq.match(line) or \
-                 self.reg.re_recommends.match(line) or self.reg.re_suggests.match(line):
+                 self.reg.re_recommends.match(line) or self.reg.re_suggests.match(line) or \
+                 self.reg.re_name.match(line) or self.reg.re_version.match(line) or \
+                 self.reg.re_release.match(line) or self.reg.re_license.match(line) or \
+                 self.reg.re_summary.match(line) or self.reg.re_summary_localized.match(line) or \
+                 self.reg.re_url.match(line) or self.reg.re_group.match(line) or \
+                 self.reg.re_vendor.match(line) or self.reg.re_source.match(line) or \
+                 self.reg.re_patch.match(line) or self.reg.re_enhances.match(line) or \
+                 self.reg.re_supplements.match(line) or self.reg.re_conflicts.match(line) or \
+                 self.reg.re_provides.match(line) or self.reg.re_obsoletes.match(line) or \
+                 self.reg.re_buildroot.match(line) or self.reg.re_buildarch.match(line) or \
+                 self.reg.re_epoch.match(line) or self.reg.re_icon.match(line) or \
+                 self.reg.re_packager.match(line) or self.reg.re_debugpkg.match(line) or \
+                 self.reg.re_requires_eq.match(line):
                 return RpmPreamble
 
         # If we are in clean section and encounter whitespace
@@ -178,7 +192,7 @@ class RpmSpecCleaner:
                         self.current_section = new_class(self.specfile)
                 else:
                     # We don't want to print newlines before %else and %endif
-                    if new_class == Section and self.reg.re_else.match(line) or self.reg.re_endif.match(line):
+                    if (new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line))):
                         newline = False
                     else:
                         newline = True

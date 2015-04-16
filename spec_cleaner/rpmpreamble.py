@@ -168,6 +168,7 @@ class RpmPreamble(Section):
             'icon': self.reg.re_icon,
             'copyright': self.reg.re_copyright,
             'packager': self.reg.re_packager,
+            'debugpkg': self.reg.re_debugpkg,
         }
 
 

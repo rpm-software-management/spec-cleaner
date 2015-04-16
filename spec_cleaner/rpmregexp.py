@@ -34,6 +34,7 @@ class RegexpSingle(object):
     re_spec_changelog = re.compile('^%changelog\s*$', re.IGNORECASE)
 
     # rpmpreamble
+    # WARNING: keep in sync with rpmcleaner Section change detection
     re_if = re.compile('^\s*(?:%if\s|%ifarch\s|%ifnarch\s)', re.IGNORECASE)
     re_else = re.compile('^\s*%else(\s.*|)$', re.IGNORECASE)
     re_endif = re.compile('^\s*%endif(\s.*|)$', re.IGNORECASE)
@@ -70,6 +71,7 @@ class RegexpSingle(object):
     re_bcond_with = re.compile('^\s*%bcond_with(out)?\s*(.*)', re.IGNORECASE)
     re_requires_token = re.compile('(\s*([^<>=\s]+(\s*[<>=]+\s*[^<>=\s]+)?)\s*)')
     re_autoreqprov = re.compile('^\s*AutoReqProv:.*$', re.IGNORECASE)
+    re_debugpkg = re.compile('^%{?debug_package}?\s*$', re.IGNORECASE)
     # here we need to grab all submacros with rpm calls so just match almost everything
     re_rpm_command = re.compile('%\(.*\)')
     re_requires_eq = re.compile('^\s*%requires_eq\s*(.*)')

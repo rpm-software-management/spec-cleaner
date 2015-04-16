@@ -20,6 +20,7 @@
 Name:           spec-cleaner
 Version:        0.4.1
 Release:        0
+%{debug_package}
 Summary:        .spec file cleaner
 License:        BSD-3-Clause
 Group:          Development/Tools/Other
@@ -35,10 +36,14 @@ Obsoletes:      obs-service-format_spec_file < %{version}
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildArch:      noarch
 
+%{debug_package}
+
 %description
 This script cleans spec file according to some arbitrary style guide. The
 results it produces should always be checked by someone since it is not and
 will never be perfect.
+
+%{debug_package}
 
 %prep
 %setup -q -n %{name}-%{name}-%{version}
