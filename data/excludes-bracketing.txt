@@ -50,7 +50,6 @@ ix86
 kde4_makeinstall
 kde_post_install
 kf5_makeinstall
-lang
 lang_package
 make_jobs
 make_install
