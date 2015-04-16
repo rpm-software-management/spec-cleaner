@@ -21,4 +21,15 @@ class RpmFiles(Section):
         if line == '' and ( not self.previous_line or self.previous_line == ''):
             return
 
+        line = self._remove_doc_on_man(line)
+
         Section.add(self, line)
+
+    def _remove_doc_on_man(self, line):
+        """
+        Remove all %doc %_mandir to -> %_mandir as it is pointless to do twice
+        """
+        line = line.replace("%doc %{_mandir}", "%{_mandir}", 1)
+        line = line.replace("%doc %{_infodir}", "%{_infodir}", 1)
+        return line
+
