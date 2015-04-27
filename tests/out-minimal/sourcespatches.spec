@@ -18,6 +18,11 @@
 
 
 Source15: anothersource.tar.xz
+%if 0%{?suse_version} > 1230
+%bcond_without systemd
+%else
+%bcond_with    systemd
+%endif
 source: testfile.tar.bz2
 # This patch is improperly described but we are okay with it
 Patch10: test2

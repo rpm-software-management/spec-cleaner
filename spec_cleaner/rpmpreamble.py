@@ -278,7 +278,8 @@ class RpmPreamble(Section):
 
     def _end_subparagraph(self, endif = False):
         lines = self._end_paragraph()
-        if len(self.paragraph['define']) > 0:
+        if len(self.paragraph['define']) > 0 or \
+              len(self.paragraph['bconds']) > 0:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph['conditions'].append(lines)
