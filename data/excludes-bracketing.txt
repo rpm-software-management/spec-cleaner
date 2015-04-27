@@ -55,6 +55,8 @@ make_jobs
 make_install
 make_jobs
 mime_database_post[^\s]*
+nagios_command_user_group_add
+nagios_user_group_add
 package
 patch[0-9]*
 perl_gen_filelist
