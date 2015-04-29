@@ -27,6 +27,7 @@ fillup_[^\s]*
 find_lang
 gem_install
 gem_packages
+ghc_fix_dynamic_rpath
 ghost
 glib2_gsettings_schema_[^\s]*
 global
