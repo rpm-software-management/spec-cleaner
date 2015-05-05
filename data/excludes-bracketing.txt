@@ -23,6 +23,7 @@ endif
 exclude
 fdupes
 files
+files_fontsconf_file
 fillup_[^\s]*
 find_lang
 gem_install
