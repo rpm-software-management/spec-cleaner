@@ -1,6 +1,8 @@
 Source1: something
 Source2: somethingelse
+NoSource: 2
 Source200: ou
+NoSource: 300
 Source300: godknowswhat
 
 %setup -q

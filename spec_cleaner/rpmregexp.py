@@ -48,6 +48,7 @@ class RegexpSingle(object):
     re_group = re.compile('^Group:\s*(.*)', re.IGNORECASE)
     re_vendor = re.compile('^Vendor:\s*(.*)', re.IGNORECASE)
     re_source = re.compile('^Source(\d*):\s*(\S*)', re.IGNORECASE)
+    re_nosource = re.compile('^NoSource:\s*(.*)', re.IGNORECASE)
     re_patch = re.compile('^((?:#[#\s]*)?)Patch(\d*):\s*(\S*)', re.IGNORECASE)
     re_buildrequires = re.compile('^BuildRequires:\s*(.*)', re.IGNORECASE)
     re_prereq = re.compile('^PreReq:\s*(.*)', re.IGNORECASE)

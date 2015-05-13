@@ -43,6 +43,7 @@ class RpmPreamble(Section):
         'url': 'Url',
         'group': 'Group',
         'source': 'Source',
+        'nosource': 'NoSource',
         'patch': 'Patch',
         'buildrequires': 'BuildRequires',
         'conflicts': 'Conflicts',
@@ -73,6 +74,7 @@ class RpmPreamble(Section):
         'group',
         'url',
         'source',
+        'nosource',
         'patch',
         'buildrequires',
         'requires',
@@ -145,6 +147,7 @@ class RpmPreamble(Section):
             'summary': self.reg.re_summary,
             'url': self.reg.re_url,
             'group': self.reg.re_group,
+            'nosource': self.reg.re_nosource,
             # for source, we have a special match to keep the source number
             # for patch, we have a special match to keep the patch number
             'buildrequires': self.reg.re_buildrequires,

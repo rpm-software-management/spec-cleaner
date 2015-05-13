@@ -20,6 +20,8 @@ Source1:        something
 Source2:        somethingelse
 Source200:      ou
 Source300:      godknowswhat
+NoSource:       2
+NoSource:       300
 %setup -q
 cp %{SOURCE1} %{buildroot}
 cp %{SOURCE2} %{buildroot}
