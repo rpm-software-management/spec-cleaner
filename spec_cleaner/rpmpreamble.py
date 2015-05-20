@@ -231,7 +231,7 @@ class RpmPreamble(Section):
 
     def _sort_uniq(self, seq):
         def check_list(x):
-            if type(x) == list:
+            if isinstance(x, list):
                 return True
             else:
                 return False
