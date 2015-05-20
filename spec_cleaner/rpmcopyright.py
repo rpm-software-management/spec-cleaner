@@ -7,6 +7,7 @@ from .rpmsection import Section
 
 
 class RpmCopyright(Section):
+
     """
     Class that always creates default SUSE copyright.
     Keeps around Copyrights of other uses and some of the build defines
@@ -24,11 +25,9 @@ class RpmCopyright(Section):
 # spec file for package {0}
 #'''.format(specname))
 
-
     def _create_default_copyright(self):
         year = datetime.datetime.now().year
         return '# Copyright (c) {0} SUSE LINUX GmbH, Nuernberg, Germany.'.format(year)
-
 
     def _add_copyright(self):
         my_copyright = self._create_default_copyright()
@@ -36,7 +35,6 @@ class RpmCopyright(Section):
 
         for i in self.copyrights:
             self.lines.append(i)
-
 
     def _add_default_license(self):
         self.lines.append('''#
@@ -52,11 +50,9 @@ class RpmCopyright(Section):
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #''')
 
-
     def _add_buildrules(self):
         for i in sorted(self.buildrules):
             self.lines.append(i)
-
 
     def add(self, line):
         if not self.lines and not line:
@@ -78,8 +74,7 @@ class RpmCopyright(Section):
             # anything not in our rules gets tossed out
             return
 
-
-    def output(self, fout, newline = True):
+    def output(self, fout, newline=True):
         self._add_pkg_header()
         self._add_copyright()
         self._add_default_license()

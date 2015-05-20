@@ -29,6 +29,7 @@ from .rpmregexp import RegexpSingle
 
 
 class RpmSpecCleaner(object):
+
     """
     Class wrapping all section parsers reponsible for ensuring
     that all sections are checked and accounted for.
@@ -42,7 +43,6 @@ class RpmSpecCleaner(object):
     _previous_line = None
     _previous_nonempty_line = None
 
-
     def __init__(self, specfile, output, pkgconfig, inline, diff, diff_prog, minimal):
         self.specfile = specfile
         self.output = output
@@ -51,7 +51,7 @@ class RpmSpecCleaner(object):
         self.diff = diff
         self.diff_prog = diff_prog
         self.minimal = minimal
-        #run gvim(diff) in foreground mode
+        # run gvim(diff) in foreground mode
         if self.diff_prog.startswith("gvim") and " -f" not in self.diff_prog:
             self.diff_prog += " -f"
         self.reg = RegexpSingle(specfile)
@@ -86,10 +86,9 @@ class RpmSpecCleaner(object):
             self.fin = fifo
             self.fout = open(self.specfile, 'w')
         elif self.diff:
-            self.fout = tempfile.NamedTemporaryFile(mode='w+', prefix=os.path.split(self.specfile)[-1]+'.', suffix='.spec')
+            self.fout = tempfile.NamedTemporaryFile(mode='w+', prefix=os.path.split(self.specfile)[-1] + '.', suffix='.spec')
         else:
             self.fout = sys.stdout
-
 
     def _detect_new_section(self, line):
         # Detect if we have multiline value from preamble
@@ -101,7 +100,8 @@ class RpmSpecCleaner(object):
         # For the "if" we need to detect it more smartly:
         #   check if the current line is starting new section, and if so
         #   if previous non-empty-uncommented line was starting the condition
-        #   we end up the condition section in preamble (if applicable) and proceed to output
+        # we end up the condition section in preamble (if applicable) and
+        # proceed to output
         if self.reg.re_else.match(line) or self.reg.re_endif.match(line) or \
            (type(self.current_section) is Section and self.reg.re_if.match(line)):
             if not hasattr(self.current_section, 'condition') or \
@@ -113,7 +113,8 @@ class RpmSpecCleaner(object):
         # try to verify if we start some specific section
         for (regexp, newclass) in self.section_starts:
             if regexp.match(line):
-                # check if we are in if conditional and act accordingly if we change sections
+                # check if we are in if conditional and act accordingly if we
+                # change sections
                 if hasattr(self.current_section, 'condition') and self.current_section.condition:
                     self.current_section.condition = False
                     if hasattr(self.current_section, 'end_subparagraph'):
@@ -163,7 +164,6 @@ class RpmSpecCleaner(object):
 
         # we are staying in the section
         return None
-
 
     def run(self):
         # We always start with Copyright
@@ -218,12 +218,11 @@ class RpmSpecCleaner(object):
         self.fout.flush()
 
         if self.diff:
-            cmd = shlex.split(self.diff_prog + " " + self.specfile.replace(" ","\\ ") + " " + self.fout.name.replace(" ","\\ "))
+            cmd = shlex.split(self.diff_prog + " " + self.specfile.replace(" ", "\\ ") + " " + self.fout.name.replace(" ", "\\ "))
             try:
                 subprocess.call(cmd, shell=False)
             except OSError as e:
                 raise RpmException('Could not execute %s (%s)' % (self.diff_prog.split()[0], e.strerror))
-
 
     def __del__(self):
         """

@@ -6,6 +6,7 @@ from .rpmexception import RpmException
 
 
 class FileUtils(object):
+
     """
     Class working with file operations.
     Read/write..
@@ -13,7 +14,6 @@ class FileUtils(object):
 
     # file variable
     f = None
-
 
     def open_datafile(self, FILE):
         """
@@ -32,7 +32,6 @@ class FileUtils(object):
 
         self.f = f
 
-
     def open(self, FILE, mode):
         """
         Function to open regular files with exception handling.
@@ -45,7 +44,6 @@ class FileUtils(object):
 
         self.f = f
 
-
     def close(self):
         """
         Just wrapper for closing the file
@@ -53,7 +51,6 @@ class FileUtils(object):
 
         if self.f:
             self.f.close()
-
 
     def __del__(self):
         self.close()

@@ -2,6 +2,7 @@
 
 
 class RpmBaseException(Exception):
+
     """
     Class wrapping Exception class so we throw neat exceptions.
     """
@@ -15,12 +16,14 @@ class RpmBaseException(Exception):
 
 
 class RpmWrongArgs(RpmBaseException):
+
     """
     Exception raised by wrong arguments pased by cli
     """
 
 
 class RpmException(RpmBaseException):
+
     """
     Exception raised by wrong parsed content from rpm
     """

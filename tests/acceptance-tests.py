@@ -13,6 +13,7 @@ from spec_cleaner import RpmSpecCleaner
 
 
 class TestCompare(unittest.TestCase):
+
     """
     We run individual tests to verify the content compared to expected results
     """
@@ -28,13 +29,11 @@ class TestCompare(unittest.TestCase):
         self.tmp_dir = tempfile.mkdtemp()
         self.tmp_file_rerun = tempfile.NamedTemporaryFile()
 
-
     def tearDown(self):
         """
         Remove the tmp directory
         """
         shutil.rmtree(self.tmp_dir)
-
 
     def _difftext(self, lines1, lines2, junk=None):
         junk = junk or (' ', '\t')
@@ -46,7 +45,6 @@ class TestCompare(unittest.TestCase):
             # lines that don't start with a ' ' are diff ones
             if not line.startswith(' '):
                 self.fail(''.join(read + list(result)))
-
 
     def assertStreamEqual(self, stream1, stream2, junk=None):
         """compare two streams (using difflib and readlines())"""
@@ -60,13 +58,11 @@ class TestCompare(unittest.TestCase):
         # ocmpare
         self._difftext(stream1.readlines(), stream2.readlines(), junk)
 
-
     def _get_input_dir(self):
         """
         Return path for input files used by tests
         """
         return os.path.join(os.getcwd(), 'tests/in/')
-
 
     def _get_fixtures_dir(self):
         """
@@ -74,13 +70,11 @@ class TestCompare(unittest.TestCase):
         """
         return os.path.join(os.getcwd(), 'tests/out/')
 
-
     def _get_minimal_fixtures_dir(self):
         """
         Return path for representative output specs
         """
         return os.path.join(os.getcwd(), 'tests/out-minimal/')
-
 
     def _obtain_list_of_tests(self):
         """
@@ -95,7 +89,6 @@ class TestCompare(unittest.TestCase):
 
         return test_files
 
-
     def _run_individual_test(self, infile, outfile):
         """
         Run the cleaner as specified and store the output for further comparison.
@@ -103,10 +96,10 @@ class TestCompare(unittest.TestCase):
         cleaner = RpmSpecCleaner(infile, outfile, True, False, False, 'vimdiff', False)
         cleaner.run()
 
-
     @patch('spec_cleaner.rpmcopyright.datetime')
     def test_input_files(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
+        datetime_mock.datetime.now.return_value = (
+            datetime.datetime(2013, 1, 1))
         for test in self._obtain_list_of_tests():
             infile = os.path.join(self.input_dir, test)
             compare = os.path.join(self.fixtures_dir, test)
@@ -122,10 +115,10 @@ class TestCompare(unittest.TestCase):
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
                 self.assertStreamEqual(ref, test)
 
-
     @patch('spec_cleaner.rpmcopyright.datetime')
     def test_minimal_output(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
+        datetime_mock.datetime.now.return_value = (
+            datetime.datetime(2013, 1, 1))
         for test in self._obtain_list_of_tests():
             infile = os.path.join(self.input_dir, test)
             compare = os.path.join(self.minimal_fixtures_dir, test)
@@ -143,10 +136,10 @@ class TestCompare(unittest.TestCase):
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
                 self.assertStreamEqual(ref, test)
 
-
     @patch('spec_cleaner.rpmcopyright.datetime')
     def test_inline_function(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
+        datetime_mock.datetime.now.return_value = (
+            datetime.datetime(2013, 1, 1))
 
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
@@ -160,21 +153,21 @@ class TestCompare(unittest.TestCase):
         with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
-
     @patch('spec_cleaner.rpmcopyright.datetime')
     def test_regular_output(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
+        datetime_mock.datetime.now.return_value = (
+            datetime.datetime(2013, 1, 1))
 
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
         cleaner = RpmSpecCleaner(infile, '', True, False, False, 'gvimdiff', False)
         cleaner.run()
 
-
     @patch('spec_cleaner.rpmcopyright.datetime')
     @patch('subprocess.call')
     def test_diff_function(self, datetime_mock, subprocess_mock):
-        datetime_mock.datetime.now.return_value = (datetime.datetime(2013, 1, 1))
+        datetime_mock.datetime.now.return_value = (
+            datetime.datetime(2013, 1, 1))
         subprocess_mock.subprocess.call.return_value = True
 
         test = self._obtain_list_of_tests()[0]

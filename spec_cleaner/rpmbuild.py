@@ -5,6 +5,7 @@ from .rpmcheck import RpmCheck
 
 
 class RpmBuild(RpmCheck):
+
     """
         Replace various troublemakers in build phase
     """

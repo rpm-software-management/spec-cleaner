@@ -4,11 +4,11 @@ from .rpmsection import Section
 
 
 class RpmPrep(Section):
+
     '''
         Try to simplify to %setup -q when possible.
         Replace %patch with %patch0
     '''
-
 
     def add(self, line):
         line = self._complete_cleanup(line)
@@ -38,7 +38,7 @@ class RpmPrep(Section):
         line = line.replace('-p0', '')
         # %patch0 is desired
         if (line.startswith('%patch ') or line == '%patch') and '-P' not in line:
-            line = line.replace('%patch','%patch0')
+            line = line.replace('%patch', '%patch0')
 
         # convert the %patch -P 50 -p10 to %patch50 -p10
         # this apply only if there is ONE -P on the line, not multiple ones

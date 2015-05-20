@@ -4,6 +4,7 @@ from .rpmsection import Section
 
 
 class RpmDescription(Section):
+
     """
     Only keep one empty line for many consecutive ones.
     Remove Authors from description.
@@ -16,7 +17,6 @@ class RpmDescription(Section):
         # description, we actually don't know where we are so we just put all
         # the following lines blindly, without trying to fix anything.
         self.unknown_line = False
-
 
     def add(self, line):
         if self.previous_line is not None and len(line) > 0 and line[0] == '%':

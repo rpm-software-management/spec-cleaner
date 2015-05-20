@@ -7,6 +7,7 @@ from .fileutils import FileUtils
 
 
 class Singleton(object):
+
     def __init__(self, klass):
         self.klass = klass
         self.instance = None
@@ -19,6 +20,7 @@ class Singleton(object):
 
 @Singleton
 class RegexpSingle(object):
+
     """
         Singleton containing all regular expressions compiled in one run.
         So we can use them later everywhere without compiling them again,
@@ -76,7 +78,8 @@ class RegexpSingle(object):
     re_requires_token = re.compile(r'(\s*([^<>=\s]+(\s*[<>=]+\s*[^<>=\s]+)?)\s*)')
     re_autoreqprov = re.compile(r'^\s*AutoReqProv:.*$', re.IGNORECASE)
     re_debugpkg = re.compile(r'^%{?debug_package}?\s*$', re.IGNORECASE)
-    # here we need to grab all submacros with rpm calls so just match almost everything
+    # here we need to grab all submacros with rpm calls so just match almost
+    # everything
     re_rpm_command = re.compile(r'%\(.*\)')
     re_requires_eq = re.compile(r'^\s*%requires_eq\s*(.*)')
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
@@ -150,7 +153,6 @@ class RegexpSingle(object):
 
         return keywords
 
-
     def _parse_rpm_showrc(self):
         """
         Load argumented macros from rpm --showrc
@@ -163,7 +165,7 @@ class RegexpSingle(object):
             line = line.rstrip('\n')
             found_macro = re_rc_macrofunc.sub(r'\1', line)
             if found_macro != line:
-                macros += [ found_macro ]
+                macros += [found_macro]
         output.close()
         return macros
 
@@ -180,7 +182,7 @@ class RegexpSingle(object):
             line = line.rstrip('\n')
             found_macro = self.re_spec_macrofunc.sub(r'\1', line)
             if found_macro != line:
-                macrofuncs += [ found_macro ]
+                macrofuncs += [found_macro]
         files.close()
         return macrofuncs
 

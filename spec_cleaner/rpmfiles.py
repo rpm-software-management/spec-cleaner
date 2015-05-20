@@ -4,6 +4,7 @@ from .rpmsection import Section
 
 
 class RpmFiles(Section):
+
     """
         Class that does replacements on the %files section.
     """
@@ -18,7 +19,7 @@ class RpmFiles(Section):
             self.lines.append('%defattr(-,root,root)')
 
         # toss out empty lines if there are more than one in succession
-        if line == '' and ( not self.previous_line or self.previous_line == ''):
+        if line == '' and (not self.previous_line or self.previous_line == ''):
             return
 
         line = self._remove_doc_on_man(line)

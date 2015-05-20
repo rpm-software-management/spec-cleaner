@@ -4,14 +4,15 @@ from .rpmsection import Section
 
 
 class RpmScriptlets(Section):
+
     '''
         Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig
     '''
 
-    def output(self, fout, newline = True):
+    def output(self, fout, newline=True):
         # if we have 2 or 3 lines where last one is empty
         nolines = len(self.lines)
-        if nolines == 2 or ( nolines == 3 and self.lines[2] == ''):
+        if nolines == 2 or (nolines == 3 and self.lines[2] == ''):
             if self.lines[1] == '/sbin/ldconfig':
                 pkg = self.lines[0]
                 self.lines = []

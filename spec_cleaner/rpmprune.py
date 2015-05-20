@@ -6,6 +6,7 @@ from .rpmsection import Section
 
 
 class RpmClean(Section):
+
     """Remove clean section"""
 
     def output(self, fout, newline=True):
@@ -14,6 +15,7 @@ class RpmClean(Section):
 
 
 class RpmChangelog(Section):
+
     """Remove changelog entries."""
 
     def add(self, line):

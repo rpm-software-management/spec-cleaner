@@ -6,6 +6,7 @@ from .rpmregexp import RegexpSingle
 
 
 class Section(object):
+
     """
     Basic object for parsing each section of spec file.
     It stores the lines in a list and remembers content of
@@ -16,7 +17,6 @@ class Section(object):
     unificate all the content.
     """
 
-
     def __init__(self, specfile):
         self.lines = []
         self.previous_line = None
@@ -25,7 +25,6 @@ class Section(object):
         # Are we inside of conditional or not
         self.condition = False
         self._condition_counter = 0
-
 
     def _complete_cleanup(self, line):
         """
@@ -47,7 +46,6 @@ class Section(object):
 
         return line
 
-
     def _check_conditions(self, line):
         """
         Check if we are in condition that is contained or not
@@ -61,7 +59,6 @@ class Section(object):
             self.condition = True
         else:
             self.condition = False
-
 
     def add(self, line):
         """
@@ -77,8 +74,7 @@ class Section(object):
         self.lines.append(line)
         self.previous_line = line
 
-
-    def output(self, fout, newline = True):
+    def output(self, fout, newline=True):
         # Always append one empty line at the end if it is not present
         # and changelog is trailing part of our spec so do not put nothing
         # bellow
@@ -94,12 +90,11 @@ class Section(object):
             if len(self.lines) >= 2:
                 if self.lines[-1] == '' and \
                    (self.lines[-2].startswith('%if') or
-                   self.lines[-2].startswith('%else')):
+                        self.lines[-2].startswith('%else')):
                     self.lines.pop()
 
         for line in self.lines:
             fout.write(line + '\n')
-
 
     def strip_useless_spaces(self, line):
         """
@@ -108,7 +103,6 @@ class Section(object):
         children classes where fit.
         """
         return ' '.join(line.split())
-
 
     def embrace_macros(self, line):
         """
@@ -137,7 +131,6 @@ class Section(object):
         # re-create the line back
         return '#'.join(sp)
 
-
     def replace_buildroot(self, line):
         """
         Replace RPM_BUILD_ROOT for buildroot
@@ -146,7 +139,6 @@ class Section(object):
         line = self.reg.re_rpmbuildroot.sub(r'%{buildroot}\2', line)
         return line
 
-
     def replace_optflags(self, line):
         """
         Replace RPM_OPT_FLAGS for %{optflags}
@@ -154,7 +146,6 @@ class Section(object):
         line = line.replace('${RPM_OPT_FLAGS}', '%{optflags}')
         line = line.replace('$RPM_OPT_FLAGS', '%{optflags}')
         return line
-
 
     def replace_known_dirs(self, line):
         """
@@ -178,21 +169,20 @@ class Section(object):
 
         return line
 
-
     def replace_utils(self, line):
         """
         Remove the macro calls for utilities and rather use direct commands.
         OBS ensures there is only one anyway.
         """
-        r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p', 'awk':'gawk', 'cc':'gcc', 'cpp':'gcc -E', 'cxx':'g++', 'remsh':'rsh', }
+        r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p',
+             'awk': 'gawk', 'cc': 'gcc', 'cpp': 'gcc -E', 'cxx': 'g++', 'remsh': 'rsh', }
         for i in r:
             line = line.replace('%{__' + i + '}', r[i])
 
-        for i in [ 'aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz', ]:
+        for i in ['aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz']:
             line = line.replace('%{__' + i + '}', i)
 
         return line
-
 
     def replace_buildservice(self, line):
         """
@@ -200,9 +190,8 @@ class Section(object):
         Replace %{suse_version} for 0%{?suse_version}
         """
         for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'suse', 'ubuntu']:
-            line = line.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace('00%{','0%{')
+            line = line.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace('00%{', '0%{')
         return line
-
 
     def replace_preamble_macros(self, line):
         """

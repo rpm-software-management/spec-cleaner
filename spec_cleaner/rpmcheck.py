@@ -4,6 +4,7 @@ from .rpmsection import Section
 
 
 class RpmCheck(Section):
+
     """
         Replace various troublemakers in check phase
     """

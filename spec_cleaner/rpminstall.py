@@ -4,6 +4,7 @@ from .rpmsection import Section
 
 
 class RpmInstall(Section):
+
     '''
         Remove commands that wipe out the build root.
         Replace %makeinstall (suse-ism).
@@ -29,11 +30,10 @@ class RpmInstall(Section):
             else:
                 line = install_command + parallel_arg
 
-        # we can deal with additional params for %makeinstall so replace that too
+        # we can deal with additional params for %makeinstall so replace that
         line = line.replace('%{makeinstall}', install_command + parallel_arg)
 
         Section.add(self, line)
-
 
     def _replace_remove_la(self, line):
         """

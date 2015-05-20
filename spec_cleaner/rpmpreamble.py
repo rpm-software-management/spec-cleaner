@@ -12,6 +12,7 @@ PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
 
 
 class RpmPreamble(Section):
+
     """
         Only keep one empty line for many consecutive ones.
         Reorder lines.
@@ -80,7 +81,7 @@ class RpmPreamble(Section):
         'requires',
         'requires_eq',
         'prereq',
-        'requires_phase', # this is Requires(pre/post/...)
+        'requires_phase',  # this is Requires(pre/post/...)
         'recommends',
         'suggests',
         'enhances',
@@ -113,7 +114,6 @@ class RpmPreamble(Section):
         'patch',
     ]
 
-
     def __init__(self, specfile, pkgconfig):
         Section.__init__(self, specfile)
         # Old storage
@@ -136,7 +136,8 @@ class RpmPreamble(Section):
         self._start_paragraph()
         # initialize list of groups that need to pass over conversion fixer
         self.categories_with_package_tokens = self.categories_with_sorted_package_tokens[:]
-        # these packages actually need fixing after we sent the values to reorder them
+        # these packages actually need fixing after we sent the values to
+        # reorder them
         self.categories_with_package_tokens.append('provides_obsoletes')
 
         # simple categories matching
@@ -174,19 +175,16 @@ class RpmPreamble(Section):
             'debugpkg': self.reg.re_debugpkg,
         }
 
-
     def _start_paragraph(self):
         self.paragraph = {}
         for i in self.categories_order:
             self.paragraph[i] = []
         self.current_group = []
 
-
     def start_subparagraph(self):
         # store the main content and clean up
         self._oldstore.append(self.paragraph)
         self._start_paragraph()
-
 
     def _add_group(self, group):
         """
@@ -194,7 +192,7 @@ class RpmPreamble(Section):
         """
         t = type(group)
         if t == str:
-            return [ group ]
+            return [group]
         elif t == list:
             x = []
             for subgroup in group:
@@ -202,7 +200,6 @@ class RpmPreamble(Section):
             return x
         else:
             raise RpmException('Unknown type of group in preamble: %s' % t)
-
 
     def _sort_helper_key(self, a):
         t = type(a)
@@ -231,7 +228,6 @@ class RpmPreamble(Section):
         else:
             key = '0' + key
         return key
-
 
     def _sort_uniq(self, seq):
         def check_list(x):
@@ -278,8 +274,7 @@ class RpmPreamble(Section):
             result.append(item)
         return result
 
-
-    def end_subparagraph(self, endif = False):
+    def end_subparagraph(self, endif=False):
         lines = self._end_paragraph()
         if len(self.paragraph['define']) > 0 or \
            len(self.paragraph['bconds']) > 0:
@@ -311,7 +306,6 @@ class RpmPreamble(Section):
                 self._condition_bcond = False
             self.paragraph['conditions'] = []
 
-
     def _end_paragraph(self):
         lines = []
         # sort based on category order
@@ -332,43 +326,40 @@ class RpmPreamble(Section):
             self.current_group = ''
         return lines
 
-
     def _fix_license(self, value):
         # split using 'or', 'and' and parenthesis, ignore empty strings
         licenses = [a for a in re.split(r'(\(|\)| and | or )', value) if a != '']
 
         for (index, my_license) in enumerate(licenses):
             my_license = self.strip_useless_spaces(my_license)
-            my_license = my_license.replace('ORlater','or later')
-            my_license = my_license.replace('ORsim','or similar')
+            my_license = my_license.replace('ORlater', 'or later')
+            my_license = my_license.replace('ORsim', 'or similar')
             if my_license in self.license_conversions:
                 my_license = self.license_conversions[my_license]
             licenses[index] = my_license
 
         # create back new string with replaced licenses
-        s = ' '.join(licenses).replace("( ","(").replace(" )",")")
+        s = ' '.join(licenses).replace("( ", "(").replace(" )", ")")
         return s
-
 
     def _pkgname_to_pkgconfig(self, value):
         # we just want the pkgname if we have version string there
         # and for the pkgconfig deps we need to put the version into
         # the braces
         pkgname = value.split()[0]
-        version = value.replace(pkgname,'')
+        version = value.replace(pkgname, '')
         pkgconfig = []
         if pkgname not in self.pkgconfig_conversions:
             # first check if the pacakge is in the replacements
-            return [ value ]
+            return [value]
         else:
             # first split the pkgconfig data
             pkgconf_list = self.pkgconfig_conversions[pkgname].split()
             # then add each pkgconfig to the list
-            #print pkgconf_list
+            # print pkgconf_list
             for j in pkgconf_list:
                 pkgconfig.append('pkgconfig({0}){1}'.format(j, version))
         return pkgconfig
-
 
     def _fix_list_of_packages(self, value):
         if self.reg.re_requires_token.match(value):
@@ -377,23 +368,24 @@ class RpmPreamble(Section):
             if self.reg.re_rpm_command.search(value):
                 if not self.previous_line.startswith('#'):
                     self.current_group.append('# FIXME: Use %requires_eq macro instead')
-                return [ value ]
+                return [value]
             # we also skip all various rpm-macroed content as it is usually not easy
             # to determine how that should be split
             if value.startswith('%'):
-                return [ value ]
+                return [value]
 
-            tokens = [ item[1] for item in self.reg.re_requires_token.findall(value) ]
+            tokens = [item[1] for item in self.reg.re_requires_token.findall(value)]
             # Split based on ',' here as it breaks up pattern matching later on
-            tokens = [ item.split(',') for item in tokens ]
-            tokens = [ item for sublist in tokens for item in sublist ]
-            # first loop over all and do formatting as we can get more deps for one
+            tokens = [item.split(',') for item in tokens]
+            tokens = [item for sublist in tokens for item in sublist]
+            # first loop over all and do formatting as we can get more deps for
+            # one
             expanded = []
             for token in tokens:
                 # cleanup whitespace
-                token = token.replace(' ','')
+                token = token.replace(' ', '')
                 # rpm actually allows ',' separated list of deps
-                token = token.replace(',','')
+                token = token.replace(',', '')
                 # there is allowed syntax => and =< ; hidious
                 token = token.replace('=<', '<=')
                 token = token.replace('=>', '>=')
@@ -411,10 +403,9 @@ class RpmPreamble(Section):
 
             return expanded
         else:
-            return [ value ]
+            return [value]
 
-
-    def _add_line_value_to(self, category, value, key = None):
+    def _add_line_value_to(self, category, value, key=None):
         """
             Change a key-value line, to make sure we have the right spacing.
 
@@ -443,12 +434,11 @@ class RpmPreamble(Section):
         if category in self.categories_with_package_tokens:
             values = self._fix_list_of_packages(value)
         else:
-            values = [ value ]
+            values = [value]
 
         for value in values:
             line = key + value
             self._add_line_to(category, line)
-
 
     def _add_line_to(self, category, line):
         if self.current_group:
@@ -459,7 +449,6 @@ class RpmPreamble(Section):
             self.paragraph[category].append(line)
 
         self.previous_line = line
-
 
     def _read_pkgconfig_changes(self):
         pkgconfig = {}
@@ -472,7 +461,6 @@ class RpmPreamble(Section):
             pkgconfig[pair[0]] = pair[1][:-1]
         files.close()
         return pkgconfig
-
 
     def _read_licenses_changes(self):
         licenses = {}
@@ -490,7 +478,6 @@ class RpmPreamble(Section):
         files.close()
         return licenses
 
-
     def add(self, line):
         line = self._complete_cleanup(line)
         # if the line is empty just skip it we don't need new section for it
@@ -499,7 +486,8 @@ class RpmPreamble(Section):
             return
 
         # if it is multiline variable then we need to append to previous content
-        # also multiline is allowed only for define lines so just cheat and know ahead
+        # also multiline is allowed only for define lines so just cheat and
+        # know ahead
         elif self.multiline:
             self._add_line_to('define', line)
             # if it is no longer trailed with backslash stop
@@ -547,7 +535,7 @@ class RpmPreamble(Section):
 
         elif self.reg.re_source.match(line):
             match = self.reg.re_source.match(line)
-            self._add_line_value_to('source', match.group(2), key = 'Source%s' % match.group(1))
+            self._add_line_value_to('source', match.group(2), key='Source%s' % match.group(1))
             return
 
         elif self.reg.re_patch.match(line):
@@ -557,7 +545,8 @@ class RpmPreamble(Section):
                 zero = '0'
             else:
                 zero = ''
-            self._add_line_value_to('patch', match.group(3), key = '%sPatch%s%s' % (match.group(1), zero, match.group(2)))
+            self._add_line_value_to('patch', match.group(
+                3), key='%sPatch%s%s' % (match.group(1), zero, match.group(2)))
             return
 
         elif self.reg.re_bcond_with.match(line):
@@ -582,7 +571,8 @@ class RpmPreamble(Section):
 
         elif self.reg.re_prereq.match(line):
             match = self.reg.re_prereq.match(line)
-            # add the comment about using proper macro which needs investingaton
+            # add the comment about using proper macro which needs
+            # investingaton
             if not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
                 self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
             self._add_line_value_to('prereq', match.group(1))
@@ -591,17 +581,17 @@ class RpmPreamble(Section):
         elif self.reg.re_requires_phase.match(line):
             match = self.reg.re_requires_phase.match(line)
             # Put the requires content properly as key for formatting
-            self._add_line_value_to('prereq', match.group(2), key = 'Requires{0}'.format(match.group(1)))
+            self._add_line_value_to('prereq', match.group(2), key='Requires{0}'.format(match.group(1)))
             return
 
         elif self.reg.re_provides.match(line):
             match = self.reg.re_provides.match(line)
-            self._add_line_value_to('provides_obsoletes', match.group(1), key = 'Provides')
+            self._add_line_value_to('provides_obsoletes', match.group(1), key='Provides')
             return
 
         elif self.reg.re_obsoletes.match(line):
             match = self.reg.re_obsoletes.match(line)
-            self._add_line_value_to('provides_obsoletes', match.group(1), key = 'Obsoletes')
+            self._add_line_value_to('provides_obsoletes', match.group(1), key='Obsoletes')
             return
 
         elif self.reg.re_buildroot.match(line):
@@ -611,13 +601,12 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_license.match(line):
-            # first convert the license string to proper format and then append it
+            # first convert the license string to proper format and then append
             match = self.reg.re_license.match(line)
             value = match.groups()[len(match.groups()) - 1]
             value = self._fix_license(value)
             self._add_line_value_to('license', value)
             return
-
 
         elif self.reg.re_release.match(line):
             # the release is always 0
@@ -630,7 +619,7 @@ class RpmPreamble(Section):
             language = match.group(1)
             # and what value is there
             content = match.group(2)
-            self._add_line_value_to('summary_localized', content, key = 'Summary{0}'.format(language))
+            self._add_line_value_to('summary_localized', content, key='Summary{0}'.format(language))
             return
 
         # loop for all other matching categories which
@@ -654,18 +643,17 @@ class RpmPreamble(Section):
 
             self._add_line_to('misc', line)
 
-
-    def output(self, fout, newline = True):
+    def output(self, fout, newline=True):
         lines = self._end_paragraph()
         self.lines += lines
         Section.output(self, fout, newline)
 
 
 class RpmPackage(RpmPreamble):
+
     """
     We handle subpackage case as the normal preamble
     """
-
 
     def add(self, line):
         # The first line (%package) should always be added and is different
@@ -673,9 +661,10 @@ class RpmPackage(RpmPreamble):
         if self.previous_line is None:
             Section.add(self, line)
             return
-        # If the package is lang package we add here comment about the lang package
+        # If the package is lang package we add here comment about the lang
+        # package
         if len(self.lines) == 1 and (self.previous_line.startswith('%') and
-           (self.previous_line.endswith(' lang') or self.previous_line.endswith('-lang'))) and not line.startswith('#'):
+                                     (self.previous_line.endswith(' lang') or self.previous_line.endswith('-lang'))) and not line.startswith('#'):
             Section.add(self, '# FIXME: consider using %lang_package macro')
 
         RpmPreamble.add(self, line)
