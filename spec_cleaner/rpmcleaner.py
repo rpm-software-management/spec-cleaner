@@ -28,7 +28,7 @@ from .rpmfiles import RpmFiles
 from .rpmregexp import RegexpSingle
 
 
-class RpmSpecCleaner:
+class RpmSpecCleaner(object):
     """
     Class wrapping all section parsers reponsible for ensuring
     that all sections are checked and accounted for.

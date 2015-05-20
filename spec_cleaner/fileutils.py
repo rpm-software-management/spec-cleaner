@@ -5,7 +5,7 @@ import os
 from .rpmexception import RpmException
 
 
-class FileUtils:
+class FileUtils(object):
     """
     Class working with file operations.
     Read/write..

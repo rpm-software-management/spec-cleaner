@@ -5,7 +5,7 @@ import os
 
 from .fileutils import FileUtils
 
-class Singleton:
+class Singleton(object):
   def __init__(self, klass):
     self.klass = klass
     self.instance = None
