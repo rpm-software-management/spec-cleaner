@@ -182,7 +182,7 @@ class RpmPreamble(Section):
         self.current_group = []
 
 
-    def _start_subparagraph(self):
+    def start_subparagraph(self):
         # store the main content and clean up
         self._oldstore.append(self.paragraph)
         self._start_paragraph()
@@ -279,7 +279,7 @@ class RpmPreamble(Section):
         return result
 
 
-    def _end_subparagraph(self, endif = False):
+    def end_subparagraph(self, endif = False):
         lines = self._end_paragraph()
         if len(self.paragraph['define']) > 0 or \
               len(self.paragraph['bconds']) > 0:
@@ -518,15 +518,15 @@ class RpmPreamble(Section):
             # check for possibility of the bcond conditional
             if "%{with" in line or "%{without" in line:
                 self._condition_bcond = True
-            self._start_subparagraph()
+            self.start_subparagraph()
             self.previous_line = line
             return
 
         elif self.reg.re_else.match(line):
             if self.condition:
                 self._add_line_to('conditions', line)
-                self._end_subparagraph()
-                self._start_subparagraph()
+                self.end_subparagraph()
+                self.start_subparagraph()
             self.previous_line = line
             return
 
@@ -536,7 +536,7 @@ class RpmPreamble(Section):
             # closing last of the nested ones
             if len(self._oldstore) == 1:
                 self.condition = False
-            self._end_subparagraph(True)
+            self.end_subparagraph(True)
             self.previous_line = line
             return
 
