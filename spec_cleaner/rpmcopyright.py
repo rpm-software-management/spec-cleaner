@@ -31,8 +31,8 @@ class RpmCopyright(Section):
 
 
     def _add_copyright(self):
-        copyright = self._create_default_copyright()
-        self.lines.append(copyright)
+        my_copyright = self._create_default_copyright()
+        self.lines.append(my_copyright)
 
         for i in self.copyrights:
             self.lines.append(i)

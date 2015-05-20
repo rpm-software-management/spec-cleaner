@@ -337,13 +337,13 @@ class RpmPreamble(Section):
         # split using 'or', 'and' and parenthesis, ignore empty strings
         licenses = [a for a in re.split('(\(|\)| and | or )', value) if a != '']
 
-        for (index, license) in enumerate(licenses):
-            license = self.strip_useless_spaces(license)
-            license = license.replace('ORlater','or later')
-            license = license.replace('ORsim','or similar')
-            if license in self.license_conversions:
-                license = self.license_conversions[license]
-            licenses[index] = license
+        for (index, my_license) in enumerate(licenses):
+            my_license = self.strip_useless_spaces(my_license)
+            my_license = my_license.replace('ORlater','or later')
+            my_license = my_license.replace('ORsim','or similar')
+            if my_license in self.license_conversions:
+                my_license = self.license_conversions[my_license]
+            licenses[index] = my_license
 
         # create back new string with replaced licenses
         s = ' '.join(licenses).replace("( ","(").replace(" )",")")
