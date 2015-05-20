@@ -103,9 +103,9 @@ class RpmSpecCleaner(object):
         #   if previous non-empty-uncommented line was starting the condition
         #   we end up the condition section in preamble (if applicable) and proceed to output
         if self.reg.re_else.match(line) or self.reg.re_endif.match(line) or \
-             (type(self.current_section) is Section and self.reg.re_if.match(line)):
+           (type(self.current_section) is Section and self.reg.re_if.match(line)):
             if not hasattr(self.current_section, 'condition') or \
-                  (hasattr(self.current_section, 'condition') and not self.current_section.condition):
+               (hasattr(self.current_section, 'condition') and not self.current_section.condition):
                 # If we have to break out we go ahead with small class
                 # which just print the one evil line
                 return Section
@@ -134,33 +134,32 @@ class RpmSpecCleaner(object):
         # This is seriously ugly but can't think of cleaner way
         # WARN: Keep in sync with rpmregexps for rpmpreamble section
         if not isinstance(self.current_section, RpmPreamble) and \
-             not isinstance(self.current_section, RpmPackage):
+           not isinstance(self.current_section, RpmPackage):
             if self.reg.re_define.match(line) or self.reg.re_global.match(line) or \
-                 self.reg.re_bcond_with.match(line) or \
-                 self.reg.re_requires.match(line) or self.reg.re_requires_phase.match(line) or \
-                 self.reg.re_buildrequires.match(line) or self.reg.re_prereq.match(line) or \
-                 self.reg.re_recommends.match(line) or self.reg.re_suggests.match(line) or \
-                 self.reg.re_name.match(line) or self.reg.re_version.match(line) or \
-                 self.reg.re_release.match(line) or self.reg.re_license.match(line) or \
-                 self.reg.re_summary.match(line) or self.reg.re_summary_localized.match(line) or \
-                 self.reg.re_url.match(line) or self.reg.re_group.match(line) or \
-                 self.reg.re_vendor.match(line) or self.reg.re_source.match(line) or \
-                 self.reg.re_patch.match(line) or self.reg.re_enhances.match(line) or \
-                 self.reg.re_supplements.match(line) or self.reg.re_conflicts.match(line) or \
-                 self.reg.re_provides.match(line) or self.reg.re_obsoletes.match(line) or \
-                 self.reg.re_buildroot.match(line) or self.reg.re_buildarch.match(line) or \
-                 self.reg.re_epoch.match(line) or self.reg.re_icon.match(line) or \
-                 self.reg.re_packager.match(line) or self.reg.re_debugpkg.match(line) or \
-                 self.reg.re_requires_eq.match(line):
+               self.reg.re_bcond_with.match(line) or \
+               self.reg.re_requires.match(line) or self.reg.re_requires_phase.match(line) or \
+               self.reg.re_buildrequires.match(line) or self.reg.re_prereq.match(line) or \
+               self.reg.re_recommends.match(line) or self.reg.re_suggests.match(line) or \
+               self.reg.re_name.match(line) or self.reg.re_version.match(line) or \
+               self.reg.re_release.match(line) or self.reg.re_license.match(line) or \
+               self.reg.re_summary.match(line) or self.reg.re_summary_localized.match(line) or \
+               self.reg.re_url.match(line) or self.reg.re_group.match(line) or \
+               self.reg.re_vendor.match(line) or self.reg.re_source.match(line) or \
+               self.reg.re_patch.match(line) or self.reg.re_enhances.match(line) or \
+               self.reg.re_supplements.match(line) or self.reg.re_conflicts.match(line) or \
+               self.reg.re_provides.match(line) or self.reg.re_obsoletes.match(line) or \
+               self.reg.re_buildroot.match(line) or self.reg.re_buildarch.match(line) or \
+               self.reg.re_epoch.match(line) or self.reg.re_icon.match(line) or \
+               self.reg.re_packager.match(line) or self.reg.re_debugpkg.match(line) or \
+               self.reg.re_requires_eq.match(line):
                 return RpmPreamble
 
         # If we are in clean section and encounter whitespace
         # we need to stop deleting
         # This avoids deleting %if before %files section that could
         # be deleted otherwise
-        if isinstance(self.current_section, RpmClean):
-            if line.strip() == '':
-                return Section
+        if isinstance(self.current_section, RpmClean) and line.strip() == '':
+            return Section
 
         # we are staying in the section
         return None
@@ -192,7 +191,7 @@ class RpmSpecCleaner(object):
                         self.current_section = new_class(self.specfile)
                 else:
                     # We don't want to print newlines before %else and %endif
-                    if (new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line))):
+                    if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):
                         newline = False
                     else:
                         newline = True

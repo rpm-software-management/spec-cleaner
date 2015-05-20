@@ -5,14 +5,17 @@ import os
 
 from .fileutils import FileUtils
 
+
 class Singleton(object):
     def __init__(self, klass):
         self.klass = klass
         self.instance = None
+
     def __call__(self, *args, **kwds):
         if self.instance is None:
             self.instance = self.klass(*args, **kwds)
         return self.instance
+
 
 @Singleton
 class RegexpSingle(object):
@@ -129,7 +132,6 @@ class RegexpSingle(object):
     re_initddir = re.compile(r'%{?_initrddir}?([/\s$])')
     re_rpmbuildroot = re.compile(r'(\${?RPM_BUILD_ROOT}?|"%{?buildroot}?")([/\s%]|$)')
 
-    # unbrace keywords love
     def _load_keywords_whitelist(self):
         """
         Create regexp for the unbrace keywords based on
@@ -141,7 +143,7 @@ class RegexpSingle(object):
         # load the keywords
         files = FileUtils()
         files.open_datafile(BRACKETING_EXCLUDES)
-        keywords= []
+        keywords = []
         for line in files.f:
             keywords.append(line.rstrip('\n'))
         files.close()

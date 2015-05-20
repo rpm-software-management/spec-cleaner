@@ -4,6 +4,7 @@ import re
 
 from .rpmregexp import RegexpSingle
 
+
 class Section(object):
     """
     Basic object for parsing each section of spec file.
@@ -85,15 +86,15 @@ class Section(object):
         # we don't want to create new line
         if len(self.lines) >= 1:
             if self.lines[-1] != '' and \
-                  self.lines[-1] != '%changelog' and not \
-                  self.lines[-1].startswith('%if') and \
-                  newline:
+               self.lines[-1] != '%changelog' and not \
+               self.lines[-1].startswith('%if') and \
+               newline:
                 self.lines.append('')
             # remove the newlines around ifs if they are not wanted
             if len(self.lines) >= 2:
                 if self.lines[-1] == '' and \
-                      (self.lines[-2].startswith('%if') or
-                      self.lines[-2].startswith('%else')):
+                   (self.lines[-2].startswith('%if') or
+                   self.lines[-2].startswith('%else')):
                     self.lines.pop()
 
         for line in self.lines:

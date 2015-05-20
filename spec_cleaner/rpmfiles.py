@@ -32,4 +32,3 @@ class RpmFiles(Section):
         line = line.replace("%doc %{_mandir}", "%{_mandir}", 1)
         line = line.replace("%doc %{_infodir}", "%{_infodir}", 1)
         return line
-

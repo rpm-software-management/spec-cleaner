@@ -227,9 +227,9 @@ class RpmPreamble(Section):
         # Put pkgconfig()-style packages at the end of the list, after all
         # non-pkgconfig()-style packages
         elif key.find('pkgconfig(') != -1:
-            key = '1'+key
+            key = '1' + key
         else:
-            key = '0'+key
+            key = '0' + key
         return key
 
 
@@ -282,7 +282,7 @@ class RpmPreamble(Section):
     def end_subparagraph(self, endif = False):
         lines = self._end_paragraph()
         if len(self.paragraph['define']) > 0 or \
-              len(self.paragraph['bconds']) > 0:
+           len(self.paragraph['bconds']) > 0:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph['conditions'].append(lines)
@@ -675,7 +675,7 @@ class RpmPackage(RpmPreamble):
             return
         # If the package is lang package we add here comment about the lang package
         if len(self.lines) == 1 and (self.previous_line.startswith('%') and
-              (self.previous_line.endswith(' lang') or self.previous_line.endswith('-lang'))) and not line.startswith('#'):
+           (self.previous_line.endswith(' lang') or self.previous_line.endswith('-lang'))) and not line.startswith('#'):
             Section.add(self, '# FIXME: consider using %lang_package macro')
 
         RpmPreamble.add(self, line)

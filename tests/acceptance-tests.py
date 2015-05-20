@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
 
 import unittest
 import os
@@ -11,6 +10,7 @@ import datetime
 from mock import patch
 
 from spec_cleaner import RpmSpecCleaner
+
 
 class TestCompare(unittest.TestCase):
     """
