@@ -1,25 +1,25 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+"""Cleaup classes that drop most of the content"""
+
 from .rpmsection import Section
 
 
 class RpmClean(Section):
-    """
-        Remove clean section
-    """
+    """Remove clean section"""
 
-
-    def output(self, fout, newline = True):
+    def output(self, fout, newline=True):
+        """Do not output anything here"""
         pass
 
 
 class RpmChangelog(Section):
-    '''
-        Remove changelog entries.
-    '''
-
+    """Remove changelog entries."""
 
     def add(self, line):
-        # only add the first line (%changelog)
+        """Only add the first line of changelog
+
+        This translates to adding just %changelog
+        """
         if len(self.lines) == 0:
             Section.add(self, "%changelog")
