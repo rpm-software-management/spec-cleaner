@@ -52,7 +52,7 @@ class RpmSpecCleaner:
         self.diff_prog = diff_prog
         self.minimal = minimal
         #run gvim(diff) in foreground mode
-        if self.diff_prog.startswith("gvim") and not " -f" in self.diff_prog:
+        if self.diff_prog.startswith("gvim") and " -f" not in self.diff_prog:
             self.diff_prog += " -f"
         self.reg = RegexpSingle(specfile)
         self.fin = open(self.specfile)
@@ -117,7 +117,7 @@ class RpmSpecCleaner:
                 if hasattr(self.current_section, 'condition') and self.current_section.condition:
                     self.current_section.condition = False
                     if hasattr(self.current_section, '_end_subparagraph'):
-                         self.current_section._end_subparagraph(True)
+                        self.current_section._end_subparagraph(True)
                 return newclass
 
         # if we still are here and we are just doing copyright
@@ -159,8 +159,8 @@ class RpmSpecCleaner:
         # This avoids deleting %if before %files section that could
         # be deleted otherwise
         if isinstance(self.current_section, RpmClean):
-           if line.strip() == '':
-               return Section
+            if line.strip() == '':
+                return Section
 
         # we are staying in the section
         return None

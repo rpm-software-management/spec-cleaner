@@ -62,7 +62,7 @@ def process_args(argv):
     if options.output:
         options.output = os.path.expanduser(options.output)
         if not options.force and os.path.exists(options.output):
-                raise RpmWrongArgs('{0} already exists.'.format(options.output))
+            raise RpmWrongArgs('{0} already exists.'.format(options.output))
 
     return options
 

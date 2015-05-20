@@ -357,7 +357,7 @@ class RpmPreamble(Section):
         pkgname = value.split()[0]
         version = value.replace(pkgname,'')
         pkgconfig = []
-        if not pkgname in self.pkgconfig_conversions:
+        if pkgname not in self.pkgconfig_conversions:
             # first check if the pacakge is in the replacements
             return [ value ]
         else:
