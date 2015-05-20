@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Setup file for easy installation."""
 from setuptools import setup
 import glob
 from spec_cleaner import __version__
