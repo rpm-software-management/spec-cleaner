@@ -8,7 +8,6 @@ import shutil
 import tempfile
 import difflib
 import datetime
-import shutil
 from mock import patch
 
 from spec_cleaner import RpmSpecCleaner
