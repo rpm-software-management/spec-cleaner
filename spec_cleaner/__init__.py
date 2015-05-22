@@ -1,10 +1,8 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-# Copyright (c) 2014, SUSE LINUX Products GmbH, Nuernberg, Germany
+# Copyright (c) 2015, SUSE LINUX Products GmbH, Nuernberg, Germany
 # All rights reserved.
 # See COPYING for details.
-
-__version__ = '0.7.0'
 
 import os
 import sys
@@ -13,6 +11,8 @@ import argparse
 from .rpmexception import RpmWrongArgs, RpmException
 from .rpmcleaner import RpmSpecCleaner
 
+
+__version__ = '0.7.0'
 
 def process_args(argv):
     """
