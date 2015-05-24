@@ -18,6 +18,7 @@ class RpmCopyright(Section):
         Section.__init__(self, specfile)
         self.copyrights = []
         self.buildrules = []
+        self.my_copyright = ''
 
     def _add_pkg_header(self):
         specname = os.path.splitext(os.path.basename(self.spec))[0]
@@ -27,11 +28,11 @@ class RpmCopyright(Section):
 
     def _create_default_copyright(self):
         year = datetime.datetime.now().year
-        return '# Copyright (c) {0} SUSE LINUX GmbH, Nuernberg, Germany.'.format(year)
+        self.my_copyright = '# Copyright (c) {0} SUSE LINUX GmbH, Nuernberg, Germany.'.format(year)
 
     def _add_copyright(self):
-        my_copyright = self._create_default_copyright()
-        self.lines.append(my_copyright)
+        self._create_default_copyright()
+        self.lines.append(self.my_copyright)
 
         for i in self.copyrights:
             self.lines.append(i)
