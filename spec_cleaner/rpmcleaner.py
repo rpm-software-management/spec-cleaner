@@ -192,6 +192,9 @@ class RpmSpecCleaner(object):
                     new_class = Section
                     self.current_section.output(self.fout, False)
                     self.current_section = new_class(self.specfile)
+                    # skip empty line adding if we are switching sections
+                    if self._previous_line == '' and line == '':
+                        continue
                 else:
                     # We don't want to print newlines before %else and %endif
                     if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):

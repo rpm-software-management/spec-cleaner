@@ -16,7 +16,6 @@
 #
 
 
-
 # TODO: This turns on distro-specific policies.
 # There are almost no SUSE specific modifications available
 # in the upstream, so we utilize the ones used by redhat

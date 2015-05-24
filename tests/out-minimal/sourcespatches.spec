@@ -16,7 +16,6 @@
 #
 
 
-
 Source15: anothersource.tar.xz
 %if 0%{?suse_version} > 1230
 %bcond_without systemd
