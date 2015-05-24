@@ -80,11 +80,10 @@ class Section(object):
         # bellow
         # Also if we are jumping away just after writing one macroed line
         # we don't want to create new line
-        if len(self.lines) >= 1:
+        if newline and len(self.lines) >= 1:
             if self.lines[-1] != '' and \
                self.lines[-1] != '%changelog' and not \
-               self.lines[-1].startswith('%if') and \
-               newline:
+               self.lines[-1].startswith('%if'):
                 self.lines.append('')
             # remove the newlines around ifs if they are not wanted
             if len(self.lines) >= 2:

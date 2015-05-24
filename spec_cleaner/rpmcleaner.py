@@ -91,8 +91,6 @@ class RpmSpecCleaner(object):
             self.fout = sys.stdout
 
     def _detect_preamble_section(self, line):
-        # If we actually start matching global content again we need to
-        # switch back to preamble, ie %define after %description/etc.
         # This is seriously ugly but can't think of cleaner way
         # WARN: Keep in sync with rpmregexps for rpmpreamble section
         if not isinstance(self.current_section, RpmPreamble) and \
@@ -157,13 +155,14 @@ class RpmSpecCleaner(object):
             if self._previous_line == '' and line == '':
                 return RpmPreamble
 
+        # If we actually start matching global content again we need to
+        # switch back to preamble, ie %define after %description/etc.
         if self._detect_preamble_section(line):
             return RpmPreamble
 
         # If we are in clean section and encounter whitespace
         # we need to stop deleting
-        # This avoids deleting %if before %files section that could
-        # be deleted otherwise
+        # This avoids deleting %if before %files section
         if isinstance(self.current_section, RpmClean) and line.strip() == '':
             return Section
 
@@ -190,10 +189,9 @@ class RpmSpecCleaner(object):
                 # If we are on minimal approach do not do anything else
                 # than trivial whitespacing
                 if self.minimal:
-                    if isinstance(self.current_section, RpmCopyright):
-                        new_class = Section
-                        self.current_section.output(self.fout, False)
-                        self.current_section = new_class(self.specfile)
+                    new_class = Section
+                    self.current_section.output(self.fout, False)
+                    self.current_section = new_class(self.specfile)
                 else:
                     # We don't want to print newlines before %else and %endif
                     if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):
@@ -219,6 +217,7 @@ class RpmSpecCleaner(object):
             if line != '' or not line.startswith('#'):
                 self._previous_nonempty_line = line
 
+        # no need to not output newline at the end even for minimal -> no condition
         self.current_section.output(self.fout)
         self.fout.flush()
 
