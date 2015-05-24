@@ -67,7 +67,7 @@ def process_args(argv):
 
     # convert options to dict
     options_dict = {
-        'specfile': options.specfile,
+        'specfile': options.spec,
         'output': options.output,
         'pkgconfig': options.pkgconfig,
         'inline': options.inline,
