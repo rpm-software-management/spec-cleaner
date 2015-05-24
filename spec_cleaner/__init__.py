@@ -76,8 +76,8 @@ def main():
 
     try:
         options = process_args(sys.argv[1:])
-    except RpmWrongArgs as e:
-        sys.stderr.write('ERROR: {0}\n'.format(e))
+    except RpmWrongArgs as exception:
+        sys.stderr.write('ERROR: {0}\n'.format(exception))
         return 1
 
     try:
@@ -89,8 +89,8 @@ def main():
                                  options.diff_prog,
                                  options.minimal)
         cleaner.run()
-    except RpmException as e:
-        sys.stderr.write('ERROR: {0}\n'.format(e))
+    except RpmException as exception:
+        sys.stderr.write('ERROR: {0}\n'.format(exception))
         return 1
 
     return 0
