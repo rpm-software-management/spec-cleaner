@@ -90,7 +90,7 @@ class RpmSpecCleaner(object):
         else:
             self.fout = sys.stdout
 
-    def _detect_preamble_section(self):
+    def _detect_preamble_section(self, line):
         # If we actually start matching global content again we need to
         # switch back to preamble, ie %define after %description/etc.
         # This is seriously ugly but can't think of cleaner way
@@ -157,7 +157,7 @@ class RpmSpecCleaner(object):
             if self._previous_line == '' and line == '':
                 return RpmPreamble
 
-        if self._detect_preamble_section:
+        if self._detect_preamble_section(line):
             return RpmPreamble
 
         # If we are in clean section and encounter whitespace
