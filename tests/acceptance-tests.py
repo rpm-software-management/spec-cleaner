@@ -80,7 +80,6 @@ class TestCompare(unittest.TestCase):
         """
         Generate list of tests we are going to use according to what is on hdd
         """
-
         test_files = list()
 
         for spec in os.listdir(self.fixtures_dir):
@@ -89,11 +88,11 @@ class TestCompare(unittest.TestCase):
 
         return test_files
 
-    def _run_individual_test(self, infile, outfile):
+    def _run_individual_test(self, options):
         """
         Run the cleaner as specified and store the output for further comparison.
         """
-        cleaner = RpmSpecCleaner(infile, outfile, True, False, False, 'vimdiff', False)
+        cleaner = RpmSpecCleaner(options)
         cleaner.run()
 
     @patch('spec_cleaner.rpmcopyright.datetime')
@@ -106,12 +105,30 @@ class TestCompare(unittest.TestCase):
             tmp_file = os.path.join(self.tmp_dir, test)
 
             # first try to generate cleaned content from messed up
-            self._run_individual_test(infile, tmp_file)
+            options = {
+                'specfile': infile,
+                'output': tmp_file,
+                'pkgconfig': True,
+                'inline': False,
+                'diff': False,
+                'diff_prog': 'vimdiff',
+                'minimal': False,
+            }
+            self._run_individual_test(options)
             with open(compare) as ref, open(tmp_file) as test:
                 self.assertStreamEqual(ref, test)
 
             # second run it again while ensuring it didn't change
-            self._run_individual_test(tmp_file, self.tmp_file_rerun.name)
+            options = {
+                'specfile': tmp_file,
+                'output': self.tmp_file_rerun.name,
+                'pkgconfig': True,
+                'inline': False,
+                'diff': False,
+                'diff_prog': 'vimdiff',
+                'minimal': False,
+            }
+            self._run_individual_test(options)
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
                 self.assertStreamEqual(ref, test)
 
@@ -125,14 +142,30 @@ class TestCompare(unittest.TestCase):
             tmp_file = os.path.join(self.tmp_dir, test)
 
             # first try to generate cleaned content from messed up
-            cleaner = RpmSpecCleaner(infile, tmp_file, True, False, False, 'vimdiff', True)
-            cleaner.run()
+            options = {
+                'specfile': infile,
+                'output': tmp_file,
+                'pkgconfig': True,
+                'inline': False,
+                'diff': False,
+                'diff_prog': 'vimdiff',
+                'minimal': True,
+            }
+            self._run_individual_test(options)
             with open(compare) as ref, open(tmp_file) as test:
                 self.assertStreamEqual(ref, test)
 
             # second run it again while ensuring it didn't change
-            cleaner = RpmSpecCleaner(infile, self.tmp_file_rerun.name, True, False, False, 'vimdiff', True)
-            cleaner.run()
+            options = {
+                'specfile': tmp_file,
+                'output': self.tmp_file_rerun.name,
+                'pkgconfig': True,
+                'inline': False,
+                'diff': False,
+                'diff_prog': 'vimdiff',
+                'minimal': True,
+            }
+            self._run_individual_test(options)
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
                 self.assertStreamEqual(ref, test)
 
@@ -147,9 +180,16 @@ class TestCompare(unittest.TestCase):
         tmp_file = os.path.join(self.tmp_dir, test)
         shutil.copyfile(infile, tmp_file)
 
-        cleaner = RpmSpecCleaner(tmp_file, '', True, True, False, 'vimdiff', False)
-        cleaner.run()
-
+        options = {
+            'specfile': tmp_file,
+            'output': '',
+            'pkgconfig': True,
+            'inline': True,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': False,
+        }
+        self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
@@ -160,8 +200,16 @@ class TestCompare(unittest.TestCase):
 
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
-        cleaner = RpmSpecCleaner(infile, '', True, False, False, 'gvimdiff', False)
-        cleaner.run()
+        options = {
+            'specfile': infile,
+            'output': '',
+            'pkgconfig': True,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'gvimdiff',
+            'minimal': False,
+        }
+        self._run_individual_test(options)
 
     @patch('spec_cleaner.rpmcopyright.datetime')
     @patch('subprocess.call')
@@ -172,5 +220,13 @@ class TestCompare(unittest.TestCase):
 
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
-        cleaner = RpmSpecCleaner(infile, '', True, False, True, 'gvimdiff', False)
-        cleaner.run()
+        options = {
+            'specfile': infile,
+            'output': '',
+            'pkgconfig': True,
+            'inline': False,
+            'diff': True,
+            'diff_prog': 'gvimdiff',
+            'minimal': False,
+        }
+        self._run_individual_test(options)

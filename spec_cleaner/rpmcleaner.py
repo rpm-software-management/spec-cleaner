@@ -43,18 +43,18 @@ class RpmSpecCleaner(object):
     _previous_line = None
     _previous_nonempty_line = None
 
-    def __init__(self, specfile, output, pkgconfig, inline, diff, diff_prog, minimal):
-        self.specfile = specfile
-        self.output = output
-        self.pkgconfig = pkgconfig
-        self.inline = inline
-        self.diff = diff
-        self.diff_prog = diff_prog
-        self.minimal = minimal
+    def __init__(self, options):
+        self.specfile = options['specfile']
+        self.output = options['output']
+        self.pkgconfig = options['pkgconfig']
+        self.inline = options['inline']
+        self.diff = options['diff']
+        self.diff_prog = options['diff_prog']
+        self.minimal = options['minimal']
         # run gvim(diff) in foreground mode
         if self.diff_prog.startswith("gvim") and " -f" not in self.diff_prog:
             self.diff_prog += " -f"
-        self.reg = RegexpSingle(specfile)
+        self.reg = RegexpSingle(self.specfile)
         self.fin = open(self.specfile)
 
         # Section starts detection

@@ -65,7 +65,18 @@ def process_args(argv):
         if not options.force and os.path.exists(options.output):
             raise RpmWrongArgs('{0} already exists.'.format(options.output))
 
-    return options
+    # convert options to dict
+    options_dict = {
+        'specfile': options.specfile,
+        'output': options.output,
+        'pkgconfig': options.pkgconfig,
+        'inline': options.inline,
+        'diff': options.diff,
+        'diff_prog': options.diff_prog,
+        'minimal': options.minimal,
+    }
+
+    return options_dict
 
 
 def main():
@@ -81,13 +92,7 @@ def main():
         return 1
 
     try:
-        cleaner = RpmSpecCleaner(options.spec,
-                                 options.output,
-                                 options.pkgconfig,
-                                 options.inline,
-                                 options.diff,
-                                 options.diff_prog,
-                                 options.minimal)
+        cleaner = RpmSpecCleaner(options)
         cleaner.run()
     except RpmException as exception:
         sys.stderr.write('ERROR: {0}\n'.format(exception))
