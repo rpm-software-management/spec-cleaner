@@ -14,6 +14,7 @@ from .rpmcleaner import RpmSpecCleaner
 
 __version__ = '0.7.0'
 
+
 def process_args(argv):
     """
     Process the parsed arguments and return the result
