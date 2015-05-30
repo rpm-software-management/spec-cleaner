@@ -130,7 +130,7 @@ class RegexpSingle(object):
     re_initdir = re.compile(r'/etc/init.d([/\s$])')
     re_sysconfdir = re.compile(r'/etc([/\s$])')
     re_localstatedir = re.compile(r'/var([/\s$])')
-    re_libdir = re.compile(r'%{_prefix}/%{_lib}([/\s$])')
+    re_libdir = re.compile(r'%{_prefix}/(%{_lib}|lib64)([/\s$])')
     # old typo in rpm macro
     re_initddir = re.compile(r'%{?_initrddir}?([/\s$])')
     re_rpmbuildroot = re.compile(r'(\${?RPM_BUILD_ROOT}?|"%{?buildroot}?")([/\s%]|$)')
