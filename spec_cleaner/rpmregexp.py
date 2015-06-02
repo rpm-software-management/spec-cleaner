@@ -77,7 +77,7 @@ class RegexpSingle(object):
     re_bcond_with = re.compile(r'^\s*%bcond_with(out)?\s*(.*)', re.IGNORECASE)
     re_requires_token = re.compile(r'(\s*([^<>=\s]+(\s*[<>=]+\s*[^<>=\s]+)?)\s*)')
     re_autoreqprov = re.compile(r'^\s*AutoReqProv:.*$', re.IGNORECASE)
-    re_debugpkg = re.compile(r'^%{?debug_package}?\s*$', re.IGNORECASE)
+    re_debugpkg = re.compile(r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE)
     # here we need to grab all submacros with rpm calls so just match almost
     # everything
     re_rpm_command = re.compile(r'%\(.*\)')
