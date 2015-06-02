@@ -163,7 +163,7 @@ class Section(object):
         line = self.reg.re_initdir.sub(r'%{_initddir}\1', line)
         line = self.reg.re_sysconfdir.sub(r'%{_sysconfdir}\1', line)
         line = self.reg.re_localstatedir.sub(r'%{_localstatedir}\1', line)
-        line = self.reg.re_libdir.sub(r'%{_libdir}\1', line)
+        line = self.reg.re_libdir.sub(r'%{_libdir}\2', line)
         line = self.reg.re_initddir.sub(r'%{_initddir}\1', line)
 
         return line
