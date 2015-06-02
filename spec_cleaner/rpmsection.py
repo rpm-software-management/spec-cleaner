@@ -119,7 +119,7 @@ class Section(object):
         previous = sp[0]
 
         while True:
-            sp[0] = self.reg.re_macro.sub(r'\1%{\3}\4', sp[0])
+            sp[0] = self.reg.re_macro.sub(r'\1%{\3}\5', sp[0])
             if sp[0] == previous:
                 break
             else:

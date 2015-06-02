@@ -2,7 +2,7 @@ __os_install_post
 aarch64
 add_maven_depmap
 arm
-attr
+attr(\s*\([^)]*\))?
 bcond_with[^\s]*
 build
 cmake
@@ -10,7 +10,7 @@ cmake_[^\s]*
 configure
 config
 create_exclude_filelist
-defattr
+defattr(\s*\([^)]*\))?
 define
 defined
 description
@@ -53,6 +53,7 @@ kde4_makeinstall
 kde_post_install
 kf5_makeinstall
 lang_package
+lang(\s*\([^)]*\))?
 make_jobs
 make_install
 make_jobs
