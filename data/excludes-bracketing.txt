@@ -95,6 +95,7 @@ triggerun
 udev_rules_update
 undefine
 verify[^\s]*
+verify(\s*\([^)]*\))?
 with
 without
 yast_(build|install)[^\s]*
