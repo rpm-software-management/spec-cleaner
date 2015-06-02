@@ -53,7 +53,7 @@ kde4_makeinstall
 kde_post_install
 kf5_makeinstall
 lang_package
-lang(\s*\([^)]*\))?
+lang(\s*\([^)]*\))
 make_jobs
 make_install
 make_jobs
