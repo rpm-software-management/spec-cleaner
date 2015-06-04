@@ -665,6 +665,6 @@ class RpmPackage(RpmPreamble):
         # package
         if len(self.lines) == 1 and (self.previous_line.startswith('%') and
                                      (self.previous_line.endswith(' lang') or self.previous_line.endswith('-lang'))) and not line.startswith('#'):
-            Section.add(self, '# FIXME: consider using %lang_package macro')
+            Section.add(self, '# FIXME: consider using %%lang_package macro')
 
         RpmPreamble.add(self, line)
