@@ -8,7 +8,7 @@ build
 cmake
 cmake_[^\s]*
 configure
-config
+config(\s*\([^)]*\))?
 create_exclude_filelist
 defattr(\s*\([^)]*\))?
 define
