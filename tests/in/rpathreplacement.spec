@@ -13,3 +13,4 @@
 /usr/share/info/name
 /usr/share/doc/packages/name
 /etc/init.d/name
+%_exec_prefix/bla

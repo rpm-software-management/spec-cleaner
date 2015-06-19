@@ -31,4 +31,5 @@
 %{_infodir}/name
 %{_docdir}/name
 %{_initddir}/name
+%{_prefix}/bla
 

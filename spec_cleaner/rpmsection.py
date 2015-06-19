@@ -151,6 +151,7 @@ class Section(object):
         Replace hardcoded stuff like /usr/share -> %{_datadir}
         """
 
+        line = self.reg.re_oldprefix.sub(r'%{_prefix}\1', line)
         line = self.reg.re_prefix.sub(r'%{_prefix}\1', line)
         line = self.reg.re_bindir.sub(r'%{_bindir}\1', line)
         line = self.reg.re_sbindir.sub(r'%{_sbindir}\1', line)

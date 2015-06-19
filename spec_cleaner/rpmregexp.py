@@ -117,6 +117,7 @@ class RegexpSingle(object):
     re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
 
     # cleaning path regexps
+    re_oldprefix = re.compile(r'%{?_exec_prefix}?([/\s$])')
     re_prefix = re.compile(r'(?<!\w)/usr(/|\s|$)')
     re_bindir = re.compile(r'%{_prefix}/bin([/\s$])')
     re_sbindir = re.compile(r'%{_prefix}/sbin([/\s$])')
@@ -130,7 +131,6 @@ class RegexpSingle(object):
     re_sysconfdir = re.compile(r'/etc([/\s$])')
     re_localstatedir = re.compile(r'/var([/\s$])')
     re_libdir = re.compile(r'%{_prefix}/(%{_lib}|lib64)([/\s$])')
-    # old typo in rpm macro
     re_initddir = re.compile(r'%{?_initrddir}?([/\s$])')
     re_rpmbuildroot = re.compile(r'(\${?RPM_BUILD_ROOT}?|"%{?buildroot}?")([/\s%]|$)')
 
