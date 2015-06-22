@@ -112,7 +112,7 @@ class RegexpSingle(object):
     re_comment = re.compile(r'^$|^\s*#')
 
     # macro detection
-    re_macro = re.compile(r'(^|([^%]))%(\w+(\s*\([^)]*\))?)(|(\W))')
+    re_macro = re.compile(r'(^|([^%]))%([1-9]\d*|[a-zA-Z_]\w*(\s*\([^)]*\))?)(|(\W))')
     # macro func detection
     re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
 
