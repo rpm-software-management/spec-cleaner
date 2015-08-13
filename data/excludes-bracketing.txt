@@ -51,6 +51,7 @@ jpackage_script
 ix86
 kde4_makeinstall
 kde_post_install
+kernel_module_package
 kf5_makeinstall
 lang_package
 lang(\s*\([^)]*\))
