@@ -1,43 +1,60 @@
-#!/usr/bin/env bash
+export LC_ALL=C
+curl -s 'https://docs.google.com/spreadsheets/d/14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs/export?format=tsv&id=14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs&gid=0' | grep -v "New format" \
+  | sed -e 's,\s*$,,' > licenses_changes.ntxt
 
-verify_fetch() {
-    if [[ -z ${1} ]]; then
-        echo "Specify the URL to verify"
-        exit 1
-    fi
-    local curl=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' "${1}")
-    if [[ ! ( ${curl} == 302 || ${curl} == 200 ) ]]; then
-        echo "Unable to download the data from \"${1}\""
-        exit 1
-    fi
-}
+: > licenses_changes.ptxt
+grep ^SUSE- licenses_changes.ntxt | cut -d'	' -f1 | while read l; do
+  echo "$l+	$l+" >> licenses_changes.ptxt ; 
+done
 
-DOCS="https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=0AqPp4y2wyQsbdGQ1V3pRRDg5NEpGVWpubzdRZ0tjUWc&single=true&gid=0&output=txt"
-SPDX="http://spdx.org/licenses/"
-TEMPDIR="$(mktemp -d)"
+for i in `w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *Y *License Text,,; s, *License Text,,; s,.* ,,;'`; do 
+	echo "$i	$i" >> licenses_changes.ntxt ; 
+	echo "$i+	$i+" >> licenses_changes.ptxt ;
+done
+IFS=:
+dups=$(tr '	' ':' < licenses_changes.ntxt | while read nl ol; do echo "$nl"; done | sed -e 's,^,B-,; s,B-SUSE-,A-,' | sort | uniq | sed -e 's,^.-,,' | sort | uniq -d)
+if test -n "$dups"; then 
+  echo "DUPS $dups"
+  exit 1
+fi
+dups=$(tr '	' ':' < licenses_changes.ntxt | while read nl ol; do echo "$ol"; done | sort | uniq -d)
+unset IFS
+if test -n "$dups"; then 
+  echo "DUPS $dups"
+  exit 1
+fi
 
-#echo "Working in \"${TEMPDIR}\""
-pushd "${TEMPDIR}" &> /dev/null
-    verify_fetch "${DOCS}"
-    # download
-    curl -s "${DOCS}" | grep -v "New format" > licenses_changes.txt
-    # for all licenses add variant with '+' at the end
-    sed -n '/New format/d;s@^\(SUSE-[^[:blank:]]*\)[[:blank:]].*@\1@p' licenses_changes.txt | while read l; do
-        echo -e "${l}+\t${l}+\n" >> licenses_changes.txt
-    done
+: > licenses_changes.raw
+(
+cat README.rst.in 
+echo ""
+echo "# [SPDX Licenses](http://spdx.org/licenses)"
+echo ""
+echo "License Tag | Description"
+echo "----------- | -----------"
+IFS=:
+w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *Y *License Text,,; s, *License Text,,; s,\s* \([^ ]*\)$,:\1,' | while read text license; do
+  echo "$license | $text"
+  echo "$license" >> licenses_changes.raw
+done
+unset IFS
 
-    verify_fetch "${SPDX}"
-    for i in `w3m -dump -cols 1000 "${SPDX}" | sed -ne '/License Text/{s, *Y *License Text,,; s, *License Text,,; s,.* ,,;p}'`; do
-        echo -e "${i}\t${i}\n" >> licenses_changes.txt
-        if [[ ${i:-1} != '+' ]] ; then
-            echo -e "${i}+\t${i}+\n" >> licenses_changes.txt
-        fi
-    done
-    (
-        LC_ALL=C
-        sort -o licenses_changes.txt -u licenses_changes.txt
-    )
-    grep -v '^$' licenses_changes.txt
-popd &> /dev/null
+echo ""
+echo "# SUSE Additions"
+echo ""
+echo "|License Tag|"
+echo "|-----------|"
 
-rm -rf ${TEMPDIR}
+IFS=:
+grep ^SUSE- licenses_changes.ntxt | cut -d'	' -f1 | sort -u | while read nl; do 
+  echo "|$nl|"
+done
+unset IFS
+
+rm licenses_changes.raw
+) > README.rst
+
+cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o licenses_changes.stxt
+( echo "First line" ; cat licenses_changes.stxt ) > data/licenses_changes.txt
+rm licenses_changes.ntxt licenses_changes.stxt licenses_changes.ptxt
+
