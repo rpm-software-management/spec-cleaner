@@ -26,7 +26,7 @@ fi
 
 : > licenses_changes.raw
 (
-cat README.rst.in 
+cat README.md.in 
 echo ""
 echo "# [SPDX Licenses](http://spdx.org/licenses)"
 echo ""
@@ -52,7 +52,7 @@ done
 unset IFS
 
 rm licenses_changes.raw
-) > README.rst
+) > README.md
 
 cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o licenses_changes.stxt
 ( echo "First line" ; cat licenses_changes.stxt ) > data/licenses_changes.txt
