@@ -467,6 +467,8 @@ class RpmPreamble(Section):
 
         files = FileUtils()
         files.open_datafile(LICENSES_CHANGES)
+        # Header starts with # first line so skip
+        next(files.f)
         for line in files.f:
             # strip newline
             line = line.rstrip('\n')
