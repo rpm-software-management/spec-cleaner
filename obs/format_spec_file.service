@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<service name="format_spec_file">
+  <summary>Format the spec files</summary>
+  <description>Cleanup the spec files formatting</description>
+  <parameter name="specfile">
+    <description>Just run on specified spec file instead all available</description>
+  </parameter>
+</service>
