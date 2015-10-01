@@ -76,4 +76,5 @@ make install DESTDIR=%{buildroot}
 make install DESTDIR=%{buildroot}
 %make_install
 %make_install
+make install %{?jobs:-j%{jobs}}
 

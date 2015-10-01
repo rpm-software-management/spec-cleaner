@@ -58,3 +58,4 @@ make install DESTDIR=${RPM_BUILD_ROOT}
 make install DESTDIR=$RPM_BUILD_ROOT
 %make_install
 %{make_install}
+%{__make} install %{?jobs:-j%{jobs}}

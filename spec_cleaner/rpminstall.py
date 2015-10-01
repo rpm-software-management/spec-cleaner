@@ -21,6 +21,7 @@ class RpmInstall(Section):
         if self.reg.re_clean.search(line):
             return
 
+        line = self.reg.re_jobs.sub(parallel_arg, line)
         # do not use install macros as we have trouble with it for now
         # we can convert it later on
         if self.reg.re_install.match(line):
