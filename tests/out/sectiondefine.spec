@@ -1,0 +1,47 @@
+#
+# spec file for package sectiondefine
+#
+# Copyright (c) 2013 SUSE LINUX GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#
+
+
+%build
+# This is for build debugging purposed
+export OIIOINC=`echo $PWD`
+%define pwd $OIIOINC
+%define oiioinclude %{pwd}/src/include
+echo %{pwd}
+export CFLAGS="%{optflags}"
+export CXXFLAGS="%{optflags}"
+mkdir -p build
+cd build
+# FIXME: you should use %%cmake macros
+cmake \
+%ifarch ppc ppc64
+    -DNOTHREADS=ON \
+%endif
+    -DCMAKE_INSTALL_PREFIX=%{_prefix} \
+    -DLIB_INSTALL_DIR=%{_libdir} \
+    -DPYLIB_INSTALL_DIR=%{python_sitearch} \
+    -DINSTALL_DOCS:BOOL=ON \
+    -DDOC_INSTALL_DIR=%{_docdir}/%{name} \
+    -DINSTALL_FONTS:BOOL=ON \
+    -DBUILDSTATIC:BOOL=OFF \
+    -DLINKSTATIC:BOOL=OFF \
+    -DUSE_EXTERNAL_PUGIXML:BOOL=ON \
+    -DUSE_FFMPEG:BOOL=OFF \
+    -DUSE_OPENSSL:BOOL=ON \
+    -DCMAKE_SKIP_RPATH:BOOL=ON \
+    ..
+
