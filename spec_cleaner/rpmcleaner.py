@@ -95,7 +95,7 @@ class RpmSpecCleaner(object):
         # WARN: Keep in sync with rpmregexps for rpmpreamble section
         if not isinstance(self.current_section, RpmPreamble) and \
            not isinstance(self.current_section, RpmPackage):
-            if self.reg.re_define.match(line) or self.reg.re_global.match(line) or \
+            if self.reg.re_global.match(line) or \
                self.reg.re_bcond_with.match(line) or \
                self.reg.re_requires.match(line) or self.reg.re_requires_phase.match(line) or \
                self.reg.re_buildrequires.match(line) or self.reg.re_prereq.match(line) or \
@@ -113,6 +113,12 @@ class RpmSpecCleaner(object):
                self.reg.re_packager.match(line) or self.reg.re_debugpkg.match(line) or \
                self.reg.re_requires_eq.match(line):
                 return True
+            # We can have local defined variables in phases
+            if not isinstance(self.current_section, RpmInstall) and \
+               not isinstance(self.current_section, RpmBuild) and \
+               not isinstance(self.current_section, RpmPrep):
+                if self.reg.re_define.match(line):
+                    return True
         return False
 
     def _detect_new_section(self, line):
