@@ -17,6 +17,8 @@
 
 
 %build
+export CFLAGS="%{optflags}"
+export CFLAGS="%{optflags} -blabla"
 make
 make PREFIX=/ \
      STATIC=""
