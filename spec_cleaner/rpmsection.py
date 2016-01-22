@@ -142,8 +142,9 @@ class Section(object):
         """
         Replace RPM_OPT_FLAGS for %{optflags}
         """
-        line = line.replace('${RPM_OPT_FLAGS}', '%{optflags}')
-        line = line.replace('$RPM_OPT_FLAGS', '%{optflags}')
+        # if the optflags is the only thing then also add quotes around it
+        line = self.reg.re_optflags_quotes.sub('="%{optflags}"', line)
+        line = self.reg.re_optflags.sub('%{optflags}', line)
         return line
 
     def replace_known_dirs(self, line):
