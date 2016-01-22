@@ -1,1 +1,54 @@
-clean_spec_file
+#!/usr/bin/env sh
+# this is just a wrapper calling spec-cleaner binary
+
+MYOUTDIR=/tmp
+MYSPECFILES=
+RETVAL=0
+
+while test ${#} -gt 0; do
+    case ${1} in
+        *-outdir)
+            MYOUTDIR="${2}"
+            shift
+        ;;
+        *-specfile)
+            MYSPECFILES="$MYSPECFILES ${2}"
+            shift
+        ;;
+        *)
+            echo Unknown parameter $1.
+            echo 'Usage: this service does not expect additional arguments.'
+            exit 1
+        ;;
+    esac
+    shift
+done
+
+if [ -z "${MYOUTDIR}" ]; then
+    # we want to format both specs and the templates that create them
+    MYSPECFILES="$(ls -1 *.spec 2>/dev/null) $(ls -1 *.spec.in 2>/dev/null)"
+fi
+
+if [ -z "${MYSPECFILES}" ]; then
+    # we want to format both specs and the templates that create them
+    MYSPECFILES="$(ls -1 *.spec 2>/dev/null) $(ls -1 *.spec.in 2>/dev/null)"
+fi
+
+if [ "x${MYSPECFILES}" = "x " ]; then
+    echo "WARNING: no spec files found in the directory \"$(pwd)\"."
+    exit 0
+fi
+
+for i in ${MYSPECFILES}; do
+    if [ ! -w "${i}" ]; then
+        echo "WARNING: spec file \"${i}\" is not writeable."
+        continue
+    fi
+    /usr/bin/spec-cleaner -m -f "$i" -i 2>&1 > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ERROR: failed conversion of spec file: \"${i}\""
+        RETVAL=1
+    fi
+done
+
+exit ${RETVAL}
