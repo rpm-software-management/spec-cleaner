@@ -3,5 +3,6 @@ dist/
 .eggs/
 *.egg-info/
 *.pyc
+.*.swp
 .coverage
 .coveralls.yml
