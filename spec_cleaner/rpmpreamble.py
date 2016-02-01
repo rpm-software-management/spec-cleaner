@@ -328,7 +328,12 @@ class RpmPreamble(Section):
 
     def _fix_license(self, value):
         # split using 'or', 'and' and parenthesis, ignore empty strings
-        licenses = [a for a in re.split(r'(\(|\)| and | or )', value) if a != '']
+        licenses = []
+        for a in re.split(r'(\(|\)| and | or (?!later))', value):
+            if a != '':
+                licenses.append(a)
+        if not licenses:
+            licenses.append(value)
 
         for (index, my_license) in enumerate(licenses):
             my_license = self.strip_useless_spaces(my_license)
