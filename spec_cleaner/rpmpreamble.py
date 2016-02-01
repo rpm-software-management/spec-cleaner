@@ -327,6 +327,7 @@ class RpmPreamble(Section):
         return lines
 
     def _fix_license(self, value):
+        value = value.replace(' or later', '+')
         # split using 'or', 'and' and parenthesis, ignore empty strings
         licenses = []
         for a in re.split(r'(\(|\)| and | or (?!later))', value):
