@@ -17,10 +17,11 @@ class Section(object):
     unificate all the content.
     """
 
-    def __init__(self, specfile):
+    def __init__(self, specfile, minimal):
         self.lines = []
         self.previous_line = None
         self.spec = specfile
+        self.minimal = minimal
         self.reg = RegexpSingle(specfile)
         # Are we inside of conditional or not
         self.condition = False

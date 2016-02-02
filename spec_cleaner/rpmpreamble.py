@@ -114,8 +114,8 @@ class RpmPreamble(Section):
         'patch',
     ]
 
-    def __init__(self, specfile, pkgconfig):
-        Section.__init__(self, specfile)
+    def __init__(self, specfile, minimal, pkgconfig):
+        Section.__init__(self, specfile, minimal)
         # Old storage
         self._oldstore = []
         # Is the parsed variable multiline (ending with \)
