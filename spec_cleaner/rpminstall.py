@@ -11,7 +11,8 @@ class RpmInstall(Section):
     '''
 
     def add(self, line):
-        install_command = 'make DESTDIR=%{buildroot} install'
+        make_command = 'make'
+        install_command = ' DESTDIR=%{buildroot} install'
         parallel_arg = ' %{?_smp_mflags}'
 
         line = self._complete_cleanup(line)
@@ -22,17 +23,16 @@ class RpmInstall(Section):
             return
 
         line = self.reg.re_jobs.sub(parallel_arg, line)
+        # check if we want multiple threads or not
+        if line.find('-j1') != -1:
+            parallel_arg = ' -j1'
         # do not use install macros as we have trouble with it for now
         # we can convert it later on
         if self.reg.re_install.match(line):
-            # in case there is -j1 we need to ensure we are single threaded
-            if line.find('-j1') != -1:
-                line = install_command + ' -j1'
-            else:
-                line = install_command + parallel_arg
+            line = make_command + parallel_arg + install_command
 
         # we can deal with additional params for %makeinstall so replace that
-        line = line.replace('%{makeinstall}', install_command + parallel_arg)
+        line = line.replace('%{makeinstall}', make_command + parallel_arg + install_command)
 
         Section.add(self, line)
 
