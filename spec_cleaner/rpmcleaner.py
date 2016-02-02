@@ -177,7 +177,7 @@ class RpmSpecCleaner(object):
 
     def run(self):
         # We always start with Copyright
-        self.current_section = RpmCopyright(self.specfile)
+        self.current_section = RpmCopyright(self.specfile, self.minimal)
 
         # FIXME: we need to store the content localy and then reorder
         #        to maintain the specs all the same (eg somebody put
