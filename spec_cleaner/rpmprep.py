@@ -12,8 +12,9 @@ class RpmPrep(Section):
 
     def add(self, line):
         line = self._complete_cleanup(line)
-        line = self._cleanup_setup(line)
-        line = self._prepare_patch(line)
+        if not self.minimal:
+            line = self._cleanup_setup(line)
+            line = self._prepare_patch(line)
         Section.add(self, line)
 
     def _cleanup_setup(self, line):

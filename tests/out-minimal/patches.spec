@@ -33,10 +33,10 @@ Patch99:        f
 %patch99 -p1
 %patch0 -p1
 %patch1
-%patch0 -p1
-%patch10
-%patch11 -p1
-%patch12
-%patch11 -p3
+%patch -p1
+%patch -P 10
+%patch -p1  -P 	11
+%patch  -P12 	-p0
+%patch -P11 -p3
 %patch -P20 -P30
 
