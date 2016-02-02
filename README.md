@@ -56,6 +56,7 @@ BSD-3-Clause-Clear | BSD 3-clause Clear License
 BSD-4-Clause | BSD 4-clause "Original" or "Old" License
 BSD-Protection | BSD Protection License
 BSD-3-Clause-Attribution | BSD with attribution
+0BSD | BSD Zero Clause License
 BSD-4-Clause-UC | BSD-4-Clause (University of California-Specific)
 bzip2-1.0.5 | bzip2 and libbzip2 License v1.0.5
 bzip2-1.0.6 | bzip2 and libbzip2 License v1.0.6
@@ -63,6 +64,7 @@ Caldera | Caldera License
 CECILL-1.0 | CeCILL Free Software License Agreement v1.0
 CECILL-1.1 | CeCILL Free Software License Agreement v1.1
 CECILL-2.0 | CeCILL Free Software License Agreement v2.0
+CECILL-2.1 | CeCILL Free Software License Agreement v2.1
 CECILL-B | CeCILL-B Free Software License Agreement
 CECILL-C | CeCILL-C Free Software License Agreement
 ClArtistic | Clarified Artistic License
@@ -109,8 +111,10 @@ CC-BY-SA-3.0 | Creative Commons Attribution Share Alike 3.0
 CC-BY-SA-4.0 | Creative Commons Attribution Share Alike 4.0
 CC0-1.0 | Creative Commons Zero v1.0 Universal
 Crossword | Crossword License
+CrystalStacker | CrystalStacker License
 CUA-OPL-1.0 | CUA Office Public License v1.0
 Cube | Cube License
+curl | curl License
 D-FSL-1.0 | Deutsche Freie Software Lizenz
 diffmark | diffmark license
 WTFPL | Do What The F*ck You Want To Public License
@@ -163,16 +167,18 @@ ImageMagick | ImageMagick License
 iMatix | iMatix Standard Function Library Agreement
 Imlib2 | Imlib2 License
 IJG | Independent JPEG Group License
+Info-ZIP | Info-ZIP License
 Intel-ACPI | Intel ACPI Software License Agreement
 Intel | Intel Open Source License
+Interbase-1.0 | Interbase Public License v1.0
 IPA | IPA Font License
 ISC | ISC License
 JasPer-2.0 | JasPer License
 JSON | JSON License
-LPPL-1.3a | LaTeX Project Public License 1.3a
 LPPL-1.0 | LaTeX Project Public License v1.0
 LPPL-1.1 | LaTeX Project Public License v1.1
 LPPL-1.2 | LaTeX Project Public License v1.2
+LPPL-1.3a | LaTeX Project Public License v1.3a
 LPPL-1.3c | LaTeX Project Public License v1.3c
 Latex2e | Latex2e License
 BSD-3-Clause-LBNL | Lawrence Berkeley National Labs BSD variant license
@@ -216,6 +222,7 @@ Nunit | Nunit License
 OCLC-2.0 | OCLC Research Public License 2.0
 ODbL-1.0 | ODC Open Database License v1.0
 PDDL-1.0 | ODC Public Domain Dedication & License 1.0
+OCCT-PL | Open CASCADE Technology Public License
 OGTSL | Open Group Test Suite License
 OLDAP-2.2.2 | Open LDAP Public License 2.2.2
 OLDAP-1.1 | Open LDAP Public License v1.1
@@ -262,6 +269,7 @@ SAX-PD | Sax Public Domain Notice
 Saxpath | Saxpath License
 SCEA | SCEA Shared Source License
 SWL | Scheme Widget Library (SWL) Software License Agreement
+Sendmail | Sendmail License
 SGI-B-1.0 | SGI Free Software License B v1.0
 SGI-B-1.1 | SGI Free Software License B v1.1
 SGI-B-2.0 | SGI Free Software License B v2.0
@@ -352,6 +360,7 @@ ZPL-2.1 | Zope Public License 2.1
 |SUSE-GPL-3.0-with-template-exception|
 |SUSE-Gitslave|
 |SUSE-Gnuplot|
+|SUSE-Hack-Open-Font-2.0|
 |SUSE-IBPL-1.0|
 |SUSE-IDPL-1.0|
 |SUSE-IEEE|
@@ -385,7 +394,6 @@ ZPL-2.1 | Zope Public License 2.1
 |SUSE-SNIA-1.0|
 |SUSE-SNIA-1.1|
 |SUSE-Scrot|
-|SUSE-Sendmail|
 |SUSE-Sun-Laboratories|
 |SUSE-TGPPL-1.0|
 |SUSE-TeX|

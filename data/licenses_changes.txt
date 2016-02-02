@@ -1,4 +1,6 @@
 First line
+0BSD	0BSD
+0BSD+	0BSD+
 AAL	AAL
 AAL+	AAL+
 ADSL	ADSL
@@ -229,6 +231,8 @@ CECILL-1.1	CECILL-1.1
 CECILL-1.1+	CECILL-1.1+
 CECILL-2.0	CECILL-2.0
 CECILL-2.0+	CECILL-2.0+
+CECILL-2.1	CECILL-2.1
+CECILL-2.1+	CECILL-2.1+
 CECILL-B	CECILL-B
 CECILL-B+	CECILL-B+
 CECILL-C	CECILL-C
@@ -263,6 +267,8 @@ Condor-1.1	Condor-1.1
 Condor-1.1+	Condor-1.1+
 Crossword	Crossword
 Crossword+	Crossword+
+CrystalStacker	CrystalStacker
+CrystalStacker+	CrystalStacker+
 Cube	Cube
 Cube+	Cube+
 D-FSL-1.0	D-FSL-1.0
@@ -416,10 +422,14 @@ ImageMagick	ImageMagick
 ImageMagick+	ImageMagick+
 Imlib2	Imlib2
 Imlib2+	Imlib2+
+Info-ZIP	Info-ZIP
+Info-ZIP+	Info-ZIP+
 Intel	Intel
 Intel+	Intel+
 Intel-ACPI	Intel-ACPI
 Intel-ACPI+	Intel-ACPI+
+Interbase-1.0	Interbase-1.0
+Interbase-1.0+	Interbase-1.0+
 JSON	JSON
 JSON	SUSE-JSON
 JSON+	JSON+
@@ -570,6 +580,8 @@ Noweb	Noweb
 Noweb+	Noweb+
 Nunit	Nunit
 Nunit+	Nunit+
+OCCT-PL	OCCT-PL
+OCCT-PL+	OCCT-PL+
 OCLC-2.0	OCLC-2.0
 OCLC-2.0+	OCLC-2.0+
 ODbL-1.0	ODbL-1.0
@@ -776,6 +788,8 @@ SUSE-Gitslave	Similar to LGPL-2.1 but without sections 3 and 13
 SUSE-Gitslave+	SUSE-Gitslave+
 SUSE-Gnuplot	Gnuplot
 SUSE-Gnuplot+	SUSE-Gnuplot+
+SUSE-Hack-Open-Font-2.0	https://github.com/chrissimpkins/Hack/blob/master/LICENSE.md
+SUSE-Hack-Open-Font-2.0+	SUSE-Hack-Open-Font-2.0+
 SUSE-IBPL-1.0	http://www.firebirdsql.org/en/interbase-public-license/
 SUSE-IBPL-1.0+	SUSE-IBPL-1.0+
 SUSE-IDPL-1.0	http://www.firebirdsql.org/en/initial-developer-s-public-license-version-1-0/
@@ -846,8 +860,6 @@ SUSE-SNIA-1.1	SNIA 1.1
 SUSE-SNIA-1.1+	SUSE-SNIA-1.1+
 SUSE-Scrot	Scrot license (advertising clause)
 SUSE-Scrot+	SUSE-Scrot+
-SUSE-Sendmail	Sendmail License (http://www.sendmail.org/ftp/LICENSE)
-SUSE-Sendmail+	SUSE-Sendmail+
 SUSE-Sun-Laboratories	http://pastebin.com/UubnS3se
 SUSE-Sun-Laboratories+	SUSE-Sun-Laboratories+
 SUSE-TGPPL-1.0	https://zooko.com/uri/URI:DIR2-RO:d23ekhh2b4xashf53ycrfoynkq:y4vpazbrt2beddyhgwcch4sduhnmmefdotlyelojxg4tyzllhb4a/tgppl.html
@@ -874,6 +886,9 @@ SWL	SWL
 SWL+	SWL+
 Saxpath	Saxpath
 Saxpath+	Saxpath+
+Sendmail	SUSE-Sendmail
+Sendmail	Sendmail
+Sendmail+	Sendmail+
 SimPL-2.0	SimPL-2.0
 SimPL-2.0+	SimPL-2.0+
 Sleepycat	Sleepycat
@@ -968,6 +983,8 @@ bzip2-1.0.5	bzip2-1.0.5
 bzip2-1.0.5+	bzip2-1.0.5+
 bzip2-1.0.6	bzip2-1.0.6
 bzip2-1.0.6+	bzip2-1.0.6+
+curl	curl
+curl+	curl+
 diffmark	diffmark
 diffmark+	diffmark+
 dvipdfm	dvipdfm
