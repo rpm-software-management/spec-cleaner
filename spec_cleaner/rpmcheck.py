@@ -19,7 +19,7 @@ class RpmCheck(Section):
 
         # add jobs if we have just make call on line
         # if user want single thread he should specify -j1
-        if line.startswith('make'):
+        if not self.minimal and line.startswith('make'):
             # if there are no smp_flags or jobs spec
             if line.find('%{?_smp_mflags}') == -1 and line.find('-j') == -1:
                 # Don't append %_smp_mflags if the line ends with a backslash,
