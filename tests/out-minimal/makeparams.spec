@@ -49,32 +49,32 @@ make && mv mtr xmtr
 make %{?_smp_mflags} VERBOSE=1
 
 %install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install install-etc
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
+%makeinstall install-etc
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make DESTDIR=%{buildroot} install
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
+make install DESTDIR=%{buildroot}
 %make_install
 %make_install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
+make install  %{?_smp_mflags}
 

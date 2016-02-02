@@ -11,18 +11,25 @@ class RpmInstall(Section):
     '''
 
     def add(self, line):
+        line = self._complete_cleanup(line)
+        # we do not want to cleanup buildroot, it is already clean
+        if self.reg.re_clean.search(line):
+            return
+        line = self.reg.re_jobs.sub(' %{?_smp_mflags}', line)
+        if not self.minimal:
+            line = self._replace_remove_la(line)
+            line = self._replace_install_command(line)
+
+        Section.add(self, line)
+
+    def _replace_install_command(self, line):
+        """
+        Replace various install commands with one unified mutation
+        """
         make_command = 'make'
         install_command = ' DESTDIR=%{buildroot} install'
         parallel_arg = ' %{?_smp_mflags}'
 
-        line = self._complete_cleanup(line)
-        line = self._replace_remove_la(line)
-
-        # we do not want to cleanup buildroot, it is already clean
-        if self.reg.re_clean.search(line):
-            return
-
-        line = self.reg.re_jobs.sub(parallel_arg, line)
         # check if we want multiple threads or not
         if line.find('-j1') != -1:
             parallel_arg = ' -j1'
@@ -32,9 +39,9 @@ class RpmInstall(Section):
             line = make_command + parallel_arg + install_command
 
         # we can deal with additional params for %makeinstall so replace that
-        line = line.replace('%{makeinstall}', make_command + parallel_arg + install_command)
+        line = line.replace('%makeinstall', make_command + parallel_arg + install_command)
 
-        Section.add(self, line)
+        return line
 
     def _replace_remove_la(self, line):
         """
