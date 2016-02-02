@@ -16,7 +16,7 @@
 #
 
 
-BuildRequires: something
+BuildRequires:  something
 
 %build
  bash ../configure \

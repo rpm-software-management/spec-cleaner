@@ -17,6 +17,7 @@
 
 
 %build
+# FIXME: you should use %%cmake macros
 cmake . \
 	-DIHATECMAKE=OFF
 

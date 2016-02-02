@@ -16,9 +16,11 @@
 #
 
 
+# FIXME: use proper Requires(pre/post/preun/...)
+PreReq:         deprecatedrequires
+Requires(post): asomething
+Requires(post): bsomething
 Requires(post): something
-Requires(pre): test1
-Requires(post): asomething bsomething
-PreReq: deprecatedrequires
 Requires(postun): somethingcrazy
+Requires(pre):  test1
 

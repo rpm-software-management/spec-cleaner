@@ -17,31 +17,29 @@
 #
 
 
-BuildRequires:  gcc-c++
-BuildRequires:  fftw3-devel
-BuildRequires:  Mesa
-BuildRequires:  libircclient-devel
-BuildRequires:  liblo-devel
-BuildRequires:  libjack-devel
-BuildRequires:  tcl-devel >= 8.5
-BuildRequires:  libSDL-devel
-BuildRequires:  autoconf
-BuildRequires:  update-desktop-files
-
-Summary:        .spec file cleaner
-Summary(de):    Ein Synthesizer der dritten Art
 Name:           din
 Version:        5.2.1
-Release:        0.1
+Release:        0
+Summary:        .spec file cleaner
+Summary(de):    Ein Synthesizer der dritten Art
+License:        GPL-2.0+
+Group:          Productivity/Multimedia/Sound/Midi
+Url:            http://www.dinisnoise.org/
 Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.png
-Group:          Productivity/Multimedia/Sound/Midi
-License:        GPL-2.0+
-URL:            http://www.dinisnoise.org/
-Vendor:         %{vendor}
-
-Requires:       fftw3
+BuildRequires:  Mesa
+BuildRequires:  autoconf
+BuildRequires:  gcc-c++
+BuildRequires:  libircclient-devel
+BuildRequires:  update-desktop-files
+BuildRequires:  pkgconfig(fftw3)
+BuildRequires:  pkgconfig(fftw3f)
+BuildRequires:  pkgconfig(jack)
+BuildRequires:  pkgconfig(liblo)
+BuildRequires:  pkgconfig(sdl)
+BuildRequires:  pkgconfig(tcl) >= 8.5
 Requires:       Mesa
+Requires:       fftw3
 Requires:       jack
 Requires:       tcl >= 8.5
 

@@ -16,6 +16,11 @@
 #
 
 
-BuildRequires: pkg1 pkg3 pkg2 aaa_base
-Requires:       zypper, yast, gtk2
+BuildRequires:  aaa_base
+BuildRequires:  pkg1
+BuildRequires:  pkg2
+BuildRequires:  pkg3
+Requires:       gtk2
+Requires:       yast
+Requires:       zypper
 

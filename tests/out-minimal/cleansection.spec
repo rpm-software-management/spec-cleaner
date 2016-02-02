@@ -19,11 +19,9 @@
 %install
 install bla
 
-%{clean}
-rm bla
-
 %ifarch x86
 %files -n something
+%defattr(-,root,root)
 /bin/bla
 %endif
 

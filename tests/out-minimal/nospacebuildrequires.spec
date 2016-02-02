@@ -16,6 +16,7 @@
 #
 
 
-BuildRequires:  unzip,dos2unix
 BuildRequires:  automake
+BuildRequires:  dos2unix
+BuildRequires:  unzip
 

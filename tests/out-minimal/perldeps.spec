@@ -16,5 +16,5 @@
 #
 
 
-Requires: perl(DBD::SQLite)
+Requires:       perl(DBD::SQLite)
 

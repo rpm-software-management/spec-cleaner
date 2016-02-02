@@ -17,6 +17,7 @@
 
 
 %files
+%defattr(-,root,root)
 %doc %lang(en) %{_prefix}/bla
 %dir %attr(0710,root,lp) %{_var}/spool/cups
 %dir %attr(1770,root,lp) %{_var}/spool/cups/tmp

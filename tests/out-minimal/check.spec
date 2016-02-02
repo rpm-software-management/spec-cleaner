@@ -17,7 +17,7 @@
 
 
 %check
-make V=1 check RUNTEST=true
+make %{?_smp_mflags} V=1 check RUNTEST=true
 make -j1 check
-make test V=1
+make %{?_smp_mflags} test V=1
 
