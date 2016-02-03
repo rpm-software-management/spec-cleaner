@@ -37,7 +37,6 @@ Requires:       php5 >= %{phpversion}
 Requires:       rrr >= %{version}
 Requires:       zzz
 Requires:       pkgconfig(glib-2.0)
-# FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         aaa
 PreReq:         aaa < 3.2.1
 PreReq:         eee = %{version}-%{release}
