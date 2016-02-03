@@ -17,12 +17,10 @@
 
 
 %package -n something-lang
-# FIXME: consider using %%lang_package macro
 Summary:        Something
 Group:          Whatever
 
 %package lang
-# FIXME: consider using %%lang_package macro
 Summary:        Something
 Group:          Whatever
 
