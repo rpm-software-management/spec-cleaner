@@ -30,7 +30,6 @@ BuildRequires:  pkgconfig(pkg-config)
 Requires:       insserv
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 %if %{distro} == "suse"
-# FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         %insserv_prereq
 PreReq:         aaa_base
 %endif
