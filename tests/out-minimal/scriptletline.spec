@@ -1,5 +1,5 @@
 #
-# spec file for package scriplets
+# spec file for package scriptletline
 #
 # Copyright (c) 2013 SUSE LINUX GmbH, Nuernberg, Germany.
 #
@@ -16,11 +16,9 @@
 #
 
 
-%post -n %{libname} -p /sbin/ldconfig
 %post -p /sbin/ldconfig
-%post
-/sbin/ldconfig
-someothercommand
+%postun -p /sbin/ldconfig
 
-%post -n %{_libname} -p /sbin/ldconfig
+%files
+%{_bindir}/a
 

@@ -197,7 +197,7 @@ class RpmSpecCleaner(object):
                     newline = False
                 else:
                     newline = True
-                self.current_section.output(self.fout, newline)
+                self.current_section.output(self.fout, newline, new_class.__name__)
                 # we need to sent pkgconfig option to preamble and package
                 if new_class == RpmPreamble or new_class == RpmPackage:
                     self.current_section = new_class(self.specfile, self.minimal, self.pkgconfig)

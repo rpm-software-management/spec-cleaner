@@ -75,7 +75,7 @@ class Section(object):
         self.lines.append(line)
         self.previous_line = line
 
-    def output(self, fout, newline=True):
+    def output(self, fout, newline=True, new_class=None):
         # Always append one empty line at the end if it is not present
         # and changelog is trailing part of our spec so do not put nothing
         # bellow
@@ -84,7 +84,13 @@ class Section(object):
         if newline and len(self.lines) >= 1:
             if self.lines[-1] != '' and \
                self.lines[-1] != '%changelog' and not \
-               self.lines[-1].startswith('%if'):
+               self.lines[-1].startswith('%if') and not \
+               self.lines[-1].startswith('%pre') and not \
+               self.lines[-1].startswith('%post'):
+                self.lines.append('')
+            if new_class != 'RpmScriptlets' and \
+               (self.lines[-1].startswith('%pre') or \
+               self.lines[-1].startswith('%post')):
                 self.lines.append('')
             # remove the newlines around ifs if they are not wanted
             if len(self.lines) >= 2:
