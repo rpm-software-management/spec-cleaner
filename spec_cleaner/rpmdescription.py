@@ -10,8 +10,8 @@ class RpmDescription(Section):
     Remove Authors from description.
     """
 
-    def __init__(self, specfile):
-        Section.__init__(self, specfile)
+    def __init__(self, specfile, minimal):
+        Section.__init__(self, specfile, minimal)
         self.removing_authors = False
         # Tracks the use of a macro. When this happens and we're still in a
         # description, we actually don't know where we are so we just put all
@@ -29,7 +29,7 @@ class RpmDescription(Section):
             if not self.previous_line or len(self.previous_line) == 0:
                 return
 
-        if line == 'Authors:':
+        if line == 'Authors:' and not self.minimal:
             self.removing_authors = True
             return
 

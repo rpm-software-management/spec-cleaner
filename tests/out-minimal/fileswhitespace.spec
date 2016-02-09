@@ -19,7 +19,6 @@
 %files
 %{_bindir}/test
 
-
 # some comment
 /opt/data/something
 

@@ -16,21 +16,21 @@
 #
 
 
-Source15: anothersource.tar.xz
+# this is crazy define
+%define root %{version}
+%global test somethingelse
 %if 0%{?suse_version} > 1230
 %bcond_without systemd
 %else
 %bcond_with    systemd
 %endif
-source: testfile.tar.bz2
-# This patch is improperly described but we are okay with it
-Patch10: test2
 %bcond_with self_hosting
-Source2: testfile2.tar.bz2
-Patch: test
-# this is crazy define
-%define root %{version}
-%global test somethingelse
+Source:         testfile.tar.bz2
+Source2:        testfile2.tar.bz2
+Source15:       anothersource.tar.xz
+Patch0:         test
+# This patch is improperly described but we are okay with it
+Patch10:        test2
 
 %prep
 %setup -qn %{name}-%{version}

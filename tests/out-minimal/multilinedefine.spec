@@ -16,7 +16,6 @@
 #
 
 
-Name: multilinedefine
 %define postInstall() \
 . %{_sysconfdir}/selinux/config; \
 if [ -e %{_sysconfdir}/selinux/%{2}/.rebuild ]; then \
@@ -46,4 +45,5 @@ else \
    # run fixfiles on next boot \
    touch /.autorelabel \
 fi;
+Name:           multilinedefine
 

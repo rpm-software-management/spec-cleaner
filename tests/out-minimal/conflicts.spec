@@ -16,6 +16,7 @@
 #
 
 
-Conflicts: d
-Conflicts: z a
+Conflicts:      a
+Conflicts:      d
+Conflicts:      z
 

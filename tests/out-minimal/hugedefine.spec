@@ -72,7 +72,6 @@ Provides additional %{langname} translations and resources for %{project}. \
 %{-i:%{expand:%%_langpack_common %{-i*}}} \
 } \
 %{nil}
-
 %define _link_noarch_files() \
 %posttrans %{1} \
 rpm -ql %{name}-%{1} > %{_datadir}/libreoffice/%{1}_list.txt || true \

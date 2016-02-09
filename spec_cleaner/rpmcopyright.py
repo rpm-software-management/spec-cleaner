@@ -14,8 +14,8 @@ class RpmCopyright(Section):
     that are still relevant. Everything else is ignored.
     """
 
-    def __init__(self, specfile):
-        Section.__init__(self, specfile)
+    def __init__(self, specfile, minimal):
+        Section.__init__(self, specfile, minimal)
         self.copyrights = []
         self.buildrules = []
         self.my_copyright = ''
@@ -75,7 +75,7 @@ class RpmCopyright(Section):
             # anything not in our rules gets tossed out
             return
 
-    def output(self, fout, newline=True):
+    def output(self, fout, newline=True, new_class=None):
         self._add_pkg_header()
         self._add_copyright()
         self._add_default_license()
@@ -83,4 +83,4 @@ class RpmCopyright(Section):
         # trailing enters # prep_spec does two so do the same
         self.lines.append('')
         self.lines.append('')
-        Section.output(self, fout, newline)
+        Section.output(self, fout, newline, new_class)

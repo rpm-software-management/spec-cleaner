@@ -114,8 +114,8 @@ class RpmPreamble(Section):
         'patch',
     ]
 
-    def __init__(self, specfile, pkgconfig):
-        Section.__init__(self, specfile)
+    def __init__(self, specfile, minimal, pkgconfig):
+        Section.__init__(self, specfile, minimal)
         # Old storage
         self._oldstore = []
         # Is the parsed variable multiline (ending with \)
@@ -371,7 +371,7 @@ class RpmPreamble(Section):
             # we do fix the package list only if there is no rpm call there on line
             # otherwise print there warning about nicer content and skip
             if self.reg.re_rpm_command.search(value):
-                if not self.previous_line.startswith('#'):
+                if not self.previous_line.startswith('#') and not self.minimal:
                     self.current_group.append('# FIXME: Use %requires_eq macro instead')
                 return [value]
             # we also skip all various rpm-macroed content as it is usually not easy
@@ -578,10 +578,11 @@ class RpmPreamble(Section):
 
         elif self.reg.re_prereq.match(line):
             match = self.reg.re_prereq.match(line)
-            # add the comment about using proper macro which needs
-            # investingaton
-            if not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
-                self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
+            if not self.minimal:
+                # add the comment about using proper macro which needs
+                # investingaton
+                if not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
+                    self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
             self._add_line_value_to('prereq', match.group(1))
             return
 
@@ -650,10 +651,10 @@ class RpmPreamble(Section):
 
             self._add_line_to('misc', line)
 
-    def output(self, fout, newline=True):
+    def output(self, fout, newline=True, new_class=None):
         lines = self._end_paragraph()
         self.lines += lines
-        Section.output(self, fout, newline)
+        Section.output(self, fout, newline, new_class)
 
 
 class RpmPackage(RpmPreamble):
@@ -672,6 +673,7 @@ class RpmPackage(RpmPreamble):
         # package
         if len(self.lines) == 1 and (self.previous_line.startswith('%') and
                                      (self.previous_line.endswith(' lang') or self.previous_line.endswith('-lang'))) and not line.startswith('#'):
-            Section.add(self, '# FIXME: consider using %%lang_package macro')
+            if not self.minimal:
+                Section.add(self, '# FIXME: consider using %%lang_package macro')
 
         RpmPreamble.add(self, line)

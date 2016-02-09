@@ -177,7 +177,7 @@ class RpmSpecCleaner(object):
 
     def run(self):
         # We always start with Copyright
-        self.current_section = RpmCopyright(self.specfile)
+        self.current_section = RpmCopyright(self.specfile, self.minimal)
 
         # FIXME: we need to store the content localy and then reorder
         #        to maintain the specs all the same (eg somebody put
@@ -192,30 +192,20 @@ class RpmSpecCleaner(object):
             # USE: 'spec-cleaner file > /dev/null' to see the stderr output
             #sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
-                # If we are on minimal approach do not do anything else
-                # than trivial whitespacing
-                if self.minimal:
-                    new_class = Section
-                    self.current_section.output(self.fout, False)
-                    self.current_section = new_class(self.specfile)
-                    # skip empty line adding if we are switching sections
-                    if self._previous_line == '' and line == '':
-                        continue
+                # We don't want to print newlines before %else and %endif
+                if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):
+                    newline = False
                 else:
-                    # We don't want to print newlines before %else and %endif
-                    if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):
-                        newline = False
-                    else:
-                        newline = True
-                    self.current_section.output(self.fout, newline)
-                    # we need to sent pkgconfig option to preamble and package
-                    if new_class == RpmPreamble or new_class == RpmPackage:
-                        self.current_section = new_class(self.specfile, self.pkgconfig)
-                    else:
-                        self.current_section = new_class(self.specfile)
-                    # skip empty line adding if we are switching sections
-                    if self._previous_line == '' and line == '':
-                        continue
+                    newline = True
+                self.current_section.output(self.fout, newline, new_class.__name__)
+                # we need to sent pkgconfig option to preamble and package
+                if new_class == RpmPreamble or new_class == RpmPackage:
+                    self.current_section = new_class(self.specfile, self.minimal, self.pkgconfig)
+                else:
+                    self.current_section = new_class(self.specfile, self.minimal)
+                # skip empty line adding if we are switching sections
+                if self._previous_line == '' and line == '':
+                    continue
 
             # Do not store data from clean and skip out here
             if isinstance(self.current_section, RpmClean):

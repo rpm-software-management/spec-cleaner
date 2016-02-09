@@ -16,12 +16,12 @@
 #
 
 
-BuildRequires: pkg5
-Buildrequires: pkg4
+BuildRequires:  aaaa
 # this is comment
 # and another one
 # to see that all apply to the value bellow
-Buildrequires: pkg3
-BuildRequires: aaaa
+BuildRequires:  pkg3
+BuildRequires:  pkg4
+BuildRequires:  pkg5
 Requires:       zypper
 

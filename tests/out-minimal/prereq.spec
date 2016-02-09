@@ -16,9 +16,12 @@
 #
 
 
+PreReq:         deprecatedrequires
+PreReq:         uglyline1
+PreReq:         uglyline2
+Requires(post): asomething
+Requires(post): bsomething
 Requires(post): something
-Requires(pre): test1
-Requires(post): asomething bsomething
-PreReq: deprecatedrequires
 Requires(postun): somethingcrazy
+Requires(pre):  test1
 

@@ -9,14 +9,15 @@ class RpmScriptlets(Section):
         Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig
     '''
 
-    def output(self, fout, newline=True):
-        # if we have 2 or 3 lines where last one is empty
+    def output(self, fout, newline=True, new_class=None):
+        if not self.minimal:
+            self._collapse_multiline_ldconfig(newline)
+        Section.output(self, fout, newline, new_class)
+
+    def _collapse_multiline_ldconfig(self, newline):
         nolines = len(self.lines)
-        if nolines == 1:
-            newline=False
+        # if we have 2 or 3 lines where last one is empty
         if nolines == 2 or (nolines == 3 and self.lines[2] == ''):
-            newline=False
-            # if we have two lines and the 2nd is just whitespace, drop it
             if self.lines[0] != '' and self.lines[1] == '':
                 self.lines.pop()
             if len(self.lines) >= 2:
@@ -24,4 +25,3 @@ class RpmScriptlets(Section):
                     pkg = self.lines[0]
                     self.lines = []
                     self.lines.append('{0} -p /sbin/ldconfig'.format(pkg))
-        Section.output(self, fout, newline)

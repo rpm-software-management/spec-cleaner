@@ -16,20 +16,33 @@
 #
 
 
-BuildRequires: iii  <=     4.2.1 jjj>  %{version} eee=%{version}-%{release} bbb
-BuildRequires:      aaa<3.2.1 zzz
-BuildRequires:    rrr >= %{version} kkk
-
-Requires: iii  <=     4.2.1 jjj>  %{version} eee=%{version}-%{release} bbb
-Requires:      aaa<3.2.1 zzz     pkgconfig(glib-2.0) perl(DBD::SQLite)
-Requires:    rrr >= %{version} kkk
-
-PreReq: iii  <=     4.2.1 jjj>  %{version} eee=%{version}-%{release} aaa
-PreReq:      aaa<3.2.1 zzz
-PreReq:    rrr >= %{version} kkk
-
 BuildRequires:  %{rubygem fast_gettext}
 BuildRequires:  %{rubygem rails >= 3.2}
-
-Requires: php5 => %{phpversion}
+BuildRequires:  aaa < 3.2.1
+BuildRequires:  bbb
+BuildRequires:  eee = %{version}-%{release}
+BuildRequires:  iii <= 4.2.1
+BuildRequires:  jjj > %{version}
+BuildRequires:  kkk
+BuildRequires:  rrr >= %{version}
+BuildRequires:  zzz
+Requires:       aaa < 3.2.1
+Requires:       bbb
+Requires:       eee = %{version}-%{release}
+Requires:       iii <= 4.2.1
+Requires:       jjj > %{version}
+Requires:       kkk
+Requires:       perl(DBD::SQLite)
+Requires:       php5 >= %{phpversion}
+Requires:       rrr >= %{version}
+Requires:       zzz
+Requires:       pkgconfig(glib-2.0)
+PreReq:         aaa
+PreReq:         aaa < 3.2.1
+PreReq:         eee = %{version}-%{release}
+PreReq:         iii <= 4.2.1
+PreReq:         jjj > %{version}
+PreReq:         kkk
+PreReq:         rrr >= %{version}
+PreReq:         zzz
 

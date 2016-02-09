@@ -25,8 +25,6 @@ generation, and support for individually configurable virtual hosts. It
 also includes support for CvsGraph -- a program to graphically display
 the revision trees and branches.
 
-
-
 Authors:
 --------
     The ViewCVS Group:

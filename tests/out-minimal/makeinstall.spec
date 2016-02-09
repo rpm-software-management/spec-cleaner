@@ -17,8 +17,7 @@
 
 
 %install
-rm -rf %{buildroot}
-%{makeinstall}
+%makeinstall
 %make_install
 make install DESTDIR=%{buildroot}
 make install DESTDIR=%{buildroot} -j1

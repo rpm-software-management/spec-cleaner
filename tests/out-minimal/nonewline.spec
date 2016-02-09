@@ -16,6 +16,6 @@
 #
 
 
-Name: nonewline
+Name:           nonewline
 
 %changelog
