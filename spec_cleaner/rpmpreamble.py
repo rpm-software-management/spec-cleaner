@@ -583,9 +583,7 @@ class RpmPreamble(Section):
                 # investingaton
                 if not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
                     self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
-                self._add_line_value_to('prereq', match.group(1))
-            else:
-                self._add_line_value_to('prereq', match.group(1))
+            self._add_line_value_to('prereq', match.group(1))
             return
 
         elif self.reg.re_requires_phase.match(line):
