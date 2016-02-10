@@ -18,6 +18,7 @@ output for regular and minimal output. For that we have 3 folders:
 Since sometimes spec-cleaner produces large differences following commands will
 help you to achieve the easiest workflow:
 
+```bash
 $ vi tests/in/myfeaturebug.spec
 *hackyhacky*
 $ spec-cleaner tests/in/myfeaturebug.spec > tests/out/myfeaturebug.spec
@@ -28,5 +29,6 @@ $ spec-cleaner -m tests/in/myfeaturebug.spec > tests/out-minimal/myfeaturebug.sp
 $ vi tests/out-minimal/myfeaturebug.spec
 *change date from current year to 2013 as testsuite mock it*
 *change any problematic part to what it shoudl look like correctly*
+```
 
 That's it. Now just git add . ; commit and pull request :-)
