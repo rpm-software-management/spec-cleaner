@@ -87,6 +87,7 @@ run_permissions
 service_(add|del)_[^\s]*
 setup
 set_permissions
+sparc
 stop_on_removal
 suse_kernel_module_package
 suse_update_desktop_file
