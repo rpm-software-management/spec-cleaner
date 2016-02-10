@@ -11,9 +11,9 @@ highly appreciated.
 Testsuite of spec-cleaner is pretty straight-forward it has input and expected
 output for regular and minimal output. For that we have 3 folders:
 
-  in/ - SOMETHING.spec starting code/point for your test
-  out/ - SOMETHING.spec with regular spec-cleaner run
-  out-minimal/ - SOMETHING.spec with minimal spec-cleaner run
++ in/ - SOMETHING.spec starting code/point for your test
++ out/ - SOMETHING.spec with regular spec-cleaner run
++ out-minimal/ - SOMETHING.spec with minimal spec-cleaner run
 
 Since sometimes spec-cleaner produces large differences following commands will
 help you to achieve the easiest workflow:
