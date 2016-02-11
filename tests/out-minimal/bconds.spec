@@ -17,7 +17,7 @@
 
 
 %{!?aarch64:%global aarch64 aarch64 arm64 armv8}
-%global jit_arches %ix86 x86_64 %aarch64 ppc64 ppc64le
+%global jit_arches %ix86 x86_64 %{aarch64} ppc64 ppc64le
 %global test_arches %ix86 x86_64 ppc64 ppc64le
 %global icedtea_version 2.5.1
 %global icedtea_sound_version 1.0.1
@@ -49,7 +49,7 @@
 # real file made by update-ca-certificates
 %global javacacerts %{_var}/lib/ca-certificates/java-cacerts
 %global with_default_hotspot_tarball 1
-%ifarch %aarch64
+%ifarch %{aarch64}
 %global _with_bootstrap 1
 %global _with_zero 1
 %endif

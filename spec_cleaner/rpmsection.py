@@ -37,7 +37,8 @@ class Section(object):
         line = line.rstrip()
 
         if not line.startswith('#'):
-            line = self.embrace_macros(line)
+            if not self.minimal:
+                line = self.embrace_macros(line)
             line = self.replace_buildroot(line)
             line = self.replace_optflags(line)
             line = self.replace_known_dirs(line)
@@ -188,9 +189,13 @@ class Section(object):
              'awk': 'gawk', 'cc': 'gcc', 'cpp': 'gcc -E', 'cxx': 'g++', 'remsh': 'rsh', }
         for i in r:
             line = line.replace('%{__' + i + '}', r[i])
+            if self.minimal:
+                line = line.replace('%__' + i, r[i])
 
         for i in ['aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz']:
             line = line.replace('%{__' + i + '}', i)
+            if self.minimal:
+                line = line.replace('%__' + i, i)
 
         return line
 

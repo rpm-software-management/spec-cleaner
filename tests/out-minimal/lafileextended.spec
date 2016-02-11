@@ -19,11 +19,11 @@
 %install
 /bin/rm %{buildroot}%{_libdir}/*.la
 find "$b" -iname "*.la" -delete;
-find "$b/%{_libdir}" -maxdepth 1 -type f -name "*.la" -delete;
-find "$b/%{_libdir}" -type f -name "*.la" -delete
-find "$b/%{_libdir}" -type f -name "*.la" -delete;
+find "$b/%_libdir" -maxdepth 1 -type f -name "*.la" -delete;
+find "$b/%_libdir" -type f -name "*.la" -delete
+find "$b/%_libdir" -type f -name "*.la" -delete;
 find "$b" -name "*.la" -delete
-find "$b/%{_prefix}" -iname "*.la" -delete;
+find "$b/%_prefix" -iname "*.la" -delete;
 find "$b" -type f -iname "*.la" -delete;
 find "$b" -type f -name "*.la" -delete
 find "$b" -type f -name "*.la" -delete;
@@ -50,20 +50,20 @@ find %{buildroot}%{_libdir} -name "*.la" -type f -print -delete
 find %{buildroot}%{_libdir} -name '*.la' | xargs rm -f
 find %{buildroot}%{_libdir}/%{pkg_name}/ -type f -name \*.la -print0 | xargs -r0 rm -fv
 find %{buildroot}%{_libdir}/stardict/plugins -name "*.la" -print0 | xargs -0 rm -rf {} \;
-find "%{buildroot}/%{_libdir}" -type f -name "*.la" -delete
+find "%buildroot/%_libdir" -type f -name "*.la" -delete
   find %{buildroot}%{_libdir} -type f -name '*.la' -delete -print
 find %{buildroot}%{_libdir} -type f -name "*.la" -delete -print
 find %{buildroot}%{_libdir} -type f -name '*.la' -delete -print
 find %{buildroot}%{_libdir} -type f -name "*.la" -print -delete
 find %{buildroot}%{_libdir} -type f -name '*.la' -print -delete
-find "%{buildroot}/%{_libdir}" -type f -name "*.la" | xargs rm -f
+find "%buildroot/%_libdir" -type f -name "*.la" | xargs rm -f
 find %{buildroot}%{_libdir}/xorg/modules/ -name "*.la" | \
 find %{buildroot} -name "*.la" -delete
-find %{buildroot} -name '*.la' -delete
+find %buildroot -name '*.la' -delete
 find %{buildroot} -name "*.la" -delete
 find %{buildroot} -name '*.la' -delete
 find %{buildroot} -name *.la -delete
-find %{buildroot} -name "*.la" -delete -print
+find %buildroot -name "*.la" -delete -print
 find %{buildroot} -name "*.la" -delete -print
 find %{buildroot} -name '*.la' -delete -print
 find %{buildroot} -name \*.la -delete -print
@@ -80,7 +80,7 @@ find %{buildroot} -name '*.la' -type f -print0 | xargs -0 rm -f
 find %{buildroot} -type f -name "*.la" -delete
 find %{buildroot} -type f -name "*.la" -delete;
 find %{buildroot} -type f -name "*.la" -delete
-find %{buildroot} -type f -name '*.la' -delete
+find %buildroot -type f -name '*.la' -delete
 find %{buildroot} -type f -name '*.la' -delete
 find %{buildroot} -type f -name *.la -delete
 find %{buildroot} -type f -name "*.la" -delete -print
@@ -110,25 +110,25 @@ find %{buildroot} -name '*.la' -type f -print0 | xargs -0 rm -f
 find %{buildroot} -name '*.la' | xargs rm -f
 find %{buildroot} -type f -name '*.la' -exec rm -f {} ';'
 find %{buildroot} -type f -name "*.la" -exec rm -fv {} +
-rm %{buildroot}/%{_libdir}/beaver/plugins/*.la
+rm %buildroot/%_libdir/beaver/plugins/*.la
 rm %{buildroot}%{_libdir}/claws-mail/plugins/*.la
 rm %{buildroot}%{_libdir}/grisbi/*.la
 rm %{buildroot}%{_libdir}/gstreamer-%{gst_branch}/*.la
-rm "%{buildroot}/%{_libdir}"/*.la
+rm "%buildroot/%_libdir"/*.la
 rm "%{buildroot}%{_libdir}"/*.la
-rm %{buildroot}/%{_libdir}/*.la
-rm %{buildroot}/%{_libdir}/*.la
-rm %{buildroot}%{_libdir}/*.la
+rm %buildroot/%{_libdir}/*.la
+rm %buildroot/%_libdir/*.la
+rm %buildroot%_libdir/*.la
 rm %{buildroot}/%{_libdir}/*.la
 rm %{buildroot}%{_libdir}/*.la
 rm %{buildroot}%{_libdir}/*/*.la
-rm %{buildroot}%{_libdir}/*.la
+rm %{buildroot}%_libdir/*.la
 rm %{buildroot}/%{_libdir}/*.la
 rm %{buildroot}%{_libdir}/*.la
 rm "%{buildroot}%{_libdir}"/*.la
-rm %{buildroot}/%{_libdir}/*.la
-rm %{buildroot}/%{_libdir}/*/*.la
-rm %{buildroot}/%{_libdir}/*/*/*.la
+rm %buildroot/%_libdir/*.la
+rm %buildroot/%_libdir/*/*.la
+rm %buildroot/%_libdir/*/*/*.la
 rm %{buildroot}%{_libdir}/*.la
 rm  %{buildroot}/%{_libdir}/lib*.la
 rm %{buildroot}%{_libdir}/lib*.la
@@ -138,28 +138,28 @@ rm %{buildroot}%{_libdir}/purple-?/*.la
 rm %{buildroot}%{_libdir}/sane/libsane-*.la
 rm %{buildroot}/%{_libdir}/syslog-ng/*.la
 rm %{buildroot}%{_libdir}/xfce4/panel/plugins/*.la
-rm -f "$b/%{_libdir}"/*.la
+rm -f "$b/%_libdir"/*.la
 rm -f %{buildroot}%{_libdir}/caca/*.la
 rm -f %{buildroot}%{_libdir}/dssi/*.la
 rm -f %{buildroot}%{_libdir}/glade3/modules/*.la
 rm -f %{buildroot}%{_libdir}/gtk-*/*/*engines/*.la
 rm -f %{buildroot}/%{_libdir}/gtk-3.0/3.0.0/immodules/*.la
 rm -f %{buildroot}%{_libdir}/hexchat/plugins/*.la
+rm -f "%buildroot/%_libdir"/*.la
+rm -f "%buildroot/%_libdir"/*.la;
 rm -f "%{buildroot}/%{_libdir}"/*.la
-rm -f "%{buildroot}/%{_libdir}"/*.la;
-rm -f "%{buildroot}/%{_libdir}"/*.la
-rm -f %{buildroot}%{_libdir}/*.la
+rm -f %buildroot%_libdir/*.la
 rm -f %{buildroot}/%{_libdir}/*.la
 rm -f %{buildroot}/%{_libdir}/*.la \
 rm -f %{buildroot}%{_libdir}/*.la
 rm -f %{buildroot}%{_libdir}/*.la \
 rm -f %{buildroot}%{_libdir}/*/*/*.la
-rm -f %{buildroot}%{_libdir}/*.la
+rm -f %{buildroot}%_libdir/*.la
 rm -f %{buildroot}%{_libdir}/*.la
 rm -f "%{buildroot}%{_libdir}"/*.la
 rm -f %{buildroot}%{_libdir}/*.la
 rm -f %{buildroot}%{_libdir}/*.la %{buildroot}%{_libdir}/sox/*.la
-rm -f "%{buildroot}/%{_libdir}"/*.la "%{buildroot}/%{_libdir}/weston"/*.la;
+rm -f "%buildroot/%_libdir"/*.la "%buildroot/%_libdir/weston"/*.la;
 rm -f %{buildroot}%{_libdir}/*.la %{buildroot}%{_libdir}/xfce4/session/splash-engines/*.la
 rm -f "%{buildroot}/%{_libdir}"/{lftp/*/,}*.la
 rm -f %{buildroot}%{_libdir}/libcc*.la
@@ -176,11 +176,11 @@ rm -f %{buildroot}%{_libdir}/parole-0/*.la
 rm -f %{buildroot}%{_libdir}/rpm-plugins/*.la
 rm -f %{buildroot}%{_libdir}/scim-1.0/%{scim_binary_version}/*/*.la
 rm -f %{buildroot}%{_libdir}/smsd/*.la
-rm -f "%{buildroot}/%{_lib}/security"/*.{a,la} "%{buildroot}/%{_libdir}"/*.la
+rm -f "%buildroot/%_lib/security"/*.{a,la} "%buildroot/%_libdir"/*.la
 rm -f %{buildroot}%{_libdir}/alsa-lib/*.la
 rm -f %{buildroot}/%{_libdir}/cmpi/*.la
 rm -f %{buildroot}/%{_libdir}/*.la
-rm -f %{buildroot}/%{_libdir}/*.la
+rm -f %{buildroot}/%_libdir/*.la
 rm -f %{buildroot}%{_libdir}/*.la
 rm -f %{buildroot}/%{_libdir}/*.la
 rm -f %{buildroot}%{_libdir}/*.la
@@ -194,9 +194,9 @@ rm -f %{buildroot}%{_libdir}/%{name}/lock-driver/*.la
 rm -f %{buildroot}%{_libdir}/openwsman/authenticators/*.la
 rm -f %{buildroot}%{_libdir}/openwsman/plugins/*.la
 rm -f %{buildroot}%{_libdir}/scim-1.0/%{scim_binary_version}/*/*.la
-rm -f %{buildroot}/%{_libdir}/stonith/plugins/stonith2/*.la
+rm -f %{buildroot}/%_libdir/stonith/plugins/stonith2/*.la
 rm -f %{buildroot}/%{_libdir}/tsclient/plugins/*.la
-rm -f %{buildroot}/%{_lib}/security/*.la
+rm -f %{buildroot}/%_lib/security/*.la
 rm -fv %{buildroot}%{_libdir}/*.la
 rm -rf %{buildroot}/%{_libdir}/*.la
 rm -rf %{buildroot}%{_libdir}/*.la
@@ -207,7 +207,7 @@ rm -rf %{buildroot}/%{_lib}/security/*.la
 rm -rfv %{buildroot}%{_libdir}/pdns/*.la
 rm %{buildroot}/%{_libdir}/*.la
 rm %{buildroot}%{_libdir}/*.la
-rm %{buildroot}%{_libdir}/*.la
+rm %{buildroot}%_libdir/*.la
 rm %{buildroot}/%{_libdir}/*.la
 rm %{buildroot}%{_libdir}/lib*.la
 rm %{buildroot}/%{_libdir}/libpng*.la
