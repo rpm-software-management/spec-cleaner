@@ -339,6 +339,8 @@ class RpmPreamble(Section):
             my_license = self.strip_useless_spaces(my_license)
             my_license = my_license.replace('ORlater', 'or later')
             my_license = my_license.replace('ORsim', 'or similar')
+            my_license = my_license.rstrip(';')
+            my_license = self.reg.re_license_semicolon.sub(' and ', my_license)
             if my_license in self.license_conversions:
                 my_license = self.license_conversions[my_license]
             licenses[index] = my_license

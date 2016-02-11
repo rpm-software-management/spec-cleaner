@@ -83,6 +83,8 @@ class RegexpSingle(object):
     re_rpm_command = re.compile(r'%\(.*\)')
     re_requires_eq = re.compile(r'^\s*%requires_eq\s*(.*)')
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
+    # license ; should be replaced by ands so find it
+    re_license_semicolon = re.compile(r'\s*;\s*')
 
     # rpmbuild
     re_jobs = re.compile(r'%{(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
