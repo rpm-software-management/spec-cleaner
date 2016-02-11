@@ -42,6 +42,8 @@ class RpmSpecCleaner(object):
     current_section = None
     _previous_line = None
     _previous_nonempty_line = None
+    # known licenses in package for unification
+    _licenses = []
 
     def __init__(self, options):
         self.specfile = options['specfile']
@@ -192,6 +194,7 @@ class RpmSpecCleaner(object):
             # USE: 'spec-cleaner file > /dev/null' to see the stderr output
             #sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
+                self._licenses = self._licenses + self.current_section.licenses
                 # We don't want to print newlines before %else and %endif
                 if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):
                     newline = False
@@ -203,6 +206,7 @@ class RpmSpecCleaner(object):
                     self.current_section = new_class(self.specfile, self.minimal, self.pkgconfig)
                 else:
                     self.current_section = new_class(self.specfile, self.minimal)
+                self.current_section.licenses = self._licenses
                 # skip empty line adding if we are switching sections
                 if self._previous_line == '' and line == '':
                     continue
@@ -217,6 +221,8 @@ class RpmSpecCleaner(object):
                 self._previous_nonempty_line = line
 
         # no need to not output newline at the end even for minimal -> no condition
+        if self.current_section.licenses:
+            self._licenses = self._licenses + self.current_section.licenses
         self.current_section.output(self.fout)
         self.fout.flush()
 

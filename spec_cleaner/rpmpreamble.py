@@ -613,7 +613,9 @@ class RpmPreamble(Section):
             match = self.reg.re_license.match(line)
             value = match.groups()[len(match.groups()) - 1]
             value = self._fix_license(value)
-            self._add_line_value_to('license', value)
+            if not value in self.licenses:
+                self.licenses.append(value)
+                self._add_line_value_to('license', value)
             return
 
         elif self.reg.re_release.match(line):
