@@ -13,7 +13,8 @@ class RpmCheck(Section):
         line = self._complete_cleanup(line)
 
         # smp_mflags for jobs
-        if not self.reg.re_comment.match(line):
+        if not self.reg.re_comment.match(line) and \
+           not self.minimal:
             line = self.embrace_macros(line)
         line = self.reg.re_jobs.sub('%{?_smp_mflags}', line)
 
