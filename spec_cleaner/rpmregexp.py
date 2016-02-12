@@ -99,6 +99,7 @@ class RegexpSingle(object):
     re_binariesforbuld = re.compile(r'^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
     re_nodebuginfo = re.compile(r'^#\s*nodebuginfo\s*$', re.IGNORECASE)
     re_icecream = re.compile(r'^#\s*icecream\s*$', re.IGNORECASE)
+    re_vimmodeline = re.compile(r'^# vim:', re.IGNORECASE)
 
     # rpminstall
     re_clean = re.compile(r'rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?$')

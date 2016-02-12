@@ -19,6 +19,7 @@ class RpmCopyright(Section):
         self.copyrights = []
         self.buildrules = []
         self.my_copyright = ''
+        self.vimmodeline = ''
 
     def _add_pkg_header(self):
         specname = os.path.splitext(os.path.basename(self.spec))[0]
@@ -55,6 +56,11 @@ class RpmCopyright(Section):
         for i in sorted(self.buildrules):
             self.lines.append(i)
 
+    def _add_modelines(self):
+        # add vim modeline if found
+        if self.vimmodeline:
+            self.lines.append(self.vimmodeline)
+
     def add(self, line):
         if not self.lines and not line:
             return
@@ -71,11 +77,14 @@ class RpmCopyright(Section):
             self.buildrules.append('# nodebuginfo')
         elif self.reg.re_icecream.match(line):
             self.buildrules.append('# icecream')
+        elif self.reg.re_vimmodeline.match(line):
+            self.vimmodeline = line
         else:
             # anything not in our rules gets tossed out
             return
 
     def output(self, fout, newline=True, new_class=None):
+        self._add_modelines()
         self._add_pkg_header()
         self._add_copyright()
         self._add_default_license()
