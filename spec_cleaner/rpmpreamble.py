@@ -224,9 +224,11 @@ class RpmPreamble(Section):
             if value == '':
                 value = '0'
             key = int(value)
-        # Put pkgconfig()-style packages at the end of the list, after all
-        # non-pkgconfig()-style packages
-        elif key.find('pkgconfig(') != -1:
+        # Put brackety ()-style deps at the end of the list, after all other
+        elif key.find('pkgconfig(') != -1 or \
+             key.find('cmake(') != -1 or \
+             key.find('ruby(') != -1 or \
+             key.find('perl(') != -1:
             key = '1' + key
         else:
             key = '0' + key

@@ -32,10 +32,10 @@ Requires:       eee = %{version}-%{release}
 Requires:       iii <= 4.2.1
 Requires:       jjj > %{version}
 Requires:       kkk
-Requires:       perl(DBD::SQLite)
 Requires:       php5 >= %{phpversion}
 Requires:       rrr >= %{version}
 Requires:       zzz
+Requires:       perl(DBD::SQLite)
 Requires:       pkgconfig(glib-2.0)
 PreReq:         aaa
 PreReq:         aaa < 3.2.1
