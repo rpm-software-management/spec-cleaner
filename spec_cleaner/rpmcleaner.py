@@ -42,8 +42,10 @@ class RpmSpecCleaner(object):
     current_section = None
     _previous_line = None
     _previous_nonempty_line = None
-    # known licenses in package for unification
-    _licenses = []
+    # known main license from root preamble
+    _main_license = None
+    # do we need to put license in each subpkg
+    _subpkg_licenses = False
 
     def __init__(self, options):
         self.specfile = options['specfile']
@@ -73,6 +75,8 @@ class RpmSpecCleaner(object):
             (self.reg.re_spec_changelog, RpmChangelog)
         ]
 
+        self._load_licenses()
+
         if self.output:
             self.fout = open(self.output, 'w')
         elif self.inline:
@@ -91,6 +95,27 @@ class RpmSpecCleaner(object):
             self.fout = tempfile.NamedTemporaryFile(mode='w+', prefix=os.path.split(self.specfile)[-1] + '.', suffix='.spec')
         else:
             self.fout = sys.stdout
+
+    def _load_licenses(self):
+         # detect all present licenses in the spec and detect if we have more
+         # than one. If we do put license to each subpkg
+         licenses = []
+         filecontent = open(self.specfile)
+         for line in filecontent:
+              if self.reg.re_license.match(line):
+                  line = line.rstrip('\n')
+                  line = line.rstrip('\r')
+                  line = line.rstrip()
+                  match = self.reg.re_license.match(line)
+                  value = match.groups()[len(match.groups()) - 1]
+                  if not value in licenses:
+                      licenses.append(value)
+         filecontent.close()
+         filecontent = None
+         if len(licenses) > 1:
+             self._subpkg_licenses = True
+             # put first license as placeholder if main preamble is missing one
+             self._main_license = licenses[0]
 
     def _detect_preamble_section(self, line):
         # This is seriously ugly but can't think of cleaner way
@@ -194,7 +219,6 @@ class RpmSpecCleaner(object):
             # USE: 'spec-cleaner file > /dev/null' to see the stderr output
             #sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
-                self._licenses = self._licenses + self.current_section.licenses
                 # We don't want to print newlines before %else and %endif
                 if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):
                     newline = False
@@ -203,10 +227,9 @@ class RpmSpecCleaner(object):
                 self.current_section.output(self.fout, newline, new_class.__name__)
                 # we need to sent pkgconfig option to preamble and package
                 if new_class == RpmPreamble or new_class == RpmPackage:
-                    self.current_section = new_class(self.specfile, self.minimal, self.pkgconfig)
+                    self.current_section = new_class(self.specfile, self.minimal, self.pkgconfig, self._subpkg_licenses, self._main_license)
                 else:
                     self.current_section = new_class(self.specfile, self.minimal)
-                self.current_section.licenses = self._licenses
                 # skip empty line adding if we are switching sections
                 if self._previous_line == '' and line == '':
                     continue
@@ -221,8 +244,6 @@ class RpmSpecCleaner(object):
                 self._previous_nonempty_line = line
 
         # no need to not output newline at the end even for minimal -> no condition
-        if self.current_section.licenses:
-            self._licenses = self._licenses + self.current_section.licenses
         self.current_section.output(self.fout)
         self.fout.flush()
 

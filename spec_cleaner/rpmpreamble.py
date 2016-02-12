@@ -114,7 +114,7 @@ class RpmPreamble(Section):
         'patch',
     ]
 
-    def __init__(self, specfile, minimal, pkgconfig):
+    def __init__(self, specfile, minimal, pkgconfig, subpkglicense, license):
         Section.__init__(self, specfile, minimal)
         # Old storage
         self._oldstore = []
@@ -139,6 +139,9 @@ class RpmPreamble(Section):
         # these packages actually need fixing after we sent the values to
         # reorder them
         self.categories_with_package_tokens.append('provides_obsoletes')
+        # license handling
+        self.subpkglicense = subpkglicense
+        self.license = license
 
         # simple categories matching
         self.category_to_re = {
@@ -306,8 +309,15 @@ class RpmPreamble(Section):
                 self._condition_bcond = False
             self.paragraph['conditions'] = []
 
-    def _end_paragraph(self):
+    def _end_paragraph(self, needs_license = False):
         lines = []
+
+        # add license to the package if missing and needed
+        if needs_license:
+            if not self.paragraph['license']:
+               self.license = self._fix_license(self.license)
+               self._add_line_value_to('license', self.license)
+
         # sort based on category order
         for i in self.categories_order:
             # sort-out within the ordered groups based on the key
@@ -615,8 +625,8 @@ class RpmPreamble(Section):
             match = self.reg.re_license.match(line)
             value = match.groups()[len(match.groups()) - 1]
             value = self._fix_license(value)
-            if not value in self.licenses:
-                self.licenses.append(value)
+            # only store subpkgs if they have different licenses
+            if not (type(self).__name__ == 'RpmPackage' and not self.subpkglicense):
                 self._add_line_value_to('license', value)
             return
 
@@ -660,7 +670,7 @@ class RpmPreamble(Section):
             self._add_line_to('misc', line)
 
     def output(self, fout, newline=True, new_class=None):
-        lines = self._end_paragraph()
+        lines = self._end_paragraph(self.subpkglicense)
         self.lines += lines
         Section.output(self, fout, newline, new_class)
 

@@ -26,8 +26,6 @@ class Section(object):
         # Are we inside of conditional or not
         self.condition = False
         self._condition_counter = 0
-        # did we find any license in the section, store its value then
-        self.licenses = []
 
     def _complete_cleanup(self, line):
         """
