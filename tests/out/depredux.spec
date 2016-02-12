@@ -21,3 +21,4 @@ Name:           depredux
 # comment two
 BuildRequires:  pkgconfig(libva)
 
+%changelog

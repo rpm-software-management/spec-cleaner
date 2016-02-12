@@ -23,3 +23,4 @@
 %defattr(-,root,root)
 %{_bindir}/a
 
+%changelog

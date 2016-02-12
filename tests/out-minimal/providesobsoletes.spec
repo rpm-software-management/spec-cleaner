@@ -24,3 +24,4 @@ Provides:       libwpd = %version
 Obsoletes:      libwpd < %version
 Provides:       sysvinit:/sbin/init
 
+%changelog

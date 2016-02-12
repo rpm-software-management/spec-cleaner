@@ -47,3 +47,4 @@ else \
 fi;
 Name:           multilinedefine
 
+%changelog

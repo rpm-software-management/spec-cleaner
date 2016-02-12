@@ -46,3 +46,4 @@ PreReq:         kkk
 PreReq:         rrr >= %{version}
 PreReq:         zzz
 
+%changelog

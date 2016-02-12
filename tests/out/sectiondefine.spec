@@ -45,3 +45,4 @@ cmake \
     -DCMAKE_SKIP_RPATH:BOOL=ON \
     ..
 
+%changelog

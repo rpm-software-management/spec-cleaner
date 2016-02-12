@@ -87,3 +87,4 @@ if [ "$1" = "0" -a -f %{_datadir}/libreoffice/%{1}_list.txt -a -f
 fi \
 %{nil}
 
+%changelog

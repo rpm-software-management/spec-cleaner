@@ -28,3 +28,4 @@ someothercommand
 %post -n %{_libname}
 /sbin/ldconfig
 
+%changelog

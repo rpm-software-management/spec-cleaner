@@ -72,3 +72,4 @@ BuildRequires:  something
 %endif
     --with-pkgversion=suse-%{release}-%{_arch}
 
+%changelog

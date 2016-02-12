@@ -28,3 +28,4 @@ Summary:        otherblabla
 %package nolicense
 Summary:        differentblabla
 
+%changelog

@@ -31,3 +31,4 @@ License:        GPL-2.0+
 Summary:        differentblabla
 License:        GPL-2.0
 
+%changelog

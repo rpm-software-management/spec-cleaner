@@ -26,3 +26,4 @@
 # otherstuff
 /bla/bla/bla
 
+%changelog

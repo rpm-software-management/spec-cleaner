@@ -41,3 +41,4 @@ Requires:       naughty-stuff
 %endif # test commentary
 %endif
 
+%changelog

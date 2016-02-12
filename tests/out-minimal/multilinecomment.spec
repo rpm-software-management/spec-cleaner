@@ -25,3 +25,4 @@ BuildRequires:  pkg4
 BuildRequires:  pkg5
 Requires:       zypper
 
+%changelog

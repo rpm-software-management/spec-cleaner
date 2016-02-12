@@ -26,3 +26,4 @@ python scons/scons.py PREFIX=%{_prefix}
 # just ending
 python scons/scons.py PREFIX=%{_prefix}
 
+%changelog

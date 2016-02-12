@@ -24,3 +24,4 @@ make PREFIX=/ \
      STATIC=""
 make -j1
 
+%changelog

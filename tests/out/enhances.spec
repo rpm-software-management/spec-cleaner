@@ -24,3 +24,4 @@ License:        GPL-2.0+
 Group:          System/Daemons
 Enhances:       smtp_daemon
 
+%changelog

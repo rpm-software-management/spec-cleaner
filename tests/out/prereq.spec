@@ -26,3 +26,4 @@ Requires(post): something
 Requires(postun): somethingcrazy
 Requires(pre):  test1
 
+%changelog

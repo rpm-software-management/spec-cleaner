@@ -23,3 +23,4 @@ Group:          System/Emulators/PC
 %{?suse_kernel_module_package:%suse_kernel_module_package -p %{SOURCE8} -n %{name}-guest -f %{SOURCE6} kdump um xen xenpae}
 %kernel_module_package -p %{name}-kmp-preamble
 
+%changelog

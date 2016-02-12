@@ -40,3 +40,4 @@ Patch10:        test2
 %patch10 -p4
 %patch0 -p1
 
+%changelog

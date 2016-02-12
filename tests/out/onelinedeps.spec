@@ -24,3 +24,4 @@ Requires:       gtk2
 Requires:       yast
 Requires:       zypper
 
+%changelog

@@ -25,3 +25,4 @@ install bla
 /bin/bla
 %endif
 
+%changelog

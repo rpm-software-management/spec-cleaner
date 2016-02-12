@@ -63,3 +63,4 @@
 %define something 1
 %endif
 
+%changelog

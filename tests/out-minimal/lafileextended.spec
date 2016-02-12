@@ -227,3 +227,4 @@ rm -vf %{buildroot}%{_libdir}/*.la
 rm -vf %{buildroot}%{_libdir}/%{pkg_name}/*.la
 rm -fv %{buildroot}%{_libdir}/libapparmor.la %{buildroot}%{_libdir}/libimmunix.la
 
+%changelog

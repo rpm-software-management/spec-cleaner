@@ -83,3 +83,4 @@ Requires:       %{name} = %{version}
 Provides:       %{pname}-MPM
 %endif
 
+%changelog

@@ -21,3 +21,4 @@
 cmake . \
 	-DIHATECMAKE=OFF
 
+%changelog

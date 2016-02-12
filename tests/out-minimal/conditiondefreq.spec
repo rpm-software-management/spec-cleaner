@@ -37,3 +37,4 @@ BuildRequires:  something
 Requires:       ddd
 %endif
 
+%changelog

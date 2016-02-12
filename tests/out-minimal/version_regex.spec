@@ -18,3 +18,4 @@
 
 Version:        0.1.{{ DATE_VERSION }}
 
+%changelog

@@ -37,3 +37,4 @@ Group:          Productivity/Networking/Email/Clients
 Recommends:     %{_name}-lang
 Provides:       %{name} = %{version}
 
+%changelog

@@ -78,3 +78,4 @@ make install DESTDIR=%{buildroot}
 %{make_install}
 make install  %{?_smp_mflags}
 
+%changelog

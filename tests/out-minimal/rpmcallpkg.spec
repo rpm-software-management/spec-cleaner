@@ -31,3 +31,4 @@ Requires:       akonadi-runtime >= %( echo `rpm -q --queryformat '%{VERSION}' ak
 KDE 4 backend for SFLphone.
 %endif
 
+%changelog

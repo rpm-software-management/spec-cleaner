@@ -22,3 +22,4 @@
 %files
 %{_bindir}/a
 
+%changelog

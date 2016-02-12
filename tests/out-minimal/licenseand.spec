@@ -24,3 +24,4 @@ License:        BSD and GPL-3.0
 %package test2
 License:        MIT
 
+%changelog

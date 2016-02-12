@@ -33,3 +33,4 @@
 %{_initddir}/name
 %{_prefix}/bla
 
+%changelog

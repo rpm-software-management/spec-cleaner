@@ -26,3 +26,4 @@
 %verify(not md5 size mtime) %{_sysconfdir}/selinux/%{1}/modules/active/policy.kern
 %config(noreplace) /a/b/c
 
+%changelog
