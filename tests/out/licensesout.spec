@@ -1,5 +1,5 @@
 #
-# spec file for package licenses
+# spec file for package licensesout
 #
 # Copyright (c) 2013 SUSE LINUX GmbH, Nuernberg, Germany.
 #
@@ -21,13 +21,10 @@ License:        GPL-2.0
 
 %package samelicense
 Summary:        blabla
-License:        GPL-2.0
 
 %package differentone
 Summary:        otherblabla
-License:        GPL-2.0+
 
 %package nolicense
 Summary:        differentblabla
-License:        GPL-2.0
 
