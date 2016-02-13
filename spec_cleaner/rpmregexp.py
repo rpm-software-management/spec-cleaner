@@ -87,7 +87,7 @@ class RegexpSingle(object):
     re_license_semicolon = re.compile(r'\s*;\s*')
 
     # rpmbuild
-    re_jobs = re.compile(r'%{(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}')
+    re_jobs = re.compile(r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?')
     re_make = re.compile(r'(^|(.*\s)?)make($|(\s.*)?)')
     re_optflags_quotes = re.compile(r'=\s*\${?RPM_OPT_FLAGS}?\s*$')
     re_optflags = re.compile('\${?RPM_OPT_FLAGS}?')
