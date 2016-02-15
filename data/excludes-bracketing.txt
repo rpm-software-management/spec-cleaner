@@ -10,6 +10,7 @@ cmake_[^\s]*
 configure
 config(\s*\([^)]*\))?
 create_exclude_filelist
+ctest
 defattr(\s*\([^)]*\))?
 define
 defined
