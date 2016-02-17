@@ -141,9 +141,9 @@ class Section(object):
     def replace_buildroot(self, line):
         """
         Replace RPM_BUILD_ROOT for buildroot
-        Replace few hard written dirs for further processing with their macro names.
         """
         line = self.reg.re_rpmbuildroot.sub(r'%{buildroot}\2', line)
+        line = self.reg.re_rpmbuildroot_quotes.sub(r'%{buildroot}', line)
         return line
 
     def replace_optflags(self, line):

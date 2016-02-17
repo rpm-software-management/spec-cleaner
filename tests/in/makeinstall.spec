@@ -2,6 +2,7 @@
 rm -rf %{buildroot}
 %makeinstall
 %make_install
+make install DESTDIR="$RPM_BUILD_ROOT"
 make install DESTDIR=%{buildroot}
 make install DESTDIR=%{buildroot} -j1
 make DESTDIR=%{buildroot} -j4 install

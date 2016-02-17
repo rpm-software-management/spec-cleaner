@@ -12,9 +12,11 @@ class RpmInstall(Section):
 
     def add(self, line):
         line = self._complete_cleanup(line)
+
         # we do not want to cleanup buildroot, it is already clean
         if self.reg.re_clean.search(line):
             return
+
         line = self.reg.re_jobs.sub(' %{?_smp_mflags}', line)
         if not self.minimal:
             line = self._replace_remove_la(line)

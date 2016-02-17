@@ -138,6 +138,7 @@ class RegexpSingle(object):
     re_libdir = re.compile(r'%{?_prefix}?/(%{?_lib}?|lib64)([/\s$])')
     re_initddir = re.compile(r'%{?_initrddir}?([/\s$])')
     re_rpmbuildroot = re.compile(r'(\${?RPM_BUILD_ROOT}?|"%{?buildroot}?")([/\s%]|$)')
+    re_rpmbuildroot_quotes = re.compile(r'"\${?RPM_BUILD_ROOT}?"')
 
     def _load_keywords_whitelist(self):
         """
