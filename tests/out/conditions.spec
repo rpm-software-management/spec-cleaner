@@ -41,5 +41,8 @@ BuildRequires:  update-desktop-files
 Requires:       naughty-stuff
 %endif # test commentary
 %endif
+%if (0%{?suse_version} && 0%{?suse_version} >= 1210)
+Requires:       wine
+%endif
 
 %changelog

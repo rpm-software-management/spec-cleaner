@@ -21,4 +21,7 @@ BuildRequires:  update-desktop-files
 %endif
 BuildRequires:  bbb
 Requires:       insserv
+%if (0%{?suse_version} && 0%{?suse_version} >= 1210)
+Requires: wine
+%endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-build
