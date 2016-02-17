@@ -33,7 +33,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 PreReq:         %{insserv_prereq}
 PreReq:         aaa_base
 %endif
-%if %{with editor}
+%{if %{with editor}}
 BuildRequires:  gcc-c++
 BuildRequires:  update-desktop-files
 %ifarch ppc64

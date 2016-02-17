@@ -12,7 +12,7 @@ PreReq:         aaa_base
 %endif
 BuildRequires:  pkg-config
 BuildRequires:  python
-%if %{with editor}
+%{if %{with editor}}
 %ifarch ppc64
 Requires:       naughty-stuff
 %endif # test commentary
