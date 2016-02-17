@@ -38,7 +38,7 @@ gpg_verify
 changelog
 check
 icon_theme_cache_post[^\s]*
-if(\s*\(.*\))?
+if(\s*\(.*)?
 ifarch
 ifnarch
 include
