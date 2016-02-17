@@ -45,4 +45,14 @@ cmake \
     -DCMAKE_SKIP_RPATH:BOOL=ON \
     ..
 
+%install
+%global optflags    %{optflags} -D_REENTRANT -pipe -fPIE
+export LDFLAGS="-Wl,-z,relro,-z,now -pie"
+%configure \
+%if ! %{with static_libs}
+        --disable-static \
+%endif
+        --with-pic \
+        --docdir=%{_docdir}/%{name}
+
 %changelog
