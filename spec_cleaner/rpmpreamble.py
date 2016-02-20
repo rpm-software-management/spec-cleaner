@@ -9,6 +9,7 @@ from .rpmexception import RpmException
 
 LICENSES_CHANGES = 'licenses_changes.txt'
 PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
+GROUPS_LIST = 'allowed_groups.txt'
 
 
 class RpmPreamble(Section):
@@ -132,6 +133,8 @@ class RpmPreamble(Section):
         self.license_conversions = self._read_licenses_changes()
         # dict of pkgconfig conversions
         self.pkgconfig_conversions = self._read_pkgconfig_changes()
+        # list of allowed groups
+        self.allowed_groups = self._read_group_changes()
         # start the object
         self._start_paragraph()
         # initialize list of groups that need to pass over conversion fixer
@@ -499,6 +502,19 @@ class RpmPreamble(Section):
         files.close()
         return licenses
 
+    def _read_group_changes(self):
+        groups = []
+
+        files = FileUtils()
+        files.open_datafile(GROUPS_LIST)
+        # header starts with link where we find the groups
+        next(files.f)
+        for line in files.f:
+            line = line.rstrip('\n')
+            groups.append(line)
+        files.close()
+        return groups
+
     def add(self, line):
         line = self._complete_cleanup(line)
         # if the line is empty just skip it we don't need new section for it
@@ -648,6 +664,15 @@ class RpmPreamble(Section):
             # and what value is there
             content = match.group(2)
             self._add_line_value_to('summary_localized', content, key='Summary{0}'.format(language))
+            return
+
+        elif self.reg.re_group.match(line):
+            match = self.reg.re_group.match(line)
+            value = match.group(1)
+            if not self.minimal:
+                if not self.previous_line.startswith('# FIXME') and not value in self.allowed_groups:
+                    self.current_group.append('# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
+            self._add_line_value_to('group', value)
             return
 
         # loop for all other matching categories which
