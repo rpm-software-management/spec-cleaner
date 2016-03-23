@@ -246,7 +246,7 @@ class RpmSpecCleaner(object):
         # no need to not output newline at the end even for minimal -> no condition
         self.current_section.output(self.fout)
         # add changelog at the end of the file
-        if line and line != '%changelog':
+        if line is not None and line != '%changelog':
             self.fout.write('%changelog\n')
         self.fout.flush()
 
