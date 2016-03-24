@@ -40,7 +40,7 @@ pushd "${TEMPDIR}" &> /dev/null
     #echo
     #echo "Generating pkgconfig_conversions.txt..."
     zcat primary.xml.gz > "$TMP"
-    sed -nf "${DIR}"/pkgconfig-update.sed "$TMP" | sort | uniq
+    perl "${DIR}"/pkgconfig-update.pl "$TMP"
 popd &> /dev/null
 
 rm -rf ${TEMPDIR}

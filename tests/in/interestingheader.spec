@@ -24,6 +24,7 @@ Group:          Productivity/Multimedia/Sound/Midi
 License:        GPL-2.0+
 URL:            http://www.dinisnoise.org/
 Vendor:         %vendor
+Prefix:         /usr
 
 Requires:       fftw3
 Requires:       Mesa

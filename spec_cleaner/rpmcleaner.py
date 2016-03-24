@@ -120,32 +120,32 @@ class RpmSpecCleaner(object):
     def _detect_preamble_section(self, line):
         # This is seriously ugly but can't think of cleaner way
         # WARN: Keep in sync with rpmregexps for rpmpreamble section
-        if not isinstance(self.current_section, RpmPreamble) and \
-           not isinstance(self.current_section, RpmPackage):
-            if self.reg.re_bcond_with.match(line) or \
-               self.reg.re_requires.match(line) or self.reg.re_requires_phase.match(line) or \
-               self.reg.re_buildrequires.match(line) or self.reg.re_prereq.match(line) or \
-               self.reg.re_recommends.match(line) or self.reg.re_suggests.match(line) or \
-               self.reg.re_name.match(line) or self.reg.re_version.match(line) or \
-               self.reg.re_release.match(line) or self.reg.re_license.match(line) or \
-               self.reg.re_summary.match(line) or self.reg.re_summary_localized.match(line) or \
-               self.reg.re_url.match(line) or self.reg.re_group.match(line) or \
-               self.reg.re_vendor.match(line) or self.reg.re_source.match(line) or \
-               self.reg.re_patch.match(line) or self.reg.re_enhances.match(line) or \
-               self.reg.re_supplements.match(line) or self.reg.re_conflicts.match(line) or \
-               self.reg.re_provides.match(line) or self.reg.re_obsoletes.match(line) or \
-               self.reg.re_buildroot.match(line) or self.reg.re_buildarch.match(line) or \
-               self.reg.re_epoch.match(line) or self.reg.re_icon.match(line) or \
-               self.reg.re_packager.match(line) or self.reg.re_debugpkg.match(line) or \
-               self.reg.re_requires_eq.match(line):
+        if not isinstance(self.current_section, (RpmPreamble, RpmPackage)):
+            if any([re.match(line) for re in [
+                   self.reg.re_bcond_with, self.reg.re_requires,
+                   self.reg.re_requires_phase, self.reg.re_buildrequires,
+                   self.reg.re_prereq, self.reg.re_recommends,
+                   self.reg.re_suggests, self.reg.re_name,
+                   self.reg.re_version, self.reg.re_release,
+                   self.reg.re_license, self.reg.re_summary,
+                   self.reg.re_summary_localized, self.reg.re_url,
+                   self.reg.re_group, self.reg.re_vendor,
+                   self.reg.re_source, self.reg.re_patch,
+                   self.reg.re_enhances, self.reg.re_supplements,
+                   self.reg.re_conflicts, self.reg.re_provides,
+                   self.reg.re_obsoletes, self.reg.re_buildroot,
+                   self.reg.re_buildarch, self.reg.re_epoch,
+                   self.reg.re_icon, self.reg.re_packager,
+                   self.reg.re_debugpkg, self.reg.re_requires_eq,
+                   self.reg.re_preamble_prefix,
+               ]]):
                 return True
-            # We can have local defined variables in phases
-            if not isinstance(self.current_section, RpmInstall) and \
-               not isinstance(self.current_section, RpmCheck) and \
-               not isinstance(self.current_section, RpmBuild) and \
-               not isinstance(self.current_section, RpmPrep):
-                if self.reg.re_define.match(line) or self.reg.re_global.match(line):
-                    return True
+
+            # We can have locally defined variables in phases
+            if not isinstance(self.current_section,
+                   (RpmInstall, RpmCheck, RpmBuild, RpmPrep)) and \
+               (self.reg.re_define.match(line) or self.reg.re_global.match(line)):
+                return True
         return False
 
     def _detect_new_section(self, line):
