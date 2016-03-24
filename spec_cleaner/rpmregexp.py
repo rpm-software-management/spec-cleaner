@@ -78,6 +78,7 @@ class RegexpSingle(object):
     re_requires_token = re.compile(r'(\s*([^<>=\s]+(\s*[<>=]+\s*[^<>=\s]+)?)\s*)')
     re_autoreqprov = re.compile(r'^\s*AutoReqProv:.*$', re.IGNORECASE)
     re_debugpkg = re.compile(r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE)
+    re_preamble_prefix = re.compile(r'^Prefix:\s*(.*)', re.IGNORECASE)
     # here we need to grab all submacros with rpm calls so just match almost
     # everything
     re_rpm_command = re.compile(r'%\(.*\)')

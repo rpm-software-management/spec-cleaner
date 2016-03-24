@@ -179,6 +179,7 @@ class RpmPreamble(Section):
             'copyright': self.reg.re_copyright,
             'packager': self.reg.re_packager,
             'debugpkg': self.reg.re_debugpkg,
+            'prefix': self.reg.re_preamble_prefix,
         }
 
     def _start_paragraph(self):
