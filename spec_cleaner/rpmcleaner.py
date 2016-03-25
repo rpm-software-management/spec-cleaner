@@ -209,6 +209,7 @@ class RpmSpecCleaner(object):
         # FIXME: we need to store the content localy and then reorder
         #        to maintain the specs all the same (eg somebody put
         #        filelist to the top).
+        line = None
         for line in self.fin:
             # Remove \n to make it easier to parse things
             line = line.rstrip('\n')
@@ -246,7 +247,7 @@ class RpmSpecCleaner(object):
         # no need to not output newline at the end even for minimal -> no condition
         self.current_section.output(self.fout)
         # add changelog at the end of the file
-        if line is not None and line != '%changelog':
+        if line is None or (line is not None and line != '%changelog'):
             self.fout.write('%changelog\n')
         self.fout.flush()
 
