@@ -50,9 +50,9 @@ kde_post_install
 kf5_makeinstall
 lang
 lang_package
+make_build
 make_jobs
 make_install
-make_jobs
 mime_database_post[^\s]*
 package
 patch[0-9]*
