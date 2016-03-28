@@ -73,9 +73,8 @@
 %kde4_makeinstall
 %kde_post_install
 %kf5_makeinstall
-%{lang}
 %lang_package
-%{make_build}
+%make_build
 %make_jobs
 %make_install
 %mime_database_post[^\s]*
@@ -100,7 +99,6 @@
 %requires_[^\s]*
 %restart_on_update
 %run_permissions
-%service_(add|del)}_[^\s]*
 %setup
 %set_permissions
 %stop_on_removal
@@ -112,6 +110,5 @@
 %triggerun
 %undefine
 %verify[^\s]*
-%yast_(build|install)}[^\s]*
 
 %changelog
