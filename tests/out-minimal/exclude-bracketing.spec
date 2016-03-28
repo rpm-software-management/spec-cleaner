@@ -73,9 +73,15 @@
 %kde4_makeinstall
 %kde_post_install
 %kf5_makeinstall
+<<<<<<< HEAD
 %lang
 %lang_package
 %make_build
+=======
+%{lang}
+%lang_package
+%{make_build}
+>>>>>>> c0161d6a30144651069b3fe476fa9ea906947cb5
 %make_jobs
 %make_install
 %mime_database_post[^\s]*
@@ -100,7 +106,11 @@
 %requires_[^\s]*
 %restart_on_update
 %run_permissions
+<<<<<<< HEAD
 %service_(add|del)}_[^\s]*
+=======
+%{service_(add|del)}_[^\s]*
+>>>>>>> c0161d6a30144651069b3fe476fa9ea906947cb5
 %setup
 %set_permissions
 %stop_on_removal
@@ -112,6 +122,10 @@
 %triggerun
 %undefine
 %verify[^\s]*
+<<<<<<< HEAD
 %yast_(build|install)}[^\s]*
+=======
+%{yast_(build|install)}[^\s]*
+>>>>>>> c0161d6a30144651069b3fe476fa9ea906947cb5
 
 %changelog
