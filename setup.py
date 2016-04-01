@@ -9,7 +9,7 @@ from spec_cleaner import __version__
 setup(
     name='spec_cleaner',
     description='RPM .spec files cleaner',
-    long_description='Command-line tool for cleaning various formatting' +
+    long_description='Command-line tool for cleaning various formatting ' +
         'errors in RPM .spec files',
     url='https://github.com/openSUSE/spec-cleaner',
     download_url='https://github.com/openSUSE/spec-cleaner',
