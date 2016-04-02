@@ -1,10 +1,17 @@
+# use docker infrastructure for faster builds
+sudo: false
+
+addons:
+  apt:
+    packages:
+    - rpm
+
 language: python
 python:
   - "2.7"
   - "3.3"
 install:
   - pip install python-coveralls mock
-  - sudo apt-get install -y rpm
 script:
   - nosetests --with-coverage --cover-package=spec_cleaner --cover-inclusive
 after_success:
