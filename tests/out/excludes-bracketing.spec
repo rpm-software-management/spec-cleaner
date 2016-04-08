@@ -113,6 +113,10 @@ make %{?_smp_mflags} DESTDIR=%{buildroot} install
 %requires_[^\s]*
 %restart_on_update
 %run_permissions
+%service_add_pre foo.service
+%service_add_post foo.service
+%service_del_preun foo.service
+%service_del_postun foo.service
 %set_permissions
 %setup
 %sparc
@@ -131,5 +135,7 @@ make %{?_smp_mflags} DESTDIR=%{buildroot} install
 %verify(\s*\([^)]*\))?
 %with
 %without
+%yast_build
+%yast_install
 
 %changelog
