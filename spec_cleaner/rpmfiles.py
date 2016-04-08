@@ -30,7 +30,7 @@ class RpmFiles(Section):
         """
         # if it is 2nd line and it is not defattr just set there some default
         if self.previous_line and \
-                self.previous_line.startswith('%files') and \
+                self.reg.re_spec_files.match(self.previous_line) and \
                 not line.startswith('%defattr'):
             self.lines.append('%defattr(-,root,root)')
 

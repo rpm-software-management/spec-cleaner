@@ -48,7 +48,6 @@
 
 %files
 %defattr(-,root,root)
-
 %files_fontsconf_file
 %fillup_[^\s]*
 %find_gconf_schemas

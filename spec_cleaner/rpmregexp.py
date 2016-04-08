@@ -27,15 +27,15 @@ class RegexpSingle(object):
     """
 
     # section macros
-    re_spec_package = re.compile(r'^%package\s*', re.IGNORECASE)
-    re_spec_description = re.compile(r'^%description\s*', re.IGNORECASE)
+    re_spec_package = re.compile(r'^%package(\s+|$)', re.IGNORECASE)
+    re_spec_description = re.compile(r'^%description(\s+|$)', re.IGNORECASE)
     re_spec_prep = re.compile(r'^%prep\s*$', re.IGNORECASE)
     re_spec_build = re.compile(r'^%build\s*$', re.IGNORECASE)
     re_spec_install = re.compile(r'^%install\s*$', re.IGNORECASE)
     re_spec_clean = re.compile(r'^%clean\s*$', re.IGNORECASE)
     re_spec_check = re.compile(r'^%check\s*$', re.IGNORECASE)
-    re_spec_scriptlets = re.compile(r'(?:^%pretrans\s*)|(?:^%pre\s*)|(?:^%post\s*)|(?:^%verifyscript\s*)|(?:^%preun\s*)|(?:^%postun\s*)|(?:^%posttrans\s*)', re.IGNORECASE)
-    re_spec_files = re.compile(r'^%files\s*', re.IGNORECASE)
+    re_spec_scriptlets = re.compile(r'(?:^%pretrans(\s+|$))|(?:^%pre(\s+|$))|(?:^%post(\s+|$))|(?:^%verifyscript(\s+|$))|(?:^%preun(\s+|$))|(?:^%postun(\s+|$))|(?:^%posttrans(\s+|$))', re.IGNORECASE)
+    re_spec_files = re.compile(r'^%files(\s+|$)', re.IGNORECASE)
     re_spec_changelog = re.compile(r'^%changelog\s*$', re.IGNORECASE)
 
     # rpmpreamble

@@ -47,7 +47,6 @@
 %fdupes
 
 %files
-
 %files_fontsconf_file
 %fillup_[^\s]*
 %find_gconf_schemas
