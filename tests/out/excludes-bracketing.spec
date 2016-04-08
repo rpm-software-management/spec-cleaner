@@ -45,6 +45,11 @@
 %endif
 %exclude
 %fdupes
+
+%files
+
+%files_fontsconf_file
+%defattr(-,root,root)
 %fillup_[^\s]*
 %find_gconf_schemas
 %find_lang
