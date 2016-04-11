@@ -5,3 +5,11 @@
 
 spec-cleaner is a tool that is planned to be replacement for "osc service localrun format_spec_file".
 It is intended to provide same or better features in order for us to be able to unify all the spec files in obs.
+
+# Running the testsuite locally
+
+spec-cleaner uses tox to run the testsuite in a clean enviroment. To run the
+tests locally, do:
+
+    tox -epy27
+
