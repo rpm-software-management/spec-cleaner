@@ -56,6 +56,7 @@ kernel_module_package
 kf5_makeinstall
 lang_package
 lang(\s*\([^)]*\))
+license
 make_build
 make_install
 make_jobs
