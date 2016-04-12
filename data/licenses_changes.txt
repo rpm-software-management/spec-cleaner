@@ -310,6 +310,8 @@ ErlPL-1.1	Erlang Public License
 ErlPL-1.1+	ErlPL-1.1+
 Eurosym	Eurosym
 Eurosym+	Eurosym+
+FSFAP	FSFAP
+FSFAP+	FSFAP+
 FSFUL	FSFUL
 FSFUL+	FSFUL+
 FSFULLR	FSFULLR
@@ -435,6 +437,10 @@ JSON	SUSE-JSON
 JSON+	JSON+
 JasPer-2.0	JasPer-2.0
 JasPer-2.0+	JasPer-2.0+
+LAL-1.2	LAL-1.2
+LAL-1.2+	LAL-1.2+
+LAL-1.3	LAL-1.3
+LAL-1.3+	LAL-1.3+
 LGPL-2.0	LGPL v2
 LGPL-2.0	LGPL v2.0 only
 LGPL-2.0	LGPL-2.0
@@ -490,6 +496,12 @@ Latex2e	Latex2e
 Latex2e+	Latex2e+
 Leptonica	Leptonica
 Leptonica+	Leptonica+
+LiLiQ-P-1.1	LiLiQ-P-1.1
+LiLiQ-P-1.1+	LiLiQ-P-1.1+
+LiLiQ-R-1.1	LiLiQ-R-1.1
+LiLiQ-R-1.1+	LiLiQ-R-1.1+
+LiLiQ-Rplus-1.1	LiLiQ-Rplus-1.1
+LiLiQ-Rplus-1.1+	LiLiQ-Rplus-1.1+
 Libpng	Libpng
 Libpng+	Libpng+
 MIT	Expat
@@ -553,6 +565,8 @@ NCSA	NCSA
 NCSA+	NCSA+
 NGPL	NGPL
 NGPL+	NGPL+
+NLOD-1.0	NLOD-1.0
+NLOD-1.0+	NLOD-1.0+
 NLPL	NLPL
 NLPL+	NLPL+
 NOSL	NOSL
@@ -635,6 +649,8 @@ OML+	OML+
 OPL-1.0	OPL-1.0
 OPL-1.0	Open Public License 1.0
 OPL-1.0+	OPL-1.0+
+OSET-PL-2.1	OSET-PL-2.1
+OSET-PL-2.1+	OSET-PL-2.1+
 OSL-1.0	OSL-1.0
 OSL-1.0+	OSL-1.0+
 OSL-1.1	OSL-1.1
@@ -711,6 +727,8 @@ SISSL-1.2	SISSL-1.2
 SISSL-1.2+	SISSL-1.2+
 SMLNJ	SMLNJ
 SMLNJ+	SMLNJ+
+SMPPL	SMPPL
+SMPPL+	SMPPL+
 SNIA	SNIA
 SNIA+	SNIA+
 SPL-1.0	SPL-1.0
