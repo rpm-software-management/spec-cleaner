@@ -17,6 +17,7 @@
 
 
 BuildRequires:  gtk2
+BuildRequires:  pkg-config
 BuildRequires:  pkgconfig(gail) >= 2.13
 BuildRequires:  pkgconfig(gdk-2.0) >= 2.13
 BuildRequires:  pkgconfig(gdk-x11-2.0) >= 2.13

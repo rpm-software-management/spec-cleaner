@@ -16,6 +16,7 @@
 #
 
 
+BuildRequires:  pkg-config
 BuildRequires:  pkgconfig(libiodbc)
 BuildRequires:  pkgconfig(xxf86vm)
 

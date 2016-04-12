@@ -19,6 +19,7 @@
 Name:           depredux
 # comment one
 # comment two
+BuildRequires:  pkg-config
 BuildRequires:  pkgconfig(libva)
 
 %changelog
