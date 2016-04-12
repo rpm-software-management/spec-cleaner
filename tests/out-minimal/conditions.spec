@@ -25,8 +25,8 @@ Source0:        apparmor-%{version}.tar.gz
 Source1:        apparmor-%{version}.tar.gz.asc
 Source2:        %{name}.keyring
 BuildRequires:  bbb
+BuildRequires:  pkg-config
 BuildRequires:  python
-BuildRequires:  pkgconfig(pkg-config)
 Requires:       insserv
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 %if %{distro} == "suse"
