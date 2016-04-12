@@ -421,6 +421,10 @@ class RpmPreamble(Section):
                 if self.pkgconfig:
                     token = self._pkgname_to_pkgconfig(token)
                 expanded += token
+            # Add pkg-config dep if we have in BR or R the pkgconfig(dependency)
+            if any(item.startswith('pkgconfig(') for item in expanded) \
+               and not 'pkg-config' in expanded:
+                expanded.append('pkg-config')
             # and then sort them :)
             expanded.sort()
 
