@@ -420,10 +420,7 @@ class RpmPreamble(Section):
                     continue
                 if self.pkgconfig:
                     token = self._pkgname_to_pkgconfig(token)
-                if isinstance(token, str):
-                    expanded.append(token)
-                else:
-                    expanded += token
+                expanded += token
             # and then sort them :)
             expanded.sort()
 
