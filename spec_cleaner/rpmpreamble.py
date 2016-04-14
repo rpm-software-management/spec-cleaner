@@ -420,7 +420,10 @@ class RpmPreamble(Section):
                     continue
                 if self.pkgconfig:
                     token = self._pkgname_to_pkgconfig(token)
-                expanded += token
+                if isinstance(token, str):
+                    expanded.append(token)
+                else:
+                    expanded += token
             # Add pkg-config dep if we have in BR or R the pkgconfig(dependency)
             if any(item.startswith('pkgconfig(') for item in expanded) \
                and not 'pkg-config' in expanded:
