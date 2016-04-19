@@ -289,11 +289,21 @@ class RpmPreamble(Section):
            len(self.paragraph['bconds']) > 0:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
-        self.paragraph['conditions'].append(lines)
+        if isinstance(lines, str):
+            self.paragraph['conditions'].append(lines)
+        else:
+            self.paragraph['conditions'] += lines
 
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
         if endif or not self.condition:
+            # check if we are doing the ppc64 migration and delete it
+            if not self.minimal and \
+                 isinstance(self.paragraph['conditions'][0], list) and \
+                 len(self.paragraph['conditions']) == 3 and \
+                 self.paragraph['conditions'][0][0] == '# bug437293' and \
+                 self.paragraph['conditions'][1].endswith('64bit'):
+               self.paragraph['conditions'] = []
             if self._condition_define:
                 # If we have define conditions and possible bcond start
                 # we need to put it bellow bcond definitions as otherwise
