@@ -669,7 +669,7 @@ class RpmPreamble(Section):
         elif self.reg.re_release.match(line):
             match = self.reg.re_release.match(line)
             value = match.group(1)
-            if re.search('[a-zA-Z\s]', value):
+            if re.search(r'[a-zA-Z\s]', value):
                 self._add_line_value_to('release', value)
             else:
                 self._add_line_value_to('release', '0')
