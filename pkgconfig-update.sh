@@ -17,4 +17,4 @@ fi
 BASEURL="http://download.opensuse.org/distribution/$1/repo/oss/suse/"
 fetch "${BASEURL}$(fetch "${BASEURL}repodata/repomd.xml" \
     | perl -ne 'print $1 if /"(.*?primary.xml.gz)"/')" \
-    | zcat | perl "$(cd "%(dirname $0)" && pwd)/pkgconfig-update.pl"
+    | zcat | perl "$(cd "$(dirname $0)" && pwd)/pkgconfig-update.pl"
