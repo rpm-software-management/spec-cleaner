@@ -11,10 +11,10 @@ class RpmScriptlets(Section):
 
     def output(self, fout, newline=True, new_class=None):
         if not self.minimal:
-            self._collapse_multiline_ldconfig(newline)
+            self._collapse_multiline_ldconfig()
         Section.output(self, fout, newline, new_class)
 
-    def _collapse_multiline_ldconfig(self, newline):
+    def _collapse_multiline_ldconfig(self):
         nolines = len(self.lines)
         # if we have 2 or 3 lines where last one is empty
         if nolines == 2 or (nolines == 3 and self.lines[2] == ''):
