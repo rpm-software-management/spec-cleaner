@@ -325,7 +325,7 @@ class RpmPreamble(Section):
                 self._condition_bcond = False
             self.paragraph['conditions'] = []
 
-    def _end_paragraph(self, needs_license = False):
+    def _end_paragraph(self, needs_license=False):
         lines = []
 
         # add license to the package if missing and needed
@@ -436,7 +436,7 @@ class RpmPreamble(Section):
                     expanded += token
             # Add pkg-config dep if we have in BR or R the pkgconfig(dependency)
             if any(item.startswith('pkgconfig(') for item in expanded) \
-               and not 'pkg-config' in expanded:
+               and 'pkg-config' not in expanded:
                 expanded.append('pkg-config')
             # and then sort them :)
             expanded.sort()
@@ -688,7 +688,7 @@ class RpmPreamble(Section):
             match = self.reg.re_group.match(line)
             value = match.group(1)
             if not self.minimal:
-                if not self.previous_line.startswith('# FIXME') and not value in self.allowed_groups:
+                if not self.previous_line.startswith('# FIXME') and value not in self.allowed_groups:
                     self.current_group.append('# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
             self._add_line_value_to('group', value)
             return

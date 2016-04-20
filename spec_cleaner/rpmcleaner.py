@@ -97,25 +97,25 @@ class RpmSpecCleaner(object):
             self.fout = sys.stdout
 
     def _load_licenses(self):
-         # detect all present licenses in the spec and detect if we have more
-         # than one. If we do put license to each subpkg
-         licenses = []
-         filecontent = open(self.specfile)
-         for line in filecontent:
-              if self.reg.re_license.match(line):
-                  line = line.rstrip('\n')
-                  line = line.rstrip('\r')
-                  line = line.rstrip()
-                  match = self.reg.re_license.match(line)
-                  value = match.groups()[len(match.groups()) - 1]
-                  if not value in licenses:
-                      licenses.append(value)
-         filecontent.close()
-         filecontent = None
-         if len(licenses) > 1:
-             self._subpkg_licenses = True
-             # put first license as placeholder if main preamble is missing one
-             self._main_license = licenses[0]
+        # detect all present licenses in the spec and detect if we have more
+        # than one. If we do put license to each subpkg
+        licenses = []
+        filecontent = open(self.specfile)
+        for line in filecontent:
+            if self.reg.re_license.match(line):
+                line = line.rstrip('\n')
+                line = line.rstrip('\r')
+                line = line.rstrip()
+                match = self.reg.re_license.match(line)
+                value = match.groups()[len(match.groups()) - 1]
+                if value not in licenses:
+                    licenses.append(value)
+        filecontent.close()
+        filecontent = None
+        if len(licenses) > 1:
+            self._subpkg_licenses = True
+            # put first license as placeholder if main preamble is missing one
+            self._main_license = licenses[0]
 
     def _detect_preamble_section(self, line):
         # This is seriously ugly but can't think of cleaner way
