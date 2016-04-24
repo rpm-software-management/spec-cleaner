@@ -20,7 +20,7 @@
 Requires:       bash
 
 %package libcap-devel
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 
 %package crazypackage
 Requires:       weirddep

@@ -18,7 +18,7 @@
 
 BuildRequires:  cbla-devel
 BuildRequires:  perl-devel
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 BuildRequires:  rocket-devel
 BuildRequires:  something-devel
 BuildRequires:  cmake(bla)

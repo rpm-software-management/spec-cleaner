@@ -37,7 +37,7 @@ BuildRequires:  libgcrypt-devel >= 1.2.4
 BuildRequires:  libtool
 BuildRequires:  makeinfo
 BuildRequires:  openssl-devel
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 BuildRequires:  socat
 BuildRequires:  pkgconfig(gnutls)
 BuildRequires:  pkgconfig(libcurl)
@@ -81,7 +81,7 @@ Shared library for %{name} (%{summary}).
 Summary:        Small Embeddable HTTP Server Library
 Group:          Development/Libraries/C and C++
 Requires:       %{libmicrohttpd} = %{version}
-Requires:       pkg-config
+Requires:       pkgconfig
 Requires:       pkgconfig(gnutls)
 Requires(post): info
 Requires(preun): info

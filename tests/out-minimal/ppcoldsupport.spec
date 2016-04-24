@@ -24,7 +24,7 @@ Obsoletes:      libcap-64bit
 %endif
 
 %package libcap-devel
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 # bug437293
 %ifarch ppc64
 Obsoletes:      libcap-devel-64bit

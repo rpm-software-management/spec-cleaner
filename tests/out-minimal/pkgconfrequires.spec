@@ -16,9 +16,9 @@
 #
 
 
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 BuildRequires:  pkgconfig(blabla)
-Requires:       pkg-config
+Requires:       pkgconfig
 Requires:       pkgconfig(blabla)
 
 %changelog

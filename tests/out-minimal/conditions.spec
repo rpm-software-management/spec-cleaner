@@ -25,7 +25,7 @@ Source0:        apparmor-%{version}.tar.gz
 Source1:        apparmor-%{version}.tar.gz.asc
 Source2:        %{name}.keyring
 BuildRequires:  bbb
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 BuildRequires:  python
 Requires:       insserv
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build

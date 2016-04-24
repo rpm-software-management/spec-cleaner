@@ -382,10 +382,11 @@ class RpmPreamble(Section):
         pkgname = value.split()[0]
         version = value.replace(pkgname, '')
         pkgconfig = []
-        if pkgname == 'pkgconfig(pkg-config)':
+        if pkgname == 'pkgconfig(pkg-config)' or \
+           pkgname == 'pkg-config':
             # If we have pkgconfig dep in pkgconfig it is nuts, replace it
-            return ['pkg-config{0}'.format(version)]
-        if pkgname not in self.pkgconfig_conversions or pkgname == 'pkg-config':
+            return ['pkgconfig{0}'.format(version)]
+        if pkgname not in self.pkgconfig_conversions:
             # first check if the pacakge is in the replacements
             return [value]
         else:
@@ -436,8 +437,8 @@ class RpmPreamble(Section):
                     expanded += token
             # Add pkg-config dep if we have in BR or R the pkgconfig(dependency)
             if any(item.startswith('pkgconfig(') for item in expanded) \
-               and 'pkg-config' not in expanded:
-                expanded.append('pkg-config')
+               and 'pkgconfig' not in expanded:
+                expanded.append('pkgconfig')
             # and then sort them :)
             expanded.sort()
 

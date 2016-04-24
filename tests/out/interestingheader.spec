@@ -31,7 +31,7 @@ BuildRequires:  Mesa
 BuildRequires:  autoconf
 BuildRequires:  gcc-c++
 BuildRequires:  libircclient-devel
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 BuildRequires:  update-desktop-files
 BuildRequires:  pkgconfig(fftw3)
 BuildRequires:  pkgconfig(fftw3f)
