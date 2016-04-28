@@ -34,4 +34,11 @@ Authors:
         * Peter Funk
         * Jay Painter
 
+%description devel
+Headers and another development files for TomMath library.
+
+Author:
+--------
+    Tom St Denis
+
 %changelog
