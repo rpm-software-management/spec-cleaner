@@ -15,13 +15,14 @@ class RpmScriptlets(Section):
         Section.output(self, fout, newline, new_class)
 
     def _collapse_multiline_ldconfig(self):
-        nolines = len(self.lines)
-        # if we have 2 or 3 lines where last one is empty
-        if nolines == 2 or (nolines == 3 and self.lines[2] == ''):
-            if self.lines[0] != '' and self.lines[1] == '':
+        # if we have 2 lines or rest of them are empty, pop those
+        for i in reversed(self.lines):
+            if i:
+                break
+            else:
                 self.lines.pop()
-            if len(self.lines) >= 2:
-                if self.lines[1] == '/sbin/ldconfig':
-                    pkg = self.lines[0]
-                    self.lines = []
-                    self.lines.append('{0} -p /sbin/ldconfig'.format(pkg))
+        if len(self.lines) == 2:
+            if self.lines[1] == '/sbin/ldconfig':
+                pkg = self.lines[0]
+                self.lines = []
+                self.lines.append('{0} -p /sbin/ldconfig'.format(pkg))
