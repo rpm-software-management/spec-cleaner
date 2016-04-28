@@ -16,7 +16,7 @@ while test ${#} -gt 0; do
             shift
         ;;
         *)
-            echo Unknown parameter $1.
+            echo Unknown parameter "$1".
             echo 'Usage: this service does not expect additional arguments.'
             exit 1
         ;;
@@ -26,12 +26,12 @@ done
 
 if [ -z "${MYOUTDIR}" ]; then
     # we want to format both specs and the templates that create them
-    MYSPECFILES="$(ls -1 *.spec 2>/dev/null) $(ls -1 *.spec.in 2>/dev/null)"
+    MYSPECFILES="$(ls -1 ./*.spec 2>/dev/null) $(ls -1 ./*.spec.in 2>/dev/null)"
 fi
 
 if [ -z "${MYSPECFILES}" ]; then
     # we want to format both specs and the templates that create them
-    MYSPECFILES="$(ls -1 *.spec 2>/dev/null) $(ls -1 *.spec.in 2>/dev/null)"
+    MYSPECFILES="$(ls -1 ./*.spec 2>/dev/null) $(ls -1 ./*.spec.in 2>/dev/null)"
 fi
 
 if [ "x${MYSPECFILES}" = "x " ]; then
@@ -44,7 +44,7 @@ for i in ${MYSPECFILES}; do
         echo "WARNING: spec file \"${i}\" is not writeable."
         continue
     fi
-    /usr/bin/spec-cleaner -m -f "$i" -i 2>&1 > /dev/null
+    /usr/bin/spec-cleaner -m -f "$i" -i > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo "ERROR: failed conversion of spec file: \"${i}\""
         RETVAL=1
