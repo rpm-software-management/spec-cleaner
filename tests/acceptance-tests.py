@@ -113,6 +113,7 @@ class TestCompare(unittest.TestCase):
                 'diff': False,
                 'diff_prog': 'vimdiff',
                 'minimal': False,
+                'no_copyright': False,
             }
             self._run_individual_test(options)
             with open(compare) as ref, open(tmp_file) as test:
@@ -127,6 +128,7 @@ class TestCompare(unittest.TestCase):
                 'diff': False,
                 'diff_prog': 'vimdiff',
                 'minimal': False,
+                'no_copyright': False,
             }
             self._run_individual_test(options)
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
@@ -150,6 +152,7 @@ class TestCompare(unittest.TestCase):
                 'diff': False,
                 'diff_prog': 'vimdiff',
                 'minimal': True,
+                'no_copyright': False,
             }
             self._run_individual_test(options)
             with open(compare) as ref, open(tmp_file) as test:
@@ -164,10 +167,40 @@ class TestCompare(unittest.TestCase):
                 'diff': False,
                 'diff_prog': 'vimdiff',
                 'minimal': True,
+                'no_copyright': False,
             }
             self._run_individual_test(options)
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
                 self.assertStreamEqual(ref, test)
+
+    @patch('spec_cleaner.rpmcopyright.datetime')
+    def test_no_copyright_output(self, datetime_mock):
+        datetime_mock.datetime.now.return_value = (
+            datetime.datetime(2013, 1, 1))
+        spec_str="""%check
+make check
+
+%changelog
+"""
+        tmp_file = os.path.join(self.tmp_dir, "no_copyright_test.spec")
+        out_file = os.path.join(self.tmp_dir, "no_copyright_test_out.spec")
+        with open(tmp_file, "w+") as t:
+            t.write(spec_str)
+
+        # first try to generate cleaned content from messed up
+        options = {
+            'specfile': tmp_file,
+            'output': out_file,
+            'pkgconfig': True,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': True,
+            'no_copyright': True,
+        }
+        self._run_individual_test(options)
+        with open(out_file) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
 
     @patch('spec_cleaner.rpmcopyright.datetime')
     def test_inline_function(self, datetime_mock):
@@ -188,6 +221,7 @@ class TestCompare(unittest.TestCase):
             'diff': False,
             'diff_prog': 'vimdiff',
             'minimal': False,
+            'no_copyright': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -208,6 +242,7 @@ class TestCompare(unittest.TestCase):
             'diff': False,
             'diff_prog': 'gvimdiff',
             'minimal': False,
+            'no_copyright': False,
         }
         self._run_individual_test(options)
 
@@ -228,5 +263,6 @@ class TestCompare(unittest.TestCase):
             'diff': True,
             'diff_prog': 'gvimdiff',
             'minimal': False,
+            'no_copyright': False,
         }
         self._run_individual_test(options)
