@@ -55,6 +55,7 @@ class RpmSpecCleaner(object):
         self.diff = options['diff']
         self.diff_prog = options['diff_prog']
         self.minimal = options['minimal']
+        self.no_copyright = options['no_copyright']
         # run gvim(diff) in foreground mode
         if self.diff_prog.startswith("gvim") and " -f" not in self.diff_prog:
             self.diff_prog += " -f"
@@ -204,7 +205,8 @@ class RpmSpecCleaner(object):
 
     def run(self):
         # We always start with Copyright
-        self.current_section = RpmCopyright(self.specfile, self.minimal)
+        self.current_section = RpmCopyright(self.specfile, self.minimal,
+                                            self.no_copyright)
 
         # FIXME: we need to store the content localy and then reorder
         #        to maintain the specs all the same (eg somebody put

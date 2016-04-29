@@ -40,6 +40,8 @@ def process_args(argv):
                               help='inline the changes directly to the parsed file.')
     parser.add_argument('-m', '--minimal', action='store_true', default=False,
                         help='run in minimal mode that does not do anything intrusive (ie. just sets the Copyright)')
+    parser.add_argument('--no-copyright', action='store_true', default=False,
+                        help='don\'t handle or add a copyright header')
     output_group.add_argument('-o', '--output', default='',
                               help='specify the output file for the cleaned spec content.')
     parser.add_argument('-p', '--pkgconfig', action='store_true', default=False,
@@ -74,6 +76,7 @@ def process_args(argv):
         'diff': options.diff,
         'diff_prog': options.diff_prog,
         'minimal': options.minimal,
+        'no_copyright': options.no_copyright,
     }
 
     return options_dict
