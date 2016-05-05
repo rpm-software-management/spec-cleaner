@@ -7,6 +7,7 @@ import shutil
 import tempfile
 import difflib
 import datetime
+from nose.tools import *
 from mock import patch
 
 from spec_cleaner import RpmException
@@ -265,9 +266,8 @@ make check
         }
         self._run_individual_test(options)
 
-    @patch('subprocess.call')
-    def test_exception(self, subprocess_mock):
-        subprocess_mock.subprocess.call.return_value = True
+    @raises(RpmException)
+    def test_exception(self):
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
         options = {
@@ -280,4 +280,4 @@ make check
             'minimal': False,
             'no_copyright': False,
         }
-        self.assertRaises(RpmException, self._run_individual_test(options))
+        self._run_individual_test(options)
