@@ -115,8 +115,8 @@ class RpmPreamble(Section):
         'patch',
     ]
 
-    def __init__(self, specfile, minimal, pkgconfig, subpkglicense, license):
-        Section.__init__(self, specfile, minimal)
+    def __init__(self, options):
+        Section.__init__(self, options)
         # Old storage
         self._oldstore = []
         # Is the parsed variable multiline (ending with \)
@@ -128,7 +128,7 @@ class RpmPreamble(Section):
         # Is the condition based probably on bcond evaluation
         self._condition_bcond = False
         # do we want pkgconfig
-        self.pkgconfig = pkgconfig
+        self.pkgconfig = options['pkgconfig']
         # dict of license replacement options
         self.license_conversions = self._read_licenses_changes()
         # dict of pkgconfig conversions
@@ -143,8 +143,8 @@ class RpmPreamble(Section):
         # reorder them
         self.categories_with_package_tokens.append('provides_obsoletes')
         # license handling
-        self.subpkglicense = subpkglicense
-        self.license = license
+        self.subpkglicense = options['subpkglicense']
+        self.license = options['license']
 
         # simple categories matching
         self.category_to_re = {

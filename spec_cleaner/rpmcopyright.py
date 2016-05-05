@@ -14,9 +14,9 @@ class RpmCopyright(Section):
     that are still relevant. Everything else is ignored.
     """
 
-    def __init__(self, specfile, minimal, no_copyright):
-        Section.__init__(self, specfile, minimal)
-        self.no_copyright = no_copyright
+    def __init__(self, options):
+        Section.__init__(self, options)
+        self.no_copyright = options['no_copyright']
         self.copyrights = []
         self.buildrules = []
         self.my_copyright = ''

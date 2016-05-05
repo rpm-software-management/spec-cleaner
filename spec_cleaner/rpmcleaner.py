@@ -42,25 +42,17 @@ class RpmSpecCleaner(object):
     current_section = None
     _previous_line = None
     _previous_nonempty_line = None
-    # known main license from root preamble
-    _main_license = None
-    # do we need to put license in each subpkg
-    _subpkg_licenses = False
 
     def __init__(self, options):
-        self.specfile = options['specfile']
-        self.output = options['output']
-        self.pkgconfig = options['pkgconfig']
-        self.inline = options['inline']
-        self.diff = options['diff']
-        self.diff_prog = options['diff_prog']
-        self.minimal = options['minimal']
-        self.no_copyright = options['no_copyright']
+        self.options = options
+        # inicialize main license and subpkg option
+        self.options['license'] = None
+        self.options['subpkglicense'] = False
         # run gvim(diff) in foreground mode
-        if self.diff_prog.startswith("gvim") and " -f" not in self.diff_prog:
-            self.diff_prog += " -f"
-        self.reg = RegexpSingle(self.specfile)
-        self.fin = open(self.specfile)
+        if self.options['diff_prog'].startswith("gvim") and " -f" not in self.options['diff_prog']:
+            self.options['diff_prog'] += " -f"
+        self.reg = RegexpSingle(self.options['specfile'])
+        self.fin = open(self.options['specfile'])
 
         # Section starts detection
         self.section_starts = [
@@ -78,9 +70,9 @@ class RpmSpecCleaner(object):
 
         self._load_licenses()
 
-        if self.output:
-            self.fout = open(self.output, 'w')
-        elif self.inline:
+        if self.options['output']:
+            self.fout = open(self.options['output'], 'w')
+        elif self.options['inline']:
             fifo = StringIO()
             while True:
                 string = self.fin.read(500 * 1024)
@@ -91,9 +83,9 @@ class RpmSpecCleaner(object):
             self.fin.close()
             fifo.seek(0)
             self.fin = fifo
-            self.fout = open(self.specfile, 'w')
-        elif self.diff:
-            self.fout = tempfile.NamedTemporaryFile(mode='w+', prefix=os.path.split(self.specfile)[-1] + '.', suffix='.spec')
+            self.fout = open(self.options['specfile'], 'w')
+        elif self.options['diff']:
+            self.fout = tempfile.NamedTemporaryFile(mode='w+', prefix=os.path.split(self.options['specfile'])[-1] + '.', suffix='.spec')
         else:
             self.fout = sys.stdout
 
@@ -101,7 +93,7 @@ class RpmSpecCleaner(object):
         # detect all present licenses in the spec and detect if we have more
         # than one. If we do put license to each subpkg
         licenses = []
-        filecontent = open(self.specfile)
+        filecontent = open(self.options['specfile'])
         for line in filecontent:
             if self.reg.re_license.match(line):
                 line = line.rstrip('\n')
@@ -114,9 +106,9 @@ class RpmSpecCleaner(object):
         filecontent.close()
         filecontent = None
         if len(licenses) > 1:
-            self._subpkg_licenses = True
+            self.options['subpkglicense'] = True
             # put first license as placeholder if main preamble is missing one
-            self._main_license = licenses[0]
+            self.options['license'] = licenses[0]
 
     def _detect_preamble_section(self, line):
         # This is seriously ugly but can't think of cleaner way
@@ -205,8 +197,7 @@ class RpmSpecCleaner(object):
 
     def run(self):
         # We always start with Copyright
-        self.current_section = RpmCopyright(self.specfile, self.minimal,
-                                            self.no_copyright)
+        self.current_section = RpmCopyright(self.options)
 
         # FIXME: we need to store the content localy and then reorder
         #        to maintain the specs all the same (eg somebody put
@@ -228,11 +219,8 @@ class RpmSpecCleaner(object):
                 else:
                     newline = True
                 self.current_section.output(self.fout, newline, new_class.__name__)
-                # we need to sent pkgconfig option to preamble and package
-                if new_class == RpmPreamble or new_class == RpmPackage:
-                    self.current_section = new_class(self.specfile, self.minimal, self.pkgconfig, self._subpkg_licenses, self._main_license)
-                else:
-                    self.current_section = new_class(self.specfile, self.minimal)
+                # start new class
+                self.current_section = new_class(self.options)
                 # skip empty line adding if we are switching sections
                 if self._previous_line == '' and line == '':
                     continue
@@ -253,8 +241,8 @@ class RpmSpecCleaner(object):
             self.fout.write('%changelog\n')
         self.fout.flush()
 
-        if self.diff:
-            cmd = shlex.split(self.diff_prog + " " + self.specfile.replace(" ", "\\ ") + " " + self.fout.name.replace(" ", "\\ "))
+        if self.options['diff']:
+            cmd = shlex.split(self.options['diff_prog'] + " " + self.options['specfile'].replace(" ", "\\ ") + " " + self.fout.name.replace(" ", "\\ "))
             try:
                 subprocess.call(cmd, shell=False)
             except OSError as e:

@@ -17,12 +17,12 @@ class Section(object):
     unificate all the content.
     """
 
-    def __init__(self, specfile, minimal):
+    def __init__(self, options):
         self.lines = []
         self.previous_line = None
-        self.spec = specfile
-        self.minimal = minimal
-        self.reg = RegexpSingle(specfile)
+        self.spec = options['specfile']
+        self.minimal = options['minimal']
+        self.reg = RegexpSingle(self.spec)
         # Are we inside of conditional or not
         self.condition = False
         self._condition_counter = 0
