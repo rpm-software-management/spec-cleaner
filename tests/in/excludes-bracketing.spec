@@ -81,6 +81,7 @@
 %py_compile
 %qmake
 %qmake5
+%qmake5_install
 %reconfigure_fonts_[^\s]*
 %requires_[^\s]*
 %restart_on_update
