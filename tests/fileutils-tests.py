@@ -8,10 +8,11 @@ from spec_cleaner.fileutils import FileUtils
 from spec_cleaner import RpmException
 
 class TestFileutils(unittest.TestCase):
+
     """
     We run few tests to ensure fileutils class works fine
     """
-    
+
     def setUp(self):
         """
         Declare global scope variables for further use.
