@@ -153,7 +153,7 @@ class RegexpSingle(object):
         files = FileUtils()
         files.open_datafile(BRACKETING_EXCLUDES)
         keywords = []
-        for line in files.f:
+        for line in files._file:
             keywords.append(line.rstrip('\n'))
         files.close()
 
@@ -184,7 +184,7 @@ class RegexpSingle(object):
 
         files = FileUtils()
         files.open(spec, 'r')
-        for line in files.f:
+        for line in files._file:
             line = line.rstrip('\n')
             found_macro = self.re_spec_macrofunc.sub(r'\1', line)
             if found_macro != line:

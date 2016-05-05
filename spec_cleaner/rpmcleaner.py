@@ -245,8 +245,8 @@ class RpmSpecCleaner(object):
             cmd = shlex.split(self.options['diff_prog'] + " " + self.options['specfile'].replace(" ", "\\ ") + " " + self.fout.name.replace(" ", "\\ "))
             try:
                 subprocess.call(cmd, shell=False)
-            except OSError as e:
-                raise RpmException('Could not execute %s (%s)' % (self.options['diff_prog'].split()[0], e.strerror))
+            except OSError as error:
+                raise RpmException('Could not execute %s (%s)' % (self.options['diff_prog'].split()[0], error.strerror))
 
     def __del__(self):
         """
