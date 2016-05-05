@@ -26,7 +26,7 @@ class FileUtils(object):
         except IOError:
             # the .. is appended as we are in spec_cleaner sub_folder
             try:
-                _file = open('/usr/share/spec-cleaner/{0}'.format(name, 'r'))
+                _file = open('/usr/share/spec-cleaner/{0}'.format(name), 'r')
             except IOError as error:
                 raise RpmException(error.strerror)
 
