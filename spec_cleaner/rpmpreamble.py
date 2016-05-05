@@ -496,7 +496,7 @@ class RpmPreamble(Section):
 
         files = FileUtils()
         files.open_datafile(PKGCONFIG_CONVERSIONS)
-        for line in files._file:
+        for line in files.f:
             # the values are split by  ': '
             pair = line.split(': ')
             pkgconfig[pair[0]] = pair[1][:-1]
@@ -509,8 +509,8 @@ class RpmPreamble(Section):
         files = FileUtils()
         files.open_datafile(LICENSES_CHANGES)
         # Header starts with # first line so skip
-        next(files._file)
-        for line in files._file:
+        next(files.f)
+        for line in files.f:
             # strip newline
             line = line.rstrip('\n')
             # file has format
@@ -527,8 +527,8 @@ class RpmPreamble(Section):
         files = FileUtils()
         files.open_datafile(GROUPS_LIST)
         # header starts with link where we find the groups
-        next(files._file)
-        for line in files._file:
+        next(files.f)
+        for line in files.f:
             line = line.rstrip('\n')
             groups.append(line)
         files.close()

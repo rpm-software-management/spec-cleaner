@@ -13,7 +13,7 @@ class FileUtils(object):
     """
 
     # file variable
-    _file = None
+    f = None
 
     def open_datafile(self, name):
         """
@@ -30,7 +30,7 @@ class FileUtils(object):
             except IOError as error:
                 raise RpmException(error.strerror)
 
-        self._file = _file
+        self.f = _file
 
     def open(self, name, mode):
         """
@@ -42,17 +42,17 @@ class FileUtils(object):
         except IOError as error:
             raise RpmException(error.strerror)
 
-        self._file = _file
+        self.f = _file
 
     def close(self):
         """
         Just wrapper for closing the file
         """
 
-        if self._file:
-            self._file.close()
-        self._file = None
+        if self.f:
+            self.f.close()
+            self.f = None
 
     def __del__(self):
         self.close()
-        self._file = None
+        self.f = None
