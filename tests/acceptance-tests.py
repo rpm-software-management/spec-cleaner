@@ -173,10 +173,7 @@ class TestCompare(unittest.TestCase):
             with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
                 self.assertStreamEqual(ref, test)
 
-    @patch('spec_cleaner.rpmcopyright.datetime')
-    def test_no_copyright_output(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (
-            datetime.datetime(2013, 1, 1))
+    def test_no_copyright_output(self):
         spec_str="""%check
 make check
 
