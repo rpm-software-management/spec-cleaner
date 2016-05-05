@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import difflib
 import datetime
-from nose.tools import *
+from nose.tools import raises
 from mock import patch
 
 from spec_cleaner import RpmException
