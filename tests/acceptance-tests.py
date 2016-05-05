@@ -9,6 +9,7 @@ import difflib
 import datetime
 from mock import patch
 
+from spec_cleaner import RpmException
 from spec_cleaner import RpmSpecCleaner
 
 
@@ -263,3 +264,20 @@ make check
             'no_copyright': False,
         }
         self._run_individual_test(options)
+
+    @patch('subprocess.call')
+    def test_exception(self, subprocess_mock):
+        subprocess_mock.subprocess.call.return_value = True
+        test = self._obtain_list_of_tests()[0]
+        infile = os.path.join(self.input_dir, test)
+        options = {
+            'specfile': infile,
+            'output': '',
+            'pkgconfig': True,
+            'inline': False,
+            'diff': True,
+            'diff_prog': 'error',
+            'minimal': False,
+            'no_copyright': False,
+        }
+        self.assertRaises(RpmException, self._run_individual_test(options))

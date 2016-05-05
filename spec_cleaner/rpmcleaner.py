@@ -246,7 +246,7 @@ class RpmSpecCleaner(object):
             try:
                 subprocess.call(cmd, shell=False)
             except OSError as e:
-                raise RpmException('Could not execute %s (%s)' % (self.diff_prog.split()[0], e.strerror))
+                raise RpmException('Could not execute %s (%s)' % (self.options['diff_prog'].split()[0], e.strerror))
 
     def __del__(self):
         """
