@@ -30,9 +30,9 @@ class TestFileutils(unittest.TestCase):
     def test_open(self):
         self.fileutils.open('tests/fileutils-tests.py', 'r')
         self.fileutils.close()
-        self.assertEqual(None, self.fileutils._file)
+        self.assertEqual(None, self.fileutils.f)
 
     def test_open_datafile(self):
         self.fileutils.open_datafile('excludes-bracketing.txt')
         self.fileutils.close()
-        self.assertEqual(None, self.fileutils._file)
+        self.assertEqual(None, self.fileutils.f)
