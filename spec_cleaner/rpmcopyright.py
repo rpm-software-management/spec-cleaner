@@ -29,7 +29,7 @@ class RpmCopyright(Section):
 #'''.format(specname))
 
     def _create_default_copyright(self):
-        year = datetime.datetime.now().year
+        year = datetime.date.today().year
         self.my_copyright = '# Copyright (c) {0} SUSE LINUX GmbH, Nuernberg, Germany.'.format(year)
 
     def _add_copyright(self):

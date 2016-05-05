@@ -7,31 +7,38 @@ import shutil
 import tempfile
 import difflib
 import datetime
-from nose.tools import raises
 from mock import patch
+from nose.tools import raises
 
 from spec_cleaner import RpmException
 from spec_cleaner import RpmSpecCleaner
 
 
-class TestCompare(unittest.TestCase):
+class NewDate(datetime.date):
+    @classmethod
+    def today(cls):
+        return cls(2013, 1, 1)
+
+
+class TestCompare(object):
 
     """
     We run individual tests to verify the content compared to expected results
     """
 
-    def setUp(self):
+    def __init__(self):
         """
         Declare global scope variables for further use.
         """
 
+        datetime.date = NewDate
         self.input_dir = self._get_input_dir()
         self.fixtures_dir = self._get_fixtures_dir()
         self.minimal_fixtures_dir = self._get_minimal_fixtures_dir()
         self.tmp_dir = tempfile.mkdtemp()
         self.tmp_file_rerun = tempfile.NamedTemporaryFile()
 
-    def tearDown(self):
+    def __del__(self):
         """
         Remove the tmp directory
         """
@@ -46,7 +53,7 @@ class TestCompare(unittest.TestCase):
             read.append(line)
             # lines that don't start with a ' ' are diff ones
             if not line.startswith(' '):
-                self.fail(''.join(read + list(result)))
+                assert False, ''.join(read + list(result))
 
     def assertStreamEqual(self, stream1, stream2, junk=None):
         """compare two streams (using difflib and readlines())"""
@@ -97,83 +104,83 @@ class TestCompare(unittest.TestCase):
         cleaner = RpmSpecCleaner(options)
         cleaner.run()
 
-    @patch('spec_cleaner.rpmcopyright.datetime')
-    def test_input_files(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (
-            datetime.datetime(2013, 1, 1))
+    def test_normal_outputs(self):
         for test in self._obtain_list_of_tests():
-            infile = os.path.join(self.input_dir, test)
-            compare = os.path.join(self.fixtures_dir, test)
-            tmp_file = os.path.join(self.tmp_dir, test)
+            yield self.check_normal_output, test
 
-            # first try to generate cleaned content from messed up
-            options = {
-                'specfile': infile,
-                'output': tmp_file,
-                'pkgconfig': True,
-                'inline': False,
-                'diff': False,
-                'diff_prog': 'vimdiff',
-                'minimal': False,
-                'no_copyright': False,
-            }
-            self._run_individual_test(options)
-            with open(compare) as ref, open(tmp_file) as test:
-                self.assertStreamEqual(ref, test)
+    def check_normal_output(self, test):
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.fixtures_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
 
-            # second run it again while ensuring it didn't change
-            options = {
-                'specfile': tmp_file,
-                'output': self.tmp_file_rerun.name,
-                'pkgconfig': True,
-                'inline': False,
-                'diff': False,
-                'diff_prog': 'vimdiff',
-                'minimal': False,
-                'no_copyright': False,
-            }
-            self._run_individual_test(options)
-            with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
-                self.assertStreamEqual(ref, test)
+        # first try to generate cleaned content from messed up
+        options = {
+            'specfile': infile,
+            'output': tmp_file,
+            'pkgconfig': True,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': False,
+            'no_copyright': False,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
 
-    @patch('spec_cleaner.rpmcopyright.datetime')
-    def test_minimal_output(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (
-            datetime.datetime(2013, 1, 1))
+        # second run it again while ensuring it didn't change
+        options = {
+            'specfile': tmp_file,
+            'output': self.tmp_file_rerun.name,
+            'pkgconfig': True,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': False,
+            'no_copyright': False,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
+            self.assertStreamEqual(ref, test)
+
+    def test_minimal_outputs(self):
         for test in self._obtain_list_of_tests():
-            infile = os.path.join(self.input_dir, test)
-            compare = os.path.join(self.minimal_fixtures_dir, test)
-            tmp_file = os.path.join(self.tmp_dir, test)
+            yield self.check_minimal_output, test
 
-            # first try to generate cleaned content from messed up
-            options = {
-                'specfile': infile,
-                'output': tmp_file,
-                'pkgconfig': True,
-                'inline': False,
-                'diff': False,
-                'diff_prog': 'vimdiff',
-                'minimal': True,
-                'no_copyright': False,
-            }
-            self._run_individual_test(options)
-            with open(compare) as ref, open(tmp_file) as test:
-                self.assertStreamEqual(ref, test)
+    def check_minimal_output(self, test):
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.minimal_fixtures_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
 
-            # second run it again while ensuring it didn't change
-            options = {
-                'specfile': tmp_file,
-                'output': self.tmp_file_rerun.name,
-                'pkgconfig': True,
-                'inline': False,
-                'diff': False,
-                'diff_prog': 'vimdiff',
-                'minimal': True,
-                'no_copyright': False,
-            }
-            self._run_individual_test(options)
-            with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
-                self.assertStreamEqual(ref, test)
+        # first try to generate cleaned content from messed up
+        options = {
+            'specfile': infile,
+            'output': tmp_file,
+            'pkgconfig': True,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': True,
+            'no_copyright': False,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
+
+        # second run it again while ensuring it didn't change
+        options = {
+            'specfile': tmp_file,
+            'output': self.tmp_file_rerun.name,
+            'pkgconfig': True,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': True,
+            'no_copyright': False,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
+            self.assertStreamEqual(ref, test)
 
     def test_no_copyright_output(self):
         spec_str="""%check
@@ -201,11 +208,7 @@ make check
         with open(out_file) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
-    @patch('spec_cleaner.rpmcopyright.datetime')
-    def test_inline_function(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (
-            datetime.datetime(2013, 1, 1))
-
+    def test_inline_function(self):
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
         compare = os.path.join(self.fixtures_dir, test)
@@ -226,11 +229,7 @@ make check
         with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
-    @patch('spec_cleaner.rpmcopyright.datetime')
-    def test_regular_output(self, datetime_mock):
-        datetime_mock.datetime.now.return_value = (
-            datetime.datetime(2013, 1, 1))
-
+    def test_regular_output(self):
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
         options = {
@@ -245,13 +244,8 @@ make check
         }
         self._run_individual_test(options)
 
-    @patch('spec_cleaner.rpmcopyright.datetime')
-    @patch('subprocess.call')
-    def test_diff_function(self, datetime_mock, subprocess_mock):
-        datetime_mock.datetime.now.return_value = (
-            datetime.datetime(2013, 1, 1))
-        subprocess_mock.subprocess.call.return_value = True
-
+    @raises(RpmException)
+    def test_diff_function(self):
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
         options = {
@@ -261,22 +255,6 @@ make check
             'inline': False,
             'diff': True,
             'diff_prog': 'gvimdiff',
-            'minimal': False,
-            'no_copyright': False,
-        }
-        self._run_individual_test(options)
-
-    @raises(RpmException)
-    def test_exception(self):
-        test = self._obtain_list_of_tests()[0]
-        infile = os.path.join(self.input_dir, test)
-        options = {
-            'specfile': infile,
-            'output': '',
-            'pkgconfig': True,
-            'inline': False,
-            'diff': True,
-            'diff_prog': 'error',
             'minimal': False,
             'no_copyright': False,
         }
