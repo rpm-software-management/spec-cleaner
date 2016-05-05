@@ -2,3 +2,6 @@ test-warnings: yes
 doc-warnings: no
 strictness: veryhigh
 autodetect: yes
+python-targets:
+    - 2
+    - 3
