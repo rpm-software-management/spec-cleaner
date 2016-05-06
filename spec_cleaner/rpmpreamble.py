@@ -630,7 +630,7 @@ class RpmPreamble(Section):
             if not self.minimal:
                 # add the comment about using proper macro which needs
                 # investingaton
-                if not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
+                if self.previous_line and not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
                     self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
             self._add_line_value_to('prereq', match.group(1))
             return
@@ -689,7 +689,7 @@ class RpmPreamble(Section):
             match = self.reg.re_group.match(line)
             value = match.group(1)
             if not self.minimal:
-                if not self.previous_line.startswith('# FIXME') and value not in self.allowed_groups:
+                if self.previous_line and not self.previous_line.startswith('# FIXME') and value not in self.allowed_groups:
                     self.current_group.append('# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
             self._add_line_value_to('group', value)
             return
@@ -730,7 +730,7 @@ class RpmPackage(RpmPreamble):
     def add(self, line):
         # The first line (%package) should always be added and is different
         # from the lines we handle in RpmPreamble.
-        if self.previous_line is None:
+        if not self.previous_line:
             Section.add(self, line)
             return
         # If the package is lang package we add here comment about the lang

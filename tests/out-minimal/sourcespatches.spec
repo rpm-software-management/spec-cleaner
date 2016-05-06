@@ -1,4 +1,5 @@
-# this is crazy define
+
+
 %define root %version
 %global test somethingelse
 %if 0%{?suse_version} > 1230

@@ -1,3 +1,5 @@
+%build
+# local install
 python scons/scons.py PREFIX=%{_prefix}/local
 # more complicated case
 python scons/scons.py PREFIX=%{_prefix}/lib/test/usr

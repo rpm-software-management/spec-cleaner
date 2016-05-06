@@ -25,5 +25,4 @@
 # nodebuginfo
 # rootforbuild
 # needsrootforbuild
-
 %changelog

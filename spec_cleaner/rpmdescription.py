@@ -19,7 +19,7 @@ class RpmDescription(Section):
         self.unknown_line = False
 
     def add(self, line):
-        if self.previous_line is not None and len(line) > 0 and line[0] == '%':
+        if self.previous_line and len(line) > 0 and line[0] == '%':
             self.unknown_line = True
 
         if self.removing_authors and not self.unknown_line:

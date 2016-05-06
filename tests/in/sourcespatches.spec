@@ -12,7 +12,6 @@ Patch10: test2
 %bcond_with self_hosting
 Source2: testfile2.tar.bz2
 Patch: test
-# this is crazy define
 %define root %version
 %global test somethingelse
 

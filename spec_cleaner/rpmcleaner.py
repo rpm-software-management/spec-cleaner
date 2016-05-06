@@ -179,6 +179,7 @@ class RpmSpecCleaner(object):
                 return RpmPreamble
             # if we got two whitespaces then the copyright also ended
             if self._previous_line == '' and line == '':
+                self.current_section.add(line)
                 return RpmPreamble
 
         # If we actually start matching global content again we need to

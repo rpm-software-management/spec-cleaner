@@ -1,3 +1,4 @@
+%build
 # local install
 python scons/scons.py PREFIX=/usr/local
 # more complicated case

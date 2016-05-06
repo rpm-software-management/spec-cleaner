@@ -1,3 +1,4 @@
+
 %define postInstall() \
 . %{_sysconfdir}/selinux/config; \
 if [ -e %{_sysconfdir}/selinux/%2/.rebuild ]; then \

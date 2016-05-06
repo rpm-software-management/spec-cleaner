@@ -63,6 +63,11 @@ class RpmCopyright(Section):
             self.lines.append(self.vimmodeline)
 
     def add(self, line):
+        # if we have no copyright header we actually should not touch it not
+        # wipe out, thus just add everything to known lines
+        if self.no_copyright:
+            self.lines.append(line)
+            return
         if not self.lines and not line:
             return
         if self.reg.re_copyright.match(line) and not self.reg.re_suse_copyright.search(line):
@@ -85,14 +90,14 @@ class RpmCopyright(Section):
             return
 
     def output(self, fout, newline=True, new_class=None):
-        if self.no_copyright:
-            return
-        self._add_modelines()
-        self._add_pkg_header()
-        self._add_copyright()
-        self._add_default_license()
-        self._add_buildrules()
-        # trailing enters # prep_spec does two so do the same
-        self.lines.append('')
-        self.lines.append('')
+        if not self.no_copyright:
+            self._add_modelines()
+            self._add_pkg_header()
+            self._add_copyright()
+            self._add_default_license()
+            self._add_buildrules()
+            self.lines.append('')
+            self.lines.append('')
+        else:
+            newline=False
         Section.output(self, fout, newline, new_class)
