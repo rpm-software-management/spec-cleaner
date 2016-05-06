@@ -34,6 +34,7 @@ class TestCompare(object):
         datetime.date = NewDate
         self.input_dir = self._get_input_dir()
         self.fixtures_dir = self._get_fixtures_dir()
+        self.header_dir = self._get_header_dir()
         self.minimal_fixtures_dir = self._get_minimal_fixtures_dir()
         self.tmp_dir = tempfile.mkdtemp()
         self.tmp_file_rerun = tempfile.NamedTemporaryFile()
@@ -72,6 +73,12 @@ class TestCompare(object):
         Return path for input files used by tests
         """
         return os.path.join(os.getcwd(), 'tests/in/')
+
+    def _get_header_dir(self):
+        """
+        Return path for output files used by header tests
+        """
+        return os.path.join(os.getcwd(), 'tests/header/')
 
     def _get_fixtures_dir(self):
         """
@@ -191,30 +198,25 @@ class TestCompare(object):
         with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
-    def test_no_copyright_output(self):
-        spec_str="""%check
-make check
-
-%changelog
-"""
-        tmp_file = os.path.join(self.tmp_dir, "no_copyright_test.spec")
-        out_file = os.path.join(self.tmp_dir, "no_copyright_test_out.spec")
-        with open(tmp_file, "w+") as t:
-            t.write(spec_str)
+    def test_copyright_output(self):
+        test = 'header.spec'
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.header_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
 
         # first try to generate cleaned content from messed up
         options = {
-            'specfile': tmp_file,
-            'output': out_file,
+            'specfile': infile,
+            'output': tmp_file,
             'pkgconfig': True,
             'inline': False,
             'diff': False,
             'diff_prog': 'vimdiff',
             'minimal': True,
-            'no_copyright': True,
+            'no_copyright': False,
         }
         self._run_individual_test(options)
-        with open(out_file) as ref, open(tmp_file) as test:
+        with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
     def test_inline_function(self):
