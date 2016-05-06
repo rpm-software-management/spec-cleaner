@@ -1,7 +1,7 @@
 #
 # spec file for package spec-cleaner
 #
-# Copyright (c) 2013 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
 # Copyright (c) 2012 Vincent Untz <vuntz@opensuse.org>
 #
 # All modifications and additions to the file contributed by third parties
@@ -15,7 +15,6 @@
 
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-
 
 Name:           spec-cleaner
 Version:        0.4.1

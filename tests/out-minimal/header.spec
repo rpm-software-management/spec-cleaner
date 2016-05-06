@@ -1,9 +1,10 @@
 # vim:set ft=cpp ts=2 sw=2 sts=2 cindent:
 #
-# spec file for package header
+# spec file for package broken
 #
-# Copyright (c) 2013 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2011 SUSE LINUX Products GmbH, Nuernberg, Germany.
 # Copyright (c) 2012 Dominique Leuenberger, Amsterdam, The Netherlands
+# Copyright #C 2013 Broken copyright
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -16,10 +17,13 @@
 
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-# icecream
-# needsbinariesforbuild
-# needsrootforbuild
-# nodebuginfo
 
+# norootforbuild
+#  icecream
+# binariesforbuild
+#  needsbinariesforbuild
+# nodebuginfo
+# rootforbuild
+# needsrootforbuild
 
 %changelog

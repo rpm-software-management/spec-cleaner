@@ -1,7 +1,7 @@
 #
-# spec file for package version_regex
+# spec file for package suse-qam-metadata
 #
-# Copyright (c) 2013 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -14,7 +14,6 @@
 
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-
 
 Version:        0.1.{{ DATE_VERSION }}
 

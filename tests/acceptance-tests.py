@@ -123,7 +123,7 @@ class TestCompare(object):
             'diff': False,
             'diff_prog': 'vimdiff',
             'minimal': False,
-            'no_copyright': False,
+            'no_copyright': True,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -141,7 +141,7 @@ class TestCompare(object):
             'diff': False,
             'diff_prog': 'vimdiff',
             'minimal': False,
-            'no_copyright': False,
+            'no_copyright': True,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -167,7 +167,7 @@ class TestCompare(object):
             'diff': False,
             'diff_prog': 'vimdiff',
             'minimal': True,
-            'no_copyright': False,
+            'no_copyright': True,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -185,7 +185,7 @@ class TestCompare(object):
             'diff': False,
             'diff_prog': 'vimdiff',
             'minimal': True,
-            'no_copyright': False,
+            'no_copyright': True,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
