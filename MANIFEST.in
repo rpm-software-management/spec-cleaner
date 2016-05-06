@@ -1,5 +1,6 @@
-include AUTHORS COPYING README.rst
+include AUTHORS COPYING README.md README.md.in
 include obs/*
 include data/*.txt
 recursive-include tests *
 include pkgconfig-update.* license-update.sh Makefile
+include tox.ini
