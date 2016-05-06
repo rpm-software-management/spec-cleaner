@@ -21,13 +21,11 @@ help you to achieve the easiest workflow:
 ```bash
 $ vi tests/in/myfeaturebug.spec
 *hackyhacky*
-$ spec-cleaner tests/in/myfeaturebug.spec > tests/out/myfeaturebug.spec
+$ spec-cleaner --no-header tests/in/myfeaturebug.spec > tests/out/myfeaturebug.spec
 $ vi tests/out/myfeaturebug.spec
-*change date in header from current year to 2013 as testsuite mock it*
 *change any problematic part to what it should look like correctly*
-$ spec-cleaner -m tests/in/myfeaturebug.spec > tests/out-minimal/myfeaturebug.spec
+$ spec-cleaner --no-header -m tests/in/myfeaturebug.spec > tests/out-minimal/myfeaturebug.spec
 $ vi tests/out-minimal/myfeaturebug.spec
-*change date in header from current year to 2013 as testsuite mock it*
 *change any problematic part to what it shoudl look like correctly*
 ```
 
