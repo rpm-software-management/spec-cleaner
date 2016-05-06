@@ -106,14 +106,15 @@ class TestCompare(object):
 
     def test_normal_outputs(self):
         for test in self._obtain_list_of_tests():
-            yield self.check_normal_output, test
+            tmp_file = os.path.join(self.tmp_dir, test)
+            # This is to run twice to check we are not breaking in concurent runs
+            yield self.check_normal_output, test, tmp_file
+            yield self.check_normal_output_rerun, test, tmp_file
 
-    def check_normal_output(self, test):
+    def check_normal_output(self, test, tmp_file):
         infile = os.path.join(self.input_dir, test)
         compare = os.path.join(self.fixtures_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
 
-        # first try to generate cleaned content from messed up
         options = {
             'specfile': infile,
             'output': tmp_file,
@@ -128,10 +129,13 @@ class TestCompare(object):
         with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
-        # second run it again while ensuring it didn't change
+    def check_normal_output_rerun(self, test, infile):
+        compare = os.path.join(self.fixtures_dir, test)
+        tmp_file = self.tmp_file_rerun.name
+
         options = {
-            'specfile': tmp_file,
-            'output': self.tmp_file_rerun.name,
+            'specfile': infile,
+            'output': tmp_file,
             'pkgconfig': True,
             'inline': False,
             'diff': False,
@@ -140,17 +144,19 @@ class TestCompare(object):
             'no_copyright': False,
         }
         self._run_individual_test(options)
-        with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
+        with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
     def test_minimal_outputs(self):
         for test in self._obtain_list_of_tests():
-            yield self.check_minimal_output, test
+            tmp_file = os.path.join(self.tmp_dir, test)
+            # This is to run twice to check we are not breaking in concurent runs
+            yield self.check_minimal_output, test, tmp_file
+            yield self.check_minimal_output_rerun, test, tmp_file
 
-    def check_minimal_output(self, test):
+    def check_minimal_output(self, test, tmp_file):
         infile = os.path.join(self.input_dir, test)
         compare = os.path.join(self.minimal_fixtures_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
 
         # first try to generate cleaned content from messed up
         options = {
@@ -167,10 +173,13 @@ class TestCompare(object):
         with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
-        # second run it again while ensuring it didn't change
+    def check_minimal_output_rerun(self, test, infile):
+        compare = os.path.join(self.minimal_fixtures_dir, test)
+        tmp_file = self.tmp_file_rerun.name
+        # first try to generate cleaned content from messed up
         options = {
-            'specfile': tmp_file,
-            'output': self.tmp_file_rerun.name,
+            'specfile': infile,
+            'output': tmp_file,
             'pkgconfig': True,
             'inline': False,
             'diff': False,
@@ -179,7 +188,7 @@ class TestCompare(object):
             'no_copyright': False,
         }
         self._run_individual_test(options)
-        with open(compare) as ref, open(self.tmp_file_rerun.name) as test:
+        with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
     def test_no_copyright_output(self):
@@ -254,7 +263,7 @@ make check
             'pkgconfig': True,
             'inline': False,
             'diff': True,
-            'diff_prog': 'gvimdiff',
+            'diff_prog': 'error',
             'minimal': False,
             'no_copyright': False,
         }
