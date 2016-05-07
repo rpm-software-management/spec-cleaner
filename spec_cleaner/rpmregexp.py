@@ -87,6 +87,9 @@ class RegexpSingle(object):
     # license ; should be replaced by ands so find it
     re_license_semicolon = re.compile(r'\s*;\s*')
 
+    # rpmdescription
+    re_authors = re.compile(r'^\s*Author(s)?:\s*')
+
     # rpmbuild
     re_jobs = re.compile(r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?')
     re_make = re.compile(r'(^|(.*\s)?)make($|(\s.*)?)')

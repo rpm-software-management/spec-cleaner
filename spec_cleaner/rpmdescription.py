@@ -29,7 +29,7 @@ class RpmDescription(Section):
             if not self.previous_line or len(self.previous_line) == 0:
                 return
 
-        if (line == 'Authors:' or line == 'Author:') and not self.minimal:
+        if self.reg.re_authors.match(line) and not self.minimal:
             self.removing_authors = True
             return
 
