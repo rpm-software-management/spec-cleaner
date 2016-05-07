@@ -24,3 +24,13 @@ Headers and another development files for TomMath library.
 Author:
 --------
     Tom St Denis
+
+%description somethingelse
+Another subpkg
+
+ Authors:
+----------
+  Michael Elkins <me@mutt.org>
+  Oswald Buddenhagen <ossi@users.sf.net>
+  Theodore Ts'o <tytso@mit.edu>
+  Nicolas Boullis <nboullis@debian.org>

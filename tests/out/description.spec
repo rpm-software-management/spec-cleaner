@@ -10,4 +10,7 @@ the revision trees and branches.
 %description devel
 Headers and another development files for TomMath library.
 
+%description somethingelse
+Another subpkg
+
 %changelog
