@@ -3,13 +3,8 @@
 import re
 
 from .rpmsection import Section
-from .fileutils import FileUtils
 from .rpmexception import RpmException
-
-
-LICENSES_CHANGES = 'licenses_changes.txt'
-PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
-GROUPS_LIST = 'allowed_groups.txt'
+from .rpmhelpers import sort_uniq, read_group_changes, read_licenses_changes, read_pkgconfig_changes
 
 
 class RpmPreamble(Section):
@@ -130,11 +125,11 @@ class RpmPreamble(Section):
         # do we want pkgconfig
         self.pkgconfig = options['pkgconfig']
         # dict of license replacement options
-        self.license_conversions = self._read_licenses_changes()
+        self.license_conversions = read_licenses_changes()
         # dict of pkgconfig conversions
-        self.pkgconfig_conversions = self._read_pkgconfig_changes()
+        self.pkgconfig_conversions = read_pkgconfig_changes()
         # list of allowed groups
-        self.allowed_groups = self._read_group_changes()
+        self.allowed_groups = read_group_changes()
         # start the object
         self._start_paragraph()
         # initialize list of groups that need to pass over conversion fixer
@@ -238,51 +233,6 @@ class RpmPreamble(Section):
             key = '0' + key
         return key
 
-    def _sort_uniq(self, seq):
-        def check_list(x):
-            if isinstance(x, list):
-                return True
-            else:
-                return False
-
-        seen = {}
-        result = []
-        for item in seq:
-            marker = item
-            # We can have list there with comment
-            # So if list found just grab latest in the sublist
-            if check_list(marker):
-                marker = marker[-1]
-            if marker in seen:
-                # Not a list, no comment to preserve
-                if not check_list(item):
-                    continue
-                # Here we need to preserve comment content
-                # As the list is already sorted we can count on it to be
-                # seen in previous run.
-                # match the current and then based on wether the previous
-                # value is a list we append or convert to list entirely
-                prev = result[-1]
-                if check_list(prev):
-                    # Remove last line of the appending
-                    # list which is the actual dupe value
-                    item.pop()
-                    # Remove it from orginal
-                    prev.pop()
-                    # join together
-                    prev += item
-                    # append the value back
-                    prev.append(marker)
-                    result[-1] = prev
-                else:
-                    # Easy as there was no list
-                    # just replace it with our value
-                    result[-1] = item
-                continue
-            seen[marker] = 1
-            result.append(item)
-        return result
-
     def end_subparagraph(self, endif=False):
         lines = self._end_paragraph()
         if len(self.paragraph['define']) > 0 or \
@@ -339,7 +289,7 @@ class RpmPreamble(Section):
             # sort-out within the ordered groups based on the key
             if i in self.categories_with_sorted_package_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
-                self.paragraph[i] = self._sort_uniq(self.paragraph[i])
+                self.paragraph[i] = sort_uniq(self.paragraph[i])
             # sort-out within the ordered groups based on the keyword
             if i in self.categories_with_sorted_keyword_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
@@ -490,49 +440,6 @@ class RpmPreamble(Section):
             self.paragraph[category].append(line)
 
         self.previous_line = line
-
-    def _read_pkgconfig_changes(self):
-        pkgconfig = {}
-
-        files = FileUtils()
-        files.open_datafile(PKGCONFIG_CONVERSIONS)
-        for line in files.f:
-            # the values are split by  ': '
-            pair = line.split(': ')
-            pkgconfig[pair[0]] = pair[1][:-1]
-        files.close()
-        return pkgconfig
-
-    def _read_licenses_changes(self):
-        licenses = {}
-
-        files = FileUtils()
-        files.open_datafile(LICENSES_CHANGES)
-        # Header starts with # first line so skip
-        next(files.f)
-        for line in files.f:
-            # strip newline
-            line = line.rstrip('\n')
-            # file has format
-            # correct license string<tab>known bad license string
-            # tab is used as separator
-            pair = line.split('\t')
-            licenses[pair[1]] = pair[0]
-        files.close()
-        return licenses
-
-    def _read_group_changes(self):
-        groups = []
-
-        files = FileUtils()
-        files.open_datafile(GROUPS_LIST)
-        # header starts with link where we find the groups
-        next(files.f)
-        for line in files.f:
-            line = line.rstrip('\n')
-            groups.append(line)
-        files.close()
-        return groups
 
     def add(self, line):
         line = self._complete_cleanup(line)
