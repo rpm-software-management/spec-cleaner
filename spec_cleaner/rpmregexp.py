@@ -117,6 +117,10 @@ class RegexpSingle(object):
     re_patch_prep = re.compile(r'^%patch\s*([^P]*)-P\s*(\d*)\s*([^P]*)$')
     re_setup = re.compile(r'\s*-n\s+"?%{name}-%{version}"?($|\s)')
 
+    # patches/sources
+    re_ptch = re.compile(r'%{P:(\d+)}')
+    re_src = re.compile(r'%{S:(\d+)}')
+
     # comment detection
     re_comment = re.compile(r'^$|^\s*#')
 

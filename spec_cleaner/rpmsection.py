@@ -212,6 +212,6 @@ class Section(object):
         """
         Replace %{S:0} for %{SOURCE0} and so on.
         """
-        line = re.sub(r'%{P:(\d+)}', r'%{PATCH\1}', line)
-        line = re.sub(r'%{S:(\d+)}', r'%{SOURCE\1}', line)
+        line = self.reg.re_ptch.sub(r'%{PATCH\1}', line)
+        line = self.reg.re_src.sub(r'%{SOURCE\1}', line)
         return line
