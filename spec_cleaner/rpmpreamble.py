@@ -281,11 +281,11 @@ class RpmPreamble(Section):
     def _find_pkgconfig_statements(self, listname):
         for i in self.paragraph[listname]:
             if isinstance(i, str):
-                if 'pkgconfig(' in i:
+                if 'pkgconfig(' in i and not self._find_pkgconfig_declarations(listname):
                     return True
             elif isinstance(i, list):
                 for j in i:
-                    if 'pkgconfig(' in j:
+                    if 'pkgconfig(' in j and not self._find_pkgconfig_declarations(listname):
                         return True
         return False
 
