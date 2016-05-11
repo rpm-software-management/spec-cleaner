@@ -140,6 +140,9 @@ class RpmPreamble(Section):
         # license handling
         self.subpkglicense = options['subpkglicense']
         self.license = options['license']
+        # pkgconfig requirement detection
+        self.br_pkgconfig_required = False
+        self.r_pkgconfig_required = False
 
         # simple categories matching
         self.category_to_re = {
@@ -275,6 +278,28 @@ class RpmPreamble(Section):
                 self._condition_bcond = False
             self.paragraph['conditions'] = []
 
+    def _find_pkgconfig_statements(self, listname):
+        for i in self.paragraph[listname]:
+            if isinstance(i, str):
+                if 'pkgconfig(' in i:
+                    return True
+            elif isinstance(i, list):
+                for j in i:
+                    if 'pkgconfig(' in j:
+                        return True
+        return False
+
+    def _find_pkgconfig_declarations(self, listname):
+        for i in self.paragraph[listname]:
+            if isinstance(i, str):
+                if 'pkgconfig ' in i or i.endswith('pkgconfig'):
+                    return True
+            elif isinstance(i, list):
+                for j in i:
+                    if 'pkgconfig ' in j or j.endswith('pkgconfig'):
+                        return True
+        return False
+
     def _end_paragraph(self, needs_license=False):
         lines = []
 
@@ -283,6 +308,20 @@ class RpmPreamble(Section):
             if not self.paragraph['license']:
                self.license = self._fix_license(self.license)
                self._add_line_value_to('license', self.license)
+
+        # Check if we need the pkgconfig
+        if not self.br_pkgconfig_required and \
+           self._find_pkgconfig_statements('buildrequires'):
+            self.br_pkgconfig_required = True
+        if not self.r_pkgconfig_required and \
+           self._find_pkgconfig_statements('requires'):
+            self.r_pkgconfig_required = True
+        # only in case we are in main scope
+        if not self._oldstore:
+            if self.br_pkgconfig_required and not self._find_pkgconfig_declarations('buildrequires'):
+                self._add_line_value_to('buildrequires', 'pkgconfig')
+            if self.r_pkgconfig_required and not self._find_pkgconfig_declarations('requires'):
+                self._add_line_value_to('requires', 'pkgconfig')
 
         # sort based on category order
         for i in self.categories_order:
@@ -385,10 +424,6 @@ class RpmPreamble(Section):
                     expanded.append(token)
                 else:
                     expanded += token
-            # Add pkg-config dep if we have in BR or R the pkgconfig(dependency)
-            if any(item.startswith('pkgconfig(') for item in expanded) \
-               and 'pkgconfig' not in expanded:
-                expanded.append('pkgconfig')
             # and then sort them :)
             expanded.sort()
 
