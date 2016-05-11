@@ -11,6 +11,10 @@ class RpmBuild(RpmCheck):
     """
 
     def add(self, line):
+        # we do not want to run suseupdateconfig, deprecated
+        if self.reg.re_suseupdateconfig.search(line):
+            return
+
         # if user uses cmake/configure directly just recommend him using the macros
         if not self.minimal and self.previous_line:
             if not self.previous_line.startswith('#') and \
