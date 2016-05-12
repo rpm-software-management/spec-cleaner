@@ -22,13 +22,19 @@ class FileUtils(object):
         """
 
         try:
+            # the .. is appended as we are in spec_cleaner sub_folder
             _file = open('{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), name), 'r')
         except IOError:
-            # the .. is appended as we are in spec_cleaner sub_folder
+            # try venv structure
             try:
-                _file = open('/usr/share/spec-cleaner/{0}'.format(name), 'r')
+                _file = open('{0}/../usr/share/spec-cleaner/{1}'.format(
+                    os.path.dirname(os.path.realpath(__file__)), name), 'r')
             except IOError as error:
-                raise RpmException(error.strerror)
+                # try system dir
+                try:
+                    _file = open('/usr/share/spec-cleaner/{0}'.format(name), 'r')
+                except IOError as error:
+                    raise RpmException(error.strerror)
 
         self.f = _file
 
