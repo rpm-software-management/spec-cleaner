@@ -32,8 +32,9 @@ setup(
 
     packages=['spec_cleaner'],
 
-    data_files=[('/usr/lib/obs/service/', glob.glob('obs/*')),
-                ('/usr/share/spec-cleaner/', glob.glob('data/*')),
+    data_files=[
+        ('lib/obs/service/', glob.glob('obs/*')),
+        ('share/spec-cleaner', glob.glob('data/*')),
     ],
 
     entry_points={
