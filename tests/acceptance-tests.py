@@ -43,7 +43,8 @@ class TestCompare(object):
         """
         Remove the tmp directory
         """
-        shutil.rmtree(self.tmp_dir)
+        if shutil:
+            shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
     def _difftext(self, lines1, lines2, junk=None):
         junk = junk or (' ', '\t')
