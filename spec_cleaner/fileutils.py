@@ -32,7 +32,7 @@ class FileUtils(object):
                 path = sysconfig.get_path('data')
                 _file = open('{0}/share/spec-cleaner/{1}'.format(path, name), 'r')
             except IOError as error:
-                raise RpmException(error)
+                raise RpmException(str(error))
 
         self.f = _file
 
@@ -44,7 +44,7 @@ class FileUtils(object):
         try:
             _file = open(name, mode)
         except IOError as error:
-            raise RpmException(error)
+            raise RpmException(str(error))
 
         self.f = _file
 
