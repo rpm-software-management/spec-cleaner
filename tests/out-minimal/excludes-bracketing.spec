@@ -5,6 +5,7 @@
 %attr(\s*\([^)]*\))?
 
 %build
+%cabal_test
 
 %changelog
 %check
@@ -35,7 +36,13 @@
 %find_lang
 %gem_install
 %gem_packages
+%ghc_bin_build
+%ghc_bin_install
+%ghc_check_bootstrap
 %ghc_fix_dynamic_rpath
+%ghc_lib_build
+%ghc_lib_install
+%ghc_pkg_recache
 %ghost
 %glib2_gsettings_schema_[^\s]*
 
