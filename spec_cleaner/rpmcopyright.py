@@ -85,6 +85,8 @@ class RpmCopyright(Section):
             self.buildrules.append('# icecream')
         elif self.reg.re_vimmodeline.match(line):
             self.vimmodeline = line
+        elif self.reg.re_sslcerts.match(line):
+            self.buildrules.append('# needssslcertforbuild')
         else:
             # anything not in our rules gets tossed out
             return

@@ -19,6 +19,7 @@
 # icecream
 # needsbinariesforbuild
 # needsrootforbuild
+# needssslcertforbuild
 # nodebuginfo
 
 

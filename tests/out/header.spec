@@ -25,4 +25,5 @@
 # nodebuginfo
 # rootforbuild
 # needsrootforbuild
+# needssslcertforbuild
 %changelog
