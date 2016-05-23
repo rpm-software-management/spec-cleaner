@@ -1,7 +1,5 @@
 %bcond_with[^\s]*
-%aarch64
 %add_maven_depmap
-%arm
 %attr(\s*\([^)]*\))?
 
 %build
@@ -59,7 +57,6 @@
 %install
 %install_info
 %install_info_delete
-%ix86
 %jar
 %java
 %javac
@@ -109,7 +106,6 @@ make %{?_smp_mflags} DESTDIR=%{buildroot} install
 %service_del_postun foo.service
 %set_permissions
 %setup
-%sparc
 %stop_on_removal
 %suse_kernel_module_package
 %suse_update_desktop_file
