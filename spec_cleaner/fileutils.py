@@ -1,6 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import os
+import sys
 import sysconfig
 
 from .rpmexception import RpmException
@@ -22,19 +23,22 @@ class FileUtils(object):
         Used all around so kept glob here for importing.
         """
 
-        try:
-            # the .. is appended as we are in spec_cleaner sub_folder
-            _file = open('{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), name), 'r')
-        except IOError:
-            # try system dir
+        possible_paths = [
+            '{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), name),
+            '{0}/share/spec-cleaner/{1}'.format(sysconfig.get_path('data'), name),
+            '{0}/share/spec-cleaner/{1}'.format(sys.prefix, name),
+        ]
+        for path in possible_paths:
             try:
-                # usually /usr
-                path = sysconfig.get_path('data')
-                _file = open('{0}/share/spec-cleaner/{1}'.format(path, name), 'r')
-            except IOError as error:
-                raise RpmException(str(error))
+                _file = open(path, 'r')
+            except IOError:
+                pass
+            else:
+                self.f = _file
+                return
+        # file not found
+        raise RpmException("File '{0}' not found in datadirs".format(name))
 
-        self.f = _file
 
     def open(self, name, mode):
         """
