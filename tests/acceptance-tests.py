@@ -220,6 +220,27 @@ class TestCompare(object):
         with open(compare) as ref, open(tmp_file) as test:
             self.assertStreamEqual(ref, test)
 
+    def test_pkgconfig_disabled_output(self):
+        test = 'pkgconfrequires.spec'
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.fixtures_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
+
+        # first try to generate cleaned content from messed up
+        options = {
+            'specfile': infile,
+            'output': tmp_file,
+            'pkgconfig': False,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': False,
+            'no_copyright': True,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
+
     def test_inline_function(self):
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
