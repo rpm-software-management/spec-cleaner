@@ -232,13 +232,13 @@ class RpmSpecCleaner(object):
 
             self.current_section.add(line)
             self._previous_line = line
-            if line != '' or not line.startswith('#'):
+            if line != '' and not line.startswith('#'):
                 self._previous_nonempty_line = line
 
         # no need to not output newline at the end even for minimal -> no condition
         self.current_section.output(self.fout)
         # add changelog at the end of the file
-        if line is None or (line is not None and line != '%changelog'):
+        if self._previous_nonempty_line != '%changelog':
             self.fout.write('%changelog\n')
         self.fout.flush()
 
