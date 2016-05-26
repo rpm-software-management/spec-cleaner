@@ -364,6 +364,21 @@ class RpmPreamble(Section):
         s = ' '.join(licenses).replace("( ", "(").replace(" )", ")")
         return s
 
+    def _fix_pkgconfig_name(self, value):
+        # we just rename pkgconfig names to one unified one working everywhere
+        if ' ' in value:
+            pkgname = value.split()[0]
+            version = value.replace(pkgname, '')
+        else:
+            pkgname = value
+            version = ''
+        if pkgname == 'pkgconfig(pkg-config)' or \
+           pkgname == 'pkg-config':
+            # If we have pkgconfig dep in pkgconfig it is nuts, replace it
+            return 'pkgconfig{0}'.format(version)
+        else:
+            return value
+
     def _pkgname_to_pkgconfig(self, value):
         # we just want the pkgname if we have version string there
         # and for the pkgconfig deps we need to put the version into
@@ -371,10 +386,8 @@ class RpmPreamble(Section):
         pkgname = value.split()[0]
         version = value.replace(pkgname, '')
         pkgconfig = []
-        if pkgname == 'pkgconfig(pkg-config)' or \
-           pkgname == 'pkg-config':
-            # If we have pkgconfig dep in pkgconfig it is nuts, replace it
-            return ['pkgconfig{0}'.format(version)]
+        if pkgname == 'pkgconfig':
+            return [value]
         if pkgname not in self.pkgconfig_conversions:
             # first check if the pacakge is in the replacements
             return [value]
@@ -418,6 +431,8 @@ class RpmPreamble(Section):
                 token = re.sub(r'([<>]=?|=)', r' \1 ', token)
                 if not token:
                     continue
+                # replace pkgconfig name first
+                token = self._fix_pkgconfig_name(token)
                 if self.pkgconfig:
                     token = self._pkgname_to_pkgconfig(token)
                 if isinstance(token, str):
