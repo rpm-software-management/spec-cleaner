@@ -8,12 +8,14 @@ BuildRequires:  jjj > %{version}
 BuildRequires:  kkk
 BuildRequires:  rrr >= %{version}
 BuildRequires:  zzz
+Requires:       %{libname} >= %{version}
 Requires:       aaa < 3.2.1
 Requires:       bbb
 Requires:       eee = %{version}-%{release}
 Requires:       iii <= 4.2.1
 Requires:       jjj > %{version}
 Requires:       kkk
+Requires:       libcurl-devel
 Requires:       php5 >= %{phpversion}
 Requires:       pkgconfig
 Requires:       rrr >= %{version}

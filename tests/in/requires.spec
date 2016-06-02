@@ -14,3 +14,5 @@ BuildRequires:  %{rubygem fast_gettext}
 BuildRequires:  %{rubygem rails >= 3.2}
 
 Requires: php5 => %{phpversion}
+
+Requires:       %{libname} >= %{version} libcurl-devel
