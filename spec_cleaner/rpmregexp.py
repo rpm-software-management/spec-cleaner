@@ -58,7 +58,7 @@ class RegexpSingle(object):
     re_buildrequires = re.compile(r'^BuildRequires:\s*(.*)', re.IGNORECASE)
     re_prereq = re.compile(r'^PreReq:\s*(.*)', re.IGNORECASE)
     re_requires = re.compile(r'^Requires:\s*(.*)', re.IGNORECASE)
-    re_requires_phase = re.compile(r'^Requires(\(\S+\)):\s*(.*)', re.IGNORECASE)
+    re_requires_phase = re.compile(r'^Requires(\([^)]+\)):\s*(.*)', re.IGNORECASE)
     re_recommends = re.compile(r'^Recommends:\s*(.*)', re.IGNORECASE)
     re_suggests = re.compile(r'^Suggests:\s*(.*)', re.IGNORECASE)
     re_enhances = re.compile(r'^Enhances:\s*(.*)', re.IGNORECASE)
