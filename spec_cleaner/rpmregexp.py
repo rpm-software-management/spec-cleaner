@@ -75,7 +75,7 @@ class RegexpSingle(object):
     re_define = re.compile(r'^\s*%define\s*(.*)', re.IGNORECASE)
     re_global = re.compile(r'^\s*%global\s*(.*)', re.IGNORECASE)
     re_bcond_with = re.compile(r'^\s*%bcond_with(out)?\s*(.*)', re.IGNORECASE)
-    re_requires_token = re.compile(r'(\s*([^<>=\s]+(\s*[<>=]+\s*[^<>=\s]+)?)\s*)')
+    re_requires_token = re.compile(r'(\s*([^<>=\s,]+(\s*[<>=]+\s*[^<>=\s,]+)?))[\s,]*')
     re_autoreqprov = re.compile(r'^\s*AutoReqProv:.*$', re.IGNORECASE)
     re_debugpkg = re.compile(r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE)
     re_preamble_prefix = re.compile(r'^Prefix:\s*(.*)', re.IGNORECASE)

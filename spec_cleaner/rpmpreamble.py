@@ -414,17 +414,12 @@ class RpmPreamble(Section):
                 return [value]
 
             tokens = [item[1] for item in self.reg.re_requires_token.findall(value)]
-            # Split based on ',' here as it breaks up pattern matching later on
-            tokens = [item.split(',') for item in tokens]
-            tokens = [item for sublist in tokens for item in sublist]
             # first loop over all and do formatting as we can get more deps for
             # one
             expanded = []
             for token in tokens:
                 # cleanup whitespace
                 token = token.replace(' ', '')
-                # rpm actually allows ',' separated list of deps
-                token = token.replace(',', '')
                 # there is allowed syntax => and =< ; hidious
                 token = token.replace('=<', '<=')
                 token = token.replace('=>', '>=')
