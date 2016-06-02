@@ -408,21 +408,23 @@ class RpmPreamble(Section):
                 if not self.previous_line.startswith('#') and not self.minimal:
                     self.current_group.append('# FIXME: Use %requires_eq macro instead')
                 return [value]
-            # we also skip all various rpm-macroed content as it is usually not easy
-            # to determine how that should be split
-            if value.startswith('%'):
-                return [value]
-
             tokens = [item[1] for item in self.reg.re_requires_token.findall(value)]
             # first loop over all and do formatting as we can get more deps for
             # one
             expanded = []
             for token in tokens:
-                # cleanup whitespace
-                token = token.replace(' ', '')
                 # there is allowed syntax => and =< ; hidious
                 token = token.replace('=<', '<=')
                 token = token.replace('=>', '>=')
+                # we also skip all various rpm-macroed content as it
+                # is usually not easy to determine how that should be
+                # split
+                if token.startswith('%'):
+                    expanded.append(token)
+                    continue
+                # cleanup whitespace
+                token = token.replace(' ', '')
+
                 token = re.sub(r'([<>]=?|=)', r' \1 ', token)
                 if not token:
                     continue
