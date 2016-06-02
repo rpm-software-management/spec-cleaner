@@ -1,3 +1,5 @@
+%define useful_macro() ( echo 'Useful macro has been used with arg %{1}' )
+
 %build
 # FIXME: you should use %%cmake macros
 cmake . \
@@ -6,5 +8,6 @@ cmake . \
 ./configure --with-bells-and-whistles
 # this is not autotools
 ./configure --aughr
+%useful_macro 15
 
 %changelog
