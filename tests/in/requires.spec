@@ -5,6 +5,7 @@ BuildRequires:    rrr >= %{version} kkk
 Requires: iii  <=     4.2.1 jjj>  %{version} eee=%{version}-%{release} bbb
 Requires:      aaa<3.2.1 zzz     pkgconfig(glib-2.0) perl(DBD::SQLite)
 Requires:    rrr >= %{version} kkk
+Requires:     %{some_packagename} => %{some_version}
 
 PreReq: iii  <=     4.2.1 jjj>  %{version} eee=%{version}-%{release} aaa
 PreReq:      aaa<3.2.1 zzz
