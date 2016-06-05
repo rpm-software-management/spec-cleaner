@@ -4,7 +4,7 @@ import re
 
 from .rpmsection import Section
 from .rpmexception import RpmException
-from .rpmhelpers import sort_uniq, read_group_changes, read_licenses_changes, read_pkgconfig_changes
+from .rpmhelpers import sort_uniq
 
 
 class RpmPreamble(Section):
@@ -125,11 +125,11 @@ class RpmPreamble(Section):
         # do we want pkgconfig
         self.pkgconfig = options['pkgconfig']
         # dict of license replacement options
-        self.license_conversions = read_licenses_changes()
+        self.license_conversions = options['license_conversions']
         # dict of pkgconfig conversions
-        self.pkgconfig_conversions = read_pkgconfig_changes()
+        self.pkgconfig_conversions = options['pkgconfig_conversions']
         # list of allowed groups
-        self.allowed_groups = read_group_changes()
+        self.allowed_groups = options['allowed_groups']
         # start the object
         self._start_paragraph()
         # initialize list of groups that need to pass over conversion fixer

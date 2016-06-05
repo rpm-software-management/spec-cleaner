@@ -26,7 +26,7 @@ from .rpminstall import RpmInstall
 from .rpmscriplets import RpmScriptlets
 from .rpmfiles import RpmFiles
 from .rpmregexp import Regexp
-from .rpmhelpers import load_keywords_whitelist, parse_rpm_showrc, find_macros_with_arg
+from .rpmhelpers import load_keywords_whitelist, parse_rpm_showrc, find_macros_with_arg, read_group_changes, read_licenses_changes, read_pkgconfig_changes
 
 
 class RpmSpecCleaner(object):
@@ -51,6 +51,10 @@ class RpmSpecCleaner(object):
         self.options['subpkglicense'] = False
         # compile keywords for unbracing
         self.options['unbrace_keywords'] = self._unbrace_keywords()
+        # load all the remaining file operations
+        self.options['pkgconfig_conversions'] = read_pkgconfig_changes()
+        self.options['license_conversions'] = read_licenses_changes()
+        self.options['allowed_groups'] = read_group_changes()
         # run gvim(diff) in foreground mode
         if self.options['diff_prog'].startswith("gvim") and " -f" not in self.options['diff_prog']:
             self.options['diff_prog'] += " -f"
