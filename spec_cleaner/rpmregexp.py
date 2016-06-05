@@ -1,25 +1,10 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import re
-import os
 
 from .fileutils import FileUtils
 
-
-class Singleton(object):
-
-    def __init__(self, klass):
-        self.klass = klass
-        self.instance = None
-
-    def __call__(self, *args, **kwds):
-        if self.instance is None:
-            self.instance = self.klass(*args, **kwds)
-        return self.instance
-
-
-@Singleton
-class RegexpSingle(object):
+class Regexp(object):
 
     """
         Singleton containing all regular expressions compiled in one run.
@@ -131,8 +116,6 @@ class RegexpSingle(object):
 
     # macro detection
     re_macro = re.compile(r'(^|([^%]))%([1-9]\d*|[a-zA-Z_]\w*(\s*\([^)]*\))?)(|(\W))')
-    # macro func detection
-    re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
 
     # cleaning path regexps
     re_oldprefix = re.compile(r'%{?_exec_prefix}?([/\s$])')
@@ -153,59 +136,5 @@ class RegexpSingle(object):
     re_rpmbuildroot = re.compile(r'(\${?RPM_BUILD_ROOT}?|"%{?buildroot}?")([/\s%]|$)')
     re_rpmbuildroot_quotes = re.compile(r'"\${?RPM_BUILD_ROOT}?"')
 
-    def _load_keywords_whitelist(self):
-        """
-        Create regexp for the unbrace keywords based on
-        rpm showrc and whitelist.
-        """
-
-        BRACKETING_EXCLUDES = 'excludes-bracketing.txt'
-
-        # load the keywords
-        files = FileUtils()
-        files.open_datafile(BRACKETING_EXCLUDES)
-        keywords = []
-        for line in files.f:
-            keywords.append(line.rstrip('\n'))
-        files.close()
-
-        return keywords
-
-    def _parse_rpm_showrc(self):
-        """
-        Load argumented macros from rpm --showrc
-        """
-
-        macros = []
-        re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
-        output = os.popen('rpm --showrc')
-        for line in output:
-            line = line.rstrip('\n')
-            found_macro = re_rc_macrofunc.sub(r'\1', line)
-            if found_macro != line:
-                macros += [found_macro]
-        output.close()
-        return macros
-
-    def _find_macros_with_arg(self, spec):
-        """
-        Load argumented macros from specfile
-        """
-
-        macrofuncs = []
-
-        files = FileUtils()
-        files.open(spec, 'r')
-        for line in files.f:
-            line = line.rstrip('\n')
-            found_macro = self.re_spec_macrofunc.sub(r'\1', line)
-            if found_macro != line:
-                macrofuncs += [found_macro]
-        files.close()
-        return macrofuncs
-
-    def __init__(self, specfile):
-        keywords = self._load_keywords_whitelist()
-        global_macrofuncs = self._parse_rpm_showrc()
-        spec_macrofuncs = self._find_macros_with_arg(specfile)
-        self.re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords + global_macrofuncs + spec_macrofuncs) + ')}')
+    def __init__(self, keywords):
+        self.re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords) + ')}')

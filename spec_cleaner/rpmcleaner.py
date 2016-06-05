@@ -25,7 +25,8 @@ from .rpmcheck import RpmCheck
 from .rpminstall import RpmInstall
 from .rpmscriplets import RpmScriptlets
 from .rpmfiles import RpmFiles
-from .rpmregexp import RegexpSingle
+from .rpmregexp import Regexp
+from .rpmhelpers import load_keywords_whitelist, parse_rpm_showrc, find_macros_with_arg
 
 
 class RpmSpecCleaner(object):
@@ -48,10 +49,12 @@ class RpmSpecCleaner(object):
         # inicialize main license and subpkg option
         self.options['license'] = None
         self.options['subpkglicense'] = False
+        # compile keywords for unbracing
+        self.options['unbrace_keywords'] = self._unbrace_keywords()
         # run gvim(diff) in foreground mode
         if self.options['diff_prog'].startswith("gvim") and " -f" not in self.options['diff_prog']:
             self.options['diff_prog'] += " -f"
-        self.reg = RegexpSingle(self.options['specfile'])
+        self.reg = Regexp(self.options['unbrace_keywords'])
         self.fin = open(self.options['specfile'])
 
         # Section starts detection
@@ -88,6 +91,12 @@ class RpmSpecCleaner(object):
             self.fout = tempfile.NamedTemporaryFile(mode='w+', prefix=os.path.split(self.options['specfile'])[-1] + '.', suffix='.spec')
         else:
             self.fout = sys.stdout
+
+    def _unbrace_keywords(self):
+        keywords = load_keywords_whitelist()
+        global_macrofuncs = parse_rpm_showrc()
+        spec_macrofuncs = find_macros_with_arg(self.options['specfile'])
+        return keywords + global_macrofuncs + spec_macrofuncs
 
     def _load_licenses(self):
         # detect all present licenses in the spec and detect if we have more

@@ -1,10 +1,52 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+import re
+import os
+
 from .fileutils import FileUtils
 
 LICENSES_CHANGES = 'licenses_changes.txt'
 PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
 GROUPS_LIST = 'allowed_groups.txt'
+BRACKETING_EXCLUDES = 'excludes-bracketing.txt'
+
+def parse_rpm_showrc():
+    macros = []
+
+    re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
+    output = os.popen('rpm --showrc')
+    for line in output:
+        line = line.rstrip('\n')
+        found_macro = re_rc_macrofunc.sub(r'\1', line)
+        if found_macro != line:
+            macros += [found_macro]
+    output.close()
+    return macros
+
+def load_keywords_whitelist():
+    keywords = []
+
+    files = FileUtils()
+    files.open_datafile(BRACKETING_EXCLUDES)
+    for line in files.f:
+        keywords.append(line.rstrip('\n'))
+    files.close()
+
+    return keywords
+
+def find_macros_with_arg(spec):
+    macrofuncs = []
+
+    re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
+    files = FileUtils()
+    files.open(spec, 'r')
+    for line in files.f:
+        line = line.rstrip('\n')
+        found_macro = re_spec_macrofunc.sub(r'\1', line)
+        if found_macro != line:
+            macrofuncs += [found_macro]
+    files.close()
+    return macrofuncs
 
 def read_pkgconfig_changes():
     pkgconfig = {}

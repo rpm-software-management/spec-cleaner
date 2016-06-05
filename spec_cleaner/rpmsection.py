@@ -2,7 +2,7 @@
 
 import re
 
-from .rpmregexp import RegexpSingle
+from .rpmregexp import Regexp
 
 
 class Section(object):
@@ -22,7 +22,7 @@ class Section(object):
         self.previous_line = None
         self.spec = options['specfile']
         self.minimal = options['minimal']
-        self.reg = RegexpSingle(self.spec)
+        self.reg = Regexp(options['unbrace_keywords'])
         # Are we inside of conditional or not
         self.condition = False
         self._condition_counter = 0
