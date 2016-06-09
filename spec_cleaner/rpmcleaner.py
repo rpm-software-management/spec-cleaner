@@ -55,10 +55,11 @@ class RpmSpecCleaner(object):
         self.options['pkgconfig_conversions'] = read_pkgconfig_changes()
         self.options['license_conversions'] = read_licenses_changes()
         self.options['allowed_groups'] = read_group_changes()
+        self.options['reg'] = Regexp(self.options['unbrace_keywords'])
         # run gvim(diff) in foreground mode
         if self.options['diff_prog'].startswith("gvim") and " -f" not in self.options['diff_prog']:
             self.options['diff_prog'] += " -f"
-        self.reg = Regexp(self.options['unbrace_keywords'])
+        self.reg = self.options['reg']
         self.fin = open(self.options['specfile'])
 
         # Section starts detection

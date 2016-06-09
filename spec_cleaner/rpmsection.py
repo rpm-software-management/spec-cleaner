@@ -22,7 +22,7 @@ class Section(object):
         self.previous_line = None
         self.spec = options['specfile']
         self.minimal = options['minimal']
-        self.reg = Regexp(options['unbrace_keywords'])
+        self.reg = options['reg']
         # Are we inside of conditional or not
         self.condition = False
         self._condition_counter = 0
