@@ -19,6 +19,7 @@ class NewDate(datetime.date):
     def today(cls):
         return cls(2013, 1, 1)
 
+datetime.date = NewDate
 
 class TestCompare(object):
 
@@ -31,7 +32,6 @@ class TestCompare(object):
         Declare global scope variables for further use.
         """
 
-        datetime.date = NewDate
         self.input_dir = self._get_input_dir()
         self.fixtures_dir = self._get_fixtures_dir()
         self.header_dir = self._get_header_dir()
