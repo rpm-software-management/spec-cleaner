@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import unittest
 import os
 import shutil
 import tempfile
 import difflib
 import datetime
-from mock import patch
 from nose.tools import raises
 
 from spec_cleaner import RpmException

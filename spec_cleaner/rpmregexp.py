@@ -2,8 +2,6 @@
 
 import re
 
-from .fileutils import FileUtils
-
 class Regexp(object):
 
     """
