@@ -228,9 +228,9 @@ class RpmPreamble(Section):
             key = int(value)
         # Put brackety ()-style deps at the end of the list, after all other
         elif key.find('pkgconfig(') != -1 or \
-             key.find('cmake(') != -1 or \
-             key.find('ruby(') != -1 or \
-             key.find('perl(') != -1:
+        key.find('cmake(') != -1 or \
+        key.find('ruby(') != -1 or \
+        key.find('perl(') != -1:
             key = '1' + key
         else:
             key = '0' + key
@@ -256,7 +256,7 @@ class RpmPreamble(Section):
                  len(self.paragraph['conditions']) == 3 and \
                  self.paragraph['conditions'][0][0] == '# bug437293' and \
                  self.paragraph['conditions'][1].endswith('64bit'):
-               self.paragraph['conditions'] = []
+                self.paragraph['conditions'] = []
             if self._condition_define:
                 # If we have define conditions and possible bcond start
                 # we need to put it bellow bcond definitions as otherwise
@@ -306,8 +306,8 @@ class RpmPreamble(Section):
         # add license to the package if missing and needed
         if needs_license:
             if not self.paragraph['license']:
-               self.license = self._fix_license(self.license)
-               self._add_line_value_to('license', self.license)
+                self.license = self._fix_license(self.license)
+                self._add_line_value_to('license', self.license)
 
         # Check if we need the pkgconfig
         if not self.br_pkgconfig_required and \

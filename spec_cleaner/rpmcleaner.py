@@ -145,12 +145,12 @@ class RpmSpecCleaner(object):
                    self.reg.re_icon, self.reg.re_packager,
                    self.reg.re_debugpkg, self.reg.re_requires_eq,
                    self.reg.re_preamble_prefix,
-               ]]):
+                   ]]):
                 return True
 
             # We can have locally defined variables in phases
             if not isinstance(self.current_section,
-                   (RpmInstall, RpmCheck, RpmBuild, RpmPrep)) and \
+                              (RpmInstall, RpmCheck, RpmBuild, RpmPrep)) and \
                (self.reg.re_define.match(line) or self.reg.re_global.match(line)):
                 return True
         return False
