@@ -10,6 +10,7 @@ PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
 GROUPS_LIST = 'allowed_groups.txt'
 BRACKETING_EXCLUDES = 'excludes-bracketing.txt'
 
+
 def parse_rpm_showrc():
     macros = []
 
@@ -23,6 +24,7 @@ def parse_rpm_showrc():
     output.close()
     return macros
 
+
 def load_keywords_whitelist():
     keywords = []
 
@@ -33,6 +35,7 @@ def load_keywords_whitelist():
     files.close()
 
     return keywords
+
 
 def find_macros_with_arg(spec):
     macrofuncs = []
@@ -48,6 +51,7 @@ def find_macros_with_arg(spec):
     files.close()
     return macrofuncs
 
+
 def read_pkgconfig_changes():
     pkgconfig = {}
 
@@ -59,6 +63,7 @@ def read_pkgconfig_changes():
         pkgconfig[pair[0]] = pair[1][:-1]
     files.close()
     return pkgconfig
+
 
 def read_licenses_changes():
     licenses = {}
@@ -78,6 +83,7 @@ def read_licenses_changes():
     files.close()
     return licenses
 
+
 def read_group_changes():
     groups = []
 
@@ -90,6 +96,7 @@ def read_group_changes():
         groups.append(line)
     files.close()
     return groups
+
 
 def sort_uniq(seq):
     def _check_list(x):
@@ -135,4 +142,3 @@ def sort_uniq(seq):
         seen[marker] = 1
         result.append(item)
     return result
-

@@ -39,7 +39,6 @@ class FileUtils(object):
         # file not found
         raise RpmException("File '{0}' not found in datadirs".format(name))
 
-
     def open(self, name, mode):
         """
         Function to open regular files with exception handling.

@@ -1,5 +1,6 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+
 class Section(object):
 
     """
@@ -85,7 +86,7 @@ class Section(object):
                self.lines[-1].startswith('%post'):
                 self.lines.append('')
             if new_class != 'RpmScriptlets' and \
-               (self.lines[-1].startswith('%pre') or \
+               (self.lines[-1].startswith('%pre') or
                self.lines[-1].startswith('%post')):
                 self.lines.append('')
             # remove the newlines around ifs if they are not wanted

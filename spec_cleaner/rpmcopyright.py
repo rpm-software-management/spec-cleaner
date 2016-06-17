@@ -101,5 +101,5 @@ class RpmCopyright(Section):
             self.lines.append('')
             self.lines.append('')
         else:
-            newline=False
+            newline = False
         Section.output(self, fout, newline, new_class)
