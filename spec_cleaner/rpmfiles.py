@@ -9,6 +9,8 @@ class RpmFiles(Section):
         Class that does replacements on the %files section.
     """
 
+    comment_present = False
+
     def add(self, line):
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
@@ -27,12 +29,19 @@ class RpmFiles(Section):
     def _add_defattr(self, line):
         """
         Add defattr with default values if there is none
+        Also be aware of comments that could've been put on top
         """
-        # if it is 2nd line and it is not defattr just set there some default
+        if self.comment_present and not line.startswith('#'):
+            self.comment_present = False
+            if not line.startswith('%defattr'):
+                self.lines.insert(1, '%defattr(-,root,root)')
+
         if self.previous_line and \
-                self.reg.re_spec_files.match(self.previous_line) and \
-                not line.startswith('%defattr'):
-            self.lines.append('%defattr(-,root,root)')
+                self.reg.re_spec_files.match(self.previous_line):
+            if line.startswith('#'):
+                self.comment_present = True
+            elif not line.startswith('%defattr'):
+                self.lines.append('%defattr(-,root,root)')
 
     def _remove_doc_on_man(self, line):
         """
