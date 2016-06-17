@@ -226,7 +226,7 @@ class RpmSpecCleaner(object):
             new_class = self._detect_new_section(line)
             # Following line is debug output with class info
             # USE: 'spec-cleaner file > /dev/null' to see the stderr output
-            #sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
+            # sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
                 # We don't want to print newlines before %else and %endif
                 if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):

@@ -162,7 +162,7 @@ class Section(object):
         line = self.reg.re_sbindir.sub(r'%{_sbindir}\1', line)
         # Disabled on purpose as it causes conflict in fedora/opensuse
         # Unfortunate but there is no reliable workaround
-        #line = self.reg.re_libexecdir.sub(r'%{_libexecdir}\1', line)
+        # line = self.reg.re_libexecdir.sub(r'%{_libexecdir}\1', line)
         line = self.reg.re_includedir.sub(r'%{_includedir}\1', line)
         line = self.reg.re_datadir.sub(r'%{_datadir}\1', line)
         line = self.reg.re_mandir.sub(r'%{_mandir}\1', line)
