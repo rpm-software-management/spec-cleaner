@@ -48,6 +48,7 @@ Development/Libraries/Python
 Development/Libraries/Tcl
 Development/Libraries/X11
 Development/Libraries/YaST
+Development/Sources
 Development/Tools/Building
 Development/Tools/Debuggers
 Development/Tools/Doc Generators
