@@ -26,7 +26,7 @@ from .rpminstall import RpmInstall
 from .rpmscriplets import RpmScriptlets
 from .rpmfiles import RpmFiles
 from .rpmregexp import Regexp
-from .rpmhelpers import load_keywords_whitelist, parse_rpm_showrc, find_macros_with_arg, read_group_changes, read_licenses_changes, read_pkgconfig_changes
+from .rpmhelpers import load_keywords_whitelist, parse_rpm_showrc, find_macros_with_arg, read_group_changes, read_licenses_changes, read_pkgconfig_changes, read_perl_changes, read_tex_changes, read_cmake_changes
 
 
 class RpmSpecCleaner(object):
@@ -52,7 +52,10 @@ class RpmSpecCleaner(object):
         # compile keywords for unbracing
         self.options['unbrace_keywords'] = self._unbrace_keywords()
         # load all the remaining file operations
+        self.options['tex_conversions'] = read_tex_changes()
         self.options['pkgconfig_conversions'] = read_pkgconfig_changes()
+        self.options['perl_conversions'] = read_perl_changes()
+        self.options['cmake_conversions'] = read_cmake_changes()
         self.options['license_conversions'] = read_licenses_changes()
         self.options['allowed_groups'] = read_group_changes()
         self.options['reg'] = Regexp(self.options['unbrace_keywords'])
