@@ -6,7 +6,10 @@ import os
 from .fileutils import FileUtils
 
 LICENSES_CHANGES = 'licenses_changes.txt'
+TEX_CONVERSIONS = 'tex_conversions.txt'
 PKGCONFIG_CONVERSIONS = 'pkgconfig_conversions.txt'
+PERL_CONVERSIONS = 'perl_conversions.txt'
+CMAKE_CONVERSIONS = 'cmake_conversions.txt'
 GROUPS_LIST = 'allowed_groups.txt'
 BRACKETING_EXCLUDES = 'excludes-bracketing.txt'
 
@@ -52,17 +55,33 @@ def find_macros_with_arg(spec):
     return macrofuncs
 
 
-def read_pkgconfig_changes():
-    pkgconfig = {}
+def read_conversion_changes(conversion_file):
+    conversions = {}
 
     files = FileUtils()
-    files.open_datafile(PKGCONFIG_CONVERSIONS)
+    files.open_datafile(conversion_file)
     for line in files.f:
         # the values are split by  ': '
         pair = line.split(': ')
-        pkgconfig[pair[0]] = pair[1][:-1]
+        conversions[pair[0]] = pair[1][:-1]
     files.close()
-    return pkgconfig
+    return conversions
+
+
+def read_tex_changes():
+    return read_conversion_changes(CMAKE_CONVERSIONS)
+
+
+def read_pkgconfig_changes():
+    return read_conversion_changes(PKGCONFIG_CONVERSIONS)
+
+
+def read_perl_changes():
+    return read_conversion_changes(PERL_CONVERSIONS)
+
+
+def read_cmake_changes():
+    return read_conversion_changes(CMAKE_CONVERSIONS)
 
 
 def read_licenses_changes():
