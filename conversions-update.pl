@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
-while (<>) {
+
+my $value = shift(@ARGV);
+while (<STDIN>) {
 	if (m@<location href=".+?/(.*)-.+?-.+?\.rpm"/>@) {
 		$name = $1;
 		next;
@@ -9,7 +11,7 @@ while (<>) {
 	$end = m@^\s*</rpm:provides>@;
 	if ($start .. $end) {
 		push @provides, $1
-			if m@^\s*<rpm:entry name="pkgconfig\((.+?)\)".*?/>@;
+			if m@^\s*<rpm:entry name="$value\((.+?)\)".*?/>@;
 	}
 	if ($end && @provides) {
 		$uniq{"$name: " . join(' ', @provides) . " \n"} = 1;

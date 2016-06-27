@@ -10,11 +10,16 @@ fetch() {
 }
 
 if [ -z "$1" ]; then
-    echo "Specify the distribution version, e.g. \"13.1\""
+    echo "You need to specify the name of the resource to grab, e.g. \"cmake\""
     exit 1
 fi
 
-BASEURL="http://download.opensuse.org/distribution/$1/repo/oss/suse/"
+if [ -z "$2" ]; then
+    echo "Specify the distribution version, e.g. \"leap/42.1\""
+    exit 1
+fi
+
+BASEURL="http://download.opensuse.org/distribution/$2/repo/oss/suse/"
 fetch "${BASEURL}$(fetch "${BASEURL}repodata/repomd.xml" \
     | perl -ne 'print $1 if /"(.*?primary.xml.gz)"/')" \
-    | zcat | perl "$(cd "$(dirname $0)" && pwd)/pkgconfig-update.pl"
+    | zcat | perl "$(cd "$(dirname $0)" && pwd)/conversions-update.pl" $1
