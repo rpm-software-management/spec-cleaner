@@ -52,10 +52,18 @@ class RpmSpecCleaner(object):
         # compile keywords for unbracing
         self.options['unbrace_keywords'] = self._unbrace_keywords()
         # load all the remaining file operations
-        self.options['tex_conversions'] = read_tex_changes()
-        self.options['pkgconfig_conversions'] = read_pkgconfig_changes()
-        self.options['perl_conversions'] = read_perl_changes()
-        self.options['cmake_conversions'] = read_cmake_changes()
+        self.options['tex_conversions'] = []
+        self.options['pkgconfig_conversions'] = []
+        self.options['cmake_conversions'] = []
+        self.options['perl_conversions'] = []
+        if self.options['tex']:
+            self.options['tex_conversions'] = read_tex_changes()
+        if self.options['pkgconfig']:
+            self.options['pkgconfig_conversions'] = read_pkgconfig_changes()
+        if self.options['cmake']:
+            self.options['cmake_conversions'] = read_cmake_changes()
+        if self.options['perl']:
+            self.options['perl_conversions'] = read_perl_changes()
         self.options['license_conversions'] = read_licenses_changes()
         self.options['allowed_groups'] = read_group_changes()
         self.options['reg'] = Regexp(self.options['unbrace_keywords'])

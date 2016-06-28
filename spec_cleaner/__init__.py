@@ -30,8 +30,10 @@ def process_args(argv):
 
     parser.add_argument('spec', metavar='SPEC', type=str,
                         help='spec file to beautify')
+    parser.add_argument('-c', '--cmake', action='store_true', default=False,
+                        help='convert dependencies to their cmake() counterparts, requires bit more of cleanup in spec afterwards.')
     output_group.add_argument('-d', '--diff', action='store_true', default=False,
-                              help='run the diff program to show differences between new and orginal specfile.')
+                              help='run the diff program to show differences between new and original specfile.')
     parser.add_argument('--diff-prog', default='vimdiff',
                         help='specify the diff binary to call with diff option.')
     parser.add_argument('-f', '--force', action='store_true', default=False,
@@ -45,7 +47,11 @@ def process_args(argv):
     output_group.add_argument('-o', '--output', default='',
                               help='specify the output file for the cleaned spec content.')
     parser.add_argument('-p', '--pkgconfig', action='store_true', default=False,
-                        help='convert dependencies to their pkgconfig counterparts, requires bit more of cleanup in spec afterwards.')
+                        help='convert dependencies to their pkgconfig() counterparts, requires bit more of cleanup in spec afterwards.')
+    parser.add_argument('--perl', action='store_true', default=False,
+                        help='convert dependencies to their perl() counterparts, highly expansive because most main packages provide some perl symbols, use carefully')
+    parser.add_argument('-t', '--tex', action='store_true', default=False,
+                        help='convert dependencies to their tex() counterparts, requires verification of the output afterwards.')
     parser.add_argument('-v', '--version', action='version', version=__version__,
                         help='show package version and exit')
 
@@ -77,6 +83,9 @@ def process_args(argv):
         'diff_prog': options.diff_prog,
         'minimal': options.minimal,
         'no_copyright': options.no_copyright,
+        'perl': options.perl,
+        'tex': options.tex,
+        'cmake': options.cmake,
     }
 
     return options_dict
