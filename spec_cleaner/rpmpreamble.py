@@ -223,15 +223,11 @@ class RpmPreamble(Section):
         elif self.reg.re_source.match(key):
             match = self.reg.re_source.match(key)
             value = match.group(1)
-            if value == '':
+            if not value:
                 value = '0'
             key = int(value)
         # Put brackety ()-style deps at the end of the list, after all other
-        elif key.find('pkgconfig(') != -1 or \
-                key.find('cmake(') != -1 or \
-                key.find('ruby(') != -1 or \
-                key.find('perl(') != -1 or \
-                key.find('tex(') != -1:
+        elif self.reg.re_brackety_requires.search(key):
             key = '1' + key
         else:
             key = '0' + key

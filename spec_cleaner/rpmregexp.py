@@ -70,6 +70,8 @@ class Regexp(object):
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
     # license ; should be replaced by ands so find it
     re_license_semicolon = re.compile(r'\s*;\s*')
+    # Special bracketed deps dection
+    re_brackety_requires = re.compile('(pkgconfig|cmake|perl|tex|ruby)\(')
 
     # rpmdescription
     re_authors = re.compile(r'^\s*Author(s)?:\s*')
