@@ -231,7 +231,7 @@ class RpmPreamble(Section):
                 key.find('cmake(') != -1 or \
                 key.find('ruby(') != -1 or \
                 key.find('perl(') != -1 or \
-                key.find('tex('):
+                key.find('tex(') != -1:
             key = '1' + key
         else:
             key = '0' + key
