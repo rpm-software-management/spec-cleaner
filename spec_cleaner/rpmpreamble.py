@@ -122,12 +122,18 @@ class RpmPreamble(Section):
         self._condition_define = False
         # Is the condition based probably on bcond evaluation
         self._condition_bcond = False
-        # do we want pkgconfig
+        # do we want pkgconfig and others?
         self.pkgconfig = options['pkgconfig']
+        self.perl = options['perl']
+        self.cmake = options['cmake']
+        self.tex = options['tex']
         # dict of license replacement options
         self.license_conversions = options['license_conversions']
-        # dict of pkgconfig conversions
+        # dict of pkgconfig and other conversions
         self.pkgconfig_conversions = options['pkgconfig_conversions']
+        self.perl_conversions = options['perl_conversions']
+        self.cmake_conversions = options['cmake_conversions']
+        self.tex_conversions = options['tex_conversions']
         # list of allowed groups
         self.allowed_groups = options['allowed_groups']
         # start the object
@@ -386,7 +392,7 @@ class RpmPreamble(Section):
         if pkgname == 'pkgconfig':
             return [value]
         if pkgname not in self.pkgconfig_conversions:
-            # first check if the pacakge is in the replacements
+            # first check if the package is in the replacements
             return [value]
         else:
             # first split the pkgconfig data
@@ -396,6 +402,25 @@ class RpmPreamble(Section):
             for j in pkgconf_list:
                 pkgconfig.append('pkgconfig({0}){1}'.format(j, version))
         return pkgconfig
+
+    def _pkgname_to_brackety(self, value, name, conversions):
+        # we just want the pkgname if we have version string there
+        # and for the pkgconfig deps we need to put the version into
+        # the braces
+        pkgname = value.split()[0]
+        version = value.replace(pkgname, '')
+        converted = []
+        if pkgname not in conversions:
+            # first check if the package is in the replacements
+            return [value]
+        else:
+            # first split the data
+            convers_list = conversions[pkgname].split()
+            # then add each pkgconfig to the list
+            # print pkgconf_list
+            for j in convers_list:
+                converted.append('{0}({1}){2}'.format(name, j, version))
+        return converted
 
     def _fix_list_of_packages(self, value):
         if self.reg.re_requires_token.match(value):
@@ -427,8 +452,19 @@ class RpmPreamble(Section):
                     continue
                 # replace pkgconfig name first
                 token = self._fix_pkgconfig_name(token)
+                # here we go with descending priority to find match and replace
+                # the strings by some optimistic value of brackety dep
+                # priority is based on the first come first serve
                 if self.pkgconfig:
                     token = self._pkgname_to_pkgconfig(token)
+                # checking if it is not list is simple avoidance of running
+                # over already converted values
+                if type(token) is not list and self.perl:
+                    token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
+                if type(token) is not list and self.tex:
+                    token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
+                if type(token) is not list and self.cmake:
+                    token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
                 if isinstance(token, str):
                     expanded.append(token)
                 else:
