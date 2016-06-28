@@ -230,7 +230,8 @@ class RpmPreamble(Section):
         elif key.find('pkgconfig(') != -1 or \
                 key.find('cmake(') != -1 or \
                 key.find('ruby(') != -1 or \
-                key.find('perl(') != -1:
+                key.find('perl(') != -1 or \
+                key.find('tex('):
             key = '1' + key
         else:
             key = '0' + key
