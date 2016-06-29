@@ -1,0 +1,3 @@
+BuildRequires: texlive-abstyles
+
+%changelog

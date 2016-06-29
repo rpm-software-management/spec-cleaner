@@ -33,6 +33,9 @@ class TestCompare(object):
         self.input_dir = self._get_input_dir()
         self.fixtures_dir = self._get_fixtures_dir()
         self.header_dir = self._get_header_dir()
+        self.tex_dir = self._get_tex_dir()
+        self.perl_dir = self._get_perl_dir()
+        self.cmake_dir = self._get_cmake_dir()
         self.minimal_fixtures_dir = self._get_minimal_fixtures_dir()
         self.tmp_dir = tempfile.mkdtemp()
         self.tmp_file_rerun = tempfile.NamedTemporaryFile()
@@ -78,6 +81,24 @@ class TestCompare(object):
         Return path for output files used by header tests
         """
         return os.path.join(os.getcwd(), 'tests/header/')
+
+    def _get_tex_dir(self):
+        """
+        Return path for output files used by tex tests
+        """
+        return os.path.join(os.getcwd(), 'tests/tex/')
+
+    def _get_perl_dir(self):
+        """
+        Return path for output files used by perl tests
+        """
+        return os.path.join(os.getcwd(), 'tests/perl/')
+
+    def _get_cmake_dir(self):
+        """
+        Return path for output files used by cmake tests
+        """
+        return os.path.join(os.getcwd(), 'tests/cmake/')
 
     def _get_fixtures_dir(self):
         """
@@ -170,7 +191,6 @@ class TestCompare(object):
         infile = os.path.join(self.input_dir, test)
         compare = os.path.join(self.minimal_fixtures_dir, test)
 
-        # first try to generate cleaned content from messed up
         options = {
             'specfile': infile,
             'output': tmp_file,
@@ -191,7 +211,7 @@ class TestCompare(object):
     def check_minimal_output_rerun(self, test, infile):
         compare = os.path.join(self.minimal_fixtures_dir, test)
         tmp_file = self.tmp_file_rerun.name
-        # first try to generate cleaned content from messed up
+
         options = {
             'specfile': infile,
             'output': tmp_file,
@@ -215,7 +235,6 @@ class TestCompare(object):
         compare = os.path.join(self.header_dir, test)
         tmp_file = os.path.join(self.tmp_dir, test)
 
-        # first try to generate cleaned content from messed up
         options = {
             'specfile': infile,
             'output': tmp_file,
@@ -239,7 +258,6 @@ class TestCompare(object):
         compare = os.path.join(self.fixtures_dir, test)
         tmp_file = os.path.join(self.tmp_dir, test)
 
-        # first try to generate cleaned content from messed up
         options = {
             'specfile': infile,
             'output': tmp_file,
@@ -284,6 +302,7 @@ class TestCompare(object):
     def test_regular_output(self):
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
+
         options = {
             'specfile': infile,
             'output': '',
@@ -303,6 +322,7 @@ class TestCompare(object):
     def test_diff_function(self):
         test = self._obtain_list_of_tests()[0]
         infile = os.path.join(self.input_dir, test)
+
         options = {
             'specfile': infile,
             'output': '',
@@ -317,3 +337,72 @@ class TestCompare(object):
             'cmake': False,
         }
         self._run_individual_test(options)
+
+    def test_tex_output(self):
+        test = 'tex.spec'
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.tex_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
+
+        options = {
+            'specfile': infile,
+            'output': tmp_file,
+            'pkgconfig': False,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': False,
+            'no_copyright': True,
+            'tex': True,
+            'perl': False,
+            'cmake': False,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
+
+    def test_perl_output(self):
+        test = 'perl.spec'
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.perl_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
+
+        options = {
+            'specfile': infile,
+            'output': tmp_file,
+            'pkgconfig': False,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': False,
+            'no_copyright': True,
+            'tex': False,
+            'perl': True,
+            'cmake': False,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
+
+    def test_cmake_output(self):
+        test = 'cmake.spec'
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.cmake_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
+
+        options = {
+            'specfile': infile,
+            'output': tmp_file,
+            'pkgconfig': False,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': False,
+            'no_copyright': True,
+            'tex': True,
+            'perl': False,
+            'cmake': False,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
