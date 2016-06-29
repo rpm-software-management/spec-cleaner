@@ -16,12 +16,17 @@ class RpmBuild(RpmCheck):
             return
 
         # if user uses cmake/configure directly just recommend him using the macros
-        if not self.minimal and self.previous_line:
-            if not self.previous_line.startswith('#') and \
-               line.startswith('./configure'):
+        # but check on the multiline entry and do not ammend that
+        if not self.minimal:
+            if (not self.previous_line \
+               or (not self.previous_line.startswith('#') \
+               and not self.previous_line.endswith('\\'))) \
+               and line.startswith('./configure'):
                 self.lines.append('# FIXME: you should use the %%configure macro')
-            if not self.previous_line.startswith('# FIXME') and \
-               line.startswith('cmake'):
+            if (not self.previous_line \
+               or (not self.previous_line.startswith('#') \
+               and not self.previous_line.endswith('\\'))) \
+               and line.startswith('cmake'):
                 self.lines.append('# FIXME: you should use %%cmake macros')
 
         RpmCheck.add(self, line)
