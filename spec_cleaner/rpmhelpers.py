@@ -69,7 +69,7 @@ def read_conversion_changes(conversion_file):
 
 
 def read_tex_changes():
-    return read_conversion_changes(CMAKE_CONVERSIONS)
+    return read_conversion_changes(TEX_CONVERSIONS)
 
 
 def read_pkgconfig_changes():
