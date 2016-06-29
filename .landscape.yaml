@@ -1,6 +1,7 @@
 test-warnings: yes
 doc-warnings: no
 strictness: veryhigh
+max-line-length: 150
 autodetect: yes
 python-targets:
     - 2
