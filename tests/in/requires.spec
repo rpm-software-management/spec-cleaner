@@ -19,3 +19,5 @@ Requires: php5 => %{phpversion}
 Requires:       %{libname} >= %{version} libcurl-devel
 Provides:       %{name} = 0.3.0~gitbcaa
 Obsoletes:      %{name} = 0.3.0~gitbcaa
+Provides:       %{name} = 0.3.0+gitbcaa
+Obsoletes:      %{name} = 0.3.0+gitbcaa
