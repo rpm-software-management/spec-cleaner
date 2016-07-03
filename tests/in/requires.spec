@@ -17,3 +17,5 @@ BuildRequires:  %{rubygem rails >= 3.2}
 Requires: php5 => %{phpversion}
 
 Requires:       %{libname} >= %{version} libcurl-devel
+Provides:       %{name} = 0.3.0~gitbcaa
+Obsoletes:      %{name} = 0.3.0~gitbcaa

@@ -32,5 +32,7 @@ PreReq:         jjj > %{version}
 PreReq:         kkk
 PreReq:         rrr >= %{version}
 PreReq:         zzz
+Provides:       %{name} = 0.3.0~gitbcaa
+Obsoletes:      %{name} = 0.3.0~gitbcaa
 
 %changelog
