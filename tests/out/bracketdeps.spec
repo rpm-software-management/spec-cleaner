@@ -7,6 +7,6 @@ BuildRequires:  cmake(bla)
 BuildRequires:  cmake(dla)
 BuildRequires:  perl(DBI)
 BuildRequires:  pkgconfig(bla)
-BuildRequires:  ruby(something)
+BuildRequires:  rubygem(something)
 
 %changelog

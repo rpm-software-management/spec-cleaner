@@ -1,5 +1,5 @@
 BuildRequires: pkgconfig(bla)
-BuildRequires: ruby(something)
+BuildRequires: rubygem(something)
 BuildRequires: rocket-devel
 BuildRequires: perl(DBI)
 BuildRequires: perl-devel
