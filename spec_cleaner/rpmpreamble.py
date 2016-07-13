@@ -422,7 +422,7 @@ class RpmPreamble(Section):
                 converted.append('{0}({1}){2}'.format(name, j, version))
         return converted
 
-    def _fix_list_of_packages(self, value):
+    def _fix_list_of_packages(self, value, category):
         if self.reg.re_requires_token.match(value):
             # we do fix the package list only if there is no rpm call there on line
             # otherwise print there warning about nicer content and skip
@@ -452,19 +452,21 @@ class RpmPreamble(Section):
                     continue
                 # replace pkgconfig name first
                 token = self._fix_pkgconfig_name(token)
-                # here we go with descending priority to find match and replace
-                # the strings by some optimistic value of brackety dep
-                # priority is based on the first come first serve
-                if self.pkgconfig:
-                    token = self._pkgname_to_pkgconfig(token)
-                # checking if it is not list is simple avoidance of running
-                # over already converted values
-                if type(token) is not list and self.perl:
-                    token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
-                if type(token) is not list and self.tex:
-                    token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
-                if type(token) is not list and self.cmake:
-                    token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
+                # in scriptlets we most probably do not want the converted deps
+                if category != 'prereq':
+                    # here we go with descending priority to find match and replace
+                    # the strings by some optimistic value of brackety dep
+                    # priority is based on the first come first serve
+                    if self.pkgconfig:
+                        token = self._pkgname_to_pkgconfig(token)
+                    # checking if it is not list is simple avoidance of running
+                    # over already converted values
+                    if type(token) is not list and self.perl:
+                        token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
+                    if type(token) is not list and self.tex:
+                        token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
+                    if type(token) is not list and self.cmake:
+                        token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
                 if isinstance(token, str):
                     expanded.append(token)
                 else:
@@ -503,7 +505,7 @@ class RpmPreamble(Section):
             key += ' '
 
         if category in self.categories_with_package_tokens:
-            values = self._fix_list_of_packages(value)
+            values = self._fix_list_of_packages(value, category)
         else:
             values = [value]
 
