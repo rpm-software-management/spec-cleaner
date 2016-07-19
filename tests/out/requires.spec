@@ -17,7 +17,6 @@ Requires:       iii <= 4.2.1
 Requires:       jjj > %{version}
 Requires:       kkk
 Requires:       php5 >= %{phpversion}
-Requires:       pkgconfig
 Requires:       rrr >= %{version}
 Requires:       zzz
 Requires:       perl(DBD::SQLite)

@@ -148,7 +148,6 @@ class RpmPreamble(Section):
         self.license = options['license']
         # pkgconfig requirement detection
         self.br_pkgconfig_required = False
-        self.r_pkgconfig_required = False
 
         # simple categories matching
         self.category_to_re = {
@@ -316,15 +315,10 @@ class RpmPreamble(Section):
         if not self.br_pkgconfig_required and \
            self._find_pkgconfig_statements('buildrequires'):
             self.br_pkgconfig_required = True
-        if not self.r_pkgconfig_required and \
-           self._find_pkgconfig_statements('requires'):
-            self.r_pkgconfig_required = True
         # only in case we are in main scope
         if not self._oldstore:
             if self.br_pkgconfig_required and not self._find_pkgconfig_declarations('buildrequires'):
                 self._add_line_value_to('buildrequires', 'pkgconfig')
-            if self.r_pkgconfig_required and not self._find_pkgconfig_declarations('requires'):
-                self._add_line_value_to('requires', 'pkgconfig')
 
         # sort based on category order
         for i in self.categories_order:
