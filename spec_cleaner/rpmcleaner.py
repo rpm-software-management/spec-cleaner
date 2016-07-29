@@ -263,7 +263,7 @@ class RpmSpecCleaner(object):
         # no need to not output newline at the end even for minimal -> no condition
         self.current_section.output(self.fout)
         # add changelog at the end of the file
-        if self._previous_nonempty_line != '%changelog':
+        if not isinstance(self.current_section, RpmChangelog) and self._previous_nonempty_line != '%changelog':
             self.fout.write('%changelog\n')
         self.fout.flush()
 
