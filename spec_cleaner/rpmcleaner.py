@@ -18,7 +18,7 @@ from .rpmdescription import RpmDescription
 from .rpmprune import RpmClean
 from .rpmprune import RpmChangelog
 from .rpmpreamble import RpmPreamble
-from .rpmpreamble import RpmPackage
+from .rpmpackage import RpmPackage
 from .rpmprep import RpmPrep
 from .rpmbuild import RpmBuild
 from .rpmcheck import RpmCheck
