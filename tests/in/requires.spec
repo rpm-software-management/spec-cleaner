@@ -21,3 +21,8 @@ Provides:       %{name} = 0.3.0~gitbcaa
 Obsoletes:      %{name} = 0.3.0~gitbcaa
 Provides:       %{name} = 0.3.0+gitbcaa
 Obsoletes:      %{name} = 0.3.0+gitbcaa
+
+BuildRequires:  yast2-core-devel
+BuildRequires:  yast2-core-devel >= 2.16.37
+BuildRequires:  yast2-ycp-ui-bindings-devel
+BuildRequires:  yast2-ycp-ui-bindings-devel >= 2.16.37

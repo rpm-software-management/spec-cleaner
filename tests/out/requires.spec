@@ -6,8 +6,11 @@ BuildRequires:  eee = %{version}-%{release}
 BuildRequires:  iii <= 4.2.1
 BuildRequires:  jjj > %{version}
 BuildRequires:  kkk
+BuildRequires:  pkgconfig
 BuildRequires:  rrr >= %{version}
 BuildRequires:  zzz
+BuildRequires:  pkgconfig(yast2-core) >= 2.16.37
+BuildRequires:  pkgconfig(yast2-ycp-ui-bindings) >= 2.16.37
 Requires:       %{libname} >= %{version}
 Requires:       %{some_packagename} >= %{some_version}
 Requires:       aaa < 3.2.1
