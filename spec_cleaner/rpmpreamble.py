@@ -361,14 +361,19 @@ class RpmPreamble(Section):
         s = ' '.join(licenses).replace("( ", "(").replace(" )", ")")
         return s
 
-    def _fix_pkgconfig_name(self, value):
-        # we just rename pkgconfig names to one unified one working everywhere
+    def _split_name_and_version(self, value):
+        # split the name and version from the requires element
         if ' ' in value:
             pkgname = value.split()[0]
             version = value.replace(pkgname, '')
         else:
             pkgname = value
             version = ''
+        return pkgname, version
+
+    def _fix_pkgconfig_name(self, value):
+        # we just rename pkgconfig names to one unified one working everywhere
+        pkgname, version = self._split_name_and_version(value)
         if pkgname == 'pkgconfig(pkg-config)' or \
            pkgname == 'pkg-config':
             # If we have pkgconfig dep in pkgconfig it is nuts, replace it
@@ -380,8 +385,7 @@ class RpmPreamble(Section):
         # we just want the pkgname if we have version string there
         # and for the pkgconfig deps we need to put the version into
         # the braces
-        pkgname = value.split()[0]
-        version = value.replace(pkgname, '')
+        pkgname, version = self._split_name_and_version(value)
         pkgconfig = []
         if pkgname == 'pkgconfig':
             return [value]
@@ -401,8 +405,7 @@ class RpmPreamble(Section):
         # we just want the pkgname if we have version string there
         # and for the pkgconfig deps we need to put the version into
         # the braces
-        pkgname = value.split()[0]
-        version = value.replace(pkgname, '')
+        pkgname, version = self._split_name_and_version(value)
         converted = []
         if pkgname not in conversions:
             # first check if the package is in the replacements
