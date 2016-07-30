@@ -244,10 +244,7 @@ class RpmPreamble(Section):
            len(self.paragraph['bconds']) > 0:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
-        if isinstance(lines, str):
-            self.paragraph['conditions'].append(lines)
-        else:
-            self.paragraph['conditions'] += lines
+        self.paragraph['conditions'] += lines
 
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
@@ -420,57 +417,54 @@ class RpmPreamble(Section):
         return converted
 
     def _fix_list_of_packages(self, value, category):
-        if self.reg.re_requires_token.match(value):
-            # we do fix the package list only if there is no rpm call there on line
-            # otherwise print there warning about nicer content and skip
-            if self.reg.re_rpm_command.search(value):
-                if not self.previous_line.startswith('#') and not self.minimal:
-                    self.current_group.append('# FIXME: Use %requires_eq macro instead')
-                return [value]
-            tokens = [item[1] for item in self.reg.re_requires_token.findall(value)]
-            # loop over all and do formatting as we can get more deps for one
-            expanded = []
-            for token in tokens:
-                # there is allowed syntax => and =< ; hidious
-                token = token.replace('=<', '<=')
-                token = token.replace('=>', '>=')
-                # we also skip all various rpm-macroed content as it
-                # is usually not easy to determine how that should be
-                # split
-                if token.startswith('%'):
-                    expanded.append(token)
-                    continue
-                # cleanup whitespace
-                token = token.replace(' ', '')
-                token = re.sub(r'([<>]=?|=)', r' \1 ', token)
-                if not token:
-                    continue
-                # replace pkgconfig name first
-                token = self._fix_pkgconfig_name(token)
-                # in scriptlets we most probably do not want the converted deps
-                if category != 'prereq':
-                    # here we go with descending priority to find match and replace
-                    # the strings by some optimistic value of brackety dep
-                    # priority is based on the first come first serve
-                    if self.pkgconfig:
-                        token = self._pkgname_to_pkgconfig(token)
-                    # checking if it is not list is simple avoidance of running
-                    # over already converted values
-                    if type(token) is not list and self.perl:
-                        token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
-                    if type(token) is not list and self.tex:
-                        token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
-                    if type(token) is not list and self.cmake:
-                        token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
-                if isinstance(token, str):
-                    expanded.append(token)
-                else:
-                    expanded += token
-            # and then sort them :)
-            expanded.sort()
-            return expanded
-        else:
+        # we do fix the package list only if there is no rpm call there on line
+        # otherwise print there warning about nicer content and skip
+        if self.reg.re_rpm_command.search(value):
+            if not self.previous_line.startswith('#') and not self.minimal:
+                self.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
+        tokens = [item[1] for item in self.reg.re_requires_token.findall(value)]
+        # loop over all and do formatting as we can get more deps for one
+        expanded = []
+        for token in tokens:
+            # there is allowed syntax => and =< ; hidious
+            token = token.replace('=<', '<=')
+            token = token.replace('=>', '>=')
+            # we also skip all various rpm-macroed content as it
+            # is usually not easy to determine how that should be
+            # split
+            if token.startswith('%'):
+                expanded.append(token)
+                continue
+            # cleanup whitespace
+            token = token.replace(' ', '')
+            token = re.sub(r'([<>]=?|=)', r' \1 ', token)
+            if not token:
+                continue
+            # replace pkgconfig name first
+            token = self._fix_pkgconfig_name(token)
+            # in scriptlets we most probably do not want the converted deps
+            if category != 'prereq':
+                # here we go with descending priority to find match and replace
+                # the strings by some optimistic value of brackety dep
+                # priority is based on the first come first serve
+                if self.pkgconfig:
+                    token = self._pkgname_to_pkgconfig(token)
+                # checking if it is not list is simple avoidance of running
+                # over already converted values
+                if type(token) is not list and self.perl:
+                    token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
+                if type(token) is not list and self.tex:
+                    token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
+                if type(token) is not list and self.cmake:
+                    token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
+            if isinstance(token, str):
+                expanded.append(token)
+            else:
+                expanded += token
+        # and then sort them :)
+        expanded.sort()
+        return expanded
 
     def _add_line_value_to(self, category, value, key=None):
         """
@@ -498,7 +492,8 @@ class RpmPreamble(Section):
         while len(key) < keylen:
             key += ' '
 
-        if category in self.categories_with_package_tokens:
+        if category in self.categories_with_package_tokens and \
+           self.reg.re_requires_token.match(value):
             values = self._fix_list_of_packages(value, category)
         else:
             values = [value]
