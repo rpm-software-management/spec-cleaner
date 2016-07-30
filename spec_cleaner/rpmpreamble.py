@@ -428,8 +428,7 @@ class RpmPreamble(Section):
                     self.current_group.append('# FIXME: Use %requires_eq macro instead')
                 return [value]
             tokens = [item[1] for item in self.reg.re_requires_token.findall(value)]
-            # first loop over all and do formatting as we can get more deps for
-            # one
+            # loop over all and do formatting as we can get more deps for one
             expanded = []
             for token in tokens:
                 # there is allowed syntax => and =< ; hidious
@@ -443,7 +442,6 @@ class RpmPreamble(Section):
                     continue
                 # cleanup whitespace
                 token = token.replace(' ', '')
-
                 token = re.sub(r'([<>]=?|=)', r' \1 ', token)
                 if not token:
                     continue
@@ -470,7 +468,6 @@ class RpmPreamble(Section):
                     expanded += token
             # and then sort them :)
             expanded.sort()
-
             return expanded
         else:
             return [value]
