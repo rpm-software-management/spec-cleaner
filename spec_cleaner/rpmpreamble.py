@@ -216,6 +216,7 @@ class RpmPreamble(Section):
         if t == str:
             key = a
         elif t == list:
+            # if this is a list then all items except last are commentary
             key = a[-1]
         else:
             raise RpmException('Unknown type during sort: %s' % t)
