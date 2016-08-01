@@ -579,8 +579,7 @@ class RpmPreamble(Section):
                 zero = '0'
             else:
                 zero = ''
-            self._add_line_value_to('patch', match.group(
-                3), key='%sPatch%s%s' % (match.group(1), zero, match.group(2)))
+            self._add_line_value_to('patch', match.group(3), key='%sPatch%s%s' % (match.group(1), zero, match.group(2)))
             return
 
         elif self.reg.re_bcond_with.match(line):
