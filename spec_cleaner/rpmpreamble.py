@@ -332,7 +332,7 @@ class RpmPreamble(Section):
             # the current group was not added to any category. It's just some
             # random stuff that should be at the end anyway.
             lines += self._add_group(self.current_group)
-            self.current_group = ''
+            self.current_group = []
         return lines
 
     def _fix_license(self, value):
