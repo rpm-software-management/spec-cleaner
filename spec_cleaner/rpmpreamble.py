@@ -361,6 +361,7 @@ class RpmPreamble(Section):
 
     def _split_name_and_version(self, value):
         # split the name and version from the requires element
+        # FIXME: convert to split properly based on the comparator
         if ' ' in value:
             pkgname = value.split()[0]
             version = value.replace(pkgname, '')
