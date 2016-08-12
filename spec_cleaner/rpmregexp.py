@@ -72,6 +72,7 @@ class Regexp(object):
     re_license_semicolon = re.compile(r'\s*;\s*')
     # Special bracketed deps dection
     re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')
+    re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')
 
     # rpmdescription
     re_authors = re.compile(r'^\s*Author(s)?:\s*')
