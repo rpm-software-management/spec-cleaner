@@ -11,6 +11,7 @@ BuildRequires:  zzz
 Requires:       %{libname} >= %{version}
 Requires:       %{some_packagename} >= %{some_version}
 Requires:       aaa < 3.2.1
+Requires:       alsa%{dep_postfix} >= 1.0.23
 Requires:       bbb
 Requires:       eee = %{version}-%{release}
 Requires:       iii <= 4.2.1

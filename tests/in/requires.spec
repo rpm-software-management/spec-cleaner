@@ -21,3 +21,4 @@ Provides:       %{name} = 0.3.0~gitbcaa
 Obsoletes:      %{name} = 0.3.0~gitbcaa
 Provides:       %{name} = 0.3.0+gitbcaa
 Obsoletes:      %{name} = 0.3.0+gitbcaa
+Requires:       alsa%{dep_postfix} >= 1.0.23
