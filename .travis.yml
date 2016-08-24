@@ -1,19 +1,25 @@
-# use docker infrastructure for faster builds
 sudo: false
-
 addons:
   apt:
     packages:
     - rpm
-
 language: python
 matrix:
   include:
-    - python: 2.7
-      env: TOX_ENV=py27
-    - python: 3.5
-      env: TOX_ENV=py35
+  - python: 2.7
+    env: TOX_ENV=py27
+  - python: 3.5
+    env: TOX_ENV=py35
 install:
-  - pip install tox
+- pip install tox
 script:
-  - tox -e $TOX_ENV
+- tox -e $TOX_ENV
+deploy:
+  provider: pypi
+  user: suse
+  password:
+    secure: ZHOssGPx1yaC7ny/+OnsFZQM7f1/E1KoVyR4ePIegZmKDhbzHwPHTdTCGmgFHd2O4iZ3OFy6SHWDh95d4GdnY803nDTEdIuvb+HrL6OtFXWjTso4Yde2PaHqKlLv82ki0KvQkoJMi9gsNsJETtkeFH6lxtgUrMt2assLzMIxapk=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: openSUSE/spec-cleaner
