@@ -1,6 +1,7 @@
-include AUTHORS COPYING README.md README.md.in
+include AUTHORS COPYING README.md README.md.in RELEASE.md TESTSUITE.md MANIFEST.in
+include spec-cleaner-exec-profile.svg
 include obs/*
 include data/*.txt
 recursive-include tests *
-include pkgconfig-update.* license-update.sh Makefile
+include conversions-update.* license-update.sh Makefile
 include tox.ini
