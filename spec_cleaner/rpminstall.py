@@ -28,20 +28,15 @@ class RpmInstall(Section):
         """
         Replace various install commands with one unified mutation
         """
-        make_command = 'make'
-        install_command = ' DESTDIR=%{buildroot} install'
-        parallel_arg = ' %{?_smp_mflags}'
+        make_install = '%make_install'
 
-        # check if we want multiple threads or not
-        if line.find('-j1') != -1:
-            parallel_arg = ' -j1'
         # do not use install macros as we have trouble with it for now
         # we can convert it later on
         if self.reg.re_install.match(line):
-            line = make_command + parallel_arg + install_command
+            line = make_install
 
         # we can deal with additional params for %makeinstall so replace that
-        line = line.replace('%makeinstall', make_command + parallel_arg + install_command)
+        line = line.replace('%makeinstall', make_install)
 
         return line
 
