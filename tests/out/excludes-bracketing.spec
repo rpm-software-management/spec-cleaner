@@ -70,7 +70,7 @@
 %make_build
 %make_install
 %make_jobs
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
+%make_install
 %mime_database_post[^\s]*
 %nagios_command_user_group_add
 %nagios_user_group_add

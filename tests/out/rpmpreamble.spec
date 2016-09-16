@@ -109,7 +109,7 @@ Headers, pkg-config files, so link and other development files for %{name}
 make %{?_smp_mflags}
 
 %install
-make %{?_smp_mflags} DESTDIR=%{buildroot} install
+%make_install
 find %{buildroot} -type f -name "*.la" -delete -print
 
 %check
