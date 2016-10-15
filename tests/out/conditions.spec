@@ -26,5 +26,8 @@ Requires:       naughty-stuff
 %if (0%{?suse_version} && 0%{?suse_version} >= 1210)
 Requires:       wine
 %endif
+%if (0%{?sle_version} == 120100 && 0%{?is_opensuse} == 0) || 0%{?suse_version} == 1310
+Requires:       something
+%endif
 
 %changelog
