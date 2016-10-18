@@ -21,12 +21,12 @@ class RpmBuild(RpmCheck):
             if (not self.previous_line \
                or (not self.previous_line.startswith('#') \
                and not self.previous_line.endswith('\\'))) \
-               and line.startswith('./configure'):
+               and self.reg.re_configure.match(line):
                 self.lines.append('# FIXME: you should use the %%configure macro')
             if (not self.previous_line \
                or (not self.previous_line.startswith('#') \
                and not self.previous_line.endswith('\\'))) \
-               and line.startswith('cmake'):
+               and self.reg.re_cmake.match(line):
                 self.lines.append('# FIXME: you should use %%cmake macros')
 
         RpmCheck.add(self, line)

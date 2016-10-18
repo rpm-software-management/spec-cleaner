@@ -83,6 +83,8 @@ class Regexp(object):
     re_optflags_quotes = re.compile(r'=\s*\${?RPM_OPT_FLAGS}?\s*$')
     re_optflags = re.compile(r'\${?RPM_OPT_FLAGS}?')
     re_suseupdateconfig = re.compile(r'(%{?suse_update_config|${?\?suse_update_config:)')
+    re_configure = re.compile(r'(^|(.*\s)?)./configure($|(\s(.*)?))')
+    re_cmake = re.compile(r'(^|(.*\s)?)cmake($|(\s(.*)?))')
 
     # rpmcopyright
     re_copyright = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
