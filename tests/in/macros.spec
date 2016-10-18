@@ -10,3 +10,4 @@ cmake . \
 # this is not autotools
 ./configure --aughr
 %useful_macro 15
+./configure.sh \
