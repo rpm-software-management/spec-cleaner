@@ -34,6 +34,7 @@
 %ghc_bin_install
 %ghc_check_bootstrap
 %ghc_fix_dynamic_rpath
+%ghc_fix_rpath
 %ghc_lib_build
 %ghc_lib_install
 %ghc_pkg_recache
