@@ -6,6 +6,7 @@ from .rpmsection import Section
 from .rpmexception import RpmException
 from .rpmhelpers import sort_uniq
 
+from .dependency_parser import DependencyParser
 
 class RpmPreamble(Section):
 
@@ -424,7 +425,7 @@ class RpmPreamble(Section):
             if not self.previous_line.startswith('#') and not self.minimal:
                 self.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
-        tokens = [item[1] for item in self.reg.re_requires_token.findall(value)]
+        tokens = DependencyParser(value).flat_out()
         # loop over all and do formatting as we can get more deps for one
         expanded = []
         for token in tokens:
