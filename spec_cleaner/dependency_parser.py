@@ -1,5 +1,12 @@
-#!/usr/bin/env python3
+"""RPM dependency lines parser and helpers.
 
+Contains class DependencyParser which parses string and generates
+token tree. For common manipulation is method flat_out() useful, it
+just splits dependencies into list.
+
+For future development is useful find_end_of_macro().
+
+"""
 import re
 import logging
 
@@ -7,39 +14,38 @@ DEBUG = None
 
 if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger("parser")
 
 
-def find_end_of_macro(s, opening, closing):
+def find_end_of_macro(string, opening, closing):
     if DEBUG:
-        logger = logging.getLogger("DepParser")
+        logger = logging.getLogger('DepParser')
     else:
         logger = None
-    macro = s[0:2]
+    macro = string[0:2]
     # eat '%{'
-    s = s[2:]
+    string = string[2:]
 
     # let's construct regexp matching one of following:
     #   one opening or closing paren
     #   escaped variants of one opening or close paren
     #   unlimited amount of anything else
-    escaped_opening = "\\" + opening
-    escaped_closing = "\\" + closing
+    escaped_opening = '\\' + opening
+    escaped_closing = '\\' + closing
     specials = [
         re.escape(opening), re.escape(closing),
         re.escape(escaped_opening), re.escape(escaped_closing),
-        "[^\\" + opening + closing + "]+"
+        '[^\\' + opening + closing + ']+'
     ]
-    regex = "(" + "|".join(specials) + ")"
+    regex = '(' + '|'.join(specials) + ')'
     opened = 1
-    while opened and s:
+    while opened and string:
         if logger:
-            logger.debug("opened: %d string: %s" % (opened, s))
+            logger.debug('opened: %d string: %s', opened, string)
         try:
-            bite, s = consume_chars(regex, s, logger)
+            bite, string = consume_chars(regex, string, logger)
         except NoMatchException:
-            raise Exception("unexpected parser error when looking for end of "
-                            "macro")
+            raise Exception('unexpected parser error when looking for end of '
+                            'macro')
 
         if bite == opening:
             opened += 1
@@ -48,24 +54,23 @@ def find_end_of_macro(s, opening, closing):
         macro += bite
 
     if opened:
-        raise Exception("Unexpectedly met end of string when looking for end "
-                        "of macro")
+        raise Exception('Unexpectedly met end of string when looking for end '
+                        'of macro')
     return macro
 
 
-def consume_chars(regex, s, logger=None):
+def consume_chars(regex, string, logger=None):
     if logger:
-        logger.debug("consume_chars: regex: '%s'" % regex)
-        logger.debug("consume_chars: string:'%s'" % s)
-    match = re.match(regex, s)
+        logger.debug('consume_chars: regex: "%s"', regex)
+        logger.debug('consume_chars: string:"%s"', string)
+    match = re.match(regex, string)
     if match:
         end = match.end()
         if logger:
-            logger.debug("consume_chars: split '%s', '%s'" %
-                         (s[0:end], s[end:]))
-        return s[0:end], s[end:]
+            logger.debug('consume_chars: split "%s", "%s"', string[0:end], string[end:])
+        return string[0:end], string[end:]
     else:
-        raise NoMatchException("Expected match failed")
+        raise NoMatchException('Expected match failed')
 
 
 class NoMatchException(Exception):
@@ -79,18 +84,18 @@ class DependencyParser(object):
     logger = None
 
     def __init__(self, string):
-        self.s = string.rstrip()
+        self.string = string.rstrip()
         self.token = []
         self.parsed = []
         self.state = ['name']
         if DEBUG:
-            self.logger = logging.getLogger("DepParser")
+            self.logger = logging.getLogger('DepParser')
             self.logger.setLevel(logging.DEBUG)
         self.state_change_loop()
 
     def dump_token(self):
         if self.logger:
-            self.logger.debug("dump_token")
+            self.logger.debug('dump_token')
         self.status()
         if not self.token:
             return
@@ -102,7 +107,7 @@ class DependencyParser(object):
         self.token = []
 
     def state_change_loop(self):
-        while self.s:
+        while self.string:
             if self.state[-1] == 'name':
                 self.read_name()
             elif self.state[-1] == 'version_operator':
@@ -121,15 +126,15 @@ class DependencyParser(object):
 
     def status(self):
         if self.logger:
-            self.logger.debug("token: %s" % self.token)
-            self.logger.debug("s: '%s'" % self.s)
-            self.logger.debug("parsed: %s" % self.parsed)
-            self.logger.debug("state: %s" % self.state)
-            self.logger.debug("--------------------------------")
+            self.logger.debug('token: %s', self.token)
+            self.logger.debug('string: "%s"', self.string)
+            self.logger.debug('parsed: %s', self.parsed)
+            self.logger.debug('state: %s', self.state)
+            self.logger.debug('--------------------------------')
 
     def read_spaces(self, state_change=True):
         try:
-            spaces, self.s = consume_chars("\s+", self.s, self.logger)
+            spaces, self.string = consume_chars(r'\s+', self.string, self.logger)
             self.token.append(spaces)
             if state_change:
                 self.state.pop()  # remove 'spaces' state
@@ -143,33 +148,33 @@ class DependencyParser(object):
             pass
 
     def read_unknown(self):
-        """
+        '''
         Try to identify, what is to be read now.
-        """
-        if self.s[0:2] in ['>=', '<=', '=>', '=<'] or \
-                self.s[0:1] in ['<', '>', '=']:
+        '''
+        if self.string[0:2] in ['>=', '<=', '=>', '=<'] or \
+                self.string[0:1] in ['<', '>', '=']:
             self.state.append('version')
             self.state.append('version_operator')
-        elif self.s[0] == ' ':
+        elif self.string[0] == ' ':
             self.state.append('spaces')
-        elif self.s[0:2] == '%{':
+        elif self.string[0:2] == '%{':
             self.state.append('macro_name')
-        elif self.s[0:2] == '%(':
+        elif self.string[0:2] == '%(':
             self.state.append('macro_shell')
-        elif self.s[0:2] == '%%':
+        elif self.string[0:2] == '%%':
             self.read_double_percent()
-        elif self.s[0] == '%':
+        elif self.string[0] == '%':
             self.state.append('macro_unbraced')
-        elif self.s[0] == ',':
-            self.s = self.s[1:]
+        elif self.string[0] == ',':
+            self.string = self.string[1:]
             self.dump_token()
         if self.logger:
-            self.logger.debug("read_unknown: states: %s string: '%s'" %
-                              (self.state, self.s))
+            self.logger.debug('read_unknown: states: %s string: "%s"',
+                              self.state, self.string)
 
     def read_name(self):
         try:
-            name, self.s = consume_chars(self.RE_NAME, self.s, self.logger)
+            name, self.string = consume_chars(self.RE_NAME, self.string, self.logger)
             if self.token and self.token[-1].isspace():
                 self.dump_token()
             self.token.append(name)
@@ -178,16 +183,16 @@ class DependencyParser(object):
             self.read_unknown()
 
     def read_double_percent(self):
-        self.token.append("%%")
-        self.s = self.s[2:]
+        self.token.append('%%')
+        self.string = self.string[2:]
 
     def read_macro_unbraced(self):
         try:
             # 3 or more alphanumeric characters
-            macro, self.s = consume_chars(
-                "%[A-Za-z0-9_]{3,}", self.s, self.logger)
+            macro, self.string = consume_chars(
+                '%[A-Za-z0-9_]{3,}', self.string, self.logger)
             # add braces to macro
-#            macro = "%{" + macro[1:] + "}"
+#            macro = '%{' + macro[1:] + '}'
             self.token.append(macro)
             self.state.pop()  # remove 'macro_unbraced' state
             self.status()
@@ -196,8 +201,8 @@ class DependencyParser(object):
 
     def read_version_operator(self):
         try:
-            operator, self.s = consume_chars(
-                "(>=|<=|=>|=<|>|<|=)", self.s, self.logger)
+            operator, self.string = consume_chars(
+                '(>=|<=|=>|=<|>|<|=)', self.string, self.logger)
             self.token.append(operator)
             # Note: this part is a bit tricky, I need to read possible
             # spaces or tabs now so I won't get to [ ..., 'version',
@@ -210,26 +215,26 @@ class DependencyParser(object):
 
     def read_version(self):
         try:
-            version, self.s = consume_chars(
-                self.RE_VERSION, self.s, self.logger)
+            version, self.string = consume_chars(
+                self.RE_VERSION, self.string, self.logger)
             self.token.append(version)
             self.status()
         except NoMatchException:
             self.read_unknown()
 
     def read_macro_name(self):
-        macro = find_end_of_macro(self.s, "{", "}")
+        macro = find_end_of_macro(self.string, '{', '}')
         # remove macro from string
-        self.s = self.s[len(macro):]
+        self.string = self.string[len(macro):]
         self.token.append(macro)
         # now we expect previous state
         self.state.pop()
         self.status()
 
     def read_macro_shell(self):
-        self.logger.debug("read_macro_shell")
-        macro = find_end_of_macro(self.s, "(", ")")
-        self.s = self.s[len(macro):]
+        self.logger.debug('read_macro_shell')
+        macro = find_end_of_macro(self.string, '(', ')')
+        self.string = self.string[len(macro):]
         self.token.append(macro)
         # now we expect previous state
         self.state.pop()
@@ -237,12 +242,12 @@ class DependencyParser(object):
 
     def flat_out(self):
         result = []
-        for t in self.parsed:
-            if type(t) is list:
-                if t and t[-1].isspace():
-                    t = t[:-1]
-                result.append("".join(t))
+        for token in self.parsed:
+            if isinstance(token, list):
+                if token and token[-1].isspace():
+                    token = token[:-1]
+                result.append(''.join(token))
             else:
-                if not t.isspace():
-                    result.append(t)
+                if not token.isspace():
+                    result.append(token)
         return result
