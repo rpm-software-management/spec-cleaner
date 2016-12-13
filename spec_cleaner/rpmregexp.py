@@ -119,7 +119,10 @@ class Regexp(object):
     re_comment = re.compile(r'^$|^\s*#')
 
     # macro detection
-    re_macro = re.compile(r'(^|([^%]))%([1-9]\d*|[a-zA-Z_]\w*(\s*\([^)]*\))?)(|(\W))')
+    re_macro = re.compile(r'(^|([^%]))' + \
+                          r'%([1-9]\d*|[a-zA-Z_]\w*' + \
+                          r'(\s*\([^)]*\))?' + \
+                          r')(|(\W))')
 
     # cleaning path regexps
     re_oldprefix = re.compile(r'%{?_exec_prefix}?([/\s$])')
