@@ -119,10 +119,19 @@ class Regexp(object):
     re_comment = re.compile(r'^$|^\s*#')
 
     # macro detection
-    re_macro = re.compile(r'(^|([^%]))' + \
-                          r'%([1-9]\d*|[a-zA-Z_]\w*' + \
-                          r'(\s*\([^)]*\))?' + \
-                          r')(|(\W))')
+    re_macro = re.compile(
+        # find start of macro:
+        #   either beggining of string or something which is not '%'
+        r'(^|([^%]))' +
+        # macro itself:
+        # '%' followed by either number not starting with '0'
+        # or by chars where first is a-z or A-Z or underscore
+        r'%([1-9]\d*|[a-zA-Z_]\w*' +
+        # possibly followed by parens
+        r'(\s*\([^)]*\))?' +
+        # beyond the end of the macro
+        r')(|(\W))'
+    )
 
     # cleaning path regexps
     re_oldprefix = re.compile(r'%{?_exec_prefix}?([/\s$])')
