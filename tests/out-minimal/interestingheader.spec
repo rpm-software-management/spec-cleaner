@@ -20,6 +20,7 @@ BuildRequires:  pkgconfig
 BuildRequires:  update-desktop-files
 BuildRequires:  pkgconfig(fftw3)
 BuildRequires:  pkgconfig(fftw3f)
+BuildRequires:  pkgconfig(fftw3l)
 BuildRequires:  pkgconfig(jack)
 BuildRequires:  pkgconfig(liblo)
 BuildRequires:  pkgconfig(sdl)
