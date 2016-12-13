@@ -43,7 +43,7 @@ glib2_gsettings_schema_[^\s]*
 global
 gpg_verify
 icon_theme_cache_post[^\s]*
-if(\s*\(.*)?
+if(\s*\(.*\))?
 ifarch
 ifnarch
 include
