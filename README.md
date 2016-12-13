@@ -62,8 +62,12 @@ BSD-2-Clause-FreeBSD | BSD 2-clause FreeBSD License
 BSD-2-Clause-NetBSD | BSD 2-clause NetBSD License
 BSD-3-Clause | BSD 3-clause "New" or "Revised" License
 BSD-3-Clause-Clear | BSD 3-clause Clear License
+BSD-3-Clause-No-Nuclear-License | BSD 3-Clause No Nuclear License
+BSD-3-Clause-No-Nuclear-License-2014 | BSD 3-Clause No Nuclear License 2014
+BSD-3-Clause-No-Nuclear-Warranty | BSD 3-Clause No Nuclear Warranty
 BSD-4-Clause | BSD 4-clause "Original" or "Old" License
 BSD-Protection | BSD Protection License
+BSD-Source-Code | BSD Source Code Attribution
 BSD-3-Clause-Attribution | BSD with attribution
 0BSD | BSD Zero Clause License
 BSD-4-Clause-UC | BSD-4-Clause (University of California-Specific)

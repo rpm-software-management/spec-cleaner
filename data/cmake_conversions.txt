@@ -1,33 +1,36 @@
 PackageKit-Qt-devel: packagekitqt4 
 PackageKit-Qt5-devel: packagekitqt5 
-QtZeitgeist-devel: QZeitgeist 
 Vc-devel: Vc 
 akonadi-calendar-devel: KF5AkonadiCalendar 
 akonadi-contact-devel: KF5AkonadiContact 
-akonadi-devel: KF5Akonadi 
 akonadi-mime-devel: KF5AkonadiMime 
 akonadi-notes-devel: KF5AkonadiNotes 
 akonadi-search-devel: KF5AkonadiSearch 
-akonadi-socialutils-devel: KF5AkonadiSocialUtils 
+akonadi-server-devel: KF5Akonadi 
 analitza-devel: Analitza5 
 attica-qt5-devel: KF5Attica 
 baloo-devel: Baloo 
 baloo5-devel: KF5Baloo 
 baloo5-widgets-devel: KF5BalooWidgets 
 bluez-qt-devel: KF5BluezQt 
+breeze5-style: Breeze 
+calendarsupport-devel: KF5CalendarSupport 
 cmake: x86-64 
 dolphin-devel: DolphinVcs 
+eventviews-devel: KF5EventViews 
 fcitx-qt5-devel: FcitxQt5DBusAddons FcitxQt5WidgetsAddons 
 frameworkintegration-devel: KF5FrameworkIntegration 
-gnuradio-devel: Gnuradio Volk 
+freerdp-devel: FreeRDP FreeRDP-Client WinPR 
 gpgmepp5-devel: KF5Gpgmepp 
 grantlee-devel: Grantlee 
 grantlee5-devel: Grantlee5 
+grantleetheme-devel: KF5GrantleeTheme 
 gstreamer-plugins-qt-devel: QtGStreamer 
 gstreamer-plugins-qt5-devel: Qt5GStreamer 
-homerun-devel: Homerun 
+incidenceeditor-devel: KF5IncidenceEditor 
 jsoncpp-devel: jsoncpp 
 kaccounts-integration-devel: KAccounts 
+kactivities-stats-devel: KF5ActivitiesStats 
 kactivities5-devel: KF5Activities 
 kalarmcal-devel: KF5AlarmCalendar 
 karchive-devel: KF5Archive 
@@ -49,10 +52,15 @@ kdebase4-workspace-devel: KDE4Workspace
 kdeclarative-devel: KF5Declarative 
 kded-devel: KDED 
 kdelibs4support-devel: KF5KDE4Support KF5KDELibs4Support 
+kdepim-apps-libs-devel: KF5FollowupReminder KF5KaddressbookGrantlee KF5KdepimDBusInterfaces KF5SendLater 
 kdesignerplugin-devel: KF5DesignerPlugin 
 kdesu-devel: KF5Su 
 kdevelop4-pg-qt: KDevelop-PG-Qt 
+kdevelop5-pg-qt: KDevelop-PG-Qt 
+kdevelop5: KDevelop 
+kdevplatform-devel: KDevPlatform 
 kdewebkit-devel: KF5WebKit 
+kdgantt2-devel: KF5KDGantt2 
 kdnssd-framework-devel: KF5DNSSD 
 kdoctools-devel: KF5DocTools 
 kemoticons-devel: KF5Emoticons 
@@ -70,6 +78,7 @@ kidletime-devel: KF5IdleTime
 kimap-devel: KF5IMAP 
 kinit-devel: KF5Init 
 kio-devel: KF5KIO 
+kirigami-devel: KF5Kirigami 
 kitemmodels-devel: KF5ItemModels 
 kitemviews-devel: KF5ItemViews 
 kjobwidgets-devel: KF5JobWidgets 
@@ -92,6 +101,7 @@ kplotting-devel: KF5Plotting
 kpty-devel: KF5Pty 
 kross-devel: KF5Kross 
 krunner-devel: KF5Runner 
+kscreenlocker-devel: KScreenLocker ScreenSaverDBusInterface 
 kservice-devel: KF5Service 
 ktexteditor-devel: KF5TextEditor 
 ktextwidgets-devel: KF5TextWidgets 
@@ -105,9 +115,17 @@ kwin5-devel: KWinDBusInterface
 kwindowsystem-devel: KF5WindowSystem 
 kxmlgui-devel: KF5XmlGui 
 kxmlrpcclient5-devel: KF5XmlRpcClient 
-libKF5AkonadiPrivate-devel: KF5AkonadiServer 
+libAppstreamQt-devel: AppstreamQt 
+libBox2D-devel: Box2D 
 libKF5ModemManagerQt-devel: KF5ModemManagerQt 
 libKF5NetworkManagerQt-devel: KF5NetworkManagerQt 
+libQt53DCore-devel: Qt53DCore 
+libQt53DInput-devel: Qt53DInput 
+libQt53DLogic-devel: Qt53DLogic 
+libQt53DQuick-devel: Qt53DQuick 
+libQt53DQuickInput-devel: Qt53DQuickInput 
+libQt53DQuickRender-devel: Qt53DQuickRender 
+libQt53DRender-devel: Qt53DRender 
 libQt5Concurrent-devel: Qt5Concurrent 
 libQt5Core-devel: Qt5 Qt5Core 
 libQt5DBus-devel: Qt5DBus 
@@ -130,36 +148,43 @@ libcmocka-devel: cmocka
 libdbusmenu-qt-devel: dbusmenu-qt 
 libdbusmenu-qt5-devel: dbusmenu-qt5 
 libftdi1-devel: LibFTDI1 
+libglfw-devel: glfw3 
+libgravatar-devel: KF5Gravatar 
+libical-devel: LibIcal 
 libkactivities-devel: KActivities 
 libkcddb4-devel: Libkcddb 
 libkcompactdisc4-devel: Libkcompactdisc 
+libkdcraw-devel: KF5KDcraw 
 libkde4-devel: KDeclarative 
 libkdecoration2-devel: KDecoration2 
-libkdeedu4-devel: LibKdeEdu 
 libkdegames-devel: KF5KDEGames 
 libkdegames4-devel: KDEGames 
+libkdepim-devel: KF5Libkdepim MailTransportDBusService 
 libkdepimlibs4-devel: KdepimLibs 
-libkdevplatform-devel: KDevPlatform 
+libkdevplatform4-devel: KDevPlatform 
 libkeduvocdocument-devel: LibKEduVocDocument 
-libkexiv2-devel: libkexiv2 
-libkface-devel: kface 
+libkexiv2-devel: KF5KExiv2 
+libkface-devel: KF5KFace 
 libkfbapi-devel: LibKFbAPI 
-libkgapi-devel: LibKGAPI2 
+libkgapi-devel: KF5GAPI 
+libkgeomap-devel: KF5KGeoMap 
+libkipi-devel: KF5Kipi 
+libkleo-devel: KF5Libkleo 
 libkmahjongg-devel: KF5KMahjongglib 
 libkolab-devel: Libkolab 
 libkolab-qt5-devel: Libkolab 
 libkolabxml-devel: Libkolabxml 
 libkomparediff2-devel: LibKompareDiff2 
-libksane-devel: KSane 
+libksane-devel: KF5Sane 
 libkscreen-devel: LibKScreen 
 libkscreen2-devel: KF5Screen 
+libksieve-devel: KF5LibKSieve 
 libksysguard5-devel: KF5SysGuard 
+libktorrent-devel: LibKTorrent 
 libkvkontakte-devel: LibKVkontakte 
-liblxqt-globalkeys-ui0: lxqt-globalkeys-ui 
-liblxqt-globalkeys0: lxqt-globalkeys 
-liblxqt-mount-devel: lxqtmount 
 libmygpo-qt-devel: Mygpo-qt 
 libmygpo-qt5-devel: Mygpo-qt5 
+libpamtest-devel: libpamtest 
 libpolkit-qt-1-devel: PolkitQt-1 
 libpolkit-qt5-1-devel: PolkitQt5-1 
 libprison-devel: Prison 
@@ -170,13 +195,12 @@ libqt5-qtconnectivity-devel: Qt5Bluetooth Qt5Nfc
 libqt5-qtdeclarative-devel: Qt5Qml Qt5Quick Qt5QuickTest Qt5QuickWidgets 
 libqt5-qtlocation-devel: Qt5Location Qt5Positioning 
 libqt5-qtmultimedia-devel: Qt5Multimedia Qt5MultimediaWidgets 
-libqt5-qtquick1-devel: Qt5Declarative 
 libqt5-qtscript-devel: Qt5Script Qt5ScriptTools 
 libqt5-qtsensors-devel: Qt5Sensors 
 libqt5-qtserialport-devel: Qt5SerialPort 
 libqt5-qtsvg-devel: Qt5Svg 
 libqt5-qttools-devel: Qt5Designer Qt5Help Qt5UiPlugin Qt5UiTools 
-libqt5-qtwayland-devel: Qt5Compositor 
+libqt5-qtwayland-devel: Qt5Compositor Qt5WaylandClient 
 libqt5-qtwebchannel-devel: Qt5WebChannel 
 libqt5-qtwebengine-devel: Qt5WebEngine Qt5WebEngineCore Qt5WebEngineWidgets 
 libqt5-qtwebsockets-devel: Qt5WebSockets 
@@ -185,38 +209,45 @@ libqt5-qtxmlpatterns-devel: Qt5XmlPatterns
 libshiboken-devel: Shiboken 
 libshiboken-python3-devel: Shiboken 
 libsignon-qt5-devel: SignOnQt5 
+libtomahawk-devel: Tomahawk 
 libyui-devel: Libyui 
 libyui-ncurses-devel: Libyui-ncurses 
 libyui-ncurses-pkg-devel: Libyui-ncurses-pkg 
 libyui-qt-devel: Libyui-qt 
 libyui-qt-graph-devel: Libyui-qt-graph 
 libyui-qt-pkg-devel: Libyui-qt-pkg 
+mailcommon-devel: KF5MailCommon 
+mailimporter-devel: KF5MailImporter 
+marble-devel: Astro Marble 
 mathgl-devel: mathgl2 
+messagelib-devel: KF5MessageComposer KF5MessageCore KF5MessageList KF5MessageViewer KF5MimeTreeParser KF5TemplateParser KF5WebEngineViewer 
 mobipocket-devel: QMobipocket 
 nss_wrapper: nss_wrapper 
 okteta-devel: KastenControllers KastenCore KastenGui OktetaCore OktetaGui OktetaKastenControllers OktetaKastenCore OktetaKastenGui 
 okular-devel: Okular 
 openbabel: OpenBabel2 
 openobex-devel: openobex 
+pam_wrapper: pam_wrapper 
 phonon-devel: Phonon 
-phonon4qt5-devel: Phonon4Qt5 
+phonon4qt5-devel: Phonon4Qt5Experimental 
+pimcommon-devel: KF5PimCommon 
 plasma-framework-devel: KF5Plasma KF5PlasmaQuick 
-plasma5-workspace-devel: KRunnerAppDBusInterface KSMServerDBusInterface LibKWorkspace LibTaskManager ScreenSaverDBusInterface 
+plasma5-workspace-devel: KRunnerAppDBusInterface KSMServerDBusInterface LibKWorkspace LibTaskManager 
 pugixml-devel: pugixml 
 purpose-devel: KDEExperimentalPurpose 
 python-pyside-devel: PySide 
+python3-pyside-devel: PySide 
 qpid-cpp-client-devel: Qpid 
 qpid-proton-devel: Proton 
 qtkeychain-devel: QtKeychain 
 qtkeychain-qt5-devel: Qt5Keychain 
 resolv_wrapper: resolv_wrapper 
-snorenotify-qt5-devel: LibsnoreQt5 
+snorenotify-qt5-devel: LibsnoreQt5 LibsnoreSettingsQt5 
 socket_wrapper: socket_wrapper 
 solid-devel: KF5Solid 
 sonnet-devel: KF5Sonnet 
-strigi-devel: LibSearchClient LibStreamAnalyzer LibStreams Strigi 
+spdlog-devel: spdlog 
 syndication-devel: KF5Syndication 
-telepathy-logger-qt4-devel: TelepathyLoggerQt4 
 telepathy-logger-qt5-devel: TelepathyLoggerQt 
 telepathy-qt4-devel: TelepathyQt4 TelepathyQt4Farstream TelepathyQt4Service 
 telepathy-qt5-devel: TelepathyQt5 TelepathyQt5Farstream TelepathyQt5Service 
