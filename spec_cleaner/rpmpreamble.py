@@ -495,7 +495,7 @@ class RpmPreamble(Section):
             key += ' '
 
         if category in self.categories_with_package_tokens and \
-           self.reg.re_requires_token.match(value):
+           DependencyParser(value).flat_out():
             values = self._fix_list_of_packages(value, category)
         else:
             values = [value]
