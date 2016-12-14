@@ -15,8 +15,29 @@ DEBUG = None
 if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
 
+re_parens = re.compile(
+    r'(' +
+    r'\('  + r'|' + r'\)'  + r'|' +
+    r'\\(' + r'|' + r'\\)' + r'|' +
+    r'[^\()]+' +
+    r')'
+)
 
-def find_end_of_macro(string, opening, closing):
+re_braces = re.compile(
+    r'(' +
+    r'\{'  + r'|' + r'\}'  + r'|' +
+    r'\\{' + r'|' + r'\\}' + r'|' +
+    r'[^\{}]+' +
+    r')'
+)
+
+re_name = re.compile(r'[-A-Za-z0-9_~():.+/]+')
+re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
+re_spaces = re.compile(r'\s+')
+re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
+re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
+
+def find_end_of_macro(string, regex, opening, closing):
     if DEBUG:
         logger = logging.getLogger('DepParser')
     else:
@@ -25,18 +46,6 @@ def find_end_of_macro(string, opening, closing):
     # eat '%{'
     string = string[2:]
 
-    # let's construct regexp matching one of following:
-    #   one opening or closing paren
-    #   escaped variants of one opening or close paren
-    #   unlimited amount of anything else
-    escaped_opening = '\\' + opening
-    escaped_closing = '\\' + closing
-    specials = [
-        re.escape(opening), re.escape(closing),
-        re.escape(escaped_opening), re.escape(escaped_closing),
-        '[^\\' + opening + closing + ']+'
-    ]
-    regex = '(' + '|'.join(specials) + ')'
     opened = 1
     while opened and string:
         if logger:
@@ -61,9 +70,10 @@ def find_end_of_macro(string, opening, closing):
 
 def consume_chars(regex, string, logger=None):
     if logger:
-        logger.debug('consume_chars: regex: "%s"', regex)
+        logger.debug('consume_chars: regex: "%s"', regex.pattern)
         logger.debug('consume_chars: string:"%s"', string)
-    match = re.match(regex, string)
+    match = regex.match(string)
+#    match = re.match(regex, string)
     if match:
         end = match.end()
         if logger:
@@ -79,8 +89,6 @@ class NoMatchException(Exception):
 
 class DependencyParser(object):
 
-    RE_NAME = r'[-A-Za-z0-9_~():.+/]+'
-    RE_VERSION = r'[-A-Za-z0-9_~():.+]+'
     logger = None
 
     def __init__(self, string):
@@ -134,7 +142,7 @@ class DependencyParser(object):
 
     def read_spaces(self, state_change=True):
         try:
-            spaces, self.string = consume_chars(r'\s+', self.string, self.logger)
+            spaces, self.string = consume_chars(re_spaces, self.string, self.logger)
             self.token.append(spaces)
             if state_change:
                 self.state.pop()  # remove 'spaces' state
@@ -174,7 +182,7 @@ class DependencyParser(object):
 
     def read_name(self):
         try:
-            name, self.string = consume_chars(self.RE_NAME, self.string, self.logger)
+            name, self.string = consume_chars(re_name, self.string, self.logger)
             if self.token and self.token[-1].isspace():
                 self.dump_token()
             self.token.append(name)
@@ -190,7 +198,7 @@ class DependencyParser(object):
         try:
             # 3 or more alphanumeric characters
             macro, self.string = consume_chars(
-                '%[A-Za-z0-9_]{3,}', self.string, self.logger)
+                re_macro_unbraced, self.string, self.logger)
             # add braces to macro
 #            macro = '%{' + macro[1:] + '}'
             self.token.append(macro)
@@ -202,7 +210,7 @@ class DependencyParser(object):
     def read_version_operator(self):
         try:
             operator, self.string = consume_chars(
-                '(>=|<=|=>|=<|>|<|=)', self.string, self.logger)
+                re_version_operator, self.string, self.logger)
             self.token.append(operator)
             # Note: this part is a bit tricky, I need to read possible
             # spaces or tabs now so I won't get to [ ..., 'version',
@@ -216,14 +224,14 @@ class DependencyParser(object):
     def read_version(self):
         try:
             version, self.string = consume_chars(
-                self.RE_VERSION, self.string, self.logger)
+                re_version, self.string, self.logger)
             self.token.append(version)
             self.status()
         except NoMatchException:
             self.read_unknown()
 
     def read_macro_name(self):
-        macro = find_end_of_macro(self.string, '{', '}')
+        macro = find_end_of_macro(self.string, re_braces, '{', '}')
         # remove macro from string
         self.string = self.string[len(macro):]
         self.token.append(macro)
@@ -232,9 +240,7 @@ class DependencyParser(object):
         self.status()
 
     def read_macro_shell(self):
-        if self.logger:
-            self.logger.debug('read_macro_shell')
-        macro = find_end_of_macro(self.string, '(', ')')
+        macro = find_end_of_macro(self.string, re_parens, '(', ')')
         self.string = self.string[len(macro):]
         self.token.append(macro)
         # now we expect previous state
