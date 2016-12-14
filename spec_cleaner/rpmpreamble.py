@@ -5,7 +5,6 @@ import re
 from .rpmsection import Section
 from .rpmexception import RpmException
 from .rpmhelpers import sort_uniq
-
 from .dependency_parser import DependencyParser
 
 class RpmPreamble(Section):
