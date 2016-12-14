@@ -494,8 +494,7 @@ class RpmPreamble(Section):
         while len(key) < keylen:
             key += ' '
 
-        if category in self.categories_with_package_tokens and \
-           DependencyParser(value).flat_out():
+        if category in self.categories_with_package_tokens:
             values = self._fix_list_of_packages(value, category)
         else:
             values = [value]
