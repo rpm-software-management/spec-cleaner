@@ -232,7 +232,8 @@ class DependencyParser(object):
         self.status()
 
     def read_macro_shell(self):
-        self.logger.debug('read_macro_shell')
+        if self.logger:
+            self.logger.debug('read_macro_shell')
         macro = find_end_of_macro(self.string, '(', ')')
         self.string = self.string[len(macro):]
         self.token.append(macro)
