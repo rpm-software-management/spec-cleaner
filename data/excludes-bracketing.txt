@@ -3,6 +3,7 @@ attr(\s*\([^)]*\))?
 bcond_with[^\s]*
 build
 cabal_test
+caps(\s*\([^)]*\))?
 changelog
 check
 cmake
