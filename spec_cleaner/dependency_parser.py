@@ -10,6 +10,8 @@ For future development is useful find_end_of_macro().
 import re
 import logging
 
+from .rpmexception import NoMatchException
+
 DEBUG = None
 
 if DEBUG:
@@ -73,7 +75,6 @@ def consume_chars(regex, string, logger=None):
         logger.debug('consume_chars: regex: "%s"', regex.pattern)
         logger.debug('consume_chars: string:"%s"', string)
     match = regex.match(string)
-#    match = re.match(regex, string)
     if match:
         end = match.end()
         if logger:
@@ -81,10 +82,6 @@ def consume_chars(regex, string, logger=None):
         return string[0:end], string[end:]
     else:
         raise NoMatchException('Expected match failed')
-
-
-class NoMatchException(Exception):
-    pass
 
 
 class DependencyParser(object):
@@ -199,8 +196,6 @@ class DependencyParser(object):
             # 3 or more alphanumeric characters
             macro, self.string = consume_chars(
                 re_macro_unbraced, self.string, self.logger)
-            # add braces to macro
-#            macro = '%{' + macro[1:] + '}'
             self.token.append(macro)
             self.state.pop()  # remove 'macro_unbraced' state
             self.status()

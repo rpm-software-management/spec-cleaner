@@ -27,3 +27,10 @@ class RpmException(RpmBaseException):
     """
     Exception raised by wrong parsed content from rpm
     """
+
+class NoMatchException(RpmBaseException):
+
+    """
+    Exception raised by not matching corresponding brackets/etc
+    """
+
