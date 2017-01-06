@@ -123,20 +123,17 @@ class RpmSpecCleaner(object):
         Try to figure out if user defined that this file should not be
         ever parsed by spec-cleaner
         """
-        filecontent = open(self.options['specfile'])
-        for line in filecontent:
+        for line in self.fin:
             if self.reg.re_skipcleaner.match(line):
                 self.skip_run = True
                 break
-        filecontent.close()
-        filecontent = None
+        self.fin.seek(0)
 
     def _load_licenses(self):
         # detect all present licenses in the spec and detect if we have more
         # than one. If we do put license to each subpkg
         licenses = []
-        filecontent = open(self.options['specfile'])
-        for line in filecontent:
+        for line in self.fin:
             if self.reg.re_license.match(line):
                 line = line.rstrip('\n')
                 line = line.rstrip('\r')
@@ -145,12 +142,11 @@ class RpmSpecCleaner(object):
                 value = match.groups()[len(match.groups()) - 1]
                 if value not in licenses:
                     licenses.append(value)
-        filecontent.close()
-        filecontent = None
         if len(licenses) > 1:
             self.options['subpkglicense'] = True
             # put first license as placeholder if main preamble is missing one
             self.options['license'] = licenses[0]
+        self.fin.seek(0)
 
     def _detect_preamble_section(self, line):
         # This is seriously ugly but can't think of cleaner way
