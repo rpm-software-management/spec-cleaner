@@ -93,7 +93,8 @@ class Regexp(object):
     re_nodebuginfo = re.compile(r'^#\s*nodebuginfo\s*$', re.IGNORECASE)
     re_sslcerts = re.compile(r'^#\s*needssslcertforbuild\s*$', re.IGNORECASE)
     re_icecream = re.compile(r'^#\s*icecream\s*$', re.IGNORECASE)
-    re_vimmodeline = re.compile(r'^# vim:', re.IGNORECASE)
+    re_vimmodeline = re.compile(r'^#\s*vim:', re.IGNORECASE)
+    re_skipcleaner = re.compile(r'^#\s*nospeccleaner\s*$', re.IGNORECASE)
 
     # rpminstall
     re_clean = re.compile(r'rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?$')

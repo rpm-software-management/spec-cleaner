@@ -41,6 +41,7 @@ class RpmSpecCleaner(object):
     fin = None
     fout = None
     current_section = None
+    skip_run = False
     _previous_line = None
     _previous_nonempty_line = None
 
@@ -87,7 +88,10 @@ class RpmSpecCleaner(object):
             (self.reg.re_spec_changelog, RpmChangelog)
         ]
 
+        # Find all the present licenses
         self._load_licenses()
+        # Determine if we need to skip the spec
+        self._find_skip_parser()
 
         if self.options['output']:
             self.fout = open(self.options['output'], 'w')
@@ -113,6 +117,19 @@ class RpmSpecCleaner(object):
         global_macrofuncs = parse_rpm_showrc()
         spec_macrofuncs = find_macros_with_arg(self.options['specfile'])
         return keywords + global_macrofuncs + spec_macrofuncs
+
+    def _find_skip_parser(self):
+        """
+        Try to figure out if user defined that this file should not be
+        ever parsed by spec-cleaner
+        """
+        filecontent = open(self.options['specfile'])
+        for line in filecontent:
+            if self.reg.re_skipcleaner.match(line):
+                self.skip_run = True
+                break
+        filecontent.close()
+        filecontent = None
 
     def _load_licenses(self):
         # detect all present licenses in the spec and detect if we have more
@@ -222,6 +239,14 @@ class RpmSpecCleaner(object):
         return None
 
     def run(self):
+        # If we are skipping we should do nothing
+        if self.skip_run:
+            sys.stderr.write(".spec file {0} is not being processed due to definiton of 'nospeccleaner'\n".format(self.options['specfile']))
+            for line in self.fin:
+                self.fout.write(line)
+            self.fout.flush()
+            return 0
+
         # We always start with Copyright
         self.current_section = RpmCopyright(self.options)
 
