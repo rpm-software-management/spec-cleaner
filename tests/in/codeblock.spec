@@ -1,8 +1,8 @@
 Name:           codeblock
-### COMMON-REQUIRES-BEGIN ###
+# MANUAL
 BuildRequires:  aaa
 BuildRequires:  bbb
-### COMMON-REQUIRES-END ###
+# /MANUAL
 ### COMMON-PATCH-BEGIN ###
 # implement "--record-rpm" option for distutils installations
 Patch01:        Python-3.0b1-record-rpm.patch
