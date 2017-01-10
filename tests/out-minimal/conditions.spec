@@ -1,5 +1,4 @@
 Version:        2.8.2
-Release:        0
 Summary:        AppArmor userlevel parser utility
 License:        GPL-2.0+
 Group:          Productivity/Networking/Security
@@ -11,6 +10,9 @@ BuildRequires:  pkgconfig
 BuildRequires:  python
 Requires:       insserv
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+%ifpython2
+Release:        0
+%endif
 %if %{distro} == "suse"
 PreReq:         %{insserv_prereq}
 PreReq:         aaa_base

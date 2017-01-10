@@ -1,5 +1,7 @@
 Version:        2.8.2
+%ifpython2
 Release:        0
+%endif
 Summary:        AppArmor userlevel parser utility
 License:        GPL-2.0+
 Group:          Productivity/Networking/Security
