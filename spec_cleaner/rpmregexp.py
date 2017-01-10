@@ -24,9 +24,11 @@ class Regexp(object):
 
     # rpmpreamble
     # WARNING: keep in sync with rpmcleaner Section change detection
-    re_if = re.compile(r'^\s*(?:%{?if\s|%{?ifarch\s|%{?ifnarch\s|### COMMON-([a-zA-Z0-9]+)-BEGIN ###(\s.*|)$)', re.IGNORECASE)
+    re_if = re.compile(r'^\s*(?:%{?if\s|%{?ifarch\s|%{?ifnarch\s)', re.IGNORECASE)
+    re_codeblock = re.compile(r'^\s*(### COMMON-([a-zA-Z0-9]+)-BEGIN ###)(\s.*|)$', re.IGNORECASE)
     re_else = re.compile(r'^\s*%else(\s.*|)$', re.IGNORECASE)
-    re_endif = re.compile(r'^\s*(%endif|### COMMON-([a-zA-Z0-9]+)-END ###)(\s.*|)$', re.IGNORECASE)
+    re_endif = re.compile(r'^\s*%endif(\s.*|)$', re.IGNORECASE)
+    re_endcodeblock = re.compile(r'^\s*(### COMMON-([a-zA-Z0-9]+)-END ###)(\s.*|)$', re.IGNORECASE)
     re_name = re.compile(r'^Name:\s*(\S*)', re.IGNORECASE)
     re_version = re.compile(r'^Version:\s*(.*)', re.IGNORECASE)
     re_release = re.compile(r'^Release:\s*(\S*)', re.IGNORECASE)

@@ -534,7 +534,7 @@ class RpmPreamble(Section):
         # else where we mark end of paragraph or endif
         # which mark the end of our subclass and that we can
         # return the data to our main class for at-bottom placement
-        elif self.reg.re_if.match(line):
+        elif self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
             self._add_line_to('conditions', line)
             self.condition = True
             # check for possibility of the bcond conditional
@@ -552,7 +552,7 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_endif.match(line):
+        elif self.reg.re_endif.match(line) or self.reg.re_endcodeblock.match(line):
             self._add_line_to('conditions', line)
             # Set conditions to false only if we are
             # closing last of the nested ones

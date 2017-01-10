@@ -179,6 +179,12 @@ class RpmSpecCleaner(object):
                 return True
         return False
 
+    def _detect_condition_change(self, line):
+        if any([re.match(line) for re in [
+               self.reg.re_endif, self.reg.re_else, self.reg.re_endcodeblock]]):
+            return True
+        return False
+
     def _detect_new_section(self, line):
         # Detect if we have multiline value from preamble
         if hasattr(self.current_section, 'multiline') and self.current_section.multiline:
@@ -191,10 +197,11 @@ class RpmSpecCleaner(object):
         #   if previous non-empty-uncommented line was starting the condition
         # we end up the condition section in preamble (if applicable) and
         # proceed to output
-        if self.reg.re_else.match(line) or self.reg.re_endif.match(line) or \
-           (type(self.current_section) is Section and self.reg.re_if.match(line)):
+        if self._detect_condition_change(line) or \
+               (type(self.current_section) is Section and (self.reg.re_if.match(line)
+               or self.reg.re_codeblock.match(line))):
             if not hasattr(self.current_section, 'condition') or \
-               (hasattr(self.current_section, 'condition') and not self.current_section.condition):
+                   (hasattr(self.current_section, 'condition') and not self.current_section.condition):
                 # If we have to break out we go ahead with small class
                 # which just print the one evil line
                 return Section
@@ -234,6 +241,16 @@ class RpmSpecCleaner(object):
         # we are staying in the section
         return None
 
+    def _check_for_newline(self, detected_class, line):
+        """
+        Check if by default we want newline or not after the end of section detected
+        """
+        # We don't want to print newlines before %else and %endif
+        if detected_class == Section and self._detect_condition_change(line):
+            return False
+        else:
+            return True
+
     def run(self):
         # If we are skipping we should do nothing
         if self.skip_run:
@@ -260,12 +277,7 @@ class RpmSpecCleaner(object):
             # USE: 'spec-cleaner file > /dev/null' to see the stderr output
             # sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
-                # We don't want to print newlines before %else and %endif
-                if new_class == Section and (self.reg.re_else.match(line) or self.reg.re_endif.match(line)):
-                    newline = False
-                else:
-                    newline = True
-                self.current_section.output(self.fout, newline, new_class.__name__)
+                self.current_section.output(self.fout, self._check_for_newline(new_class, line), new_class.__name__)
                 # start new class
                 self.current_section = new_class(self.options)
                 # skip empty line adding if we are switching sections

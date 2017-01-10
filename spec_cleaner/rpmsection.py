@@ -48,9 +48,9 @@ class Section(object):
         """
         Check if we are in condition that is contained or not
         """
-        if self.reg.re_if.match(line):
+        if self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
             self._condition_counter += 1
-        if self.reg.re_endif.match(line):
+        if self.reg.re_endif.match(line) or self.reg.re_endcodeblock.match(line):
             self._condition_counter -= 1
 
         if self._condition_counter > 0:
