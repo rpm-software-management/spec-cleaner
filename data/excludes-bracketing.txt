@@ -45,8 +45,7 @@ global
 gpg_verify
 icon_theme_cache_post[^\s]*
 if(\s*\(.*\))?
-ifarch
-ifnarch
+if[^\s]*
 include
 insserv_[^\s]*
 install

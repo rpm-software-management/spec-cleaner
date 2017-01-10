@@ -49,7 +49,7 @@
 %global
 %gpg_verify
 %icon_theme_cache_post[^\s]*
-%if(\s*\(.*)?
+%if something
 %ifarch
 %ifnarch
 %include
