@@ -45,8 +45,6 @@
 %ghc_pkg_recache
 %ghost
 %glib2_gsettings_schema_[^\s]*
-
-%global
 %gpg_verify
 %icon_theme_cache_post[^\s]*
 %if something
