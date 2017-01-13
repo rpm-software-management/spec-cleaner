@@ -5,6 +5,10 @@ BuildRequires:  test
 BuildRequires:  aaa
 BuildRequires:  bbb
 # /MANUAL
+# SECTION the testing dependencies
+BuildRequires:  python-mock
+BuildRequires:  python-nose
+# /SECTION
 ### COMMON-PATCH-BEGIN ###
 # implement "--record-rpm" option for distutils installations
 Patch01:        Python-3.0b1-record-rpm.patch

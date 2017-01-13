@@ -3,6 +3,10 @@ Name:           codeblock
 BuildRequires:  aaa
 BuildRequires:  bbb
 # /MANUAL
+# SECTION the testing dependencies
+BuildRequires:  python-nose
+BuildRequires:  python-mock
+# /SECTION
 ### COMMON-PATCH-BEGIN ###
 # implement "--record-rpm" option for distutils installations
 Patch01:        Python-3.0b1-record-rpm.patch
