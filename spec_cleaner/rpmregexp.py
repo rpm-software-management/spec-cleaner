@@ -25,10 +25,10 @@ class Regexp(object):
     # rpmpreamble
     # WARNING: keep in sync with rpmcleaner Section change detection
     re_if = re.compile(r'^\s*(?:%{?if\s|%{?ifarch\s|%{?ifnarch\s|%{?if\S*}?(\s.*|)$)', re.IGNORECASE)
-    re_codeblock = re.compile(r'^\s*(### COMMON-([a-zA-Z0-9]+)-BEGIN ###|# MANUAL)(\s.*|)$', re.IGNORECASE)
+    re_codeblock = re.compile(r'^\s*(### COMMON-([a-zA-Z0-9]+)-BEGIN ###|# MANUAL|# SECTION)(\s.*|)$', re.IGNORECASE)
     re_else = re.compile(r'^\s*%else(\s.*|)$', re.IGNORECASE)
     re_endif = re.compile(r'^\s*%endif(\s.*|)$', re.IGNORECASE)
-    re_endcodeblock = re.compile(r'^\s*(### COMMON-([a-zA-Z0-9]+)-END ###|# /MANUAL)(\s.*|)$', re.IGNORECASE)
+    re_endcodeblock = re.compile(r'^\s*(### COMMON-([a-zA-Z0-9]+)-END ###|# /MANUAL|# (END|/)SECTION)(\s.*|)$', re.IGNORECASE)
     re_name = re.compile(r'^Name:\s*(\S*)', re.IGNORECASE)
     re_version = re.compile(r'^Version:\s*(.*)', re.IGNORECASE)
     re_release = re.compile(r'^Release:\s*(\S*)', re.IGNORECASE)
