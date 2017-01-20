@@ -59,7 +59,6 @@ class RpmPreamble(Section):
 
     categories_order = [
         'define',
-        'define_conditions',
         'bconds',
         'bcond_conditions',
         'name',
@@ -263,8 +262,10 @@ class RpmPreamble(Section):
                 # the switches do not have any effect
                 if self._condition_bcond:
                     self.paragraph['bcond_conditions'] += self.paragraph['conditions']
+                elif len(self.paragraph['define']) == 0:
+                    self.paragraph['bconds'] += self.paragraph['conditions']
                 else:
-                    self.paragraph['define_conditions'] += self.paragraph['conditions']
+                    self.paragraph['define'] += self.paragraph['conditions']
                 # in case the nested condition contains define we consider all parents
                 # to require to be on top too;
                 if len(self._oldstore) == 0:
