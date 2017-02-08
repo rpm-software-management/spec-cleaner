@@ -36,6 +36,7 @@ class TestCompare(object):
         self.tex_dir = self._get_tex_dir()
         self.perl_dir = self._get_perl_dir()
         self.cmake_dir = self._get_cmake_dir()
+        self.keep_space_dir = self._get_keep_space_dir()
         self.minimal_fixtures_dir = self._get_minimal_fixtures_dir()
         self.tmp_dir = tempfile.mkdtemp()
         self.tmp_file_rerun = tempfile.NamedTemporaryFile()
@@ -100,6 +101,12 @@ class TestCompare(object):
         """
         return os.path.join(os.getcwd(), 'tests/cmake/')
 
+    def _get_keep_space_dir(self):
+        """
+        Return path for output files used by keep_space tests
+        """
+        return os.path.join(os.getcwd(), 'tests/keep-space/')
+
     def _get_fixtures_dir(self):
         """
         Return path for representative output specs
@@ -154,6 +161,7 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -175,6 +183,7 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -203,6 +212,7 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -224,6 +234,7 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -247,6 +258,31 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
+        }
+        self._run_individual_test(options)
+        with open(compare) as ref, open(tmp_file) as test:
+            self.assertStreamEqual(ref, test)
+
+    def test_keep_space_output(self):
+        test = 'fixme-with-space.spec'
+        infile = os.path.join(self.input_dir, test)
+        compare = os.path.join(self.keep_space_dir, test)
+        tmp_file = os.path.join(self.tmp_dir, test)
+
+        options = {
+            'specfile': infile,
+            'output': tmp_file,
+            'pkgconfig': True,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': False,
+            'no_copyright': True,
+            'tex': False,
+            'perl': False,
+            'cmake': False,
+            'keep_space': True,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -270,6 +306,7 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -294,6 +331,7 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -315,6 +353,7 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
 
@@ -335,6 +374,7 @@ class TestCompare(object):
             'tex': False,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
 
@@ -356,6 +396,7 @@ class TestCompare(object):
             'tex': True,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -379,6 +420,7 @@ class TestCompare(object):
             'tex': False,
             'perl': True,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
@@ -402,6 +444,7 @@ class TestCompare(object):
             'tex': True,
             'perl': False,
             'cmake': False,
+            'keep_space': False,
         }
         self._run_individual_test(options)
         with open(compare) as ref, open(tmp_file) as test:
