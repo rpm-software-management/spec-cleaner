@@ -126,6 +126,8 @@ class RpmPreamble(Section):
         self.perl = options['perl']
         self.cmake = options['cmake']
         self.tex = options['tex']
+        # are we supposed to keep empty lines intact?
+        self.keep_space = options['keep_space']
         # dict of license replacement options
         self.license_conversions = options['license_conversions']
         # dict of pkgconfig and other conversions
@@ -515,9 +517,9 @@ class RpmPreamble(Section):
 
     def add(self, line):
         line = self._complete_cleanup(line)
-        # if the line is empty just skip it we don't need new section for it
-        # we do this only in headers so it must be here
-        if len(line) == 0:
+
+        # if the line is empty, just skip it, unless keep_space is true
+        if not self.keep_space and len(line) == 0:
             return
 
         # if it is multiline variable then we need to append to previous content
@@ -564,8 +566,9 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_comment.match(line):
-            self.current_group.append(line)
-            self.previous_line = line
+            if line or self.previous_line:
+                self.current_group.append(line)
+                self.previous_line = line
             return
 
         elif self.reg.re_source.match(line):
@@ -608,7 +611,7 @@ class RpmPreamble(Section):
             if not self.minimal:
                 # add the comment about using proper macro which needs
                 # investingaton
-                if self.previous_line and not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
+                if self.previous_line is not None and not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
                     self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
             self._add_line_value_to('prereq', match.group(1))
             return
