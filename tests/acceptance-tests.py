@@ -265,7 +265,10 @@ class TestCompare(object):
             self.assertStreamEqual(ref, test)
 
     def test_keep_space_output(self):
-        test = 'fixme-with-space.spec'
+        for test in ('fixme-with-space.spec', 'keep-condition-ordering.spec'):
+            self.check_keep_space_output(test)
+
+    def check_keep_space_output(self, test):
         infile = os.path.join(self.input_dir, test)
         compare = os.path.join(self.keep_space_dir, test)
         tmp_file = os.path.join(self.tmp_dir, test)
