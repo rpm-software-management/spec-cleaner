@@ -54,6 +54,8 @@ def process_args(argv):
                         help='convert dependencies to their tex() counterparts, requires verification of the output afterwards.')
     parser.add_argument('-v', '--version', action='version', version=__version__,
                         help='show package version and exit')
+    parser.add_argument('-k', '--keep-space', action='store_true',
+                        help='keep empty lines in preamble intact.')
 
     # print help if there is no argument
     if len(argv) < 1:
@@ -86,6 +88,7 @@ def process_args(argv):
         'perl': options.perl,
         'tex': options.tex,
         'cmake': options.cmake,
+        'keep_space': options.keep_space,
     }
 
     return options_dict
