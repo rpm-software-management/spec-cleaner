@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import glob
 import os
 import shutil
 import tempfile
@@ -25,28 +26,18 @@ class TestCompare(object):
     We run individual tests to verify the content compared to expected results
     """
 
-    def __init__(self):
-        """
-        Declare global scope variables for further use.
-        """
-
-        self.input_dir = self._get_input_dir()
-        self.fixtures_dir = self._get_fixtures_dir()
-        self.header_dir = self._get_header_dir()
-        self.tex_dir = self._get_tex_dir()
-        self.perl_dir = self._get_perl_dir()
-        self.cmake_dir = self._get_cmake_dir()
-        self.keep_space_dir = self._get_keep_space_dir()
-        self.minimal_fixtures_dir = self._get_minimal_fixtures_dir()
-        self.tmp_dir = tempfile.mkdtemp()
-        self.tmp_file_rerun = tempfile.NamedTemporaryFile()
-
-    def __del__(self):
-        """
-        Remove the tmp directory
-        """
-        if shutil:
-            shutil.rmtree(self.tmp_dir, ignore_errors=True)
+    option_presets = {
+        'pkgconfig': False,
+        'inline': False,
+        'diff': False,
+        'diff_prog': 'vimdiff',
+        'minimal': False,
+        'no_copyright': True,
+        'tex': False,
+        'perl': False,
+        'cmake': False,
+        'keep_space': False,
+    }
 
     def _difftext(self, lines1, lines2, junk=None):
         junk = junk or (' ', '\t')
@@ -71,384 +62,89 @@ class TestCompare(object):
         # ocmpare
         self._difftext(stream1.readlines(), stream2.readlines(), junk)
 
-    def _get_input_dir(self):
-        """
-        Return path for input files used by tests
-        """
-        return os.path.join(os.getcwd(), 'tests/in/')
-
-    def _get_header_dir(self):
-        """
-        Return path for output files used by header tests
-        """
-        return os.path.join(os.getcwd(), 'tests/header/')
-
-    def _get_tex_dir(self):
-        """
-        Return path for output files used by tex tests
-        """
-        return os.path.join(os.getcwd(), 'tests/tex/')
-
-    def _get_perl_dir(self):
-        """
-        Return path for output files used by perl tests
-        """
-        return os.path.join(os.getcwd(), 'tests/perl/')
-
-    def _get_cmake_dir(self):
-        """
-        Return path for output files used by cmake tests
-        """
-        return os.path.join(os.getcwd(), 'tests/cmake/')
-
-    def _get_keep_space_dir(self):
-        """
-        Return path for output files used by keep_space tests
-        """
-        return os.path.join(os.getcwd(), 'tests/keep-space/')
-
-    def _get_fixtures_dir(self):
-        """
-        Return path for representative output specs
-        """
-        return os.path.join(os.getcwd(), 'tests/out/')
-
-    def _get_minimal_fixtures_dir(self):
-        """
-        Return path for representative output specs
-        """
-        return os.path.join(os.getcwd(), 'tests/out-minimal/')
-
-    def _obtain_list_of_tests(self):
+    def _list_tests(self, directory='in'):
         """
         Generate list of tests we are going to use according to what is on hdd
         """
-        test_files = list()
+        testglob = os.path.join('tests', directory, '*.spec')
+        return [os.path.basename(f) for f in glob.glob(testglob)]
 
-        for spec in os.listdir(self.fixtures_dir):
-            if spec.endswith(".spec"):
-                test_files.append(spec)
-
-        return test_files
-
-    def _run_individual_test(self, options):
+    def _run_individual_test(self, test, compare_dir, infile=None, outfile=None, options={}, **kwargs):
         """
         Run the cleaner as specified and store the output for further comparison.
         """
-        cleaner = RpmSpecCleaner(options)
-        cleaner.run()
+        with tempfile.NamedTemporaryFile() as default_tmp_file:
+            if infile is None:
+                infile = os.path.join('tests', 'in', test)
+
+            if outfile is None:
+                outfile = default_tmp_file.name
+
+            full_options = {
+                'specfile': infile,
+                'output': outfile,
+            }
+            full_options.update(self.option_presets)
+            full_options.update(kwargs)
+            full_options.update(options)
+
+            cleaner = RpmSpecCleaner(full_options)
+            cleaner.run()
+
+            if compare_dir is not None:
+                compare  = os.path.join('tests', compare_dir, test)
+                testfile = full_options['inline'] and infile or outfile
+                with open(compare) as ref, open(testfile) as test:
+                    self.assertStreamEqual(ref, test)
+
+    def _compare_and_rerun(self, compare_dir, **kwargs):
+        for test in self._list_tests():
+            with tempfile.NamedTemporaryFile(suffix="-"+test) as tmpfile:
+                tmp = tmpfile.name
+                yield self._run_individual_test, test, compare_dir, None, tmp, kwargs
+                yield self._run_individual_test, test, compare_dir, tmp, None, kwargs
 
     def test_normal_outputs(self):
-        for test in self._obtain_list_of_tests():
-            tmp_file = os.path.join(self.tmp_dir, test)
-            # This is to run twice to check we are not breaking in concurent runs
-            yield self.check_normal_output, test, tmp_file
-            yield self.check_normal_output_rerun, test, tmp_file
-
-    def check_normal_output(self, test, tmp_file):
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.fixtures_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': True,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': False,
-            'no_copyright': True,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
-
-    def check_normal_output_rerun(self, test, infile):
-        compare = os.path.join(self.fixtures_dir, test)
-        tmp_file = self.tmp_file_rerun.name
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': True,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': False,
-            'no_copyright': True,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        for testcase in self._compare_and_rerun('out', pkgconfig=True):
+            yield testcase
 
     def test_minimal_outputs(self):
-        for test in self._obtain_list_of_tests():
-            tmp_file = os.path.join(self.tmp_dir, test)
-            # This is to run twice to check we are not breaking in concurent runs
-            yield self.check_minimal_output, test, tmp_file
-            yield self.check_minimal_output_rerun, test, tmp_file
-
-    def check_minimal_output(self, test, tmp_file):
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.minimal_fixtures_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': True,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': True,
-            'no_copyright': True,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
-
-    def check_minimal_output_rerun(self, test, infile):
-        compare = os.path.join(self.minimal_fixtures_dir, test)
-        tmp_file = self.tmp_file_rerun.name
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': True,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': True,
-            'no_copyright': True,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        for testcase in self._compare_and_rerun('out-minimal', pkgconfig=True, minimal=True):
+            yield testcase
 
     def test_copyright_output(self):
-        test = 'header.spec'
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.header_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': True,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': True,
-            'no_copyright': False,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        self._run_individual_test('header.spec', 'header', minimal=True, no_copyright=False)
 
     def test_keep_space_output(self):
-        for test in ('fixme-with-space.spec', 'keep-condition-ordering.spec'):
-            self.check_keep_space_output(test)
-
-    def check_keep_space_output(self, test):
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.keep_space_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': True,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': False,
-            'no_copyright': True,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': True,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        for test in self._list_tests('keep-space'):
+            self._run_individual_test(test, 'keep-space', keep_space=True)
 
     def test_pkgconfig_disabled_output(self):
-        test = 'pkgconfrequires.spec'
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.fixtures_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': False,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': False,
-            'no_copyright': True,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        self._run_individual_test('pkgconfrequires.spec', 'out', pkgconfig=False)
 
     def test_inline_function(self):
-        test = self._obtain_list_of_tests()[0]
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.fixtures_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
-        shutil.copyfile(infile, tmp_file)
-
-        options = {
-            'specfile': tmp_file,
-            'output': '',
-            'pkgconfig': True,
-            'inline': True,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': False,
-            'no_copyright': True,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        test = self._list_tests()[0]
+        infile = os.path.join('tests', 'in', test)
+        with tempfile.NamedTemporaryFile() as tmpfile:
+            shutil.copyfile(infile, tmpfile.name)
+            self._run_individual_test(test, None,
+                    infile=tmpfile.name, outfile='',
+                    pkgconfig=True, inline=True)
 
     def test_regular_output(self):
-        test = self._obtain_list_of_tests()[0]
-        infile = os.path.join(self.input_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': '',
-            'pkgconfig': True,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'gvimdiff',
-            'minimal': False,
-            'no_copyright': False,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
+        test = self._list_tests()[0]
+        self._run_individual_test(test, None, outfile='')
 
     @raises(RpmException)
     def test_diff_function(self):
-        test = self._obtain_list_of_tests()[0]
-        infile = os.path.join(self.input_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': '',
-            'pkgconfig': True,
-            'inline': False,
-            'diff': True,
-            'diff_prog': 'error',
-            'minimal': False,
-            'no_copyright': False,
-            'tex': False,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
+        test = self._list_tests()[0]
+        self._run_individual_test(test, None, outfile='', diff=True, diff_prog='error')
 
     def test_tex_output(self):
-        test = 'tex.spec'
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.tex_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': False,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': False,
-            'no_copyright': True,
-            'tex': True,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        self._run_individual_test('tex.spec', 'tex', tex=True)
 
     def test_perl_output(self):
-        test = 'perl.spec'
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.perl_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': False,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': False,
-            'no_copyright': True,
-            'tex': False,
-            'perl': True,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        self._run_individual_test('perl.spec', 'perl', perl=True)
 
     def test_cmake_output(self):
-        test = 'cmake.spec'
-        infile = os.path.join(self.input_dir, test)
-        compare = os.path.join(self.cmake_dir, test)
-        tmp_file = os.path.join(self.tmp_dir, test)
-
-        options = {
-            'specfile': infile,
-            'output': tmp_file,
-            'pkgconfig': False,
-            'inline': False,
-            'diff': False,
-            'diff_prog': 'vimdiff',
-            'minimal': False,
-            'no_copyright': True,
-            'tex': True,
-            'perl': False,
-            'cmake': False,
-            'keep_space': False,
-        }
-        self._run_individual_test(options)
-        with open(compare) as ref, open(tmp_file) as test:
-            self.assertStreamEqual(ref, test)
+        self._run_individual_test('cmake.spec', 'cmake', cmake=True)
