@@ -1,3 +1,3 @@
-BuildRequires:  Vc-devel
+BuildRequires:  cmake(Vc)
 
 %changelog
