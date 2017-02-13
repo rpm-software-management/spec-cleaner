@@ -225,6 +225,7 @@ Mup | Mup License
 NASA-1.3 | NASA Open Source Agreement 1.3
 Naumen | Naumen Public License
 NBPL-1.0 | Net Boolean Public License v1
+Net-SNMP | Net-SNMP License
 NetCDF | NetCDF license
 NGPL | Nethack General Public License
 NOSL | Netizen Open Source License
@@ -310,16 +311,20 @@ SISSL-1.2 | Sun Industry Standards Source License v1.2
 SPL-1.0 | Sun Public License v1.0
 Watcom-1.0 | Sybase Open Watcom Public License 1.0
 TCL | TCL/TK License
+TCP-wrappers | TCP Wrappers License
 Unlicense | The Unlicense
 TMate | TMate Open Source License
 TORQUE-1.1 | TORQUE v2.5+ Software License v1.1
 TOSL | Trusster Open Source License
+Unicode-DFS-2015 | Unicode License Agreement - Data Files and Software (2015)
+Unicode-DFS-2016 | Unicode License Agreement - Data Files and Software (2016)
 Unicode-TOU | Unicode Terms of Use
 UPL-1.0 | Universal Permissive License v1.0
 NCSA | University of Illinois/NCSA Open Source License
 Vim | Vim License
 VOSTROM | VOSTROM Public License for Open Source
 VSL-1.0 | Vovida Software License v1.0
+W3C-20150513 | W3C Software Notice and Document License (2015-05-13)
 W3C-19980720 | W3C Software Notice and License (1998-07-20)
 W3C | W3C Software Notice and License (2002-12-31)
 Wsuipa | Wsuipa License

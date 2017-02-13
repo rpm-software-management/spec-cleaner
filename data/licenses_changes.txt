@@ -592,6 +592,8 @@ NTP	NTP
 NTP+	NTP+
 Naumen	Naumen
 Naumen+	Naumen+
+Net-SNMP	Net-SNMP
+Net-SNMP+	Net-SNMP+
 NetCDF	NetCDF
 NetCDF	SUSE-NetCDF
 NetCDF+	NetCDF+
@@ -931,6 +933,8 @@ SugarCRM-1.1.3+	SugarCRM-1.1.3+
 TCL	SUSE-TCL
 TCL	TCL
 TCL+	TCL+
+TCP-wrappers	TCP-wrappers
+TCP-wrappers+	TCP-wrappers+
 TMate	TMate
 TMate+	TMate+
 TORQUE-1.1	TORQUE-1.1
@@ -940,6 +944,10 @@ TOSL+	TOSL+
 UPL-1.0	UPL-1.0
 UPL-1.0+	UPL-1.0+
 Unicode	http://www.unicode.org/copyright.html
+Unicode-DFS-2015	Unicode-DFS-2015
+Unicode-DFS-2015+	Unicode-DFS-2015+
+Unicode-DFS-2016	Unicode-DFS-2016
+Unicode-DFS-2016+	Unicode-DFS-2016+
 Unicode-TOU	Unicode-TOU
 Unicode-TOU+	Unicode-TOU+
 Unlicense	Unlicense
@@ -956,6 +964,8 @@ W3C	W3C Software License
 W3C+	W3C+
 W3C-19980720	W3C-19980720
 W3C-19980720+	W3C-19980720+
+W3C-20150513	W3C-20150513
+W3C-20150513+	W3C-20150513+
 WTFPL	SUSE-WTFPL-2.0
 WTFPL	WTFPL
 WTFPL+	WTFPL+
