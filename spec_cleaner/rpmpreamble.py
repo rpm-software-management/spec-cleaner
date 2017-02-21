@@ -88,6 +88,7 @@ class RpmPreamble(Section):
         'misc',
         'build_conditions',
         'conditions',
+        'tail',
     ]
 
     # categories that are sorted based on value in them
@@ -109,6 +110,16 @@ class RpmPreamble(Section):
         'patch',
     ]
 
+    python_known_backports = ['singledispatch', 'futures', 'enum34']
+
+    python_if_lines = [
+            r'^%if 0%\{\?suse_version\} && 0%\{\?suse_version\} <= 1110$',
+    ]
+
+    python_unless_lines = [
+            r'%if 0%\{\?suse_version\} > 1110$'
+    ]
+
     def __init__(self, options):
         Section.__init__(self, options)
         # Old storage
@@ -117,6 +128,7 @@ class RpmPreamble(Section):
         self.multiline = False
         # Are we inside of conditional or not
         self.condition = False
+        self.drop_condition = 'none'
         # Is the condition with define/global variables
         self._condition_define = False
         # Is the condition based probably on bcond evaluation
@@ -186,6 +198,9 @@ class RpmPreamble(Section):
             'prefix': self.reg.re_preamble_prefix,
         }
 
+        self.obsoletes = set()
+        self.provides = set()
+
     def _start_paragraph(self):
         self.paragraph = {}
         for i in self.categories_order:
@@ -240,12 +255,23 @@ class RpmPreamble(Section):
             key = '0' + key
         return key
 
-    def end_subparagraph(self, endif=False):
+    def end_subparagraph(self, endif=False, inline="no"):
         lines = self._end_paragraph()
-        if len(self.paragraph['define']) > 0 or \
-           len(self.paragraph['bconds']) > 0:
-            self._condition_define = True
+        oldparagraph = self.paragraph
         self.paragraph = self._oldstore.pop(-1)
+
+        if inline=="drop":
+            return
+        elif inline=="yes":
+            for category in oldparagraph:
+                self.paragraph[category] += oldparagraph[category]
+            return
+
+        if len(oldparagraph['define']) > 0 or \
+           len(oldparagraph['bconds']) > 0:
+            self._condition_define = True
+
+        # inline == "no"
         self.paragraph['conditions'] += lines
 
         # If we are on endif we check the condition content
@@ -303,6 +329,10 @@ class RpmPreamble(Section):
                         return True
         return False
 
+    def _add_if_not_present(self, section, content):
+        if not content in self.paragraph[section]:
+            self._add_line_to(section, content)
+
     def _end_paragraph(self, needs_license=False):
         lines = []
 
@@ -320,6 +350,29 @@ class RpmPreamble(Section):
         if not self._oldstore:
             if self.br_pkgconfig_required and not self._find_pkgconfig_declarations('buildrequires'):
                 self._add_line_value_to('buildrequires', 'pkgconfig')
+
+            # add rpm macros
+            self._add_line_value_to('buildrequires', 'python-rpm-macros')
+            # add python_module redefinition
+            self._add_if_not_present('define', '%{?!python_module:%define python_module() python-%{1} python3-%{1}}')
+            if "%python_subpackages" in self.paragraph["misc"]:
+                self.paragraph["misc"].remove("%python_subpackages")
+            self._add_if_not_present('tail', '%python_subpackages')
+            #
+
+            # conditionally wrap obs/prov
+            obsprov = self.obsoletes & self.provides
+            obsprov_lines = []
+            for pkg in obsprov:
+                pkg_re = re.compile(r'^(Provides|Obsoletes): +' + pkg + r'( .*)?$')
+                for line in self.paragraph['provides_obsoletes']:
+                    if pkg_re.match(line):
+                        obsprov_lines.append(line)
+            if obsprov_lines:
+                self.paragraph['provides_obsoletes'] = [l for l in self.paragraph['provides_obsoletes'] if l not in obsprov_lines]
+                self.add("%ifpython2")
+                for line in obsprov_lines: self.add(line)
+                self.add("%endif")
 
         # sort based on category order
         for i in self.categories_order:
@@ -447,6 +500,16 @@ class RpmPreamble(Section):
                 continue
             # replace pkgconfig name first
             token = self._fix_pkgconfig_name(token)
+
+            # python names
+            if category == 'buildrequires' and token.startswith('python-'):
+                modname = token[7:]
+                if not (modname.startswith('backports')
+                        or modname in self.python_known_backports
+                        or modname == "rpm-macros"):
+                    expanded.append('%{python_module ' + modname + '}')
+                    continue
+
             # in scriptlets we most probably do not want the converted deps
             if category != 'prereq':
                 # here we go with descending priority to find match and replace
@@ -504,6 +567,10 @@ class RpmPreamble(Section):
         for value in values:
             line = key + value
             self._add_line_to(category, line)
+            if key.startswith("Provides"):
+                self.provides.add(value.split()[0])
+            elif key.startswith("Obsoletes"):
+                self.obsoletes.add(value.split()[0])
 
     def _add_line_to(self, category, line):
         if self.current_group:
@@ -538,30 +605,63 @@ class RpmPreamble(Section):
         # which mark the end of our subclass and that we can
         # return the data to our main class for at-bottom placement
         elif self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
-            self._add_line_to('conditions', line)
             self.condition = True
             # check for possibility of the bcond conditional
             if "%{with" in line or "%{without" in line:
                 self._condition_bcond = True
+
+            self.drop_condition = None
+            for exp in self.python_if_lines:
+                if re.match(exp, line):
+                    self.drop_condition = "if"
+                    break
+            else:
+                for exp in self.python_unless_lines:
+                    if re.match(exp, line):
+                        self.drop_condition = "else"
+                        break
+                else:
+                    self._add_line_to('conditions', line)
+
             self.start_subparagraph()
             self.previous_line = line
             return
 
         elif self.reg.re_else.match(line):
             if self.condition:
-                self._add_line_to('conditions', line)
-                self.end_subparagraph()
+                inline = "no"
+                if self.drop_condition == "if":
+                    inline = "drop"
+                elif self.drop_condition == "else":
+                    inline = "yes"
+                self.end_subparagraph(inline=inline)
+                if self.drop_condition is None:
+                    self._add_line_to('conditions', line)
                 self.start_subparagraph()
+
             self.previous_line = line
+
+            if self.drop_condition == "if":
+                self.drop_condition = "else"
+            elif self.drop_condition == "else":
+                self.drop_condition = "if"
             return
 
         elif self.reg.re_endif.match(line) or self.reg.re_endcodeblock.match(line):
-            self._add_line_to('conditions', line)
+            if self.drop_condition is None:
+                self._add_line_to('conditions', line)
             # Set conditions to false only if we are
             # closing last of the nested ones
             if len(self._oldstore) == 1:
                 self.condition = False
-            self.end_subparagraph(True)
+
+            inline = "no"
+            if self.drop_condition == "if":
+                inline = "drop"
+            elif self.drop_condition == "else":
+                inline = "yes"
+            self.drop_condition = None
+            self.end_subparagraph(True, inline=inline)
             self.previous_line = line
             return
 
@@ -625,6 +725,7 @@ class RpmPreamble(Section):
         elif self.reg.re_provides.match(line):
             match = self.reg.re_provides.match(line)
             self._add_line_value_to('provides_obsoletes', match.group(1), key='Provides')
+            self.provides.add(match.group(1).split()[0])
             return
 
         elif self.reg.re_obsoletes.match(line):
