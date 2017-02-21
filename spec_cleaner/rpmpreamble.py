@@ -565,6 +565,9 @@ class RpmPreamble(Section):
             values = [value]
 
         for value in values:
+            if value.startswith("update-alternatives"):
+                continue
+
             line = key + value
             self._add_line_to(category, line)
             if key.startswith("Provides"):
