@@ -2,6 +2,7 @@
 
 from .rpmsection import Section
 
+import re
 
 class RpmInstall(Section):
 
@@ -9,6 +10,13 @@ class RpmInstall(Section):
         Remove commands that wipe out the build root.
         Replace %makeinstall (suse-ism).
     '''
+
+    re_alternatives = [re.compile(x) for x in [
+            r'^mkdir -p %\{buildroot\}%\{_sysconfdir\}/alternatives$',
+            r'^mv %\{buildroot\}(\S+) %\{buildroot\}\1-\S+',
+            r'^ln (-s -f|-sf) %\{_sysconfdir\}/alternatives/.*',
+            r'#.*update-alternatives',
+    ]]
 
     def add(self, line):
         line = self._complete_cleanup(line)
@@ -21,6 +29,11 @@ class RpmInstall(Section):
         if not self.minimal:
             line = self._replace_remove_la(line)
             line = self._replace_install_command(line)
+
+        # skip over update-alternatives-related lines
+        for rexp in self.re_alternatives:
+            if rexp.match(line):
+                return
 
         Section.add(self, line)
 
