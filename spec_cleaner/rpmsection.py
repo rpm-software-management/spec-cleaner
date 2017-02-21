@@ -1,4 +1,6 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
+import re
+import shlex
 
 
 class Section(object):
@@ -41,6 +43,7 @@ class Section(object):
             line = self.replace_utils(line)
             line = self.replace_buildservice(line)
             line = self.replace_preamble_macros(line)
+            line = self.replace_macros(line)
 
         return line
 
@@ -68,9 +71,35 @@ class Section(object):
         # condtions detect
         self._check_conditions(line)
 
+        line = self.python_build_macros(line)
+
         # append to the file
         self.lines.append(line)
         self.previous_line = line
+
+    re_python_setup = re.compile(r'^(.*)\bpython setup.py (\w+)( .*)?$')
+
+    def python_build_macros(self, line):
+        m = self.re_python_setup.match(line)
+        if not m:
+            return line
+
+        prefix, command, args = m.groups()
+        if prefix:
+            # simply assume it's env variables
+            envvars = shlex.split(prefix)
+            self.lines += ['export {}="{}"'.format(*ev.split("=", 1)) for ev in envvars]
+
+        args = args and shlex.split(args, comments=True) or []
+        strings = [ a for a in args if (not a.startswith("--root") and not a.startswith("--prefix")) ]
+        if command == "install":
+            strings.insert(0, "%python_install")
+        elif command == "build":
+            strings.insert(0, "%python_build")
+        else:
+            strings.insert(0, "%python_exec setup.py " + command)
+
+        return " ".join(strings)
 
     def output(self, fout, newline=True, new_class=None):
         # Always append one empty line at the end if it is not present
@@ -174,6 +203,16 @@ class Section(object):
         line = self.reg.re_libdir.sub(r'%{_libdir}\2', line)
         line = self.reg.re_initddir.sub(r'%{_initddir}\1', line)
 
+        return line
+
+    def replace_macros(self, line):
+        """
+        Replace known macros with alternatives.
+        """
+        r = { 'py_ver': 'python_version', 'py3_ver': 'python3_version',
+             r'py([23]?)_(build|install)': r'python\1_\2'}
+        for x in r:
+            line = re.sub(r'%\{' + x + r'\}', '%{' + r[x] + '}', line)
         return line
 
     def replace_utils(self, line):
