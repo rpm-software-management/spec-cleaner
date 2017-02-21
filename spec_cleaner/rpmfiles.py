@@ -1,5 +1,8 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+import getopt
+import shlex
+
 from .rpmsection import Section
 
 
@@ -12,6 +15,9 @@ class RpmFiles(Section):
     comment_present = False
 
     def add(self, line):
+        if len(self.lines) == 0:
+            line = self._ensure_python_files(line)
+
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
         line = self._remove_doc_on_man(line)
@@ -25,6 +31,29 @@ class RpmFiles(Section):
             return
 
         Section.add(self, line)
+
+    def _ensure_python_files(self, line):
+        if "%{python_files" in line:
+            return line
+
+        arglist = shlex.split(line)
+        optlist, args = getopt.getopt(arglist[1:], 'f:n:')
+        optdict = dict(optlist)
+        if "-n" in optdict:
+            return line
+
+        newline = ["%files"]
+        for k,v in optlist:
+            if " " in v:
+                v = '"' + v + '"'
+            newline.append(k)
+            newline.append(v)
+        if args:
+            newline.append('%{python_files ' + args[0] + '}')
+            newline += args[1:]
+        else:
+            newline.append('%{python_files}')
+        return " ".join(newline)
 
     def _add_defattr(self, line):
         """
