@@ -2,6 +2,8 @@
 
 import getopt
 import shlex
+import re
+import os
 
 from .rpmsection import Section
 
@@ -12,7 +14,13 @@ class RpmFiles(Section):
         Class that does replacements on the %files section.
     """
 
+    re_alternative = re.compile(r'^%ghost %\{_sysconfdir\}/alternatives/(.*)$')
+
     comment_present = False
+
+    def __init__(self, options):
+        Section.__init__(self, options)
+        self.kill_alternatives = set()
 
     def add(self, line):
         if len(self.lines) == 0:
@@ -26,11 +34,29 @@ class RpmFiles(Section):
             self._add_defattr(line)
             line = self._set_man_compression(line)
 
+        if line.startswith("%{_bindir}"):
+            line = "%python3_only " + line
+        if line.endswith(".py*") or line.endswith(".pyc"):
+            pycachepath = os.path.join(os.path.dirname(line), "__pycache__")
+            Section.add(self, "%pycache_only " + pycachepath)
+
+        alt = self.re_alternative.match(line)
+        if alt:
+            self.kill_alternatives.add(alt.group(1))
+            return
+
         # toss out empty lines if there are more than one in succession
         if line == '' and (not self.previous_line or self.previous_line == ''):
             return
 
         Section.add(self, line)
+
+    def output(self, *args, **kwargs):
+        for alternative in self.kill_alternatives:
+            re_alt = re.compile(r'/' + alternative + r'-%\{python.?_version\}(\..*)?')
+            self.lines = [l for l in self.lines if not re_alt.search(l)]
+
+        Section.output(self, *args, **kwargs)
 
     def _ensure_python_files(self, line):
         if "%{python_files" in line:

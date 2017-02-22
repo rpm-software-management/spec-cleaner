@@ -16,6 +16,7 @@ class RpmInstall(Section):
             r'^mv %\{buildroot\}(\S+) %\{buildroot\}\1-\S+',
             r'^ln (-s -f|-sf) %\{_sysconfdir\}/alternatives/.*',
             r'#.*update-alternatives',
+            r'^touch %{buildroot}%{_sysconfdir}/alternatives/.*',
     ]]
 
     def add(self, line):
