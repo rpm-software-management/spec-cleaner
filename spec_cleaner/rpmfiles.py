@@ -37,7 +37,7 @@ class RpmFiles(Section):
         if line.startswith("%{_bindir}"):
             line = "%python3_only " + line
         if line.endswith(".py*") or line.endswith(".pyc"):
-            pycachepath = os.path.join(os.path.dirname(line), "__pycache__")
+            pycachepath = os.path.join(os.path.dirname(line), "__pycache__/*")
             Section.add(self, "%pycache_only " + pycachepath)
 
         alt = self.re_alternative.match(line)

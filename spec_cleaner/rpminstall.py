@@ -12,11 +12,11 @@ class RpmInstall(Section):
     '''
 
     re_alternatives = [re.compile(x) for x in [
-            r'^mkdir -p %\{buildroot\}%\{_sysconfdir\}/alternatives$',
-            r'^mv %\{buildroot\}(\S+) %\{buildroot\}\1-\S+',
-            r'^ln (-s -f|-sf) %\{_sysconfdir\}/alternatives/.*',
+            r'^\s*mkdir -p %\{buildroot\}%\{_sysconfdir\}/alternatives$',
+            r'^\s*mv %\{buildroot\}(\S+) %\{buildroot\}\1-\S+',
+            r'^\s*ln (-s -f|-sf) %\{_sysconfdir\}/alternatives/.*',
             r'#.*update-alternatives',
-            r'^touch %{buildroot}%{_sysconfdir}/alternatives/.*',
+            r'^\s*touch %{buildroot}%{_sysconfdir}/alternatives/.*',
     ]]
 
     def add(self, line):

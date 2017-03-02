@@ -113,7 +113,7 @@ class RpmPreamble(Section):
     python_known_backports = ['singledispatch', 'futures', 'enum34']
 
     python_if_lines = [
-            r'^%if 0%\{\?suse_version\} && 0%\{\?suse_version\} <= 1110$',
+            r'^%if (0%\{\?suse_version\} && )?0%\{\?suse_version\} <= 1110$',
     ]
 
     python_unless_lines = [
@@ -351,28 +351,45 @@ class RpmPreamble(Section):
             if self.br_pkgconfig_required and not self._find_pkgconfig_declarations('buildrequires'):
                 self._add_line_value_to('buildrequires', 'pkgconfig')
 
-            # add rpm macros
-            self._add_line_value_to('buildrequires', 'python-rpm-macros')
-            # add python_module redefinition
-            self._add_if_not_present('define', '%{?!python_module:%define python_module() python-%{1} python3-%{1}}')
-            if "%python_subpackages" in self.paragraph["misc"]:
-                self.paragraph["misc"].remove("%python_subpackages")
-            self._add_if_not_present('tail', '%python_subpackages')
-            #
-
             # conditionally wrap obs/prov
             obsprov = self.obsoletes & self.provides
+            obsprov_oldpython = set()
             obsprov_lines = []
             for pkg in obsprov:
+                if pkg.startswith("python-"):
+                    self._add_if_not_present('define', '%define oldpython python')
+                    obsprov_oldpython.add(pkg)
+
                 pkg_re = re.compile(r'^(Provides|Obsoletes): +' + pkg + r'( .*)?$')
                 for line in self.paragraph['provides_obsoletes']:
-                    if pkg_re.match(line):
+                    if type(line) is list:
+                        mline = line[-1]
+                    else:
+                        mline = line
+                    if pkg_re.match(mline):
                         obsprov_lines.append(line)
             if obsprov_lines:
                 self.paragraph['provides_obsoletes'] = [l for l in self.paragraph['provides_obsoletes'] if l not in obsprov_lines]
                 self.add("%ifpython2")
-                for line in obsprov_lines: self.add(line)
+                for line in obsprov_lines:
+                    if type(line) is list:
+                        line[-1] = line[-1].replace("python-", "%{oldpython}-")
+                        for l in line: self.add(l)
+                    else:
+                        line = line.replace("python-", "%{oldpython}-")
+                        self.add(line)
                 self.add("%endif")
+
+            # add definitions to main scope
+            if not self.lines or not self.lines[0].startswith("%package"):
+                # add rpm macros
+                self._add_line_value_to('buildrequires', 'python-rpm-macros')
+                # add python_module redefinition
+                self._add_if_not_present('define', '%{?!python_module:%define python_module() python-%{**} python3-%{**}}')
+                if "%python_subpackages" in self.paragraph["misc"]:
+                    self.paragraph["misc"].remove("%python_subpackages")
+                self._add_if_not_present('tail', '%python_subpackages')
+                #
 
         # sort based on category order
         for i in self.categories_order:
