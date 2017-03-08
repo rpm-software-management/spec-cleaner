@@ -41,7 +41,7 @@ fi
 
 for i in ${MYSPECFILES}; do
     if [ ! -w "${i}" ]; then
-        echo "WARNING: spec file \"${i}\" is not writeable."
+        echo "WARNING: spec file \"${i}\" is not writable."
         continue
     fi
     /usr/bin/spec-cleaner -f "$i" -i > /dev/null 2>&1
