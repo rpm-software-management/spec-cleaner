@@ -9,4 +9,8 @@ allowed frequency ranges for 802.11 wireless drivers.
 %define _libexecdir %{_prefix}/lib
 %endif
 
+# OURUGLYBUILDPHASE
+%build
+%configure
+
 %changelog
