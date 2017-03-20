@@ -114,6 +114,8 @@ suse_kernel_module_package
 suse_update_desktop_file
 systemd_preun
 systemd_requires
+sysusers_requires 
+sysusers_generate_pre
 tmpfiles_create
 triggerin
 triggerpostun
