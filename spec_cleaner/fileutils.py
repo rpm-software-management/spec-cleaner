@@ -23,7 +23,7 @@ class FileUtils(object):
         Used all around so kept glob here for importing.
         """
 
-        homedir = os.getenv('HOME') + '/.local/'
+        homedir = os.getenv('HOME', '~') + '/.local/'
 
         possible_paths = [
             '{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), name),

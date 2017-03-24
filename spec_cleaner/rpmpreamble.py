@@ -1,6 +1,12 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+import os.path
 import re
+
+try:
+    from urllib import parse as urlparse
+except ImportError:
+    import urlparse
 
 from .rpmsection import Section
 from .rpmexception import RpmException
@@ -161,6 +167,8 @@ class RpmPreamble(Section):
         self.license = options['license']
         # pkgconfig requirement detection
         self.br_pkgconfig_required = False
+        # modname detection
+        self.modname = None
 
         # simple categories matching
         self.category_to_re = {
@@ -254,6 +262,36 @@ class RpmPreamble(Section):
         else:
             key = '0' + key
         return key
+
+    PYPI_SOURCE_HOSTS = ("pypi.io", "files.pythonhosted.org", "pypi.python.org")
+
+    def _fix_pypi_source(self, url):
+        """
+        Check if the source is URL that points to PyPI and if it is, return
+        the canonical version.
+
+        """
+        parsed = urlparse.urlparse(url)
+        if not parsed.scheme: # not a URL
+            return url
+
+        if parsed.netloc not in self.PYPI_SOURCE_HOSTS: # not pypi
+            return url
+
+        filename = os.path.basename(parsed.path)
+        modname = filename[:filename.rfind("-")]
+        # TODO
+        if modname[0] == "%":
+            if (modname == "%modname" or modname == "%{modname}") \
+                    and self.modname:
+                modname = self.modname
+            else:
+                # don't know what to do
+                return url
+
+        return urlparse.urlunparse(('https', 'files.pythonhosted.org',
+                '/packages/source/{}/{}/{}'.format(modname[0], modname, filename),
+                '', '', ''))
 
     def end_subparagraph(self, endif=False, inline="no"):
         lines = self._end_paragraph()
@@ -693,7 +731,10 @@ class RpmPreamble(Section):
 
         elif self.reg.re_source.match(line):
             match = self.reg.re_source.match(line)
-            self._add_line_value_to('source', match.group(2), key='Source%s' % match.group(1))
+            source = match.group(2)
+            if not self.minimal:
+                source = self._fix_pypi_source(source)
+            self._add_line_value_to('source', source, key='Source%s' % match.group(1))
             return
 
         elif self.reg.re_patch.match(line):
@@ -719,6 +760,12 @@ class RpmPreamble(Section):
                 self._add_line_to('misc', line)
             else:
                 self._add_line_to('define', line)
+
+            # catch "modname" for use in pypi url rewriting
+            define, name, value = line.split(None, 2)
+            if name == "modname":
+                self.modname = value
+
             return
 
         elif self.reg.re_requires_eq.match(line):
