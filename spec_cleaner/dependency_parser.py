@@ -33,7 +33,7 @@ re_braces = re.compile(
     r')'
 )
 
-re_name = re.compile(r'[-A-Za-z0-9_~():.+/*]+')
+re_name = re.compile(r'[-A-Za-z0-9_~():.+/*\[\]]+')
 re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
 re_spaces = re.compile(r'\s+')
 re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
