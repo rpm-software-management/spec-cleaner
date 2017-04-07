@@ -39,6 +39,7 @@ re_spaces = re.compile(r'\s+')
 re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
 
+
 def find_end_of_macro(string, regex, opening, closing):
     if DEBUG:
         logger = logging.getLogger('DepParser')
@@ -78,7 +79,8 @@ def consume_chars(regex, string, logger=None):
     if match:
         end = match.end()
         if logger:
-            logger.debug('consume_chars: split "%s", "%s"', string[0:end], string[end:])
+            logger.debug('consume_chars: split "%s", "%s"',
+                         string[0:end], string[end:])
         return string[0:end], string[end:]
     else:
         raise NoMatchException('Expected match failed')
@@ -139,7 +141,8 @@ class DependencyParser(object):
 
     def read_spaces(self, state_change=True):
         try:
-            spaces, self.string = consume_chars(re_spaces, self.string, self.logger)
+            spaces, self.string = consume_chars(
+                re_spaces, self.string, self.logger)
             self.token.append(spaces)
             if state_change:
                 self.state.pop()  # remove 'spaces' state
