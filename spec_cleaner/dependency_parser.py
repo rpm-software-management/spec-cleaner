@@ -112,6 +112,7 @@ class DependencyParser(object):
                 return
         self.parsed.append(self.token)
         self.token = []
+        self.state = ['name']
 
     def state_change_loop(self):
         while self.string:
@@ -149,7 +150,6 @@ class DependencyParser(object):
                 # if we were reading version, space definitely means
                 # end of that
                 if self.state[-1] == 'version':
-                    self.state.pop()
                     self.dump_token()
             self.status()
         except NoMatchException:
@@ -182,7 +182,8 @@ class DependencyParser(object):
 
     def read_name(self):
         try:
-            name, self.string = consume_chars(re_name, self.string, self.logger)
+            name, self.string = consume_chars(
+                re_name, self.string, self.logger)
             if self.token and self.token[-1].isspace():
                 self.dump_token()
             self.token.append(name)
@@ -195,6 +196,14 @@ class DependencyParser(object):
         self.string = self.string[2:]
 
     def read_macro_unbraced(self):
+        try:
+            if (
+                    self.state[-2] == 'name' and self.token and
+                    self.token[-1].isspace()):
+                self.dump_token()
+                self.state.append('macro_unbraced')
+        except IndexError:
+            pass
         try:
             # 3 or more alphanumeric characters
             macro, self.string = consume_chars(
@@ -229,6 +238,14 @@ class DependencyParser(object):
             self.read_unknown()
 
     def read_macro_name(self):
+        try:
+            if (
+                    self.state[-2] == 'name' and
+                    self.token and self.token[-1].isspace()):
+                self.dump_token()
+                self.state.append('macro_name')
+        except IndexError:
+            pass
         macro = find_end_of_macro(self.string, re_braces, '{', '}')
         # remove macro from string
         self.string = self.string[len(macro):]
@@ -238,6 +255,14 @@ class DependencyParser(object):
         self.status()
 
     def read_macro_shell(self):
+        try:
+            if (
+                    self.state[-2] == 'name' and
+                    self.token and self.token[-1].isspace()):
+                self.dump_token()
+                self.state.append('macro_shell')
+        except IndexError:
+            pass
         macro = find_end_of_macro(self.string, re_parens, '(', ')')
         self.string = self.string[len(macro):]
         self.token.append(macro)
