@@ -54,6 +54,8 @@ class Regexp(object):
     re_obsoletes = re.compile(r'^Obsoletes:\s*(.*)', re.IGNORECASE)
     re_buildroot = re.compile(r'^\s*BuildRoot:', re.IGNORECASE)
     re_buildarch = re.compile(r'^\s*BuildArch(itectures)?:\s*(.*)', re.IGNORECASE)
+    re_exclusivearch = re.compile(r'^\s*ExclusiveArch(itectures)?:\s*(.*)', re.IGNORECASE)
+    re_excludearch = re.compile(r'^\s*ExcludeArch(itectures)?:\s*(.*)', re.IGNORECASE)
     re_epoch = re.compile(r'^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_icon = re.compile(r'^\s*Icon:\s*(.*)', re.IGNORECASE)
     re_copyright = re.compile(r'^\s*Copyright:\s*(.*)', re.IGNORECASE)

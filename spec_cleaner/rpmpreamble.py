@@ -55,6 +55,8 @@ class RpmPreamble(Section):
         # mixed, so we'll have to specify the key when needed
         'buildroot': 'BuildRoot',
         'buildarch': 'BuildArch',
+        'exclusivearch': 'ExclusiveArch',
+        'excludearch': 'ExcludeArch',
     }
 
     categories_order = [
@@ -85,6 +87,8 @@ class RpmPreamble(Section):
         'provides_obsoletes',
         'buildroot',
         'buildarch',
+        'exclusivearch',
+        'excludearch',
         'misc',
         'build_conditions',
         'conditions',
@@ -172,6 +176,8 @@ class RpmPreamble(Section):
             # for provides/obsoletes, we have a special case because we group them
             # for build root, we have a special match because we force its value
             'buildarch': self.reg.re_buildarch,
+            'excludearch': self.reg.re_excludearch,
+            'exclusivearch': self.reg.re_exclusivearch,
         }
 
         # deprecated definitions that we no longer want to see
