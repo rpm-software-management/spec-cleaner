@@ -400,6 +400,7 @@ ZPL-2.1 | Zope Public License 2.1
 |SUSE-LGPL-2.1-with-nokia-exception-1.1|
 |SUSE-LGPL-3.0-with-openssl-exception|
 |SUSE-Liberation|
+|SUSE-MIT-Khronos|
 |SUSE-Manpages|
 |SUSE-Matplotlib|
 |SUSE-MgOpen|
@@ -425,6 +426,7 @@ ZPL-2.1 | Zope Public License 2.1
 |SUSE-TGPPL-1.0|
 |SUSE-TeX|
 |SUSE-Ubuntu-Font-License-1.0|
+|SUSE-XDebug|
 |SUSE-XFree86-with-font-exception|
 |SUSE-XSL-Lint|
 |SUSE-Xano|
