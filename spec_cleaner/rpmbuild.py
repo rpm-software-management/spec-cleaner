@@ -16,7 +16,6 @@ class RpmBuild(RpmCheck):
             return
 
         # if user uses cmake/configure directly just recommend him using the macros
-        # but check on the multiline entry and do not ammend that
         if not self.minimal:
             self._comment_macro_calls(line)
 
