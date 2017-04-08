@@ -246,6 +246,17 @@ class RpmPreamble(Section):
             key = '0' + key
         return key
 
+    def _prune_ppc_condition(self):
+        """
+        Check if we have ppc64 obsolete and delete it
+        """
+        if not self.minimal and \
+             isinstance(self.paragraph['conditions'][0], list) and \
+             len(self.paragraph['conditions']) == 3 and \
+             self.paragraph['conditions'][0][0] == '# bug437293' and \
+             self.paragraph['conditions'][1].endswith('64bit'):
+            self.paragraph['conditions'] = []
+
     def end_subparagraph(self, endif=False):
         lines = self._end_paragraph()
         if len(self.paragraph['define']) > 0 or \
@@ -257,13 +268,7 @@ class RpmPreamble(Section):
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
         if endif or not self.condition:
-            # check if we are doing the ppc64 migration and delete it
-            if not self.minimal and \
-                 isinstance(self.paragraph['conditions'][0], list) and \
-                 len(self.paragraph['conditions']) == 3 and \
-                 self.paragraph['conditions'][0][0] == '# bug437293' and \
-                 self.paragraph['conditions'][1].endswith('64bit'):
-                self.paragraph['conditions'] = []
+            self._prune_ppc_condition()
             if self._condition_define:
                 # If we have define conditions and possible bcond start
                 # we need to put it bellow bcond definitions as otherwise
@@ -287,27 +292,41 @@ class RpmPreamble(Section):
                 self._condition_bcond = False
             self.paragraph['conditions'] = []
 
-    def _find_pkgconfig_statements(self, listname):
-        for i in self.paragraph[listname]:
-            if isinstance(i, str):
-                if 'pkgconfig(' in i and not self._find_pkgconfig_declarations(listname):
-                    return True
-            elif isinstance(i, list):
-                for j in i:
-                    if 'pkgconfig(' in j and not self._find_pkgconfig_declarations(listname):
-                        return True
+    def _find_pkgconfig_statements(self, elements):
+        """
+        Find all pkgconfig() statements in the paragraph
+        """
+        for i in elements:
+            if 'pkgconfig(' in i and not self._find_pkgconfig_declarations(elements):
+                return True
         return False
 
-    def _find_pkgconfig_declarations(self, listname):
-        for i in self.paragraph[listname]:
-            if isinstance(i, str):
-                if 'pkgconfig ' in i or i.endswith('pkgconfig'):
-                    return True
-            elif isinstance(i, list):
-                for j in i:
-                    if 'pkgconfig ' in j or j.endswith('pkgconfig'):
-                        return True
+    def _find_pkgconfig_declarations(self, elements):
+        """
+        Find if there is direct pkgconfig dependency in the paragraph
+        """
+        for i in elements:
+            if 'pkgconfig ' in i or i.endswith('pkgconfig'):
+                return True
         return False
+
+    def _add_pkgconfig_buildrequires(self):
+        """
+        Check the content of buildrequires and add pkgconfig as an item
+        in case there are any pkgconfig() style dependencies present
+        """
+        # first generate flat list from the BR
+        buildrequires = []
+        for group in self.paragraph['buildrequires']:
+            buildrequires += self._add_group(group)
+        # Check if we need the pkgconfig
+        if not self.br_pkgconfig_required and \
+           self._find_pkgconfig_statements(buildrequires):
+            self.br_pkgconfig_required = True
+        # only in case we are in main scope
+        if not self._oldstore:
+            if self.br_pkgconfig_required and not self._find_pkgconfig_declarations(buildrequires):
+                self._add_line_value_to('buildrequires', 'pkgconfig')
 
     def _end_paragraph(self, needs_license=False):
         lines = []
@@ -317,16 +336,8 @@ class RpmPreamble(Section):
             if not self.paragraph['license']:
                 self.license = self._fix_license(self.license)
                 self._add_line_value_to('license', self.license)
-
-        # Check if we need the pkgconfig
-        if not self.br_pkgconfig_required and \
-           self._find_pkgconfig_statements('buildrequires'):
-            self.br_pkgconfig_required = True
-        # only in case we are in main scope
-        if not self._oldstore:
-            if self.br_pkgconfig_required and not self._find_pkgconfig_declarations('buildrequires'):
-                self._add_line_value_to('buildrequires', 'pkgconfig')
-
+        # add pkgconfig dep
+        self._add_pkgconfig_buildrequires()
         # sort based on category order
         for i in self.categories_order:
             sorted_list = []
