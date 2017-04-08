@@ -217,7 +217,7 @@ class RpmPreamble(Section):
         if t == str:
             key = a
         elif t == list:
-            # if this is a list then all items except last are commentary
+            # if this is a list then all items except last are comment or whitespace
             key = a[-1]
         else:
             raise RpmException('Unknown type during sort: %s' % t)
@@ -323,6 +323,7 @@ class RpmPreamble(Section):
 
         # sort based on category order
         for i in self.categories_order:
+            sorted_list = []
             # sort-out within the ordered groups based on the key
             if i in self.categories_with_sorted_package_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
@@ -331,7 +332,11 @@ class RpmPreamble(Section):
             if i in self.categories_with_sorted_keyword_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
             for group in self.paragraph[i]:
-                lines += self._add_group(group)
+                sorted_list += self._add_group(group)
+            # now check if we need to add comment for the prereq
+            if i == 'prereq' and not self.minimal:
+                sorted_list = self._verify_prereq_message(sorted_list)
+            lines += sorted_list
         if self.current_group:
             # the current group was not added to any category. It's just some
             # random stuff that should be at the end anyway.
@@ -469,6 +474,27 @@ class RpmPreamble(Section):
         # and then sort them :)
         expanded.sort()
         return expanded
+
+    def _verify_prereq_message(self, elements):
+        """
+            Verify if the prereq is present in the Requires(*) and add the fixme
+            comment if needed
+        """
+        message = '# FIXME: use proper Requires(pre/post/preun/...)'
+
+        # Check first if we have prereq values included
+        if not any("PreReq" in s for s in elements):
+            return elements
+
+        # Verify the message is not already present
+        if any(message in s for s in elements):
+            return elements
+
+        # add the message on the first position after any whitespace
+        location = next(i for i, j in enumerate(elements) if j)
+        elements.insert(location, message)
+
+        return elements
 
     def _add_line_value_to(self, category, value, key=None):
         """
@@ -608,11 +634,6 @@ class RpmPreamble(Section):
 
         elif self.reg.re_prereq.match(line):
             match = self.reg.re_prereq.match(line)
-            if not self.minimal:
-                # add the comment about using proper macro which needs
-                # investingaton
-                if self.previous_line is not None and not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
-                    self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
             self._add_line_value_to('prereq', match.group(1))
             return
 

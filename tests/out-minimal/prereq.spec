@@ -1,3 +1,4 @@
+Name:           prereq
 PreReq:         %fillup_prereq
 PreReq:         %insserv_prereq
 PreReq:         %{_bindir}/chroot

@@ -1,3 +1,4 @@
+Name:           prereq
 Requires(post): something
 Requires(pre): test1
 Requires(post): asomething bsomething

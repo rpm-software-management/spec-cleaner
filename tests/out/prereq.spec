@@ -1,3 +1,4 @@
+Name:           prereq
 # FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         %fillup_prereq
 PreReq:         %insserv_prereq
