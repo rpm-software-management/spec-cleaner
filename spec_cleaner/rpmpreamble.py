@@ -329,6 +329,17 @@ class RpmPreamble(Section):
             if self.br_pkgconfig_required and not self._find_pkgconfig_declarations(buildrequires):
                 self._add_line_value_to('buildrequires', 'pkgconfig')
 
+    def _run_global_list_operations(self, phase, elements):
+        """
+        Run all the checks that need to be run on the finalized sorted list
+        rather than on invidiual value
+        """
+        # check if we need to add comment for the prereq
+        if not self.minimal and phase == 'prereq':
+            elements = self._verify_prereq_message(elements)
+
+        return elements
+
     def _end_paragraph(self, needs_license=False):
         lines = []
 
@@ -349,12 +360,11 @@ class RpmPreamble(Section):
             # sort-out within the ordered groups based on the keyword
             if i in self.categories_with_sorted_keyword_tokens:
                 self.paragraph[i].sort(key=self._sort_helper_key)
+            # finally flatten the list
             for group in self.paragraph[i]:
                 sorted_list += self._add_group(group)
-            # now check if we need to add comment for the prereq
-            if i == 'prereq' and not self.minimal:
-                sorted_list = self._verify_prereq_message(sorted_list)
-            lines += sorted_list
+            # now do all sorts of operations where we needed sorted lists
+            lines += self._run_global_list_operations(i, sorted_list)
         if self.current_group:
             # the current group was not added to any category. It's just some
             # random stuff that should be at the end anyway.
