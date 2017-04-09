@@ -514,12 +514,10 @@ class RpmPreamble(Section):
 
         return elements
 
-    def _add_line_value_to(self, category, value, key=None):
+    def _compile_category_prefix(self, category, key=None):
         """
-            Change a key-value line, to make sure we have the right spacing.
-
-            Note: since we don't have a key <-> category matching, we need to
-            redo one. (Eg: Provides and Obsoletes are in the same category)
+        Simply compile the category key and provide enough whitespace for the
+        values to be alligned
         """
         keylen = len('BuildRequires:  ')
 
@@ -539,6 +537,16 @@ class RpmPreamble(Section):
         # fillup rest of the alignment if key is shorter than muster
         while len(key) < keylen:
             key += ' '
+        return key
+
+    def _add_line_value_to(self, category, value, key=None):
+        """
+        Change a key-value line, to make sure we have the right spacing.
+
+        Note: since we don't have a key <-> category matching, we need to
+        redo one. (Eg: Provides and Obsoletes are in the same category)
+        """
+        key = self._compile_category_prefix(category, key)
 
         if category in self.categories_with_package_tokens:
             values = self._fix_list_of_packages(value, category)
