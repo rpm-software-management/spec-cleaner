@@ -100,6 +100,7 @@ class RpmPreamble(Section):
         'prereq',
         'requires',
         'requires_eq',
+        'requires_phase',
         'recommends',
         'suggests',
         'enhances',
@@ -470,7 +471,7 @@ class RpmPreamble(Section):
             # replace pkgconfig name first
             token = self._fix_pkgconfig_name(token)
             # in scriptlets we most probably do not want the converted deps
-            if category != 'prereq':
+            if category != 'prereq' and category != 'requires_phase':
                 # here we go with descending priority to find match and replace
                 # the strings by some optimistic value of brackety dep
                 # priority is based on the first come first serve
@@ -657,7 +658,7 @@ class RpmPreamble(Section):
         elif self.reg.re_requires_phase.match(line):
             match = self.reg.re_requires_phase.match(line)
             # Put the requires content properly as key for formatting
-            self._add_line_value_to('prereq', match.group(2), key='Requires{0}'.format(match.group(1)))
+            self._add_line_value_to('requires_phase', match.group(2), key='Requires{0}'.format(match.group(1)))
             return
 
         elif self.reg.re_provides.match(line):
