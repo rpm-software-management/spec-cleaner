@@ -478,11 +478,11 @@ class RpmPreamble(Section):
                     token = self._pkgname_to_pkgconfig(token)
                 # checking if it is not list is simple avoidance of running
                 # over already converted values
-                if type(token) is not list and self.perl:
+                if not isinstance(token, list) and self.perl:
                     token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
-                if type(token) is not list and self.tex:
+                if not isinstance(token, list) and self.tex:
                     token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
-                if type(token) is not list and self.cmake:
+                if not isinstance(token, list) and self.cmake:
                     token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
             if isinstance(token, str):
                 expanded.append(token)
