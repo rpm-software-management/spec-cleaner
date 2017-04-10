@@ -4,6 +4,7 @@ import re
 import os
 
 from .fileutils import FileUtils
+from .rpmexception import RpmException
 
 LICENSES_CHANGES = 'licenses_changes.txt'
 TEX_CONVERSIONS = 'tex_conversions.txt'
