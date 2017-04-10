@@ -161,3 +161,17 @@ def sort_uniq(seq):
         seen[marker] = 1
         result.append(item)
     return result
+
+def add_group(group):
+    """
+    Flatten the lines of the group from sublits to one simple list
+    """
+    if isinstance(group, str):
+        return [group]
+    elif isinstance(group, list):
+        x = []
+        for subgroup in group:
+            x += add_group(subgroup)
+        return x
+    else:
+        raise RpmException('Unknown type of group in preamble: %s' % type(group))

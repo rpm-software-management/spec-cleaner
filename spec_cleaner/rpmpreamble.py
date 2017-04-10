@@ -4,7 +4,7 @@ import re
 
 from .rpmsection import Section
 from .rpmexception import RpmException
-from .rpmhelpers import sort_uniq
+from .rpmhelpers import sort_uniq, add_group
 from .dependency_parser import DependencyParser
 
 class RpmPreamble(Section):
@@ -204,21 +204,6 @@ class RpmPreamble(Section):
         self._oldstore.append(self.paragraph)
         self._start_paragraph()
 
-    def _add_group(self, group):
-        """
-        Actually store the lines from groups to resulting output
-        """
-        t = type(group)
-        if t == str:
-            return [group]
-        elif t == list:
-            x = []
-            for subgroup in group:
-                x += self._add_group(subgroup)
-            return x
-        else:
-            raise RpmException('Unknown type of group in preamble: %s' % t)
-
     def _sort_helper_key(self, a):
         t = type(a)
         if t == str:
@@ -319,7 +304,7 @@ class RpmPreamble(Section):
         # first generate flat list from the BR
         buildrequires = []
         for group in self.paragraph['buildrequires']:
-            buildrequires += self._add_group(group)
+            buildrequires += add_group(group)
         # Check if we need the pkgconfig
         if not self.br_pkgconfig_required and \
            self._find_pkgconfig_statements(buildrequires):
@@ -362,13 +347,13 @@ class RpmPreamble(Section):
                 self.paragraph[i].sort(key=self._sort_helper_key)
             # finally flatten the list
             for group in self.paragraph[i]:
-                sorted_list += self._add_group(group)
+                sorted_list += add_group(group)
             # now do all sorts of operations where we needed sorted lists
             lines += self._run_global_list_operations(i, sorted_list)
         if self.current_group:
             # the current group was not added to any category. It's just some
             # random stuff that should be at the end anyway.
-            lines += self._add_group(self.current_group)
+            lines += add_group(self.current_group)
             self.current_group = []
         return lines
 
