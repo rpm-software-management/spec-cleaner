@@ -400,32 +400,14 @@ class RpmPreamble(Section):
         else:
             return value
 
-    def _pkgname_to_pkgconfig(self, value):
-        # we just want the pkgname if we have version string there
-        # and for the pkgconfig deps we need to put the version into
-        # the braces
-        pkgname, version = self._split_name_and_version(value)
-        pkgconfig = []
-        if pkgname == 'pkgconfig':
-            return [value]
-        if pkgname not in self.pkgconfig_conversions:
-            # first check if the package is in the replacements
-            return [value]
-        else:
-            # first split the pkgconfig data
-            pkgconf_list = self.pkgconfig_conversions[pkgname].split()
-            # then add each pkgconfig to the list
-            # print pkgconf_list
-            for j in pkgconf_list:
-                pkgconfig.append('pkgconfig({0}){1}'.format(j, version))
-        return pkgconfig
-
     def _pkgname_to_brackety(self, value, name, conversions):
         # we just want the pkgname if we have version string there
         # and for the pkgconfig deps we need to put the version into
         # the braces
         pkgname, version = self._split_name_and_version(value)
         converted = []
+        if pkgname == 'pkgconfig':
+            return [value]
         if pkgname not in conversions:
             # first check if the package is in the replacements
             return [value]
@@ -471,7 +453,7 @@ class RpmPreamble(Section):
                 # the strings by some optimistic value of brackety dep
                 # priority is based on the first come first serve
                 if self.pkgconfig:
-                    token = self._pkgname_to_pkgconfig(token)
+                    token = self._pkgname_to_brackety(token, 'pkgconfig', self.pkgconfig_conversions)
                 # checking if it is not list is simple avoidance of running
                 # over already converted values
                 if not isinstance(token, list) and self.perl:
