@@ -92,7 +92,13 @@ class RpmSpecCleaner(object):
         self._load_licenses()
         # Determine if we need to skip the spec
         self._find_skip_parser()
+        # set the filemode
+        self._select_mode()
 
+    def _select_mode(self):
+        """
+        Set up input and output based on the options
+        """
         if self.options['output']:
             self.fout = open(self.options['output'], 'w')
         elif self.options['inline']:
