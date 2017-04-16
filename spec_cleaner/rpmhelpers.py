@@ -176,3 +176,21 @@ def add_group(group):
         return x
     else:
         raise RpmException('Unknown type of group in preamble: %s' % type(group))
+
+def find_pkgconfig_statement(elements):
+    """
+    Find pkgconfig() statement in the list and return true if matched
+    """
+    for i in elements:
+        if 'pkgconfig(' in i and not find_pkgconfig_declaration(elements):
+            return True
+    return False
+
+def find_pkgconfig_declaration(elements):
+    """
+    Find if there is direct pkgconfig dependency in the paragraph
+    """
+    for i in elements:
+        if 'pkgconfig ' in i or i.endswith('pkgconfig'):
+            return True
+    return False

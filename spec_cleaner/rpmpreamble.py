@@ -4,7 +4,7 @@ import re
 
 from .rpmsection import Section
 from .rpmexception import RpmException
-from .rpmhelpers import sort_uniq, add_group
+from .rpmhelpers import sort_uniq, add_group, find_pkgconfig_statement, find_pkgconfig_declaration
 from .dependency_parser import DependencyParser
 
 class RpmPreamble(Section):
@@ -278,24 +278,6 @@ class RpmPreamble(Section):
                 self._condition_bcond = False
             self.paragraph['conditions'] = []
 
-    def _find_pkgconfig_statements(self, elements):
-        """
-        Find all pkgconfig() statements in the paragraph
-        """
-        for i in elements:
-            if 'pkgconfig(' in i and not self._find_pkgconfig_declarations(elements):
-                return True
-        return False
-
-    def _find_pkgconfig_declarations(self, elements):
-        """
-        Find if there is direct pkgconfig dependency in the paragraph
-        """
-        for i in elements:
-            if 'pkgconfig ' in i or i.endswith('pkgconfig'):
-                return True
-        return False
-
     def _add_pkgconfig_buildrequires(self):
         """
         Check the content of buildrequires and add pkgconfig as an item
@@ -307,11 +289,11 @@ class RpmPreamble(Section):
             buildrequires += add_group(group)
         # Check if we need the pkgconfig
         if not self.br_pkgconfig_required and \
-           self._find_pkgconfig_statements(buildrequires):
+           find_pkgconfig_statement(buildrequires):
             self.br_pkgconfig_required = True
         # only in case we are in main scope
         if not self._oldstore:
-            if self.br_pkgconfig_required and not self._find_pkgconfig_declarations(buildrequires):
+            if self.br_pkgconfig_required and not find_pkgconfig_declaration(buildrequires):
                 self._add_line_value_to('buildrequires', 'pkgconfig')
 
     def _run_global_list_operations(self, phase, elements):
