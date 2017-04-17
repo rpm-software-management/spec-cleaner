@@ -4,7 +4,7 @@ import re
 
 from .rpmsection import Section
 from .rpmexception import RpmException
-from .rpmhelpers import sort_uniq, add_group, find_pkgconfig_statement, find_pkgconfig_declaration
+from .rpmpreambleelements import RpmPreambleElements
 from .dependency_parser import DependencyParser
 
 class RpmPreamble(Section):
@@ -30,90 +30,6 @@ class RpmPreamble(Section):
         line, even if we reorder the lines.
     """
 
-    category_to_key = {
-        'name': 'Name',
-        'version': 'Version',
-        'release': 'Release',
-        'license': 'License',
-        'summary': 'Summary',
-        # The localized summary can contain various values, so it can't be here
-        'url': 'Url',
-        'group': 'Group',
-        'source': 'Source',
-        'nosource': 'NoSource',
-        'patch': 'Patch',
-        'buildrequires': 'BuildRequires',
-        'conflicts': 'Conflicts',
-        'prereq': 'PreReq',
-        'requires': 'Requires',
-        'requires_eq': '%requires_eq',
-        'recommends': 'Recommends',
-        'suggests': 'Suggests',
-        'enhances': 'Enhances',
-        'supplements': 'Supplements',
-        # Provides/Obsoletes cannot be part of this since we want to keep them
-        # mixed, so we'll have to specify the key when needed
-        'buildroot': 'BuildRoot',
-        'buildarch': 'BuildArch',
-        'exclusivearch': 'ExclusiveArch',
-        'excludearch': 'ExcludeArch',
-    }
-
-    categories_order = [
-        'define',
-        'bconds',
-        'bcond_conditions',
-        'name',
-        'version',
-        'release',
-        'summary',
-        'summary_localized',
-        'license',
-        'group',
-        'url',
-        'source',
-        'nosource',
-        'patch',
-        'buildrequires',
-        'requires',
-        'requires_eq',
-        'prereq',
-        'requires_phase',  # this is Requires(pre/post/...)
-        'recommends',
-        'suggests',
-        'enhances',
-        'supplements',
-        'conflicts',
-        'provides_obsoletes',
-        'buildroot',
-        'buildarch',
-        'exclusivearch',
-        'excludearch',
-        'misc',
-        'build_conditions',
-        'conditions',
-    ]
-
-    # categories that are sorted based on value in them
-    categories_with_sorted_package_tokens = [
-        'buildrequires',
-        'prereq',
-        'requires',
-        'requires_eq',
-        'requires_phase',
-        'recommends',
-        'suggests',
-        'enhances',
-        'supplements',
-        'conflicts',
-    ]
-
-    # categories that are sorted based on key value (eg Patch0 before Patch1)
-    categories_with_sorted_keyword_tokens = [
-        'source',
-        'patch',
-    ]
-
     def __init__(self, options):
         Section.__init__(self, options)
         # Old storage
@@ -126,6 +42,7 @@ class RpmPreamble(Section):
         self._condition_define = False
         # Is the condition based probably on bcond evaluation
         self._condition_bcond = False
+        self.options = options
         # do we want pkgconfig and others?
         self.pkgconfig = options['pkgconfig']
         self.perl = options['perl']
@@ -143,17 +60,14 @@ class RpmPreamble(Section):
         # list of allowed groups
         self.allowed_groups = options['allowed_groups']
         # start the object
-        self._start_paragraph()
+        self.paragraph = RpmPreambleElements(options)
         # initialize list of groups that need to pass over conversion fixer
-        self.categories_with_package_tokens = self.categories_with_sorted_package_tokens[:]
+        self.categories_with_package_tokens = self.paragraph.categories_with_sorted_package_tokens[:]
         # these packages actually need fixing after we sent the values to
         # reorder them
         self.categories_with_package_tokens.append('provides_obsoletes')
         # license handling
         self.subpkglicense = options['subpkglicense']
-        self.license = options['license']
-        # pkgconfig requirement detection
-        self.br_pkgconfig_required = False
 
         # simple categories matching
         self.category_to_re = {
@@ -193,63 +107,33 @@ class RpmPreamble(Section):
             'prefix': self.reg.re_preamble_prefix,
         }
 
-    def _start_paragraph(self):
-        self.paragraph = {}
-        for i in self.categories_order:
-            self.paragraph[i] = []
-        self.current_group = []
-
     def start_subparagraph(self):
-        # store the main content and clean up
+        # Backup the list and start a new one
         self._oldstore.append(self.paragraph)
-        self._start_paragraph()
-
-    def _sort_helper_key(self, a):
-        t = type(a)
-        if t == str:
-            key = a
-        elif t == list:
-            # if this is a list then all items except last are comment or whitespace
-            key = a[-1]
-        else:
-            raise RpmException('Unknown type during sort: %s' % t)
-
-        # Special case is the category grouping where we have to get the number in
-        # after the value
-        if self.reg.re_patch.match(key):
-            match = self.reg.re_patch.match(key)
-            key = int(match.group(2))
-        elif self.reg.re_source.match(key):
-            match = self.reg.re_source.match(key)
-            value = match.group(1)
-            if not value:
-                value = '0'
-            key = int(value)
-        # Put brackety ()-style deps at the end of the list, after all other
-        elif self.reg.re_brackety_requires.search(key):
-            key = '1' + key
-        else:
-            key = '0' + key
-        return key
+        self.paragraph = RpmPreambleElements(self.options)
 
     def _prune_ppc_condition(self):
         """
         Check if we have ppc64 obsolete and delete it
         """
         if not self.minimal and \
-             isinstance(self.paragraph['conditions'][0], list) and \
-             len(self.paragraph['conditions']) == 3 and \
-             self.paragraph['conditions'][0][0] == '# bug437293' and \
-             self.paragraph['conditions'][1].endswith('64bit'):
-            self.paragraph['conditions'] = []
+             isinstance(self.paragraph.items['conditions'][0], list) and \
+             len(self.paragraph.items['conditions']) == 3 and \
+             self.paragraph.items['conditions'][0][0] == '# bug437293' and \
+             self.paragraph.items['conditions'][1].endswith('64bit'):
+            self.paragraph.items['conditions'] = []
 
     def end_subparagraph(self, endif=False):
-        lines = self._end_paragraph()
-        if len(self.paragraph['define']) > 0 or \
-           len(self.paragraph['bconds']) > 0:
+        if not self._oldstore:
+            nested = False
+        else:
+            nested = True
+        lines = self.paragraph.flatten_output(False, nested)
+        if len(self.paragraph.items['define']) > 0 or \
+           len(self.paragraph.items['bconds']) > 0:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
-        self.paragraph['conditions'] += lines
+        self.paragraph.items['conditions'] += lines
 
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
@@ -260,84 +144,23 @@ class RpmPreamble(Section):
                 # we need to put it bellow bcond definitions as otherwise
                 # the switches do not have any effect
                 if self._condition_bcond:
-                    self.paragraph['bcond_conditions'] += self.paragraph['conditions']
-                elif len(self.paragraph['define']) == 0:
-                    self.paragraph['bconds'] += self.paragraph['conditions']
+                    self.paragraph.items['bcond_conditions'] += self.paragraph.items['conditions']
+                elif len(self.paragraph.items['define']) == 0:
+                    self.paragraph.items['bconds'] += self.paragraph.items['conditions']
                 else:
-                    self.paragraph['define'] += self.paragraph['conditions']
+                    self.paragraph.items['define'] += self.paragraph.items['conditions']
                 # in case the nested condition contains define we consider all parents
                 # to require to be on top too;
                 if len(self._oldstore) == 0:
                     self._condition_define = False
             else:
-                self.paragraph['build_conditions'] += self.paragraph['conditions']
+                self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
 
             # bcond must be reseted when on top and can be set even outside of the
             # define scope. So reset it here always
             if len(self._oldstore) == 0:
                 self._condition_bcond = False
-            self.paragraph['conditions'] = []
-
-    def _add_pkgconfig_buildrequires(self):
-        """
-        Check the content of buildrequires and add pkgconfig as an item
-        in case there are any pkgconfig() style dependencies present
-        """
-        # first generate flat list from the BR
-        buildrequires = []
-        for group in self.paragraph['buildrequires']:
-            buildrequires += add_group(group)
-        # Check if we need the pkgconfig
-        if not self.br_pkgconfig_required and \
-           find_pkgconfig_statement(buildrequires):
-            self.br_pkgconfig_required = True
-        # only in case we are in main scope
-        if not self._oldstore:
-            if self.br_pkgconfig_required and not find_pkgconfig_declaration(buildrequires):
-                self._add_line_value_to('buildrequires', 'pkgconfig')
-
-    def _run_global_list_operations(self, phase, elements):
-        """
-        Run all the checks that need to be run on the finalized sorted list
-        rather than on invidiual value
-        """
-        # check if we need to add comment for the prereq
-        if not self.minimal and phase == 'prereq':
-            elements = self._verify_prereq_message(elements)
-
-        return elements
-
-    def _end_paragraph(self, needs_license=False):
-        lines = []
-
-        # add license to the package if missing and needed
-        if needs_license:
-            if not self.paragraph['license']:
-                self.license = self._fix_license(self.license)
-                self._add_line_value_to('license', self.license)
-        # add pkgconfig dep
-        self._add_pkgconfig_buildrequires()
-        # sort based on category order
-        for i in self.categories_order:
-            sorted_list = []
-            # sort-out within the ordered groups based on the key
-            if i in self.categories_with_sorted_package_tokens:
-                self.paragraph[i].sort(key=self._sort_helper_key)
-                self.paragraph[i] = sort_uniq(self.paragraph[i])
-            # sort-out within the ordered groups based on the keyword
-            if i in self.categories_with_sorted_keyword_tokens:
-                self.paragraph[i].sort(key=self._sort_helper_key)
-            # finally flatten the list
-            for group in self.paragraph[i]:
-                sorted_list += add_group(group)
-            # now do all sorts of operations where we needed sorted lists
-            lines += self._run_global_list_operations(i, sorted_list)
-        if self.current_group:
-            # the current group was not added to any category. It's just some
-            # random stuff that should be at the end anyway.
-            lines += add_group(self.current_group)
-            self.current_group = []
-        return lines
+            self.paragraph.items['conditions'] = []
 
     def _fix_license(self, value):
         # split using 'or', 'and' and parenthesis, ignore empty strings
@@ -407,7 +230,7 @@ class RpmPreamble(Section):
         # otherwise print there warning about nicer content and skip
         if self.reg.re_rpm_command.search(value):
             if not self.previous_line.startswith('#') and not self.minimal:
-                self.current_group.append('# FIXME: Use %requires_eq macro instead')
+                self.paragraph.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
         tokens = DependencyParser(value).flat_out()
         # loop over all and do formatting as we can get more deps for one
@@ -452,52 +275,6 @@ class RpmPreamble(Section):
         expanded.sort()
         return expanded
 
-    def _verify_prereq_message(self, elements):
-        """
-            Verify if the prereq is present in the Requires(*) and add the fixme
-            comment if needed
-        """
-        message = '# FIXME: use proper Requires(pre/post/preun/...)'
-
-        # Check first if we have prereq values included
-        if not any("PreReq" in s for s in elements):
-            return elements
-
-        # Verify the message is not already present
-        if any(message in s for s in elements):
-            return elements
-
-        # add the message on the first position after any whitespace
-        location = next(i for i, j in enumerate(elements) if j)
-        elements.insert(location, message)
-
-        return elements
-
-    def _compile_category_prefix(self, category, key=None):
-        """
-        Simply compile the category key and provide enough whitespace for the
-        values to be alligned
-        """
-        keylen = len('BuildRequires:  ')
-
-        if key:
-            pass
-        elif category in self.category_to_key:
-            key = self.category_to_key[category]
-        else:
-            raise RpmException('Unhandled category in preamble: %s' % category)
-
-        # append : only if the thing is not known macro
-        if not key.startswith('%'):
-            key += ':'
-        # if the key is already longer then just add one space
-        if len(key) >= keylen:
-            key += ' '
-        # fillup rest of the alignment if key is shorter than muster
-        while len(key) < keylen:
-            key += ' '
-        return key
-
     def _add_line_value_to(self, category, value, key=None):
         """
         Change a key-value line, to make sure we have the right spacing.
@@ -505,7 +282,7 @@ class RpmPreamble(Section):
         Note: since we don't have a key <-> category matching, we need to
         redo one. (Eg: Provides and Obsoletes are in the same category)
         """
-        key = self._compile_category_prefix(category, key)
+        key = self.paragraph.compile_category_prefix(category, key)
 
         if category in self.categories_with_package_tokens:
             values = self._fix_list_of_packages(value, category)
@@ -517,12 +294,12 @@ class RpmPreamble(Section):
             self._add_line_to(category, line)
 
     def _add_line_to(self, category, line):
-        if self.current_group:
-            self.current_group.append(line)
-            self.paragraph[category].append(self.current_group)
-            self.current_group = []
+        if self.paragraph.current_group:
+            self.paragraph.current_group.append(line)
+            self.paragraph.items[category].append(self.paragraph.current_group)
+            self.paragraph.current_group = []
         else:
-            self.paragraph[category].append(line)
+            self.paragraph.items[category].append(line)
 
         self.previous_line = line
 
@@ -578,7 +355,7 @@ class RpmPreamble(Section):
 
         elif self.reg.re_comment.match(line):
             if line or self.previous_line:
-                self.current_group.append(line)
+                self.paragraph.current_group.append(line)
                 self.previous_line = line
             return
 
@@ -640,7 +417,7 @@ class RpmPreamble(Section):
 
         elif self.reg.re_buildroot.match(line):
             # we only are fine with buildroot only once
-            if len(self.paragraph['buildroot']) == 0:
+            if len(self.paragraph.items['buildroot']) == 0:
                 self._add_line_value_to('buildroot', '%{_tmppath}/%{name}-%{version}-build')
             return
 
@@ -677,7 +454,7 @@ class RpmPreamble(Section):
             value = match.group(1)
             if not self.minimal:
                 if self.previous_line and not self.previous_line.startswith('# FIXME') and value not in self.allowed_groups:
-                    self.current_group.append('# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
+                    self.paragraph.current_group.append('# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
             self._add_line_value_to('group', value)
             return
 
@@ -703,6 +480,6 @@ class RpmPreamble(Section):
             self._add_line_to('misc', line)
 
     def output(self, fout, newline=True, new_class=None):
-        lines = self._end_paragraph(self.subpkglicense)
+        lines = self.paragraph.flatten_output(self.subpkglicense)
         self.lines += lines
         Section.output(self, fout, newline, new_class)
