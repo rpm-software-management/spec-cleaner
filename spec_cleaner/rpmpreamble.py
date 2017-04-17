@@ -6,6 +6,7 @@ from .rpmsection import Section
 from .rpmexception import RpmException
 from .rpmpreambleelements import RpmPreambleElements
 from .dependency_parser import DependencyParser
+from .rpmhelpers import fix_license
 
 class RpmPreamble(Section):
 
@@ -161,29 +162,6 @@ class RpmPreamble(Section):
             if len(self._oldstore) == 0:
                 self._condition_bcond = False
             self.paragraph.items['conditions'] = []
-
-    def _fix_license(self, value):
-        # split using 'or', 'and' and parenthesis, ignore empty strings
-        licenses = []
-        for a in re.split(r'(\(|\)| and | or (?!later))', value):
-            if a != '':
-                licenses.append(a)
-        if not licenses:
-            licenses.append(value)
-
-        for (index, my_license) in enumerate(licenses):
-            my_license = self.strip_useless_spaces(my_license)
-            my_license = my_license.replace('ORlater', 'or later')
-            my_license = my_license.replace('ORsim', 'or similar')
-            my_license = my_license.rstrip(';')
-            my_license = self.reg.re_license_semicolon.sub(' and ', my_license)
-            if my_license in self.license_conversions:
-                my_license = self.license_conversions[my_license]
-            licenses[index] = my_license
-
-        # create back new string with replaced licenses
-        s = ' '.join(licenses).replace("( ", "(").replace(" )", ")")
-        return s
 
     def _split_name_and_version(self, value):
         # split the name and version from the requires element
@@ -425,7 +403,7 @@ class RpmPreamble(Section):
             # first convert the license string to proper format and then append
             match = self.reg.re_license.match(line)
             value = match.groups()[len(match.groups()) - 1]
-            value = self._fix_license(value)
+            value = fix_license(value, self.license_conversions)
             # only store subpkgs if they have different licenses
             if not (type(self).__name__ == 'RpmPackage' and not self.subpkglicense):
                 self._add_line_value_to('license', value)

@@ -1,6 +1,6 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-from .rpmhelpers import sort_uniq, add_group, find_pkgconfig_statement, find_pkgconfig_declaration
+from .rpmhelpers import sort_uniq, add_group, find_pkgconfig_statement, find_pkgconfig_declaration, fix_license
 
 class RpmPreambleElements(object):
     """
@@ -105,6 +105,8 @@ class RpmPreambleElements(object):
         self.br_pkgconfig_required = False
         # license string
         self.license = options['license']
+        # dict of license replacement options
+        self.license_conversions = options['license_conversions']
 
     def _sort_helper_key(self, a):
         t = type(a)
@@ -229,6 +231,7 @@ class RpmPreambleElements(object):
 
         # add license to the package if missing and needed
         if needs_license and not self.items['license']:
+            self.license = fix_license(self.license, self.license_conversions)
             self._insert_value('license', self.license)
         # add pkgconfig dep
         self._add_pkgconfig_buildrequires(nested)

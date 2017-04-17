@@ -71,8 +71,6 @@ class Regexp(object):
     re_rpm_command = re.compile(r'%\(.*\)')
     re_requires_eq = re.compile(r'^\s*%requires_eq\s*(.*)')
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
-    # license ; should be replaced by ands so find it
-    re_license_semicolon = re.compile(r'\s*;\s*')
     # Special bracketed deps dection
     re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')
     re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')
