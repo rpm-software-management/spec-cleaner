@@ -234,17 +234,13 @@ class RpmPreambleElements(object):
             self._insert_value('license', self.license)
         # add pkgconfig dep
         self._add_pkgconfig_buildrequires(nested)
-        # sort based on category order
         for i in self.categories_order:
             sorted_list = []
             # sort-out within the ordered groups based on the key
-            if i in self.categories_with_sorted_package_tokens:
+            if i in self.categories_with_sorted_package_tokens + self.categories_with_sorted_keyword_tokens:
                 self.items[i].sort(key=self._sort_helper_key)
                 self.items[i] = sort_uniq(self.items[i])
-            # sort-out within the ordered groups based on the keyword
-            if i in self.categories_with_sorted_keyword_tokens:
-                self.items[i].sort(key=self._sort_helper_key)
-            # finally flatten the list
+            # flatten the list from list of lists as no reordering is planned
             for group in self.items[i]:
                 sorted_list += add_group(group)
             # now do all sorts of operations where we needed sorted lists
