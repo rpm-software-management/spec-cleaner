@@ -141,9 +141,8 @@ class RpmPreambleElements(object):
         Add value to specified keystore
         """
         key = self.compile_category_prefix(category, key)
-        if value:
-            line = key + value
-            self.items[category].append(line)
+        line = key + value
+        self.items[category].append(line)
 
     def _add_pkgconfig_buildrequires(self, nested):
         """
