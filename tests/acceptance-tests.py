@@ -69,7 +69,7 @@ class TestCompare(object):
         testglob = os.path.join('tests', directory, '*.spec')
         return [os.path.basename(f) for f in glob.glob(testglob)]
 
-    def _run_individual_test(self, test, compare_dir, infile=None, outfile=None, options={}, **kwargs):
+    def _run_individual_test(self, test, compare_dir, infile=None, outfile=None, options=None, **kwargs):
         """
         Run the cleaner as specified and store the output for further comparison.
         """
@@ -86,7 +86,7 @@ class TestCompare(object):
             }
             full_options.update(self.option_presets)
             full_options.update(kwargs)
-            full_options.update(options)
+            full_options.update(options or {})
 
             cleaner = RpmSpecCleaner(full_options)
             cleaner.run()
