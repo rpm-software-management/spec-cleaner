@@ -843,6 +843,8 @@ SUSE-LGPL-3.0-with-openssl-exception	e.g python-psycopg2
 SUSE-LGPL-3.0-with-openssl-exception+	SUSE-LGPL-3.0-with-openssl-exception+
 SUSE-Liberation	LiberationFontsLicense (Fedora calls this the Liberation license - it will be easier to get it upstream if we adopt that)
 SUSE-Liberation+	SUSE-Liberation+
+SUSE-MIT-Khronos	https://github.com/KhronosGroup/KTX/blob/master/lib/loader.c
+SUSE-MIT-Khronos+	SUSE-MIT-Khronos+
 SUSE-Manpages	Manpages licenses (linux man pages e.g.)
 SUSE-Manpages+	SUSE-Manpages+
 SUSE-Matplotlib	E.g. python -matplotlib -> LICENSE/LICENSE
@@ -897,6 +899,8 @@ SUSE-TeX	http://en.wikipedia.org/wiki/TeX#License
 SUSE-TeX+	SUSE-TeX+
 SUSE-Ubuntu-Font-License-1.0	http://font.ubuntu.com/licence/
 SUSE-Ubuntu-Font-License-1.0+	SUSE-Ubuntu-Font-License-1.0+
+SUSE-XDebug	https://xdebug.org/license.php
+SUSE-XDebug+	SUSE-XDebug+
 SUSE-XFree86-with-font-exception	XFree86 with exception to clarify that a document embedding such fonts does not need to be licensed under the XFree86 license
 SUSE-XFree86-with-font-exception+	SUSE-XFree86-with-font-exception+
 SUSE-XSL-Lint	http://pastebin.com/cFxX3zCb (probably deprecated but found in docbook-dsssl-stylesheets)

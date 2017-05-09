@@ -77,7 +77,7 @@ class RpmCopyright(Section):
             self.copyrights.append(line)
         elif self.reg.re_rootforbuild.match(line):
             self.buildrules.append('# needsrootforbuild')
-        elif self.reg.re_binariesforbuld.match(line):
+        elif self.reg.re_binariesforbuild.match(line):
             self.buildrules.append('# needsbinariesforbuild')
         elif self.reg.re_nodebuginfo.match(line):
             self.buildrules.append('# nodebuginfo')

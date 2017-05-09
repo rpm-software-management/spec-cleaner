@@ -54,6 +54,8 @@ class Regexp(object):
     re_obsoletes = re.compile(r'^Obsoletes:\s*(.*)', re.IGNORECASE)
     re_buildroot = re.compile(r'^\s*BuildRoot:', re.IGNORECASE)
     re_buildarch = re.compile(r'^\s*BuildArch(itectures)?:\s*(.*)', re.IGNORECASE)
+    re_exclusivearch = re.compile(r'^\s*ExclusiveArch(itectures)?:\s*(.*)', re.IGNORECASE)
+    re_excludearch = re.compile(r'^\s*ExcludeArch(itectures)?:\s*(.*)', re.IGNORECASE)
     re_epoch = re.compile(r'^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_icon = re.compile(r'^\s*Icon:\s*(.*)', re.IGNORECASE)
     re_copyright = re.compile(r'^\s*Copyright:\s*(.*)', re.IGNORECASE)
@@ -69,8 +71,6 @@ class Regexp(object):
     re_rpm_command = re.compile(r'%\(.*\)')
     re_requires_eq = re.compile(r'^\s*%requires_eq\s*(.*)')
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
-    # license ; should be replaced by ands so find it
-    re_license_semicolon = re.compile(r'\s*;\s*')
     # Special bracketed deps dection
     re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')
     re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')
@@ -91,7 +91,7 @@ class Regexp(object):
     re_copyright = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
     re_suse_copyright = re.compile(r'SUSE LINUX (Products )?GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
     re_rootforbuild = re.compile(r'^#\s*needsrootforbuild\s*$', re.IGNORECASE)
-    re_binariesforbuld = re.compile(r'^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
+    re_binariesforbuild = re.compile(r'^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
     re_nodebuginfo = re.compile(r'^#\s*nodebuginfo\s*$', re.IGNORECASE)
     re_sslcerts = re.compile(r'^#\s*needssslcertforbuild\s*$', re.IGNORECASE)
     re_icecream = re.compile(r'^#\s*icecream\s*$', re.IGNORECASE)

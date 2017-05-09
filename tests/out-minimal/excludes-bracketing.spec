@@ -1,5 +1,6 @@
 %bcond_with[^\s]*
 %add_maven_depmap
+%apache_test_module_load
 %attr(\s*\([^)]*\))?
 
 %build

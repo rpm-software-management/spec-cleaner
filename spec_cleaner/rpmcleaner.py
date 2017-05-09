@@ -92,7 +92,13 @@ class RpmSpecCleaner(object):
         self._load_licenses()
         # Determine if we need to skip the spec
         self._find_skip_parser()
+        # set the filemode
+        self._select_mode()
 
+    def _select_mode(self):
+        """
+        Set up input and output based on the options
+        """
         if self.options['output']:
             self.fout = open(self.options['output'], 'w')
         elif self.options['inline']:
@@ -249,7 +255,13 @@ class RpmSpecCleaner(object):
         if detected_class == Section and self._detect_condition_change(line):
             return False
         else:
-            return True
+            # We also do not want to print newline if at the end of the
+            # previous section we actually had a commentary, ie comment above
+            # new section
+            if self._previous_line and self._previous_line.startswith('#'):
+                return False
+            else:
+                return True
 
     def run(self):
         # If we are skipping we should do nothing

@@ -11,4 +11,12 @@ cmake . \
 %useful_macro 15
 ./configure.sh \
 
+# FIXME: you should use the %%configure macro
+CFLAGS="%{optflags} -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -fPIE" \
+LDFLAGS="-pie" \
+./configure \
+
+# FIXME: you should use the %%configure macro
+CFLAGS="-g" ./configure
+
 %changelog

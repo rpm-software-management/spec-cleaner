@@ -33,7 +33,7 @@ Requires:       python-base
 Provides:       obs-service-format_spec_file = %{version}
 Obsoletes:      obs-service-format_spec_file < %{version}
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-BuildArch:      noarch
+BuildArch: noarch
 
 %{debug_package}
 

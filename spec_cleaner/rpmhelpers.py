@@ -4,6 +4,7 @@ import re
 import os
 
 from .fileutils import FileUtils
+from .rpmexception import RpmException
 
 LICENSES_CHANGES = 'licenses_changes.txt'
 TEX_CONVERSIONS = 'tex_conversions.txt'
@@ -116,6 +117,31 @@ def read_group_changes():
     files.close()
     return groups
 
+def fix_license(value, conversions):
+    # license ; should be replaced by ands so find it
+    re_license_semicolon = re.compile(r'\s*;\s*')
+    # split using 'or', 'and' and parenthesis, ignore empty strings
+    licenses = []
+    for a in re.split(r'(\(|\)| and | or (?!later))', value):
+        if a != '':
+            licenses.append(a)
+    if not licenses:
+        licenses.append(value)
+
+    for (index, my_license) in enumerate(licenses):
+        my_license = ' '.join(my_license.split())
+        my_license = my_license.replace('ORlater', 'or later')
+        my_license = my_license.replace('ORsim', 'or similar')
+        my_license = my_license.rstrip(';')
+        my_license = re_license_semicolon.sub(' and ', my_license)
+        if my_license in conversions:
+            my_license = conversions[my_license]
+        licenses[index] = my_license
+
+    # create back new string with replaced licenses
+    s = ' '.join(licenses).replace("( ", "(").replace(" )", ")")
+    return s
+
 
 def sort_uniq(seq):
     def _check_list(x):
@@ -161,3 +187,38 @@ def sort_uniq(seq):
         seen[marker] = 1
         result.append(item)
     return result
+
+
+def add_group(group):
+    """
+    Flatten the lines of the group from sublits to one simple list
+    """
+    if isinstance(group, str):
+        return [group]
+    elif isinstance(group, list):
+        x = []
+        for subgroup in group:
+            x += add_group(subgroup)
+        return x
+    else:
+        raise RpmException('Unknown type of group in preamble: %s' % type(group))
+
+
+def find_pkgconfig_statement(elements):
+    """
+    Find pkgconfig() statement in the list and return true if matched
+    """
+    for i in elements:
+        if 'pkgconfig(' in i and not find_pkgconfig_declaration(elements):
+            return True
+    return False
+
+
+def find_pkgconfig_declaration(elements):
+    """
+    Find if there is direct pkgconfig dependency in the paragraph
+    """
+    for i in elements:
+        if 'pkgconfig ' in i or i.endswith('pkgconfig'):
+            return True
+    return False

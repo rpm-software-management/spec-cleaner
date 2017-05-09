@@ -10,8 +10,9 @@ except ImportError:
 
 from .rpmsection import Section
 from .rpmexception import RpmException
-from .rpmhelpers import sort_uniq
+from .rpmpreambleelements import RpmPreambleElements
 from .dependency_parser import DependencyParser
+from .rpmhelpers import fix_license
 
 class RpmPreamble(Section):
 
@@ -36,85 +37,6 @@ class RpmPreamble(Section):
         line, even if we reorder the lines.
     """
 
-    category_to_key = {
-        'name': 'Name',
-        'version': 'Version',
-        'release': 'Release',
-        'license': 'License',
-        'summary': 'Summary',
-        # The localized summary can contain various values, so it can't be here
-        'url': 'Url',
-        'group': 'Group',
-        'source': 'Source',
-        'nosource': 'NoSource',
-        'patch': 'Patch',
-        'buildrequires': 'BuildRequires',
-        'conflicts': 'Conflicts',
-        'prereq': 'PreReq',
-        'requires': 'Requires',
-        'requires_eq': '%requires_eq',
-        'recommends': 'Recommends',
-        'suggests': 'Suggests',
-        'enhances': 'Enhances',
-        'supplements': 'Supplements',
-        # Provides/Obsoletes cannot be part of this since we want to keep them
-        # mixed, so we'll have to specify the key when needed
-        'buildroot': 'BuildRoot',
-        'buildarch': 'BuildArch',
-    }
-
-    categories_order = [
-        'define',
-        'bconds',
-        'bcond_conditions',
-        'name',
-        'version',
-        'release',
-        'summary',
-        'summary_localized',
-        'license',
-        'group',
-        'url',
-        'source',
-        'nosource',
-        'patch',
-        'buildrequires',
-        'requires',
-        'requires_eq',
-        'prereq',
-        'requires_phase',  # this is Requires(pre/post/...)
-        'recommends',
-        'suggests',
-        'enhances',
-        'supplements',
-        'conflicts',
-        'provides_obsoletes',
-        'buildroot',
-        'buildarch',
-        'misc',
-        'build_conditions',
-        'conditions',
-    ]
-
-    # categories that are sorted based on value in them
-    categories_with_sorted_package_tokens = [
-        'buildrequires',
-        'prereq',
-        'requires',
-        'requires_eq',
-        'recommends',
-        'suggests',
-        'enhances',
-        'supplements',
-        'conflicts',
-    ]
-
-    # categories that are sorted based on key value (eg Patch0 before Patch1)
-    categories_with_sorted_keyword_tokens = [
-        'source',
-        'patch',
-    ]
-
     def __init__(self, options):
         Section.__init__(self, options)
         # Old storage
@@ -127,6 +49,7 @@ class RpmPreamble(Section):
         self._condition_define = False
         # Is the condition based probably on bcond evaluation
         self._condition_bcond = False
+        self.options = options
         # do we want pkgconfig and others?
         self.pkgconfig = options['pkgconfig']
         self.perl = options['perl']
@@ -144,17 +67,14 @@ class RpmPreamble(Section):
         # list of allowed groups
         self.allowed_groups = options['allowed_groups']
         # start the object
-        self._start_paragraph()
+        self.paragraph = RpmPreambleElements(options)
         # initialize list of groups that need to pass over conversion fixer
-        self.categories_with_package_tokens = self.categories_with_sorted_package_tokens[:]
+        self.categories_with_package_tokens = self.paragraph.categories_with_sorted_package_tokens[:]
         # these packages actually need fixing after we sent the values to
         # reorder them
         self.categories_with_package_tokens.append('provides_obsoletes')
         # license handling
         self.subpkglicense = options['subpkglicense']
-        self.license = options['license']
-        # pkgconfig requirement detection
-        self.br_pkgconfig_required = False
         # modname detection
         self.modname = None
 
@@ -180,6 +100,8 @@ class RpmPreamble(Section):
             # for provides/obsoletes, we have a special case because we group them
             # for build root, we have a special match because we force its value
             'buildarch': self.reg.re_buildarch,
+            'excludearch': self.reg.re_excludearch,
+            'exclusivearch': self.reg.re_exclusivearch,
         }
 
         # deprecated definitions that we no longer want to see
@@ -194,59 +116,21 @@ class RpmPreamble(Section):
             'prefix': self.reg.re_preamble_prefix,
         }
 
-    def _start_paragraph(self):
-        self.paragraph = {}
-        for i in self.categories_order:
-            self.paragraph[i] = []
-        self.current_group = []
-
     def start_subparagraph(self):
-        # store the main content and clean up
+        # Backup the list and start a new one
         self._oldstore.append(self.paragraph)
-        self._start_paragraph()
+        self.paragraph = RpmPreambleElements(self.options)
 
-    def _add_group(self, group):
+    def _prune_ppc_condition(self):
         """
-        Actually store the lines from groups to resulting output
+        Check if we have ppc64 obsolete and delete it
         """
-        t = type(group)
-        if t == str:
-            return [group]
-        elif t == list:
-            x = []
-            for subgroup in group:
-                x += self._add_group(subgroup)
-            return x
-        else:
-            raise RpmException('Unknown type of group in preamble: %s' % t)
-
-    def _sort_helper_key(self, a):
-        t = type(a)
-        if t == str:
-            key = a
-        elif t == list:
-            # if this is a list then all items except last are commentary
-            key = a[-1]
-        else:
-            raise RpmException('Unknown type during sort: %s' % t)
-
-        # Special case is the category grouping where we have to get the number in
-        # after the value
-        if self.reg.re_patch.match(key):
-            match = self.reg.re_patch.match(key)
-            key = int(match.group(2))
-        elif self.reg.re_source.match(key):
-            match = self.reg.re_source.match(key)
-            value = match.group(1)
-            if not value:
-                value = '0'
-            key = int(value)
-        # Put brackety ()-style deps at the end of the list, after all other
-        elif self.reg.re_brackety_requires.search(key):
-            key = '1' + key
-        else:
-            key = '0' + key
-        return key
+        if not self.minimal and \
+             isinstance(self.paragraph.items['conditions'][0], list) and \
+             len(self.paragraph.items['conditions']) == 3 and \
+             self.paragraph.items['conditions'][0][0] == '# bug437293' and \
+             self.paragraph.items['conditions'][1].endswith('64bit'):
+            self.paragraph.items['conditions'] = []
 
     PYPI_SOURCE_HOSTS = ("pypi.io", "files.pythonhosted.org", "pypi.python.org")
 
@@ -279,126 +163,43 @@ class RpmPreamble(Section):
                 '', '', ''))
 
     def end_subparagraph(self, endif=False):
-        lines = self._end_paragraph()
-        if len(self.paragraph['define']) > 0 or \
-           len(self.paragraph['bconds']) > 0:
+        if not self._oldstore:
+            nested = False
+        else:
+            nested = True
+        lines = self.paragraph.flatten_output(False, nested)
+        if len(self.paragraph.items['define']) > 0 or \
+           len(self.paragraph.items['bconds']) > 0:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
-        self.paragraph['conditions'] += lines
+        self.paragraph.items['conditions'] += lines
 
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
         if endif or not self.condition:
-            # check if we are doing the ppc64 migration and delete it
-            if not self.minimal and \
-                 isinstance(self.paragraph['conditions'][0], list) and \
-                 len(self.paragraph['conditions']) == 3 and \
-                 self.paragraph['conditions'][0][0] == '# bug437293' and \
-                 self.paragraph['conditions'][1].endswith('64bit'):
-                self.paragraph['conditions'] = []
+            self._prune_ppc_condition()
             if self._condition_define:
                 # If we have define conditions and possible bcond start
                 # we need to put it bellow bcond definitions as otherwise
                 # the switches do not have any effect
                 if self._condition_bcond:
-                    self.paragraph['bcond_conditions'] += self.paragraph['conditions']
-                elif len(self.paragraph['define']) == 0:
-                    self.paragraph['bconds'] += self.paragraph['conditions']
+                    self.paragraph.items['bcond_conditions'] += self.paragraph.items['conditions']
+                elif len(self.paragraph.items['define']) == 0:
+                    self.paragraph.items['bconds'] += self.paragraph.items['conditions']
                 else:
-                    self.paragraph['define'] += self.paragraph['conditions']
+                    self.paragraph.items['define'] += self.paragraph.items['conditions']
                 # in case the nested condition contains define we consider all parents
                 # to require to be on top too;
                 if len(self._oldstore) == 0:
                     self._condition_define = False
             else:
-                self.paragraph['build_conditions'] += self.paragraph['conditions']
+                self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
 
             # bcond must be reseted when on top and can be set even outside of the
             # define scope. So reset it here always
             if len(self._oldstore) == 0:
                 self._condition_bcond = False
-            self.paragraph['conditions'] = []
-
-    def _find_pkgconfig_statements(self, listname):
-        for i in self.paragraph[listname]:
-            if isinstance(i, str):
-                if 'pkgconfig(' in i and not self._find_pkgconfig_declarations(listname):
-                    return True
-            elif isinstance(i, list):
-                for j in i:
-                    if 'pkgconfig(' in j and not self._find_pkgconfig_declarations(listname):
-                        return True
-        return False
-
-    def _find_pkgconfig_declarations(self, listname):
-        for i in self.paragraph[listname]:
-            if isinstance(i, str):
-                if 'pkgconfig ' in i or i.endswith('pkgconfig'):
-                    return True
-            elif isinstance(i, list):
-                for j in i:
-                    if 'pkgconfig ' in j or j.endswith('pkgconfig'):
-                        return True
-        return False
-
-    def _end_paragraph(self, needs_license=False):
-        lines = []
-
-        # add license to the package if missing and needed
-        if needs_license:
-            if not self.paragraph['license']:
-                self.license = self._fix_license(self.license)
-                self._add_line_value_to('license', self.license)
-
-        # Check if we need the pkgconfig
-        if not self.br_pkgconfig_required and \
-           self._find_pkgconfig_statements('buildrequires'):
-            self.br_pkgconfig_required = True
-        # only in case we are in main scope
-        if not self._oldstore:
-            if self.br_pkgconfig_required and not self._find_pkgconfig_declarations('buildrequires'):
-                self._add_line_value_to('buildrequires', 'pkgconfig')
-
-        # sort based on category order
-        for i in self.categories_order:
-            # sort-out within the ordered groups based on the key
-            if i in self.categories_with_sorted_package_tokens:
-                self.paragraph[i].sort(key=self._sort_helper_key)
-                self.paragraph[i] = sort_uniq(self.paragraph[i])
-            # sort-out within the ordered groups based on the keyword
-            if i in self.categories_with_sorted_keyword_tokens:
-                self.paragraph[i].sort(key=self._sort_helper_key)
-            for group in self.paragraph[i]:
-                lines += self._add_group(group)
-        if self.current_group:
-            # the current group was not added to any category. It's just some
-            # random stuff that should be at the end anyway.
-            lines += self._add_group(self.current_group)
-            self.current_group = []
-        return lines
-
-    def _fix_license(self, value):
-        # split using 'or', 'and' and parenthesis, ignore empty strings
-        licenses = []
-        for a in re.split(r'(\(|\)| and | or (?!later))', value):
-            if a != '':
-                licenses.append(a)
-        if not licenses:
-            licenses.append(value)
-
-        for (index, my_license) in enumerate(licenses):
-            my_license = self.strip_useless_spaces(my_license)
-            my_license = my_license.replace('ORlater', 'or later')
-            my_license = my_license.replace('ORsim', 'or similar')
-            my_license = my_license.rstrip(';')
-            my_license = self.reg.re_license_semicolon.sub(' and ', my_license)
-            if my_license in self.license_conversions:
-                my_license = self.license_conversions[my_license]
-            licenses[index] = my_license
-
-        # create back new string with replaced licenses
-        s = ' '.join(licenses).replace("( ", "(").replace(" )", ")")
-        return s
+            self.paragraph.items['conditions'] = []
 
     def _split_name_and_version(self, value):
         # split the name and version from the requires element
@@ -420,32 +221,14 @@ class RpmPreamble(Section):
         else:
             return value
 
-    def _pkgname_to_pkgconfig(self, value):
-        # we just want the pkgname if we have version string there
-        # and for the pkgconfig deps we need to put the version into
-        # the braces
-        pkgname, version = self._split_name_and_version(value)
-        pkgconfig = []
-        if pkgname == 'pkgconfig':
-            return [value]
-        if pkgname not in self.pkgconfig_conversions:
-            # first check if the package is in the replacements
-            return [value]
-        else:
-            # first split the pkgconfig data
-            pkgconf_list = self.pkgconfig_conversions[pkgname].split()
-            # then add each pkgconfig to the list
-            # print pkgconf_list
-            for j in pkgconf_list:
-                pkgconfig.append('pkgconfig({0}){1}'.format(j, version))
-        return pkgconfig
-
     def _pkgname_to_brackety(self, value, name, conversions):
         # we just want the pkgname if we have version string there
         # and for the pkgconfig deps we need to put the version into
         # the braces
         pkgname, version = self._split_name_and_version(value)
         converted = []
+        if pkgname == 'pkgconfig':
+            return [value]
         if pkgname not in conversions:
             # first check if the package is in the replacements
             return [value]
@@ -463,7 +246,7 @@ class RpmPreamble(Section):
         # otherwise print there warning about nicer content and skip
         if self.reg.re_rpm_command.search(value):
             if not self.previous_line.startswith('#') and not self.minimal:
-                self.current_group.append('# FIXME: Use %requires_eq macro instead')
+                self.paragraph.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
         tokens = DependencyParser(value).flat_out()
         # loop over all and do formatting as we can get more deps for one
@@ -486,19 +269,19 @@ class RpmPreamble(Section):
             # replace pkgconfig name first
             token = self._fix_pkgconfig_name(token)
             # in scriptlets we most probably do not want the converted deps
-            if category != 'prereq':
+            if category != 'prereq' and category != 'requires_phase':
                 # here we go with descending priority to find match and replace
                 # the strings by some optimistic value of brackety dep
                 # priority is based on the first come first serve
                 if self.pkgconfig:
-                    token = self._pkgname_to_pkgconfig(token)
+                    token = self._pkgname_to_brackety(token, 'pkgconfig', self.pkgconfig_conversions)
                 # checking if it is not list is simple avoidance of running
                 # over already converted values
-                if type(token) is not list and self.perl:
+                if not isinstance(token, list) and self.perl:
                     token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
-                if type(token) is not list and self.tex:
+                if not isinstance(token, list) and self.tex:
                     token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
-                if type(token) is not list and self.cmake:
+                if not isinstance(token, list) and self.cmake:
                     token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
             if isinstance(token, str):
                 expanded.append(token)
@@ -510,29 +293,12 @@ class RpmPreamble(Section):
 
     def _add_line_value_to(self, category, value, key=None):
         """
-            Change a key-value line, to make sure we have the right spacing.
+        Change a key-value line, to make sure we have the right spacing.
 
-            Note: since we don't have a key <-> category matching, we need to
-            redo one. (Eg: Provides and Obsoletes are in the same category)
+        Note: since we don't have a key <-> category matching, we need to
+        redo one. (Eg: Provides and Obsoletes are in the same category)
         """
-        keylen = len('BuildRequires:  ')
-
-        if key:
-            pass
-        elif category in self.category_to_key:
-            key = self.category_to_key[category]
-        else:
-            raise RpmException('Unhandled category in preamble: %s' % category)
-
-        # append : only if the thing is not known macro
-        if not key.startswith('%'):
-            key += ':'
-        # if the key is already longer then just add one space
-        if len(key) >= keylen:
-            key += ' '
-        # fillup rest of the alignment if key is shorter than muster
-        while len(key) < keylen:
-            key += ' '
+        key = self.paragraph.compile_category_prefix(category, key)
 
         if category in self.categories_with_package_tokens:
             values = self._fix_list_of_packages(value, category)
@@ -544,12 +310,12 @@ class RpmPreamble(Section):
             self._add_line_to(category, line)
 
     def _add_line_to(self, category, line):
-        if self.current_group:
-            self.current_group.append(line)
-            self.paragraph[category].append(self.current_group)
-            self.current_group = []
+        if self.paragraph.current_group:
+            self.paragraph.current_group.append(line)
+            self.paragraph.items[category].append(self.paragraph.current_group)
+            self.paragraph.current_group = []
         else:
-            self.paragraph[category].append(line)
+            self.paragraph.items[category].append(line)
 
         self.previous_line = line
 
@@ -605,7 +371,7 @@ class RpmPreamble(Section):
 
         elif self.reg.re_comment.match(line):
             if line or self.previous_line:
-                self.current_group.append(line)
+                self.paragraph.current_group.append(line)
                 self.previous_line = line
             return
 
@@ -655,18 +421,13 @@ class RpmPreamble(Section):
 
         elif self.reg.re_prereq.match(line):
             match = self.reg.re_prereq.match(line)
-            if not self.minimal:
-                # add the comment about using proper macro which needs
-                # investingaton
-                if self.previous_line is not None and not self.previous_line.startswith('#') and not self.previous_line.startswith('PreReq'):
-                    self.current_group.append('# FIXME: use proper Requires(pre/post/preun/...)')
             self._add_line_value_to('prereq', match.group(1))
             return
 
         elif self.reg.re_requires_phase.match(line):
             match = self.reg.re_requires_phase.match(line)
             # Put the requires content properly as key for formatting
-            self._add_line_value_to('prereq', match.group(2), key='Requires{0}'.format(match.group(1)))
+            self._add_line_value_to('requires_phase', match.group(2), key='Requires{0}'.format(match.group(1)))
             return
 
         elif self.reg.re_provides.match(line):
@@ -681,7 +442,7 @@ class RpmPreamble(Section):
 
         elif self.reg.re_buildroot.match(line):
             # we only are fine with buildroot only once
-            if len(self.paragraph['buildroot']) == 0:
+            if len(self.paragraph.items['buildroot']) == 0:
                 self._add_line_value_to('buildroot', '%{_tmppath}/%{name}-%{version}-build')
             return
 
@@ -689,7 +450,7 @@ class RpmPreamble(Section):
             # first convert the license string to proper format and then append
             match = self.reg.re_license.match(line)
             value = match.groups()[len(match.groups()) - 1]
-            value = self._fix_license(value)
+            value = fix_license(value, self.license_conversions)
             # only store subpkgs if they have different licenses
             if not (type(self).__name__ == 'RpmPackage' and not self.subpkglicense):
                 self._add_line_value_to('license', value)
@@ -718,7 +479,7 @@ class RpmPreamble(Section):
             value = match.group(1)
             if not self.minimal:
                 if self.previous_line and not self.previous_line.startswith('# FIXME') and value not in self.allowed_groups:
-                    self.current_group.append('# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
+                    self.paragraph.current_group.append('# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
             self._add_line_value_to('group', value)
             return
 
@@ -744,6 +505,6 @@ class RpmPreamble(Section):
             self._add_line_to('misc', line)
 
     def output(self, fout, newline=True, new_class=None):
-        lines = self._end_paragraph(self.subpkglicense)
+        lines = self.paragraph.flatten_output(self.subpkglicense)
         self.lines += lines
         Section.output(self, fout, newline, new_class)

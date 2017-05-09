@@ -31,6 +31,7 @@ PreReq:         jjj > %{version}
 PreReq:         kkk
 PreReq:         rrr >= %{version}
 PreReq:         zzz
+Provides:       locale(ru;bg)
 Provides:       %{name} = 0.3.0~gitbcaa
 Obsoletes:      %{name} = 0.3.0~gitbcaa
 Provides:       %{name} = 0.3.0+gitbcaa

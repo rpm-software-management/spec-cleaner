@@ -33,11 +33,12 @@ re_braces = re.compile(
     r')'
 )
 
-re_name = re.compile(r'[-A-Za-z0-9_~():.+/*]+')
+re_name = re.compile(r'[-A-Za-z0-9_~():;.+/*\[\]]+')
 re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
 re_spaces = re.compile(r'\s+')
 re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
+
 
 def find_end_of_macro(string, regex, opening, closing):
     if DEBUG:
@@ -78,7 +79,8 @@ def consume_chars(regex, string, logger=None):
     if match:
         end = match.end()
         if logger:
-            logger.debug('consume_chars: split "%s", "%s"', string[0:end], string[end:])
+            logger.debug('consume_chars: split "%s", "%s"',
+                         string[0:end], string[end:])
         return string[0:end], string[end:]
     else:
         raise NoMatchException('Expected match failed')
@@ -110,6 +112,7 @@ class DependencyParser(object):
                 return
         self.parsed.append(self.token)
         self.token = []
+        self.state = ['name']
 
     def state_change_loop(self):
         while self.string:
@@ -139,14 +142,14 @@ class DependencyParser(object):
 
     def read_spaces(self, state_change=True):
         try:
-            spaces, self.string = consume_chars(re_spaces, self.string, self.logger)
+            spaces, self.string = consume_chars(
+                re_spaces, self.string, self.logger)
             self.token.append(spaces)
             if state_change:
                 self.state.pop()  # remove 'spaces' state
                 # if we were reading version, space definitely means
                 # end of that
                 if self.state[-1] == 'version':
-                    self.state.pop()
                     self.dump_token()
             self.status()
         except NoMatchException:
@@ -179,7 +182,8 @@ class DependencyParser(object):
 
     def read_name(self):
         try:
-            name, self.string = consume_chars(re_name, self.string, self.logger)
+            name, self.string = consume_chars(
+                re_name, self.string, self.logger)
             if self.token and self.token[-1].isspace():
                 self.dump_token()
             self.token.append(name)
@@ -192,6 +196,14 @@ class DependencyParser(object):
         self.string = self.string[2:]
 
     def read_macro_unbraced(self):
+        try:
+            if (
+                    self.state[-2] == 'name' and self.token and
+                    self.token[-1].isspace()):
+                self.dump_token()
+                self.state.append('macro_unbraced')
+        except IndexError:
+            pass
         try:
             # 3 or more alphanumeric characters
             macro, self.string = consume_chars(
@@ -226,6 +238,14 @@ class DependencyParser(object):
             self.read_unknown()
 
     def read_macro_name(self):
+        try:
+            if (
+                    self.state[-2] == 'name' and
+                    self.token and self.token[-1].isspace()):
+                self.dump_token()
+                self.state.append('macro_name')
+        except IndexError:
+            pass
         macro = find_end_of_macro(self.string, re_braces, '{', '}')
         # remove macro from string
         self.string = self.string[len(macro):]
@@ -235,6 +255,14 @@ class DependencyParser(object):
         self.status()
 
     def read_macro_shell(self):
+        try:
+            if (
+                    self.state[-2] == 'name' and
+                    self.token and self.token[-1].isspace()):
+                self.dump_token()
+                self.state.append('macro_shell')
+        except IndexError:
+            pass
         macro = find_end_of_macro(self.string, re_parens, '(', ')')
         self.string = self.string[len(macro):]
         self.token.append(macro)

@@ -9,4 +9,10 @@ cmake . \
 %useful_macro 15
 ./configure.sh \
 
+CFLAGS="%{optflags} -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -fPIE" \
+LDFLAGS="-pie" \
+./configure \
+
+CFLAGS="-g" ./configure
+
 %changelog
