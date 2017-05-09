@@ -1,6 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 from .rpmhelpers import sort_uniq, add_group, find_pkgconfig_statement, find_pkgconfig_declaration, fix_license
+from .rpmexceptions import RpmException
 
 class RpmPreambleElements(object):
     """
