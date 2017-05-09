@@ -74,7 +74,7 @@ class RpmFiles(Section):
                 v = '"' + v + '"'
             newline.append(k)
             newline.append(v)
-        if args:
+        if args and args[0] != "%python_files":
             newline.append('%{python_files ' + args[0] + '}')
             newline += args[1:]
         else:

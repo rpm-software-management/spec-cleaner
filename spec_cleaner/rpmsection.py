@@ -88,7 +88,7 @@ class Section(object):
         if prefix:
             # simply assume it's env variables
             envvars = shlex.split(prefix)
-            self.lines += ['export {}="{}"'.format(*ev.split("=", 1)) for ev in envvars]
+            self.lines += ['export {}="{}"'.format(*ev.split("=", 1)) for ev in envvars if "=" in ev]
 
         args = args and shlex.split(args, comments=True) or []
         strings = [ a for a in args if (not a.startswith("--root") and not a.startswith("--prefix")) ]
