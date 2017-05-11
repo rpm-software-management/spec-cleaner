@@ -139,6 +139,12 @@ class RpmPreamble(Section):
         Check if the source is URL that points to PyPI and if it is, return
         the canonical version.
 
+        This function is almost completely self-contained and only processes
+        the URL structure itself. On PyPI, the structure is predictable.
+        The only bad thing that can happen is the packager choosing to use
+        a macro instead of an explicit name of the file.
+        (which doesn't really make much sense, given that the url contains
+        the first letter of the name, so that is going to be explicit anyway)
         """
         parsed = urlparse.urlparse(url)
         if not parsed.scheme: # not a URL
@@ -149,7 +155,11 @@ class RpmPreamble(Section):
 
         filename = os.path.basename(parsed.path)
         modname = filename[:filename.rfind("-")]
-        # TODO
+
+        # TODO the following condition checks if the filename starts with a macro,
+        # and expects that if it does, the macro is called "modname". This is not
+        # always the case. It would be better to detect the name of the macro and
+        # browse local definitions to find its value.
         if modname[0] == "%":
             if (modname == "%modname" or modname == "%{modname}") \
                     and self.modname:
