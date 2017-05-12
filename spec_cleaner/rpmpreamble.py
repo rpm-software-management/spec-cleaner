@@ -9,7 +9,6 @@ except ImportError:
     import urlparse
 
 from .rpmsection import Section
-from .rpmexception import RpmException
 from .rpmpreambleelements import RpmPreambleElements
 from .dependency_parser import DependencyParser
 from .rpmhelpers import fix_license
