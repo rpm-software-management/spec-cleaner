@@ -254,7 +254,7 @@ class RpmPreamble(Section):
         # we do fix the package list only if there is no rpm call there on line
         # otherwise print there warning about nicer content and skip
         if self.reg.re_rpm_command.search(value):
-            if not self.previous_line.startswith('#') and not self.minimal:
+            if category == 'requires' and not self.previous_line.startswith('#') and not self.minimal:
                 self.paragraph.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
         tokens = DependencyParser(value).flat_out()
