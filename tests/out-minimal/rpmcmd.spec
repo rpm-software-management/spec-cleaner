@@ -6,5 +6,6 @@ Requires:       mozilla-nspr-devel >= %(rpm -q --queryformat '%{VERSION}' mozill
 Requires:       mozilla-nss >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss)
 Requires:       mozilla-nss-devel >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss-devel)
 %requires_eq    vlc
+Provides:       NetworkManager-lang = %(rpm -q --queryformat '%{VERSION}' NetworkManager-lang)
 
 %changelog

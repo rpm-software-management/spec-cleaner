@@ -6,3 +6,4 @@ Requires:       mozilla-nspr-devel >= %(rpm -q --queryformat '%{VERSION}' mozill
 Requires:       mozilla-nss-devel >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss-devel)
 Requires:       ant = %(echo `rpm -q --queryformat '%{VERSION}' ant`)
 Requires:       akonadi-runtime >= %( echo `rpm -q --queryformat '%{VERSION}' akonadi-runtime`)
+Provides: NetworkManager-lang = %(rpm -q --queryformat '%{VERSION}' NetworkManager-lang)
