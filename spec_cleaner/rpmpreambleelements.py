@@ -71,6 +71,7 @@ class RpmPreambleElements(object):
         'misc',
         'build_conditions',
         'conditions',
+        'tail',
     ]
 
     # categories that are sorted based on value in them
@@ -205,7 +206,9 @@ class RpmPreambleElements(object):
         """
         keylen = len('BuildRequires:  ')
 
-        if key:
+        if category == 'tail':
+            return ''
+        elif key:
             pass
         elif category in self.category_to_key:
             key = self.category_to_key[category]

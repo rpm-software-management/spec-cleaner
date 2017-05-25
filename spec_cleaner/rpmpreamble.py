@@ -101,6 +101,7 @@ class RpmPreamble(Section):
             'buildarch': self.reg.re_buildarch,
             'excludearch': self.reg.re_excludearch,
             'exclusivearch': self.reg.re_exclusivearch,
+            'tail': self.reg.re_tail_macros,
         }
 
         # deprecated definitions that we no longer want to see
@@ -506,9 +507,9 @@ class RpmPreamble(Section):
                 match = regexp.match(line)
                 if match:
                     # instead of matching first group as there is only one,
-                    # take the last group
+                    # take the last group (including "whole match" if no groups present)
                     # (so I can have more advanced regexp for RPM tags)
-                    self._add_line_value_to(category, match.groups()[len(match.groups()) - 1])
+                    self._add_line_value_to(category, match.group(len(match.groups())))
                     return
 
             self._add_line_to('misc', line)
