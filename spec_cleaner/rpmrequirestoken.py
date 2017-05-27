@@ -6,19 +6,19 @@ class RpmRequiresToken(object):
     Can be used to specify all the values present on the line
     Later on we use this to do various conversions
 
-    prefix            name          comparator version
+    prefix            name          operator   version
     BuildRequires:    boringpackage >=         5.2.8
     """
 
     name = None
-    comparator = None
+    operator = None
     version = None
     prefix = None
 
-    def __init__(self, name, comparator = None, version = None, prefix = None):
+    def __init__(self, name, operator = None, version = None, prefix = None):
         self.prefix = prefix
         self.name = name
-        self.comparator = comparator
+        self.operator = operator
         self.version = version
 
     def dump_token(self):
@@ -31,9 +31,9 @@ class RpmRequiresToken(object):
         if not self.name:
             raise RpmException('No defined name in RequiresToken')
         string = self.prefix + self.name
-        if self.version and not self.comparator:
-            raise RpmException('Have defined version and no comparator %s' % self.version)
+        if self.version and not self.operator:
+            raise RpmException('Have defined version and no operator %s' % self.version)
         if self.version:
-            string += ' ' + self.comparator + ' ' + self.version
+            string += ' ' + self.operator + ' ' + self.version
 
         return string
