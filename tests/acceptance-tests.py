@@ -32,6 +32,7 @@ class TestCompare(object):
         'diff': False,
         'diff_prog': 'vimdiff',
         'minimal': False,
+        'no_curlification': False,
         'no_copyright': True,
         'tex': False,
         'perl': False,

@@ -18,6 +18,7 @@ class Section(object):
         self.previous_line = None
         self.spec = options['specfile']
         self.minimal = options['minimal']
+        self.no_curlification = options['no_curlification']
         self.reg = options['reg']
         # Are we inside of conditional or not
         self.condition = False
@@ -33,7 +34,7 @@ class Section(object):
         line = line.rstrip()
 
         if not line.startswith('#'):
-            if not self.minimal:
+            if not self.minimal and not self.no_curlification:
                 line = self.embrace_macros(line)
             line = self.replace_buildroot(line)
             line = self.replace_optflags(line)
