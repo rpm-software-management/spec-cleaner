@@ -1,21 +1,12 @@
-"""RPM dependency lines parser and helpers.
-
-Contains class DependencyParser which parses string and generates
-token tree. For common manipulation is method flat_out() useful, it
-just splits dependencies into list.
-
-For future development is useful find_end_of_macro().
-
-"""
 import re
 import logging
-
 from .rpmexception import NoMatchException
 
-DEBUG = None
+chunk_types = [
+    'text', 'space', 'macro', 'operator', 'version'
+]
 
-if DEBUG:
-    logging.basicConfig(level=logging.DEBUG)
+state_types = ['start', 'name', 'operator', 'version']
 
 re_parens = re.compile(
     r'(' +
@@ -39,22 +30,17 @@ re_spaces = re.compile(r'\s+')
 re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
 
+logger = logging.getLogger("DepParser")
 
 def find_end_of_macro(string, regex, opening, closing):
-    if DEBUG:
-        logger = logging.getLogger('DepParser')
-    else:
-        logger = None
     macro = string[0:2]
     # eat '%{'
     string = string[2:]
 
     opened = 1
     while opened and string:
-        if logger:
-            logger.debug('opened: %d string: %s', opened, string)
         try:
-            bite, string = consume_chars(regex, string, logger)
+            bite, string = consume_chars(regex, string)
         except NoMatchException:
             raise Exception('unexpected parser error when looking for end of '
                             'macro')
@@ -68,216 +54,205 @@ def find_end_of_macro(string, regex, opening, closing):
     if opened:
         raise Exception('Unexpectedly met end of string when looking for end '
                         'of macro')
-    return macro
+    return macro, string
 
 
-def consume_chars(regex, string, logger=None):
-    if logger:
-        logger.debug('consume_chars: regex: "%s"', regex.pattern)
-        logger.debug('consume_chars: string:"%s"', string)
+def consume_chars(regex, string):
     match = regex.match(string)
     if match:
         end = match.end()
-        if logger:
-            logger.debug('consume_chars: split "%s", "%s"',
-                         string[0:end], string[end:])
         return string[0:end], string[end:]
     else:
-        raise NoMatchException('Expected match failed')
+        raise NoMatchException('Expected match failed (string: "%s", regex: "%s" )' % (string, regex.pattern))
+
+def read_macro(string):
+    if string[1] == '{':
+        regex = re_braces
+        opening = '{'
+        closing = '}'
+    elif string[1] == '(':
+        regex = re_parens
+        opening = '('
+        closing = ')'
+    else:
+        raise Exception('Unexpected character')
+
+    return find_end_of_macro(string, regex, opening, closing)
+
+def read_next_chunk(string):
+    chunk = ''
+    chunk_type = ''
+
+    if not string:
+        return '', '', 'text'
+
+    if string[0:2] in ['>=', '<=', '=>', '=<']:
+        chunk = string[0:2]
+        chunk_type = 'operator'
+        rest = string[2:]
+
+    elif string[0:1] in ['<', '>', '=']:
+        chunk = string[0:1]
+        chunk_type = 'operator'
+        rest = string[1:]
+
+    elif string[0].isspace():
+        chunk = ''
+        chunk_type = 'space'
+        rest = consume_chars(re_spaces, string)[1]
+
+    elif string[0:2] == '%%':
+        chunk = '%%'
+        chunk_type = 'text'
+        rest = string[2:]
+
+    elif string[0:2] in ['%{', '%(']:
+        chunk, rest = read_macro(string)
+        chunk_type = 'macro'
+
+    elif string[0] == '%':
+        chunk, rest = consume_chars(re_macro_unbraced, string)
+        chunk_type = 'macro'
+
+    elif string[0] == ',':
+        chunk = ''
+        chunk_type = 'space'
+        rest = string[1:]
+
+    else:
+ #       try:
+            chunk, rest = consume_chars(re_name, string)
+            chunk_type = 'text'
+#        except NoMatchException:
+#            sys.exit(1)
+
+    return (rest, chunk, chunk_type)
+
+class DepParserError(Exception):
+    pass
 
 
-class DependencyParser(object):
+class DependencyParser:
+    def __init__(self, line):
+        self.line = line
 
-    logger = None
-
-    def __init__(self, string):
-        self.string = string.rstrip()
-        self.token = []
+    def parse(self):
+        # adding comma will cause flush in the end of line
+        self.string = self.line + ","
         self.parsed = []
-        self.state = ['name']
-        if DEBUG:
-            self.logger = logging.getLogger('DepParser')
-            self.logger.setLevel(logging.DEBUG)
-        self.state_change_loop()
-
-    def dump_token(self):
-        if self.logger:
-            self.logger.debug('dump_token')
-        self.status()
-        if not self.token:
-            return
-        if self.token[0].isspace():
-            self.token = self.token[1:]
-            if not self.token:
-                return
-        self.parsed.append(self.token)
         self.token = []
-        self.state = ['name']
-
-    def state_change_loop(self):
-        while self.string:
-            if self.state[-1] == 'name':
-                self.read_name()
-            elif self.state[-1] == 'version_operator':
-                self.read_version_operator()
-            elif self.state[-1] == 'version':
-                self.read_version()
-            elif self.state[-1] == 'macro_name':
-                self.read_macro_name()
-            elif self.state[-1] == 'macro_shell':
-                self.read_macro_shell()
-            elif self.state[-1] == 'macro_unbraced':
-                self.read_macro_unbraced()
-            elif self.state[-1] == 'spaces':
-                self.read_spaces()
-        self.dump_token()
-
-    def status(self):
-        if self.logger:
-            self.logger.debug('token: %s', self.token)
-            self.logger.debug('string: "%s"', self.string)
-            self.logger.debug('parsed: %s', self.parsed)
-            self.logger.debug('state: %s', self.state)
-            self.logger.debug('--------------------------------')
-
-    def read_spaces(self, state_change=True):
-        try:
-            spaces, self.string = consume_chars(
-                re_spaces, self.string, self.logger)
-            self.token.append(spaces)
-            if state_change:
-                self.state.pop()  # remove 'spaces' state
-                # if we were reading version, space definitely means
-                # end of that
-                if self.state[-1] == 'version':
-                    self.dump_token()
-            self.status()
-        except NoMatchException:
-            pass
-
-    def read_unknown(self):
-        '''
-        Try to identify, what is to be read now.
-        '''
-        if self.string[0:2] in ['>=', '<=', '=>', '=<'] or \
-                self.string[0:1] in ['<', '>', '=']:
-            self.state.append('version')
-            self.state.append('version_operator')
-        elif self.string[0] == ' ':
-            self.state.append('spaces')
-        elif self.string[0:2] == '%{':
-            self.state.append('macro_name')
-        elif self.string[0:2] == '%(':
-            self.state.append('macro_shell')
-        elif self.string[0:2] == '%%':
-            self.read_double_percent()
-        elif self.string[0] == '%':
-            self.state.append('macro_unbraced')
-        elif self.string[0] == ',':
-            self.string = self.string[1:]
-            self.dump_token()
-        if self.logger:
-            self.logger.debug('read_unknown: states: %s string: "%s"',
-                              self.state, self.string)
-
-    def read_name(self):
-        try:
-            name, self.string = consume_chars(
-                re_name, self.string, self.logger)
-            if self.token and self.token[-1].isspace():
-                self.dump_token()
-            self.token.append(name)
-            self.status()
-        except NoMatchException:
-            self.read_unknown()
-
-    def read_double_percent(self):
-        self.token.append('%%')
-        self.string = self.string[2:]
-
-    def read_macro_unbraced(self):
-        try:
-            if (
-                    self.state[-2] == 'name' and self.token and
-                    self.token[-1].isspace()):
-                self.dump_token()
-                self.state.append('macro_unbraced')
-        except IndexError:
-            pass
-        try:
-            # 3 or more alphanumeric characters
-            macro, self.string = consume_chars(
-                re_macro_unbraced, self.string, self.logger)
-            self.token.append(macro)
-            self.state.pop()  # remove 'macro_unbraced' state
-            self.status()
-        except NoMatchException:
-            self.read_unknown()
-
-    def read_version_operator(self):
-        try:
-            operator, self.string = consume_chars(
-                re_version_operator, self.string, self.logger)
-            self.token.append(operator)
-            # Note: this part is a bit tricky, I need to read possible
-            # spaces or tabs now so I won't get to [ ..., 'version',
-            # 'spaces' ] state before the end
-            self.read_spaces(state_change=False)
-            self.state.pop()  # get rid of 'version_operator'
-            self.status()
-        except NoMatchException:
-            self.read_unknown()
-
-    def read_version(self):
-        try:
-            version, self.string = consume_chars(
-                re_version, self.string, self.logger)
-            self.token.append(version)
-            self.status()
-        except NoMatchException:
-            self.read_unknown()
-
-    def read_macro_name(self):
-        try:
-            if (
-                    self.state[-2] == 'name' and
-                    self.token and self.token[-1].isspace()):
-                self.dump_token()
-                self.state.append('macro_name')
-        except IndexError:
-            pass
-        macro = find_end_of_macro(self.string, re_braces, '{', '}')
-        # remove macro from string
-        self.string = self.string[len(macro):]
-        self.token.append(macro)
-        # now we expect previous state
-        self.state.pop()
-        self.status()
-
-    def read_macro_shell(self):
-        try:
-            if (
-                    self.state[-2] == 'name' and
-                    self.token and self.token[-1].isspace()):
-                self.dump_token()
-                self.state.append('macro_shell')
-        except IndexError:
-            pass
-        macro = find_end_of_macro(self.string, re_parens, '(', ')')
-        self.string = self.string[len(macro):]
-        self.token.append(macro)
-        # now we expect previous state
-        self.state.pop()
-        self.status()
+        self.state = 'start'
+        self.space = False
+        self.token_name = ''
+        self.token_operator = None
+        self.token_version = None
+        self.go_on = True
+        while self.go_on:
+            self.string, self.next, self.next_type = read_next_chunk(self.string)
+            logger.debug(
+                """========
+                chunk: '%s'
+                chunk_type: '%s'
+                rest: '%s'
+                token: '%s'
+                parsed: '%s'""",
+                self.next, self.next_type, self.string, self.token, self.parsed)
+            self.state_change()
 
     def flat_out(self):
+        self.parse()
         result = []
-        for token in self.parsed:
-            if isinstance(token, list):
-                if token and token[-1].isspace():
-                    token = token[:-1]
-                result.append(''.join(token))
+        for name, operator, ver in self.parsed:
+            if operator:
+                s = ' '.join([name, operator, ver])
             else:
-                if not token.isspace():
-                    result.append(token)
+                s = name
+            result.append(s)
         return result
+
+    def flush(self):
+        self.parsed.append(
+            (self.token_name, self.token_operator, self.token_version)
+        )
+        # cleanup state
+        self.token = []
+        self.token_name = ''
+        self.token_operator = None
+        self.token_version = None
+        if not self.string:
+            self.go_on = False
+
+    def reconstitute_token(self):
+        r = ''.join(self.token)
+        logger.debug("reconstituting '%s'", r)
+        self.token = []
+        return r
+
+    def name_state_change(self):
+        if self.next_type in ['text', 'macro']:
+            if self.space:
+                logger.debug('text after space --> flush')
+                self.token_name = self.reconstitute_token()
+                self.space = False
+                self.flush()
+        elif self.next_type == 'space':
+            self.space = True
+        elif self.next_type == 'operator':
+            self.token_name = self.reconstitute_token()
+            self.state = 'operator'
+            self.space = False
+
+        self.token.append(self.next)
+
+
+    def operator_state_change(self):
+        if self.next_type in ['text', 'macro']:
+            self.state = 'version'
+            self.token_operator = self.reconstitute_token()
+            self.space = False
+        elif self.next_type == 'space':
+            self.space = True
+        elif self.next_type == 'operator':
+            if self.space:
+                raise DepParserError("found operator after operator")
+
+        self.token.append(self.next)
+
+
+    def version_state_change(self):
+        if self.next_type == 'text':
+            pass
+        elif self.next_type == 'space':
+            self.token_version = self.reconstitute_token()
+            self.flush()
+            self.state = 'name'
+            self.space = False
+        elif self.next_type == 'macro':
+            pass
+        elif self.next_type == 'operator':
+            raise DepParserError("found operator after version")
+
+        self.token.append(self.next)
+
+    def start_state_change(self):
+        if self.next_type == 'text':
+            self.state = 'name'
+        elif self.next_type == 'space':
+            pass
+        elif self.next_type == 'macro':
+            self.state = 'name'
+        elif self.next_type == 'operator':
+            raise DepParserError("found operator when name expected")
+
+        self.token.append(self.next)
+
+    def state_change(self):
+        if self.state == 'name':
+            self.name_state_change()
+        elif self.state == 'operator':
+            self.operator_state_change()
+        elif self.state == 'version':
+            self.version_state_change()
+        elif self.state == 'start':
+            self.start_state_change()
+        logger.debug("new state: %s", self.state)
