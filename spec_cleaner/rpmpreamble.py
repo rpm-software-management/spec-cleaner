@@ -89,6 +89,7 @@ class RpmPreamble(Section):
             # for source, we have a special match to keep the source number
             # for patch, we have a special match to keep the patch number
             'buildrequires': self.reg.re_buildrequires,
+            'buildignores': self.reg.re_buildignores,
             'conflicts': self.reg.re_conflicts,
             # for prereq we append warning comment so we don't mess it there
             'requires': self.reg.re_requires,
@@ -379,7 +380,7 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_comment.match(line):
+        elif self.reg.re_comment.match(line) and not self.reg.re_buildignores.match(line):
             if line or self.previous_line:
                 self.paragraph.current_group.append(line)
                 self.previous_line = line

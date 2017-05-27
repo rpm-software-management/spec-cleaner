@@ -22,6 +22,7 @@ class RpmPreambleElements(object):
         'nosource': 'NoSource',
         'patch': 'Patch',
         'buildrequires': 'BuildRequires',
+        'buildignores': '#!BuildIgnore',
         'conflicts': 'Conflicts',
         'prereq': 'PreReq',
         'requires': 'Requires',
@@ -54,6 +55,7 @@ class RpmPreambleElements(object):
         'nosource',
         'patch',
         'buildrequires',
+        'buildignores',
         'requires',
         'requires_eq',
         'prereq',
@@ -77,6 +79,7 @@ class RpmPreambleElements(object):
     # categories that are sorted based on value in them
     categories_with_sorted_package_tokens = [
         'buildrequires',
+        'buildignores',
         'prereq',
         'requires',
         'requires_eq',
