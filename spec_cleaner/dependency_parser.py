@@ -120,11 +120,8 @@ def read_next_chunk(string):
         rest = string[1:]
 
     else:
- #       try:
-            chunk, rest = consume_chars(re_name, string)
-            chunk_type = 'text'
-#        except NoMatchException:
-#            sys.exit(1)
+        chunk, rest = consume_chars(re_name, string)
+        chunk_type = 'text'
 
     return (rest, chunk, chunk_type)
 
