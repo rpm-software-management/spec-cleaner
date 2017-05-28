@@ -32,6 +32,8 @@ re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
 
 logger = logging.getLogger("DepParser")
+# Switch to logging.DEBUG if needed
+logger.setLevel(logging.ERROR)
 
 def find_end_of_macro(string, regex, opening, closing):
     macro = string[0:2]
