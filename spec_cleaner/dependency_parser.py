@@ -1,6 +1,7 @@
 import re
 import logging
 from .rpmexception import NoMatchException
+from .rpmrequirestoken import RpmRequiresToken
 
 chunk_types = [
     'text', 'space', 'macro', 'operator', 'version'
@@ -160,11 +161,7 @@ class DependencyParser:
         self.parse()
         result = []
         for name, operator, ver in self.parsed:
-            if operator:
-                s = ' '.join([name, operator, ver])
-            else:
-                s = name
-            result.append(s)
+            result.append(RpmRequiresToken(name, operator, ver))
         return result
 
     def flush(self):

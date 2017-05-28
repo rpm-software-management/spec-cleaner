@@ -2,6 +2,7 @@
 
 from .rpmhelpers import sort_uniq, add_group, find_pkgconfig_statement, find_pkgconfig_declaration, fix_license
 from .rpmexception import RpmException
+from .rpmrequirestoken import RpmRequiresToken
 
 class RpmPreambleElements(object):
     """
@@ -114,12 +115,11 @@ class RpmPreambleElements(object):
         self.license_conversions = options['license_conversions']
 
     def _sort_helper_key(self, a):
-        t = type(a)
-        if t == str:
-            key = a
-        elif t == list:
+        if isinstance(a, str) or isinstance(a, RpmRequiresToken):
+            key = str(a)
+        elif isinstance(a, list):
             # if this is a list then all items except last are comment or whitespace
-            key = a[-1]
+            key = str(a[-1])
         else:
             raise RpmException('Unknown type during sort: %s' % t)
 
@@ -146,7 +146,7 @@ class RpmPreambleElements(object):
         Add value to specified keystore
         """
         key = self.compile_category_prefix(category, key)
-        line = key + value
+        line = RpmRequiresToken(value, None, None, key)
         self.items[category].append(line)
 
     def _add_pkgconfig_buildrequires(self, nested):
@@ -177,12 +177,24 @@ class RpmPreambleElements(object):
         """
         message = '# FIXME: use proper Requires(pre/post/preun/...)'
 
+        prereq_found = False
+        message_found = False
+
         # Check first if we have prereq values included
-        if not any("PreReq" in s for s in elements):
+        for element in elements:
+            if isinstance(element, RpmRequiresToken):
+                if element.prefix.startswith('PreReq'):
+                    prereq_found = True
+                    break
+        if not prereq_found:
             return elements
 
         # Verify the message is not already present
-        if any(message in s for s in elements):
+        for element in elements:
+            if isinstance(element, str):
+                if element.startswith(message):
+                    message_found = True
+        if message_found:
             return elements
 
         # add the message on the first position after any whitespace
@@ -190,6 +202,13 @@ class RpmPreambleElements(object):
         elements.insert(location, message)
 
         return elements
+
+    def _remove_duplicates(self):
+        """
+        Remove duplicate requires/buildrequires/etc
+        """
+        pass
+
 
     def _run_global_list_operations(self, phase, elements):
         """
@@ -234,6 +253,7 @@ class RpmPreambleElements(object):
         Do the finalized output for the itemlist.
         """
         lines = []
+        elements = []
 
         # add license to the package if missing and needed
         if needs_license and not self.items['license']:
@@ -241,6 +261,8 @@ class RpmPreambleElements(object):
             self._insert_value('license', self.license)
         # add pkgconfig dep
         self._add_pkgconfig_buildrequires(nested)
+        # remove duplicates
+        self._remove_duplicates()
         for i in self.categories_order:
             sorted_list = []
             # sort-out within the ordered groups based on the key
@@ -257,4 +279,7 @@ class RpmPreambleElements(object):
             # random stuff that should be at the end anyway.
             lines += add_group(self.current_group)
             self.current_group = []
-        return lines
+
+        for line in lines:
+            elements.append(str(line))
+        return elements
