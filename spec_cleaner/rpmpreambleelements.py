@@ -113,6 +113,11 @@ class RpmPreambleElements(object):
         self.license = options['license']
         # dict of license replacement options
         self.license_conversions = options['license_conversions']
+        # initialize list of groups that need to pass over conversion fixer
+        self.categories_with_package_tokens = self.categories_with_sorted_package_tokens[:]
+        # these packages actually need fixing after we sent the values to
+        # reorder them
+        self.categories_with_package_tokens.append('provides_obsoletes')
 
     def _sort_helper_key(self, a):
         if isinstance(a, str) or isinstance(a, RpmRequiresToken):
@@ -203,11 +208,54 @@ class RpmPreambleElements(object):
 
         return elements
 
-    def _remove_duplicates(self):
+    def _remove_duplicates(self, elements):
         """
         Remove duplicate requires/buildrequires/etc
         """
-        pass
+        results = []
+        for element in elements:
+            match = False
+            # anything else than requirestoken
+            if not isinstance(element, RpmRequiresToken):
+                results.append(element)
+                continue
+            # no results stored yet
+            if not results:
+                results.append(element)
+                continue
+            # search already stored content
+            for index, item in enumerate(results):
+                # names and prefix must always match
+                if item.name == element.name and item.prefix == element.prefix:
+                    # do we have full match on everything
+                    if item.version == element.version and item.operator == element.operator:
+                        # append comment if needed only as we are 100% match
+                        if element.comments:
+                            tmp = results[index]
+                            if tmp.comments:
+                                tmp.comments += element.comments
+                            else:
+                                tmp.comments = element.comments
+                            results[index] = tmp
+                        match = True
+                        break
+                    # new one specifies version
+                    if not item.version and element.version:
+                        if item.comments:
+                            if element.comments:
+                                element.comments += item.comments
+                            else:
+                                element.comments = item.comments
+                        results[index] = element
+                        match = True
+                        break
+                    # for version determination which could be ommited one
+                    # must use rpm versionCompare to get same results
+                    # unfortunately it uses too many resources so we simply
+                    # leave this to the maintainer
+            if not match:
+                results.append(element)
+        return results
 
 
     def _run_global_list_operations(self, phase, elements):
@@ -262,11 +310,14 @@ class RpmPreambleElements(object):
         # add pkgconfig dep
         self._add_pkgconfig_buildrequires(nested)
         # remove duplicates
-        self._remove_duplicates()
+        for i in self.categories_with_package_tokens:
+            self.items[i] = self._remove_duplicates(self.items[i])
         for i in self.categories_order:
             sorted_list = []
+            if i in self.categories_with_sorted_package_tokens:
+                self.items[i].sort(key=self._sort_helper_key)
             # sort-out within the ordered groups based on the key
-            if i in self.categories_with_sorted_package_tokens + self.categories_with_sorted_keyword_tokens:
+            if i in self.categories_with_sorted_keyword_tokens:
                 self.items[i].sort(key=self._sort_helper_key)
                 self.items[i] = sort_uniq(self.items[i])
             # flatten the list from list of lists as no reordering is planned

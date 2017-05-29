@@ -14,6 +14,7 @@ class RpmRequiresToken(object):
     operator = None
     version = None
     prefix = None
+    comments = None
 
     def __init__(self, name, operator = None, version = None, prefix = None):
         self.prefix = prefix

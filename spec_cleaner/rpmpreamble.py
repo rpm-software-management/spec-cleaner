@@ -68,11 +68,6 @@ class RpmPreamble(Section):
         self.allowed_groups = options['allowed_groups']
         # start the object
         self.paragraph = RpmPreambleElements(options)
-        # initialize list of groups that need to pass over conversion fixer
-        self.categories_with_package_tokens = self.paragraph.categories_with_sorted_package_tokens[:]
-        # these packages actually need fixing after we sent the values to
-        # reorder them
-        self.categories_with_package_tokens.append('provides_obsoletes')
         # license handling
         self.subpkglicense = options['subpkglicense']
         # modname detection
@@ -276,7 +271,7 @@ class RpmPreamble(Section):
         """
         key = self.paragraph.compile_category_prefix(category, key)
 
-        if category in self.categories_with_package_tokens:
+        if category in self.paragraph.categories_with_package_tokens:
             values = self._fix_list_of_packages(value, category)
             for value in values:
                 if isinstance(value, str):
@@ -290,8 +285,12 @@ class RpmPreamble(Section):
 
     def _add_line_to(self, category, line):
         if self.paragraph.current_group:
-            self.paragraph.current_group.append(line)
-            self.paragraph.items[category].append(self.paragraph.current_group)
+            if isinstance(line, RpmRequiresToken):
+                line.comments = self.paragraph.current_group
+                self.paragraph.items[category].append(line)
+            else:
+                self.paragraph.current_group.append(line)
+                self.paragraph.items[category].append(self.paragraph.current_group)
             self.paragraph.current_group = []
         else:
             self.paragraph.items[category].append(line)

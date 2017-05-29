@@ -194,13 +194,19 @@ def add_group(group):
     """
     Flatten the lines of the group from sublits to one simple list
     """
-    if isinstance(group, str) or isinstance(group, RpmRequiresToken):
+    if isinstance(group, str):
         return [group]
+    elif isinstance(group, RpmRequiresToken):
+        items = []
+        if group.comments:
+            items += group.comments
+        items.append(group)
+        return items
     elif isinstance(group, list):
-        x = []
+        items = []
         for subgroup in group:
-            x += add_group(subgroup)
-        return x
+            items += add_group(subgroup)
+        return items
     else:
         raise RpmException('Unknown type of group in preamble: %s' % type(group))
 
