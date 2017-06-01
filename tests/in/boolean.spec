@@ -1,0 +1,7 @@
+Requires: (pkgA or pkgB or pkgC)
+Requires: (pkgA or (pkgB and pkgC))
+Requires: (pkgA >= 3.2 or pkgB)
+Supplements: (foo and (lang-support-cz or lang-support-all))
+Conflicts: (pkgA and pkgB)
+Recommends: (myPkg-langCZ if langsupportCZ)
+Requires: (myPkg-backend-mariaDB if mariaDB else sqlite)
