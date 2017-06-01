@@ -12,6 +12,7 @@ from .rpmsection import Section
 from .rpmpreambleelements import RpmPreambleElements
 from .dependency_parser import DependencyParser
 from .rpmhelpers import fix_license
+from .rpmrequirestoken import RpmRequiresToken
 
 class RpmPreamble(Section):
 
@@ -67,11 +68,6 @@ class RpmPreamble(Section):
         self.allowed_groups = options['allowed_groups']
         # start the object
         self.paragraph = RpmPreambleElements(options)
-        # initialize list of groups that need to pass over conversion fixer
-        self.categories_with_package_tokens = self.paragraph.categories_with_sorted_package_tokens[:]
-        # these packages actually need fixing after we sent the values to
-        # reorder them
-        self.categories_with_package_tokens.append('provides_obsoletes')
         # license handling
         self.subpkglicense = options['subpkglicense']
         # modname detection
@@ -212,44 +208,20 @@ class RpmPreamble(Section):
                 self._condition_bcond = False
             self.paragraph.items['conditions'] = []
 
-    def _split_name_and_version(self, value):
-        # split the name and version from the requires element
-        if self.reg.re_version_separator.match(value):
-            match = self.reg.re_version_separator.match(value)
-            pkgname = match.group(1)
-            version = match.group(2)
-        if not version:
-            version = ''
-        return pkgname, version
-
-    def _fix_pkgconfig_name(self, value):
-        # we just rename pkgconfig names to one unified one working everywhere
-        pkgname, version = self._split_name_and_version(value)
-        if pkgname == 'pkgconfig(pkg-config)' or \
-           pkgname == 'pkg-config':
-            # If we have pkgconfig dep in pkgconfig it is nuts, replace it
-            return 'pkgconfig{0}'.format(version)
-        else:
-            return value
-
-    def _pkgname_to_brackety(self, value, name, conversions):
-        # we just want the pkgname if we have version string there
-        # and for the pkgconfig deps we need to put the version into
-        # the braces
-        pkgname, version = self._split_name_and_version(value)
+    def _pkgname_to_brackety(self, token, brackety, conversions):
         converted = []
-        if pkgname == 'pkgconfig':
-            return [value]
-        if pkgname not in conversions:
-            # first check if the package is in the replacements
-            return [value]
+        # just never convert pkgconfig dependency
+        # The same if we do not have a match
+        if token.name == 'pkgconfig' or token.name not in conversions:
+            return token
         else:
             # first split the data
-            convers_list = conversions[pkgname].split()
+            convers_list = conversions[token.name].split()
             # then add each pkgconfig to the list
             # print pkgconf_list
             for j in convers_list:
-                converted.append('{0}({1}){2}'.format(name, j, version))
+                name = '{0}({1})'.format(brackety, j)
+                converted.append(RpmRequiresToken(name, token.operator, token.version))
         return converted
 
     def _fix_list_of_packages(self, value, category):
@@ -263,22 +235,12 @@ class RpmPreamble(Section):
         # loop over all and do formatting as we can get more deps for one
         expanded = []
         for token in tokens:
-            # there is allowed syntax => and =< ; hidious
-            token = token.replace('=<', '<=')
-            token = token.replace('=>', '>=')
-            # we also skip all various rpm-macroed content as it
+            # skip all various rpm-macroed content as it
             # is usually not easy to determine how that should be
             # split
-            if token.startswith('%'):
+            if token.name.startswith('%'):
                 expanded.append(token)
                 continue
-            # cleanup whitespace
-            token = token.replace(' ', '')
-            token = re.sub(r'([<>]=?|=)', r' \1 ', token)
-            if not token:
-                continue
-            # replace pkgconfig name first
-            token = self._fix_pkgconfig_name(token)
             # in scriptlets we most probably do not want the converted deps
             if category != 'prereq' and category != 'requires_phase':
                 # here we go with descending priority to find match and replace
@@ -294,12 +256,10 @@ class RpmPreamble(Section):
                     token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
                 if not isinstance(token, list) and self.cmake:
                     token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
-            if isinstance(token, str):
-                expanded.append(token)
-            else:
+            if isinstance(token, list):
                 expanded += token
-        # and then sort them :)
-        expanded.sort()
+            else:
+                expanded.append(token)
         return expanded
 
     def _add_line_value_to(self, category, value, key=None):
@@ -311,24 +271,31 @@ class RpmPreamble(Section):
         """
         key = self.paragraph.compile_category_prefix(category, key)
 
-        if category in self.categories_with_package_tokens:
+        if category in self.paragraph.categories_with_package_tokens:
             values = self._fix_list_of_packages(value, category)
+            for value in values:
+                if isinstance(value, str):
+                    value = key + value
+                else:
+                    value.prefix = key
+                self._add_line_to(category, value)
         else:
-            values = [value]
-
-        for value in values:
             line = key + value
             self._add_line_to(category, line)
 
     def _add_line_to(self, category, line):
         if self.paragraph.current_group:
-            self.paragraph.current_group.append(line)
-            self.paragraph.items[category].append(self.paragraph.current_group)
+            if isinstance(line, RpmRequiresToken):
+                line.comments = self.paragraph.current_group
+                self.paragraph.items[category].append(line)
+            else:
+                self.paragraph.current_group.append(line)
+                self.paragraph.items[category].append(self.paragraph.current_group)
             self.paragraph.current_group = []
         else:
             self.paragraph.items[category].append(line)
 
-        self.previous_line = line
+        self.previous_line = str(line)
 
     def add(self, line):
         line = self._complete_cleanup(line)

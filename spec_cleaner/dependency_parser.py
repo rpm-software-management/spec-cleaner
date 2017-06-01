@@ -1,6 +1,7 @@
 import re
 import logging
 from .rpmexception import NoMatchException
+from .rpmrequirestoken import RpmRequiresToken
 
 chunk_types = [
     'text', 'space', 'macro', 'operator', 'version'
@@ -31,6 +32,8 @@ re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
 
 logger = logging.getLogger("DepParser")
+# Switch to logging.DEBUG if needed
+logger.setLevel(logging.ERROR)
 
 def find_end_of_macro(string, regex, opening, closing):
     macro = string[0:2]
@@ -160,11 +163,7 @@ class DependencyParser:
         self.parse()
         result = []
         for name, operator, ver in self.parsed:
-            if operator:
-                s = ' '.join([name, operator, ver])
-            else:
-                s = name
-            result.append(s)
+            result.append(RpmRequiresToken(name, operator, ver))
         return result
 
     def flush(self):

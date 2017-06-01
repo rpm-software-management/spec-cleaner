@@ -5,6 +5,7 @@ import os
 
 from .fileutils import FileUtils
 from .rpmexception import RpmException
+from .rpmrequirestoken import RpmRequiresToken
 
 LICENSES_CHANGES = 'licenses_changes.txt'
 TEX_CONVERSIONS = 'tex_conversions.txt'
@@ -195,11 +196,17 @@ def add_group(group):
     """
     if isinstance(group, str):
         return [group]
+    elif isinstance(group, RpmRequiresToken):
+        items = []
+        if group.comments:
+            items += group.comments
+        items.append(group)
+        return items
     elif isinstance(group, list):
-        x = []
+        items = []
         for subgroup in group:
-            x += add_group(subgroup)
-        return x
+            items += add_group(subgroup)
+        return items
     else:
         raise RpmException('Unknown type of group in preamble: %s' % type(group))
 
@@ -208,9 +215,12 @@ def find_pkgconfig_statement(elements):
     """
     Find pkgconfig() statement in the list and return true if matched
     """
+
+    pkgconfig_found = find_pkgconfig_declaration(elements)
     for i in elements:
-        if 'pkgconfig(' in i and not find_pkgconfig_declaration(elements):
-            return True
+        if isinstance(i, RpmRequiresToken):
+            if 'pkgconfig(' in i.name and not pkgconfig_found:
+                return True
     return False
 
 
@@ -219,6 +229,7 @@ def find_pkgconfig_declaration(elements):
     Find if there is direct pkgconfig dependency in the paragraph
     """
     for i in elements:
-        if 'pkgconfig ' in i or i.endswith('pkgconfig'):
-            return True
+        if isinstance(i, RpmRequiresToken):
+            if 'pkgconfig ' in i.name or i.name.endswith('pkgconfig'):
+                return True
     return False

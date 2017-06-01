@@ -22,3 +22,11 @@ Obsoletes:      %{name} = 0.3.0~gitbcaa
 Provides:       %{name} = 0.3.0+gitbcaa
 Obsoletes:      %{name} = 0.3.0+gitbcaa
 Requires:       alsa%{dep_postfix} >= 1.0.23
+
+BuildRequires:  yast2-core-devel
+BuildRequires:  yast2-core-devel >= 2.16.37
+BuildRequires:  yast2-ycp-ui-bindings-devel
+BuildRequires:  yast2-ycp-ui-bindings-devel >= 2.16.37
+BuildRequires:  alsa >= 1.0
+BuildRequires:  alsa >= 1.3
+BuildRequires:  alsa < 3.0
