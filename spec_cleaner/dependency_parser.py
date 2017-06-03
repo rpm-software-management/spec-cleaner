@@ -9,7 +9,8 @@ chunk_types = [
 
 state_types = ['start', 'name', 'operator', 'version']
 
-re_parens = re.compile(
+re_brackets = {}
+re_brackets['('] = re.compile(
     r'(' +
     r'\('  + r'|' + r'\)'  + r'|' +
     r'\\(' + r'|' + r'\\)' + r'|' +
@@ -17,7 +18,7 @@ re_parens = re.compile(
     r')'
 )
 
-re_braces = re.compile(
+re_brackets['{'] = re.compile(
     r'(' +
     r'\{'  + r'|' + r'\}'  + r'|' +
     r'\\{' + r'|' + r'\\}' + r'|' +
@@ -35,7 +36,7 @@ logger = logging.getLogger("DepParser")
 # Switch to logging.DEBUG if needed
 logger.setLevel(logging.ERROR)
 
-def find_end_of_macro(string, regex, opening, closing):
+def find_end_of_bracketed_macro(string, regex, opening, closing):
     macro = string[0:2]
     # eat '%{'
     string = string[2:]
@@ -69,21 +70,21 @@ def consume_chars(regex, string):
         raise NoMatchException('Expected match failed (string: "%s", regex: "%s" )' % (string, regex.pattern))
 
 def read_boolean(string):
-    return find_end_of_macro(string, re_parens, '(', ')')
+    return find_end_of_bracketed_macro(string, re_brackets['('], '(', ')')
+
+def matching_bracket(bracket):
+    if bracket == '{':
+        return '}'
+    elif bracket == '(':
+        return ')'
+    raise Exception("Undefined bracket matching - add defintion of '%s' to "
+                    "matching_bracket()" % bracket)
 
 def read_macro(string):
-    if string[1] == '{':
-        regex = re_braces
-        opening = '{'
-        closing = '}'
-    elif string[1] == '(':
-        regex = re_parens
-        opening = '('
-        closing = ')'
-    else:
-        raise Exception('Unexpected character')
-
-    return find_end_of_macro(string, regex, opening, closing)
+    opening = string[1]
+    closing = matching_bracket(opening)
+    return find_end_of_bracketed_macro(
+        string, re_brackets[opening], opening, closing)
 
 def read_next_chunk(string):
     chunk = ''
