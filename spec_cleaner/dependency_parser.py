@@ -68,6 +68,9 @@ def consume_chars(regex, string):
     else:
         raise NoMatchException('Expected match failed (string: "%s", regex: "%s" )' % (string, regex.pattern))
 
+def read_boolean(string):
+    return find_end_of_macro(string, re_parens, '(', ')')
+
 def read_macro(string):
     if string[1] == '{':
         regex = re_braces
@@ -115,6 +118,10 @@ def read_next_chunk(string):
 
     elif string[0] == '%':
         chunk, rest = consume_chars(re_macro_unbraced, string)
+        chunk_type = 'macro'
+
+    elif string[0] == '(':
+        chunk, rest = read_boolean(string)
         chunk_type = 'macro'
 
     elif string[0] == ',':
