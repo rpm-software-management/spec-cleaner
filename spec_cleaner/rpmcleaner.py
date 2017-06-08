@@ -156,25 +156,10 @@ class RpmSpecCleaner(object):
 
     def _detect_preamble_section(self, line):
         # This is seriously ugly but can't think of cleaner way
-        # WARN: Keep in sync with rpmregexps for rpmpreamble section
         if not isinstance(self.current_section, (RpmPreamble, RpmPackage)):
             if any([re.match(line) for re in [
-                   self.reg.re_bcond_with, self.reg.re_requires,
-                   self.reg.re_requires_phase, self.reg.re_buildrequires,
-                   self.reg.re_prereq, self.reg.re_recommends,
-                   self.reg.re_suggests, self.reg.re_name,
-                   self.reg.re_version, self.reg.re_release,
-                   self.reg.re_license, self.reg.re_summary,
-                   self.reg.re_summary_localized, self.reg.re_url,
-                   self.reg.re_group, self.reg.re_vendor,
-                   self.reg.re_source, self.reg.re_patch,
-                   self.reg.re_enhances, self.reg.re_supplements,
-                   self.reg.re_conflicts, self.reg.re_provides,
-                   self.reg.re_obsoletes, self.reg.re_buildroot,
-                   self.reg.re_buildarch, self.reg.re_epoch,
-                   self.reg.re_icon, self.reg.re_packager,
-                   self.reg.re_debugpkg, self.reg.re_requires_eq,
-                   self.reg.re_preamble_prefix,
+                   self.reg.re_bcond_with,
+                   self.reg.re_debugpkg,
                    ]]):
                 return True
 
