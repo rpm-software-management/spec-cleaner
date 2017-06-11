@@ -43,7 +43,7 @@ def process_args(argv):
     parser.add_argument('-m', '--minimal', action='store_true',
                         help='run in minimal mode that does not do anything intrusive (ie. just sets the Copyright)')
     parser.add_argument('--no-curlification', action='store_true',
-                        help='do not convert variables bracketing (%{macro}) and keep it as it was on the input')
+                        help='do not convert variables bracketing (%%{macro}) and keep it as it was on the input')
     parser.add_argument('--no-copyright', action='store_true',
                         help='do not include official SUSE copyright hear and just keep what is present')
     output_group.add_argument('-o', '--output', default='',
