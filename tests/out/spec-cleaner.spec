@@ -55,7 +55,6 @@ make DESTDIR=%{buildroot} install %{?_smp_mflags} \
 	SITEDIR=%{python_sitelib} \
 
 %files
-%defattr(-, root, root)
 %{_bindir}/%{name}
 %dir %{_libexecdir}/obs/
 %dir %{_libexecdir}/obs/service/

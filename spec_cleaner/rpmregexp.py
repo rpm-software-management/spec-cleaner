@@ -114,6 +114,7 @@ class Regexp(object):
 
     # rpmfiles
     re_compression = re.compile(r'\.(gz|\*)$')
+    re_defattr = re.compile(r'^\s*%defattr\s*\(\s*(-|(0)?644)\s*,\s*root\s*,\s*root\s*(,\s*(-|(0)?755)\s*)?\)\s*')
 
     # patches/sources
     re_ptch = re.compile(r'%{P:(\d+)}')

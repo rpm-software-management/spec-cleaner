@@ -1,5 +1,4 @@
 %files
-%defattr(-,root,root)
 %{_bindir}/test
 
 # some comment

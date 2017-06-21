@@ -127,11 +127,9 @@ make -j 1 check
 %install_info_delete --info-dir=%{_infodir} %{_infodir}/libmicrohttpd-tutorial.info%{ext_info}
 
 %files -n %{libmicrohttpd}
-%defattr(-,root,root)
 %{_libdir}/%{name}.so.*
 
 %files devel
-%defattr(-,root,root)
 %doc ChangeLog
 %{_includedir}/microhttpd.h
 %{_libdir}/%{name}.so

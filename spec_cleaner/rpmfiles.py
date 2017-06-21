@@ -17,7 +17,9 @@ class RpmFiles(Section):
         line = self._remove_doc_on_man(line)
 
         if not self.minimal:
-            self._add_defattr(line)
+            # prune obsolete defattr that is default
+            if self.reg.re_defattr.match(line):
+                return
             line = self._set_man_compression(line)
 
         # toss out empty lines if there are more than one in succession
@@ -25,23 +27,6 @@ class RpmFiles(Section):
             return
 
         Section.add(self, line)
-
-    def _add_defattr(self, line):
-        """
-        Add defattr with default values if there is none
-        Also be aware of comments that could've been put on top
-        """
-        if self.comment_present and not line.startswith('#'):
-            self.comment_present = False
-            if not line.startswith('%defattr'):
-                self.lines.insert(1, '%defattr(-,root,root)')
-
-        if self.previous_line and \
-                self.reg.re_spec_files.match(self.previous_line):
-            if line.startswith('#'):
-                self.comment_present = True
-            elif not line.startswith('%defattr'):
-                self.lines.append('%defattr(-,root,root)')
 
     def _remove_doc_on_man(self, line):
         """

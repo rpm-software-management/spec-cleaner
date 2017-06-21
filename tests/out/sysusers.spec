@@ -11,7 +11,6 @@ Summary:        System user and group uucp
 %pre -n system-user-uucp -f uucp.pre
 
 %files -n system-user-uucp
-%defattr(-,root,root)
 %dir %attr(0750,uucp,uucp) %{_sysconfdir}/uucp
 
 %changelog

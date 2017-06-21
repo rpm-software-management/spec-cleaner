@@ -1,5 +1,4 @@
 %files
-%defattr(-,root,root)
 %doc ChangeLog README COPYING
 %{_prefix}/name/
 %{_prefix}/lib/name/
