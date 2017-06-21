@@ -34,7 +34,6 @@ class RpmPreambleElements(object):
         'supplements': 'Supplements',
         # Provides/Obsoletes cannot be part of this since we want to keep them
         # mixed, so we'll have to specify the key when needed
-        'buildroot': 'BuildRoot',
         'buildarch': 'BuildArch',
         'exclusivearch': 'ExclusiveArch',
         'excludearch': 'ExcludeArch',
@@ -67,7 +66,6 @@ class RpmPreambleElements(object):
         'supplements',
         'conflicts',
         'provides_obsoletes',
-        'buildroot',
         'buildarch',
         'exclusivearch',
         'excludearch',

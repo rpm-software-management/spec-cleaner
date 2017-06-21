@@ -42,7 +42,6 @@ BuildRequires:  socat
 BuildRequires:  pkgconfig(gnutls)
 BuildRequires:  pkgconfig(libcurl)
 BuildRequires:  pkgconfig(libtasn1)
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
 GNU libmicrohttpd is a small C library that is supposed to make it easy to run

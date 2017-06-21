@@ -111,6 +111,7 @@ class RpmPreamble(Section):
             'packager': self.reg.re_packager,
             'debugpkg': self.reg.re_debugpkg,
             'prefix': self.reg.re_preamble_prefix,
+            'buildroot': self.reg.re_buildroot,
         }
 
     def start_subparagraph(self):
@@ -416,12 +417,6 @@ class RpmPreamble(Section):
         elif self.reg.re_obsoletes.match(line):
             match = self.reg.re_obsoletes.match(line)
             self._add_line_value_to('provides_obsoletes', match.group(1), key='Obsoletes')
-            return
-
-        elif self.reg.re_buildroot.match(line):
-            # we only are fine with buildroot only once
-            if len(self.paragraph.items['buildroot']) == 0:
-                self._add_line_value_to('buildroot', '%{_tmppath}/%{name}-%{version}-build')
             return
 
         elif self.reg.re_license.match(line):

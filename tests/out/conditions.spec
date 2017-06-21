@@ -13,7 +13,6 @@ BuildRequires:  bbb
 BuildRequires:  pkgconfig
 BuildRequires:  python
 Requires:       insserv
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 %ifpython2
 Release:        0
 %endif
