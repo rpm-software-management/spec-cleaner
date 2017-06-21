@@ -1,0 +1,4 @@
+%files
+%doc ChangeLog
+
+%changelog
