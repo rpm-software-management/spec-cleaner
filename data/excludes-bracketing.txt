@@ -69,6 +69,7 @@ make_install
 make_jobs
 makeinstall
 mime_database_post[^\s]*
+_mingw32_configure
 nagios_command_user_group_add
 nagios_user_group_add
 __os_install_post

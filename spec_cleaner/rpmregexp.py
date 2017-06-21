@@ -66,6 +66,7 @@ class Regexp(object):
     re_bcond_with = re.compile(r'^\s*%bcond_with(out)?\s*(.*)', re.IGNORECASE)
     re_autoreqprov = re.compile(r'^\s*AutoReqProv:.*$', re.IGNORECASE)
     re_debugpkg = re.compile(r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE)
+    re_mingw = re.compile(r'^\s*%{?_mingw.*$', re.IGNORECASE)
     re_tail_macros = re.compile(r'^%{?python_subpackages}?')
     re_preamble_prefix = re.compile(r'^Prefix:\s*(.*)', re.IGNORECASE)
     # here we need to grab all submacros with rpm calls so just match almost

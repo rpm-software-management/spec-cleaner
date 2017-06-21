@@ -393,6 +393,10 @@ class RpmPreamble(Section):
 
             return
 
+        elif self.reg.re_mingw.match(line):
+            self._add_line_to('define', line)
+            return
+
         elif self.reg.re_requires_eq.match(line):
             match = self.reg.re_requires_eq.match(line)
             self._add_line_value_to('requires_eq', match.group(1))
