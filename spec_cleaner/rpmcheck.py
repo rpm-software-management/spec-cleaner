@@ -12,15 +12,12 @@ class RpmCheck(Section):
     def add(self, line):
         line = self._complete_cleanup(line)
 
-        # smp_mflags for jobs
-        if not self.reg.re_comment.match(line) and \
-           not self.minimal:
-            line = self.embrace_macros(line)
+        # smp_mflags for jobs macro replacement
         line = self.reg.re_jobs.sub('%{?_smp_mflags}', line)
 
         # add jobs if we have just make call on line
         # if user want single thread he should specify -j1
-        if not self.minimal and line.startswith('make'):
+        if not self.minimal and self.reg.re_make.match(line):
             # if there are no smp_flags or jobs spec
             if line.find('%{?_smp_mflags}') == -1 and line.find('-j') == -1:
                 # Don't append %_smp_mflags if the line ends with a backslash,
