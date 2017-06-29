@@ -7,5 +7,8 @@ Obsoletes:      NetworkManager-lang < %(rpm -q --queryformat '%{VERSION}' Networ
 Provides:       libwpd = %version
 Obsoletes:      libwpd < %version
 Provides:       sysvinit:/sbin/init
+# yes this is bogus and typo
+Provides:       lib{name}-devel = %{version}
+Obsoletes:      lib{name}-devel < %{version}
 
 %changelog
