@@ -1,4 +1,5 @@
 %define version %(rpm -q --qf '%{VERSION}' kernel-source)
+%{?requires_ge:%requires_ge libapr1}
 %requires_eq vlc
 Requires:       mozilla-nspr >= %(rpm -q --queryformat '%{VERSION}' mozilla-nspr)
 Requires:       mozilla-nss >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss)

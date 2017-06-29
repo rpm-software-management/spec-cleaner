@@ -28,6 +28,7 @@ class RpmPreambleElements(object):
         'prereq': 'PreReq',
         'requires': 'Requires',
         'requires_eq': '%requires_eq',
+        'requires_ge': '%requires_ge',
         'recommends': 'Recommends',
         'suggests': 'Suggests',
         'enhances': 'Enhances',
@@ -58,6 +59,7 @@ class RpmPreambleElements(object):
         'buildignores',
         'requires',
         'requires_eq',
+        'requires_ge',
         'prereq',
         'requires_phase',  # this is Requires(pre/post/...)
         'recommends',
@@ -82,6 +84,7 @@ class RpmPreambleElements(object):
         'prereq',
         'requires',
         'requires_eq',
+        'requires_ge',
         'requires_phase',
         'recommends',
         'suggests',

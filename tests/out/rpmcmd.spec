@@ -12,6 +12,7 @@ Requires:       mozilla-nss >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss)
 # FIXME: Use %requires_eq macro instead
 Requires:       mozilla-nss-devel >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss-devel)
 %requires_eq    vlc
+%requires_ge    libapr1
 Provides:       NetworkManager-lang = %(rpm -q --queryformat '%{VERSION}' NetworkManager-lang)
 
 %changelog

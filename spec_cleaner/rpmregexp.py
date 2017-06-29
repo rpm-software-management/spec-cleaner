@@ -72,7 +72,8 @@ class Regexp(object):
     # here we need to grab all submacros with rpm calls so just match almost
     # everything
     re_rpm_command = re.compile(r'%\(.*\)')
-    re_requires_eq = re.compile(r'^\s*%requires_eq\s*(.*)')
+    re_requires_eq = re.compile(r'^\s*(%{\?requires_eq:\s*)?%requires_eq\s*(.*)')
+    re_requires_ge = re.compile(r'^\s*(%{\?requires_ge:\s*)?%requires_ge\s*(.*)')
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
     # Special bracketed deps dection
     re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')

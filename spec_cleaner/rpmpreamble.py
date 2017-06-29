@@ -376,6 +376,32 @@ class RpmPreamble(Section):
             self._add_line_to('bconds', line)
             return
 
+        elif self.reg.re_mingw.match(line):
+            self._add_line_to('define', line)
+            return
+
+        elif self.reg.re_requires_eq.match(line):
+            match = self.reg.re_requires_eq.match(line)
+            if match.group(1):
+                # if we were wrapped in curly definiton we need to remove
+                # the trailing curly bracket
+                value = match.group(2)[:-1]
+            else:
+                value = match.group(2)
+            self._add_line_value_to('requires_eq', value)
+            return
+
+        elif self.reg.re_requires_ge.match(line):
+            match = self.reg.re_requires_ge.match(line)
+            if match.group(1):
+                # if we were wrapped in curly definiton we need to remove
+                # the trailing curly bracket
+                value = match.group(2)[:-1]
+            else:
+                value = match.group(2)
+            self._add_line_value_to('requires_ge', value)
+            return
+
         elif self.reg.re_define.match(line) or self.reg.re_global.match(line) or self.reg.re_onelinecond.match(line):
             if line.endswith('\\'):
                 self.multiline = True
@@ -391,15 +417,6 @@ class RpmPreamble(Section):
             if name == "modname":
                 self.modname = value
 
-            return
-
-        elif self.reg.re_mingw.match(line):
-            self._add_line_to('define', line)
-            return
-
-        elif self.reg.re_requires_eq.match(line):
-            match = self.reg.re_requires_eq.match(line)
-            self._add_line_value_to('requires_eq', match.group(1))
             return
 
         elif self.reg.re_prereq.match(line):
