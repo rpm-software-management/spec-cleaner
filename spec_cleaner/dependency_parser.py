@@ -28,7 +28,7 @@ re_brackets['{'] = re.compile(
 
 re_name = re.compile(r'[-A-Za-z0-9_~(){}@:;.+/*\[\]]+')
 re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
-re_spaces = re.compile(r'\s+')
+re_spaces = re.compile(r'(\s+|\s*,\s*)')
 re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
 
@@ -103,7 +103,7 @@ def read_next_chunk(string):
         chunk_type = 'operator'
         rest = string[1:]
 
-    elif string[0].isspace():
+    elif string[0].isspace() or string[0] == ',':
         chunk = ''
         chunk_type = 'space'
         rest = consume_chars(re_spaces, string)[1]
@@ -125,11 +125,6 @@ def read_next_chunk(string):
         chunk, rest = read_boolean(string)
         chunk_type = 'macro'
 
-    elif string[0] == ',':
-        chunk = ''
-        chunk_type = 'space'
-        rest = string[1:]
-
     else:
         chunk, rest = consume_chars(re_name, string)
         chunk_type = 'text'
@@ -146,7 +141,7 @@ class DependencyParser:
 
     def parse(self):
         # adding comma will cause flush in the end of line
-        self.string = self.line + ","
+        self.string = self.line + ", "
         self.parsed = []
         self.token = []
         self.state = 'start'
