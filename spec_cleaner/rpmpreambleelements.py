@@ -223,6 +223,9 @@ class RpmPreambleElements(object):
                 continue
             # search already stored content
             for index, item in enumerate(results):
+                # if item is string we didn't match
+                if not isinstance(item, RpmRequiresToken):
+                    continue
                 # names and prefix must always match
                 if item.name == element.name and item.prefix == element.prefix:
                     # do we have full match on everything
