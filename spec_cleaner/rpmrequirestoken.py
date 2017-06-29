@@ -43,9 +43,9 @@ class RpmRequiresToken(object):
 
         self.name = self._format_name(self.name)
         if not self.prefix:
-            raise RpmException('No defined prefix in RequiresToken')
+            raise RpmException('No defined prefix in RequiresToken: prefix "{0}" name "{1}" operator "{2}" version "{3}"'.format(self.prefix, self.name, self.operator, self.version))
         if not self.name:
-            raise RpmException('No defined name in RequiresToken')
+            raise RpmException('No defined name in RequiresToken: prefix "{0}" name "{1}" operator "{2}" version "{3}"'.format(self.prefix, self.name, self.operator, self.version))
         string = self.prefix + self.name
         if self.version and not self.operator:
             raise RpmException('Have defined version and no operator %s' % self.version)
