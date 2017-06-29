@@ -1,3 +1,4 @@
+%define _prefix=/opt/kde3
 %define useful_macro() ( echo 'Useful macro has been used with arg %{1}' )
 
 %build

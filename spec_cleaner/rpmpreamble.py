@@ -413,8 +413,8 @@ class RpmPreamble(Section):
                 self._add_line_to('define', line)
 
             # catch "modname" for use in pypi url rewriting
-            define, name, value = line.split(None, 2)
-            if name == "modname":
+            if line.find("modname") >= 0:
+                define, name, value = line.split(None, 2)
                 self.modname = value
 
             return
