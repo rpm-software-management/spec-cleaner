@@ -8,5 +8,6 @@ Provides:       sysvinit:/sbin/init
 # yes this is bogus and typo
 Provides:       lib{name}-devel = %{version}
 Obsoletes:      lib{name}-devel < %{version}
+Provides:       sgpio:/{%{_bindir}}/ledctl
 Summary:        Library for Importing WordPerfect (tm) Documents
 Group:          System/Libraries
