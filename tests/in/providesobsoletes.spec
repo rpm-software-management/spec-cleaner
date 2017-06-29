@@ -1,4 +1,6 @@
 %package -n %libname
+Provides:       NetworkManager-lang = %(rpm -q --queryformat '%{VERSION}' NetworkManager-lang)
+Obsoletes:      NetworkManager-lang < %(rpm -q --queryformat '%{VERSION}' NetworkManager-lang)
 # remove the old non-versioned package (built in the bs for instance)
 Provides:       libwpd = %version
 Obsoletes:      libwpd < %version
