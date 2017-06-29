@@ -127,7 +127,7 @@ class RpmPreambleElements(object):
             # if this is a list then all items except last are comment or whitespace
             key = str(a[-1])
         else:
-            raise RpmException('Unknown type during sort: %s' % t)
+            raise RpmException('Unknown type during sort: %s' % a)
 
         # Special case is the category grouping where we have to get the number in
         # after the value
