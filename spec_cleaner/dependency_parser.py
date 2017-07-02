@@ -36,6 +36,7 @@ logger = logging.getLogger("DepParser")
 # Switch to logging.DEBUG if needed
 logger.setLevel(logging.ERROR)
 
+
 def find_end_of_bracketed_macro(string, regex, opening, closing):
     macro = string[0:2]
     # eat '%{'
@@ -69,8 +70,10 @@ def consume_chars(regex, string):
     else:
         raise NoMatchException('Expected match failed (string: "%s", regex: "%s" )' % (string, regex.pattern))
 
+
 def read_boolean(string):
     return find_end_of_bracketed_macro(string, re_brackets['('], '(', ')')
+
 
 def matching_bracket(bracket):
     if bracket == '{':
@@ -80,11 +83,13 @@ def matching_bracket(bracket):
     raise Exception("Undefined bracket matching - add defintion of '%s' to "
                     "matching_bracket()" % bracket)
 
+
 def read_macro(string):
     opening = string[1]
     closing = matching_bracket(opening)
     return find_end_of_bracketed_macro(
         string, re_brackets[opening], opening, closing)
+
 
 def read_next_chunk(string):
     chunk = ''
@@ -130,6 +135,7 @@ def read_next_chunk(string):
         chunk_type = 'text'
 
     return (rest, chunk, chunk_type)
+
 
 class DepParserError(Exception):
     pass
@@ -203,7 +209,6 @@ class DependencyParser:
 
         self.token.append(self.next)
 
-
     def operator_state_change(self):
         if self.next_type in ['text', 'macro']:
             self.state = 'version'
@@ -216,7 +221,6 @@ class DependencyParser:
                 raise DepParserError("found operator after operator")
 
         self.token.append(self.next)
-
 
     def version_state_change(self):
         if self.next_type == 'text':
