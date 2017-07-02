@@ -143,11 +143,8 @@ class DepParserError(Exception):
 
 class DependencyParser:
     def __init__(self, line):
-        self.line = line
-
-    def parse(self):
         # adding comma will cause flush in the end of line
-        self.string = self.line + ", "
+        self.string = line + ", "
         self.parsed = []
         self.token = []
         self.state = 'start'
@@ -169,7 +166,6 @@ class DependencyParser:
             self.state_change()
 
     def flat_out(self):
-        self.parse()
         result = []
         for name, operator, ver in self.parsed:
             result.append(RpmRequiresToken(name, operator, ver))
