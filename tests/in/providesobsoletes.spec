@@ -9,5 +9,6 @@ Provides:       sysvinit:/sbin/init
 Provides:       lib{name}-devel = %{version}
 Obsoletes:      lib{name}-devel < %{version}
 Provides:       sgpio:/{%{_bindir}}/ledctl
+Provides:       vdirsyncer == %{version}
 Summary:        Library for Importing WordPerfect (tm) Documents
 Group:          System/Libraries

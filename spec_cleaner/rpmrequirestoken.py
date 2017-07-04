@@ -28,6 +28,7 @@ class RpmRequiresToken(object):
         """
         operator = operator.replace('=<', '<=')
         operator = operator.replace('=>', '>=')
+        operator = operator.replace('==', '=')
         return operator
 
     def _format_name(self, name):
