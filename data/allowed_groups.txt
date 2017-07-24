@@ -61,7 +61,7 @@ Documentation/Howto
 Documentation/HTML
 Documentation/Man
 Documentation/Other
-Documentation/SuSE
+Documentation/SUSE
 Hardware/Camera
 Hardware/Fax
 Hardware/ISDN
