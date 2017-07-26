@@ -1,5 +1,6 @@
 PackageKit-Qt-devel: packagekitqt4 
 PackageKit-Qt5-devel: packagekitqt5 
+SimGear-devel: SimGear 
 Vc-devel: Vc 
 akonadi-calendar-devel: KF5AkonadiCalendar 
 akonadi-contact-devel: KF5AkonadiContact 
@@ -9,7 +10,7 @@ akonadi-search-devel: KF5AkonadiSearch
 akonadi-server-devel: KF5Akonadi 
 analitza-devel: Analitza5 
 attica-qt5-devel: KF5Attica 
-baloo-devel: Baloo 
+avogadrolibs-devel: AvogadroLibs 
 baloo5-devel: KF5Baloo 
 baloo5-widgets-devel: KF5BalooWidgets 
 bluez-qt-devel: KF5BluezQt 
@@ -21,6 +22,7 @@ eventviews-devel: KF5EventViews
 fcitx-qt5-devel: FcitxQt5DBusAddons FcitxQt5WidgetsAddons 
 frameworkintegration-devel: KF5FrameworkIntegration 
 freerdp-devel: FreeRDP FreeRDP-Client WinPR 
+gnuradio-devel: Gnuradio Volk 
 gpgmepp5-devel: KF5Gpgmepp 
 grantlee-devel: Grantlee 
 grantlee5-devel: Grantlee5 
@@ -47,12 +49,14 @@ kconfigwidgets-devel: KF5ConfigWidgets
 kcontacts-devel: KF5Contacts 
 kcoreaddons-devel: KF5CoreAddons 
 kcrash-devel: KF5Crash 
+kdav-devel: KPimKDAV 
+kdb-devel: KDb 
 kdbusaddons-devel: KF5DBusAddons 
 kdebase4-workspace-devel: KDE4Workspace 
 kdeclarative-devel: KF5Declarative 
 kded-devel: KDED 
 kdelibs4support-devel: KF5KDE4Support KF5KDELibs4Support 
-kdepim-apps-libs-devel: KF5FollowupReminder KF5KaddressbookGrantlee KF5KdepimDBusInterfaces KF5SendLater 
+kdepim-apps-libs-devel: KF5FollowupReminder KF5KaddressbookGrantlee KF5KaddressbookImportExport KF5KdepimDBusInterfaces KF5SendLater 
 kdesignerplugin-devel: KF5DesignerPlugin 
 kdesu-devel: KF5Su 
 kdevelop4-pg-qt: KDevelop-PG-Qt 
@@ -61,6 +65,7 @@ kdevelop5: KDevelop
 kdevplatform-devel: KDevPlatform 
 kdewebkit-devel: KF5WebKit 
 kdgantt2-devel: KF5KDGantt2 
+kdiagram-devel: KChart KGantt 
 kdnssd-framework-devel: KF5DNSSD 
 kdoctools-devel: KF5DocTools 
 kemoticons-devel: KF5Emoticons 
@@ -85,20 +90,26 @@ kjobwidgets-devel: KF5JobWidgets
 kjs-devel: KF5JS 
 kjsembed-devel: KF5JsEmbed 
 kldap-devel: KF5Ldap 
-kmailtransport-devel: KF5MailTransport 
+kmailtransport-devel: KF5MailTransport KF5MailTransportAkonadi 
 kmbox-devel: KF5Mbox 
 kmediaplayer-devel: KF5MediaPlayer 
 kmime-devel: KF5Mime 
+knewstuff-core-devel: KF5NewStuffCore 
 knewstuff-devel: KF5NewStuff 
+knewstuff-quick-devel: KF5NewStuffQuick 
 knotifications-devel: KF5Notifications 
 knotifyconfig-devel: KF5NotifyConfig 
+konqueror-devel: KF5Konq 
 kontactinterface-devel: KF5KontactInterface 
 kpackage-devel: KF5Package 
 kparts-devel: KF5Parts 
 kpeople5-devel: KF5People 
 kpimtextedit-devel: KF5PimTextEdit 
 kplotting-devel: KF5Plotting 
+kpmcore-devel: KPMcore 
+kproperty-devel: KPropertyCore KPropertyWidgets 
 kpty-devel: KF5Pty 
+kreport-devel: KReport 
 kross-devel: KF5Kross 
 krunner-devel: KF5Runner 
 kscreenlocker-devel: KScreenLocker ScreenSaverDBusInterface 
@@ -115,10 +126,11 @@ kwin5-devel: KWinDBusInterface
 kwindowsystem-devel: KF5WindowSystem 
 kxmlgui-devel: KF5XmlGui 
 kxmlrpcclient5-devel: KF5XmlRpcClient 
-libAppstreamQt-devel: AppstreamQt 
+libAppStreamQt-devel: AppStreamQt 
 libBox2D-devel: Box2D 
 libKF5ModemManagerQt-devel: KF5ModemManagerQt 
 libKF5NetworkManagerQt-devel: KF5NetworkManagerQt 
+libOyranosSynnefo-devel: Synnefo 
 libQt53DCore-devel: Qt53DCore 
 libQt53DInput-devel: Qt53DInput 
 libQt53DLogic-devel: Qt53DLogic 
@@ -142,31 +154,35 @@ libQt5Widgets-devel: Qt5Widgets
 libQt5Xml-devel: Qt5Xml 
 libaccounts-qt5-devel: AccountsQt5 
 libakonadiprotocolinternals-devel: Akonadi 
-libbaloowidgets-devel: BalooWidgets 
 libbullet-devel: Bullet 
 libcmocka-devel: cmocka 
 libdbusmenu-qt-devel: dbusmenu-qt 
 libdbusmenu-qt5-devel: dbusmenu-qt5 
+libelektra-devel: Elektra 
 libftdi1-devel: LibFTDI1 
 libglfw-devel: glfw3 
+libgpgmepp-devel: Gpgmepp 
 libgravatar-devel: KF5Gravatar 
 libical-devel: LibIcal 
 libkactivities-devel: KActivities 
+libkcddb-devel: KF5Cddb 
 libkcddb4-devel: Libkcddb 
+libkcompactdisc-devel: KF5CompactDisc 
 libkcompactdisc4-devel: Libkcompactdisc 
 libkdcraw-devel: KF5KDcraw 
 libkde4-devel: KDeclarative 
 libkdecoration2-devel: KDecoration2 
 libkdegames-devel: KF5KDEGames 
 libkdegames4-devel: KDEGames 
-libkdepim-devel: KF5Libkdepim MailTransportDBusService 
+libkdepim-devel: KF5Libkdepim KF5LibkdepimAkonadi MailTransportDBusService 
 libkdepimlibs4-devel: KdepimLibs 
 libkdevplatform4-devel: KDevPlatform 
+libkdstatemachineeditor_core1_2_0: KDSME 
 libkeduvocdocument-devel: LibKEduVocDocument 
 libkexiv2-devel: KF5KExiv2 
 libkface-devel: KF5KFace 
 libkfbapi-devel: LibKFbAPI 
-libkgapi-devel: KF5GAPI 
+libkgapi-devel: KF5GAPI KPimGAPI 
 libkgeomap-devel: KF5KGeoMap 
 libkipi-devel: KF5Kipi 
 libkleo-devel: KF5Libkleo 
@@ -184,11 +200,13 @@ libktorrent-devel: LibKTorrent
 libkvkontakte-devel: LibKVkontakte 
 libmygpo-qt-devel: Mygpo-qt 
 libmygpo-qt5-devel: Mygpo-qt5 
+liboyranos-devel: Oyranos 
 libpamtest-devel: libpamtest 
 libpolkit-qt-1-devel: PolkitQt-1 
 libpolkit-qt5-1-devel: PolkitQt5-1 
 libprison-devel: Prison 
 libqca-qt5-devel: Qca-qt5 
+libqgpgme-devel: QGpgme 
 libqjson-devel: QJSON 
 libqt5-linguist-devel: Qt5LinguistTools 
 libqt5-qtconnectivity-devel: Qt5Bluetooth Qt5Nfc 
@@ -217,28 +235,29 @@ libyui-qt-devel: Libyui-qt
 libyui-qt-graph-devel: Libyui-qt-graph 
 libyui-qt-pkg-devel: Libyui-qt-pkg 
 mailcommon-devel: KF5MailCommon 
-mailimporter-devel: KF5MailImporter 
+mailimporter-devel: KF5MailImporter KF5MailImporterAkonadi 
 marble-devel: Astro Marble 
 mathgl-devel: mathgl2 
 messagelib-devel: KF5MessageComposer KF5MessageCore KF5MessageList KF5MessageViewer KF5MimeTreeParser KF5TemplateParser KF5WebEngineViewer 
 mobipocket-devel: QMobipocket 
 nss_wrapper: nss_wrapper 
 okteta-devel: KastenControllers KastenCore KastenGui OktetaCore OktetaGui OktetaKastenControllers OktetaKastenCore OktetaKastenGui 
-okular-devel: Okular 
+okular-devel: Okular5 
 openbabel: OpenBabel2 
 openobex-devel: openobex 
 pam_wrapper: pam_wrapper 
 phonon-devel: Phonon 
 phonon4qt5-devel: Phonon4Qt5Experimental 
-pimcommon-devel: KF5PimCommon 
+pimcommon-devel: KF5PimCommon KF5PimCommonAkonadi 
 plasma-framework-devel: KF5Plasma KF5PlasmaQuick 
 plasma5-workspace-devel: KRunnerAppDBusInterface KSMServerDBusInterface LibKWorkspace LibTaskManager 
+prison-qt5-devel: KF5Prison 
 pugixml-devel: pugixml 
 purpose-devel: KDEExperimentalPurpose 
 python-pyside-devel: PySide 
 python3-pyside-devel: PySide 
 qpid-cpp-client-devel: Qpid 
-qpid-proton-devel: Proton 
+qpid-proton-devel: Proton ProtonCpp 
 qtkeychain-devel: QtKeychain 
 qtkeychain-qt5-devel: Qt5Keychain 
 resolv_wrapper: resolv_wrapper 
@@ -247,7 +266,9 @@ socket_wrapper: socket_wrapper
 solid-devel: KF5Solid 
 sonnet-devel: KF5Sonnet 
 spdlog-devel: spdlog 
+stp-devel: STP 
 syndication-devel: KF5Syndication 
+syntax-highlighting-devel: KF5SyntaxHighlighting 
 telepathy-logger-qt5-devel: TelepathyLoggerQt 
 telepathy-qt4-devel: TelepathyQt4 TelepathyQt4Farstream TelepathyQt4Service 
 telepathy-qt5-devel: TelepathyQt5 TelepathyQt5Farstream TelepathyQt5Service 
@@ -255,4 +276,6 @@ threadweaver-devel: KF5ThreadWeaver
 uhd-devel: UHD 
 uid_wrapper: uid_wrapper 
 vtk-devel: VTK 
+waffle-devel: Waffle 
 websocketpp-devel: websocketpp 
+z3-devel: Z3 
