@@ -124,10 +124,21 @@ class RpmPreamble(Section):
         Check if we have ppc64 obsolete and delete it
         """
         if not self.minimal and \
-             isinstance(self.paragraph.items['conditions'][0], list) and \
              len(self.paragraph.items['conditions']) == 3 and \
+             isinstance(self.paragraph.items['conditions'][0], list) and \
              self.paragraph.items['conditions'][0][0] == '# bug437293' and \
              self.paragraph.items['conditions'][1].endswith('64bit'):
+            self.paragraph.items['conditions'] = []
+
+    def _prune_empty_condition(self):
+        """
+        Remove empty conditions
+        """
+        # check if we start with if
+        if len(self.paragraph.items['conditions']) == 2 and \
+           ((isinstance(self.paragraph.items['conditions'][0], list) and \
+           self.paragraph.items['conditions'][0][0].startswith("%if")) or \
+           self.paragraph.items['conditions'][0].startswith("%if")):
             self.paragraph.items['conditions'] = []
 
     PYPI_SOURCE_HOSTS = ("pypi.io", "files.pythonhosted.org", "pypi.python.org")
@@ -185,6 +196,7 @@ class RpmPreamble(Section):
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
         if endif or not self.condition:
+            self._prune_empty_condition()
             self._prune_ppc_condition()
             if self._condition_define:
                 # If we have define conditions and possible bcond start
