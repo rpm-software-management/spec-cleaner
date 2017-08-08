@@ -40,6 +40,7 @@ Development/Languages/Tcl
 Development/Libraries/C and C++
 Development/Libraries/Cross
 Development/Libraries/GNOME
+Development/Libraries/Haskell
 Development/Libraries/Java
 Development/Libraries/KDE
 Development/Libraries/Other
