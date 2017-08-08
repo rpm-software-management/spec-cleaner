@@ -29,6 +29,7 @@ Amusements/Toys/Other
 Amusements/Toys/Screensavers
 Development/Languages/C and C++
 Development/Languages/Fortran
+Development/Languages/Haskell
 Development/Languages/Java
 Development/Languages/Other
 Development/Languages/Perl
