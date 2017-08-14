@@ -24,7 +24,7 @@ Release:        0
 Summary:        Small Embeddable HTTP Server Library
 License:        LGPL-2.1+
 Group:          Productivity/Networking/Web/Servers
-Url:            https://www.gnu.org/software/libmicrohttpd/
+URL:            https://www.gnu.org/software/libmicrohttpd/
 Source0:        http://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz
 Source1:        http://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz.sig
 Source2:        libmicrohttpd.keyring

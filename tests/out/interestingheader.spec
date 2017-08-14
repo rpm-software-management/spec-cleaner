@@ -9,7 +9,7 @@ Summary:        .spec file cleaner
 Summary(de):    Ein Synthesizer der dritten Art
 License:        GPL-2.0+
 Group:          Productivity/Multimedia/Sound/Midi
-Url:            http://www.dinisnoise.org/
+URL:            http://www.dinisnoise.org/
 Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.png
 BuildRequires:  Mesa

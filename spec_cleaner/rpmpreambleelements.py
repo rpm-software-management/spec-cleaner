@@ -17,7 +17,7 @@ class RpmPreambleElements(object):
         'license': 'License',
         'summary': 'Summary',
         # The localized summary can contain various values, so it can't be here
-        'url': 'Url',
+        'url': 'URL',
         'group': 'Group',
         'source': 'Source',
         'nosource': 'NoSource',

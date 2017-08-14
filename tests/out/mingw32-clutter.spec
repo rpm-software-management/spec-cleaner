@@ -24,7 +24,7 @@ Summary:        The clutter library
 License:        LGPL-2.1+
 # FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"
 Group:          Development/Libraries
-Url:            http://clutter-project.org/
+URL:            http://clutter-project.org/
 Source:         http://www.clutter-project.org/sources/clutter/1.5/clutter-%{version}.tar.bz2
 Patch0:         clutter-1.6.14-windows.patch
 Patch1:         clutter-1.6.20-ldl.patch
