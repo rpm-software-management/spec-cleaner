@@ -18,6 +18,7 @@ define
 defined
 description
 desktop_database_post[^\s]*
+dev
 dir
 doc
 docdir
