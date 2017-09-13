@@ -39,6 +39,11 @@ Patch20:        python3-ncurses-6.0-accessors.patch
 # the lru_cache() wrapper object -- https://bugs.python.org/issue25447
 Patch30:        Python-3.5.1-fix_lru_cache_copying.patch
 ### COMMON-PATCH-END ###
+# MANUAL BEGIN
+BuildRequires:  pkgconfig(libxml-2.0) >= 2.9.0
+Provides:       perl-XML-LibXML-Common = %{version}
+Obsoletes:      perl-XML-LibXML-Common < %{version}
+# MANUAL END
 
 %build
 ### COMMON-CONFIG-BEGIN ###
