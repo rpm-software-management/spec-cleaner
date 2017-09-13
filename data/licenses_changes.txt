@@ -109,6 +109,7 @@ BSD-2-Clause-FreeBSD	BSD-2-Clause-FreeBSD
 BSD-2-Clause-FreeBSD+	BSD-2-Clause-FreeBSD+
 BSD-2-Clause-NetBSD	BSD-2-Clause-NetBSD
 BSD-2-Clause-NetBSD+	BSD-2-Clause-NetBSD+
+BSD-2-Clause-Patent	https://opensource.org/licenses/BSDplusPatent
 BSD-3-Clause	BSD (3-Clause)
 BSD-3-Clause	BSD 3-Clause
 BSD-3-Clause	BSD 3-clause (or similar)
