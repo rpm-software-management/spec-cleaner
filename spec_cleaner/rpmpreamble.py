@@ -85,6 +85,7 @@ class RpmPreamble(Section):
             # for source, we have a special match to keep the source number
             # for patch, we have a special match to keep the patch number
             'buildrequires': self.reg.re_buildrequires,
+            'buildconflicts': self.reg.re_buildconflicts,
             'buildignores': self.reg.re_buildignores,
             'conflicts': self.reg.re_conflicts,
             # for prereq we append warning comment so we don't mess it there
