@@ -23,6 +23,6 @@ class RpmCheck(Section):
                 # Don't append %_smp_mflags if the line ends with a backslash,
                 # it would break the formatting
                 if not line.endswith('\\') and not line.lstrip().startswith('#'):
-                    line = self.reg.re_make.sub(r'\1make %{?_smp_mflags}\3', line)
+                    line = self.reg.re_make.sub(r'\1make %{?_smp_mflags}\2', line)
 
         Section.add(self, line)

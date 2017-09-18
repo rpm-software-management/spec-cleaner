@@ -85,7 +85,7 @@ class Regexp(object):
 
     # rpmbuild
     re_jobs = re.compile(r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?')
-    re_make = re.compile(r'(^|(.*\s)?)make(\s.*|)$')
+    re_make = re.compile(r'(^\s*)make(\s.*|)$')
     re_optflags_quotes = re.compile(r'=\s*\${?RPM_OPT_FLAGS}?\s*$')
     re_optflags = re.compile(r'\${?RPM_OPT_FLAGS}?')
     re_suseupdateconfig = re.compile(r'(%{?suse_update_config|${?\?suse_update_config:)')
