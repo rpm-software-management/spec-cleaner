@@ -47,7 +47,7 @@ Obsoletes:      perl-XML-LibXML-Common < %{version}
 
 %build
 ### COMMON-CONFIG-BEGIN ###
-export PATH=$PATH:/sbin:%{_prefix}/sbin
+export PATH=$PATH:/sbin:%{_sbindir}
 sed -ie "s/%{device_mapper_version}/1.03.01/g" VERSION_DM
 %configure \
     --enable-dmeventd --enable-cmdlib \
