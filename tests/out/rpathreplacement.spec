@@ -1,3 +1,6 @@
+%install
+mkdir -p %{buildroot}%{_sbindir}
+
 %files
 %doc ChangeLog README COPYING
 %{_prefix}/name/

@@ -1,3 +1,6 @@
+%install
+mkdir -p %{buildroot}/usr/sbin
+
 %files
 %defattr(-,root,root)
 %doc ChangeLog README COPYING

@@ -1,3 +1,6 @@
+%install
+mkdir -p %{buildroot}%{_sbindir}
+
 %files
 %defattr(-,root,root)
 %doc ChangeLog README COPYING
