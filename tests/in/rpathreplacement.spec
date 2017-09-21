@@ -1,4 +1,5 @@
 %install
+export PATH="$PATH:%{_prefix}/sbin"
 mkdir -p %{buildroot}/usr/sbin
 
 %files

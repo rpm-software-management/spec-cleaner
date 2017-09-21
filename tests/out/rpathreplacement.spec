@@ -1,4 +1,5 @@
 %install
+export PATH="$PATH:%{_sbindir}"
 mkdir -p %{buildroot}%{_sbindir}
 
 %files
