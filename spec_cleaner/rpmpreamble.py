@@ -113,6 +113,7 @@ class RpmPreamble(Section):
             'debugpkg': self.reg.re_debugpkg,
             'prefix': self.reg.re_preamble_prefix,
             'buildroot': self.reg.re_buildroot,
+            'py_requires': self.reg.re_py_requires,
         }
 
     def start_subparagraph(self):

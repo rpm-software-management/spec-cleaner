@@ -34,6 +34,7 @@ Provides:       obs-service-format_spec_file = %{version}
 Obsoletes:      obs-service-format_spec_file < %{version}
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildArch: noarch
+%{?py_requires}
 
 %{debug_package}
 
