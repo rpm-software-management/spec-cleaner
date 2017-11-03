@@ -19,6 +19,7 @@ class Regexp(object):
     re_spec_clean = re.compile(r'^%clean\s*$', re.IGNORECASE)
     re_spec_check = re.compile(r'^%check\s*$', re.IGNORECASE)
     re_spec_scriptlets = re.compile(r'(?:^%pretrans(\s+|$))|(?:^%pre(\s+|$))|(?:^%post(\s+|$))|(?:^%verifyscript(\s+|$))|(?:^%preun(\s+|$))|(?:^%postun(\s+|$))|(?:^%posttrans(\s+|$))', re.IGNORECASE)
+    re_spec_triggers = re.compile(r'(?:^%filetriggerin(\s+|$))|(?:^%filetriggerun(\s+|$))|(?:^%filetriggerpostun(\s+|$))|(?:^%transfiletriggerin(\s+|$))|(?:^%transfiletriggerun(\s+|$))|(?:^%transfiletriggerpostun(\s+|$))', re.IGNORECASE)
     re_spec_files = re.compile(r'^%files(\s+|$)', re.IGNORECASE)
     re_spec_changelog = re.compile(r'^%changelog\s*$', re.IGNORECASE)
 

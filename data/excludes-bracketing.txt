@@ -94,6 +94,12 @@ pre
 prep
 pretrans
 preun
+filetriggerin
+filetriggerun
+filetriggerpostun
+transfiletriggerin
+transfiletriggerun
+transfiletriggerpostun
 py_compile
 python_alternative
 python_install_alternative

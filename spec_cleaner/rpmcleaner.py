@@ -84,6 +84,7 @@ class RpmSpecCleaner(object):
             (self.reg.re_spec_clean, RpmClean),
             (self.reg.re_spec_check, RpmCheck),
             (self.reg.re_spec_scriptlets, RpmScriptlets),
+            (self.reg.re_spec_triggers, RpmScriptlets),
             (self.reg.re_spec_files, RpmFiles),
             (self.reg.re_spec_changelog, RpmChangelog)
         ]
