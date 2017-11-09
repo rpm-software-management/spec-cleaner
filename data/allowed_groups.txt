@@ -33,6 +33,7 @@ Development/Languages/Haskell
 Development/Languages/Java
 Development/Languages/Other
 Development/Languages/Perl
+Development/Languages/PHP
 Development/Languages/Python
 Development/Languages/Ruby
 Development/Languages/Scheme
@@ -46,6 +47,7 @@ Development/Libraries/KDE
 Development/Libraries/Other
 Development/Libraries/Parallel
 Development/Libraries/Perl
+Development/Libraries/PHP
 Development/Libraries/Python
 Development/Libraries/Tcl
 Development/Libraries/X11
