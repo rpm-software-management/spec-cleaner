@@ -35,6 +35,10 @@ class RpmRequiresToken(object):
         # we just rename pkgconfig names to one unified one working everywhere
         if name == 'pkgconfig(pkg-config)' or name == 'pkg-config':
             name = 'pkgconfig'
+        # if there is otherproviders codeblock just ommit it
+        if name.startswith('otherproviders('):
+            name = name.rstrip(')')
+            name = name.lstrip('otherproviders(')
         return name
 
     def __str__(self):
