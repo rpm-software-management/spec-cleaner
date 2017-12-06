@@ -131,8 +131,9 @@ class Regexp(object):
     # macro detection
     re_macro = re.compile(
         # find start of macro:
-        #   either beggining of string or something which is not '%'
-        r'(^|([^%]))' +
+        #   either beggining of string or something which is not '%' or :
+        #   where : is used after macro declaration we should not curlify
+        r'(^|([^%:]))' +
         # macro itself:
         # '%' followed by either number not starting with '0'
         # or by chars where first is a-z or A-Z or underscore
