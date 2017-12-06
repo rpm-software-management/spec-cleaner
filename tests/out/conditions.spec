@@ -1,3 +1,4 @@
+%{?!_fillupdir:%define _fillupdir %{_localstatedir}/adm/fillup-templates}
 %if 0%{?suse_version} == 1110
 # _libexecdir points to /usr/lib64 for SLE11
 %define _libexecdir %{_prefix}/lib
