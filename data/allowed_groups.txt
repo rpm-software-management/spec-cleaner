@@ -36,6 +36,7 @@ Development/Languages/Perl
 Development/Languages/PHP
 Development/Languages/Python
 Development/Languages/Ruby
+Development/Languages/Rust
 Development/Languages/Scheme
 Development/Languages/Tcl
 Development/Libraries/C and C++
@@ -49,6 +50,7 @@ Development/Libraries/Parallel
 Development/Libraries/Perl
 Development/Libraries/PHP
 Development/Libraries/Python
+Development/Libraries/Rust
 Development/Libraries/Tcl
 Development/Libraries/X11
 Development/Libraries/YaST
