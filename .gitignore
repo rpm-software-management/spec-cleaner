@@ -4,6 +4,7 @@ dist/
 *.egg-info/
 *.pyc
 .*.swp
+.cache
 .coverage
 .coveralls.yml
 .tox
