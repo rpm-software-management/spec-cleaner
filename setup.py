@@ -26,9 +26,8 @@ setup(
     platforms=['Linux'],
     keywords=['SUSE', 'RPM', '.spec', 'cleaner'],
 
-    tests_require=['mock', 'nose'],
-
-    test_suite="nose.collector",
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
 
     packages=['spec_cleaner'],
 
