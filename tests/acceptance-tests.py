@@ -12,14 +12,6 @@ from nose.tools import raises
 from spec_cleaner import RpmException
 from spec_cleaner import RpmSpecCleaner
 
-
-class NewDate(datetime.date):
-    @classmethod
-    def today(cls):
-        return cls(2013, 1, 1)
-
-datetime.date = NewDate
-
 class TestCompare(object):
 
     """
@@ -34,6 +26,7 @@ class TestCompare(object):
         'minimal': False,
         'no_curlification': False,
         'no_copyright': True,
+        'copyright_year': 2013,
         'tex': False,
         'perl': False,
         'cmake': False,

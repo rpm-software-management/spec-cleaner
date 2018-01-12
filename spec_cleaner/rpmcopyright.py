@@ -17,6 +17,7 @@ class RpmCopyright(Section):
     def __init__(self, options):
         Section.__init__(self, options)
         self.no_copyright = options['no_copyright']
+        self.year = options['copyright_year']
         self.copyrights = []
         self.buildrules = []
         self.my_copyright = ''
@@ -29,8 +30,7 @@ class RpmCopyright(Section):
 #'''.format(specname))
 
     def _create_default_copyright(self):
-        year = datetime.date.today().year
-        self.my_copyright = '# Copyright (c) {0} SUSE LINUX GmbH, Nuernberg, Germany.'.format(year)
+        self.my_copyright = '# Copyright (c) {0} SUSE LINUX GmbH, Nuernberg, Germany.'.format(self.year)
 
     def _add_copyright(self):
         self._create_default_copyright()
