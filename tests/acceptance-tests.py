@@ -99,11 +99,6 @@ class TestCompare(object):
         copyfile(infile, tmpfile)
         self._run_individual_test(test, None, infile=tmpfile, outfile='', options={'pkgconfig': True, 'inline': True})
 
-#    @pytest.mark.skip(reason="FIXME: broken and need tweaking")
-#    def test_regular_output(self, tmpfile):
-#        test = 'bconds.spec'
-#        self._run_individual_test(test, None, outfile='')
-
     def test_diff_function(self, tmpfile):
         test = 'bconds.spec'
         with pytest.raises(RpmException):
