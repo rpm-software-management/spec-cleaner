@@ -38,7 +38,7 @@ class RpmRequiresToken(object):
         # if there is otherproviders codeblock just ommit it
         if name.startswith('otherproviders('):
             name = name.rstrip(')')
-            name = name.lstrip('otherproviders(')
+            name = name.replace('otherproviders(', '')
         return name
 
     def __str__(self):
