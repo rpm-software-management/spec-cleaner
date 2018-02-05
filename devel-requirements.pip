@@ -1,0 +1,5 @@
+# Pip Requirement file for development
+
+pytest
+pytest-runner
+pytest-cov
