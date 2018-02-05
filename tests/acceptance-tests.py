@@ -4,7 +4,6 @@
 import glob
 import os
 from shutil import copyfile
-import difflib
 import pytest
 
 from spec_cleaner import RpmException
