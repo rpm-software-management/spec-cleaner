@@ -28,7 +28,8 @@ class RpmFiles(Section):
 
         Section.add(self, line)
 
-    def _remove_doc_on_man(self, line):
+    @staticmethod
+    def _remove_doc_on_man(line):
         """
         Remove all %doc %_mandir to -> %_mandir as it is pointless to do twice
         """
