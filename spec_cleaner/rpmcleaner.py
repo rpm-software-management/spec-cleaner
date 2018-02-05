@@ -190,7 +190,7 @@ class RpmSpecCleaner(object):
         # we end up the condition section in preamble (if applicable) and
         # proceed to output
         if self._detect_condition_change(line) or \
-               (type(self.current_section) is Section and (self.reg.re_if.match(line)
+               (isinstance(self.current_section) is Section and (self.reg.re_if.match(line)
                or self.reg.re_codeblock.match(line))):
             if not hasattr(self.current_section, 'condition') or \
                    (hasattr(self.current_section, 'condition') and not self.current_section.condition):
