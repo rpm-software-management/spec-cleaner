@@ -54,7 +54,7 @@ def process_args(argv):
     parser.add_argument('-p', '--pkgconfig', action='store_true',
                         help='convert dependencies to their pkgconfig() counterparts, requires bit more of cleanup in spec afterwards.')
     parser.add_argument('--perl', action='store_true',
-                        help='convert dependencies to their perl() counterparts, highly expansive because most main packages provide some perl symbols, use carefully')
+                        help='convert dependencies to their perl() counterparts, highly expansive use carefully')
     parser.add_argument('-t', '--tex', action='store_true',
                         help='convert dependencies to their tex() counterparts, requires verification of the output afterwards.')
     parser.add_argument('-v', '--version', action='version', version=__version__,
