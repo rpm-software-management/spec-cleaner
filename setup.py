@@ -39,7 +39,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Utilities',
         'Topic :: Text Processing',
-        ],
+    ],
     platforms=['Linux'],
     keywords=['SUSE', 'RPM', '.spec', 'cleaner'],
 
