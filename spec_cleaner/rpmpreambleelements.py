@@ -150,7 +150,7 @@ class RpmPreambleElements(object):
             key = '0' + key
         return key
 
-    def _insert_value(self, category, value, key = None):
+    def _insert_value(self, category, value, key=None):
         """
         Add value to specified keystore
         """
