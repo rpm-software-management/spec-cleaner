@@ -59,7 +59,7 @@ for i in `w3m -dump -cols 1000 http://spdx.org/licenses/exceptions-index.html | 
     echo "$i" >> license_exceptions.ntxt ;
 done
 
-cat license_exceptions.ntxt | sort -u -o data/licences_exceptions.txt
+sort -u -o data/licences_exceptions.txt license_exceptions.ntxt
 rm license_exceptions.ntxt
 
 cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o licenses_changes.stxt
