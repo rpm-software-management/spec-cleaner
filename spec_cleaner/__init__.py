@@ -29,7 +29,7 @@ def process_args(argv):
     # Make the -d, -i, and -o exclusive as we can do only one of those
     output_group = parser.add_mutually_exclusive_group()
 
-    parser.add_argument('spec', metavar='SPEC', type=str,
+    parser.add_argument('specfile', metavar='SPEC', type=str,
                         help='spec file to beautify')
     parser.add_argument('-c', '--cmake', action='store_true',
                         help='convert dependencies to their cmake() counterparts, requires bit more of cleanup in spec afterwards.')
@@ -70,8 +70,8 @@ def process_args(argv):
     options = parser.parse_args(args=argv)
 
     # the spec must exist for us to do anything
-    if not os.path.exists(options.spec):
-        raise RpmWrongArgs('{0} does not exist.'.format(options.spec))
+    if not os.path.exists(options.specfile):
+        raise RpmWrongArgs('{0} does not exist.'.format(options.specfile))
 
     # the path for output must exist and the file must not be there unless
     # force is specified
@@ -81,23 +81,7 @@ def process_args(argv):
             raise RpmWrongArgs('{0} already exists.'.format(options.output))
 
     # convert options to dict
-    options_dict = {
-        'specfile': options.spec,
-        'output': options.output,
-        'pkgconfig': options.pkgconfig,
-        'inline': options.inline,
-        'diff': options.diff,
-        'diff_prog': options.diff_prog,
-        'minimal': options.minimal,
-        'no_curlification': options.no_curlification,
-        'no_copyright': options.no_copyright,
-        'copyright_year': options.copyright_year,
-        'perl': options.perl,
-        'tex': options.tex,
-        'cmake': options.cmake,
-        'keep_space': options.keep_space,
-    }
-
+    options_dict = vars(options)
     return options_dict
 
 
