@@ -6,6 +6,7 @@ import pytest
 from spec_cleaner.fileutils import FileUtils
 from spec_cleaner import RpmException
 
+
 class TestFileutils(object):
 
     """

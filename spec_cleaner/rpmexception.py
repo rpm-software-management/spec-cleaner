@@ -28,6 +28,7 @@ class RpmException(RpmBaseException):
     Exception raised by wrong parsed content from rpm
     """
 
+
 class NoMatchException(RpmBaseException):
 
     """

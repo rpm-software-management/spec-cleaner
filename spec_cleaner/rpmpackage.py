@@ -3,6 +3,7 @@
 from .rpmsection import Section
 from .rpmpreamble import RpmPreamble
 
+
 class RpmPackage(RpmPreamble):
 
     """

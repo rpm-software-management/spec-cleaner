@@ -118,6 +118,7 @@ def read_group_changes():
     files.close()
     return groups
 
+
 def fix_license(value, conversions):
     # license ; should be replaced by ands so find it
     re_license_semicolon = re.compile(r'\s*;\s*')
