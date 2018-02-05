@@ -149,7 +149,7 @@ class RpmPreambleElements(object):
         else:
             key = '0' + key
         return key
-    
+
     def _insert_value(self, category, value, key = None):
         """
         Add value to specified keystore
@@ -162,7 +162,7 @@ class RpmPreambleElements(object):
         """
         Check the content of buildrequires and add pkgconfig as an item
         in case there are any pkgconfig() style dependencies present
-        
+
         If we are in the top level object for preamble we append the BR,
         otherwise we do just verify if there are nay dependencies
         """
