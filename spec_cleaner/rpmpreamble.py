@@ -138,9 +138,9 @@ class RpmPreamble(Section):
         """
         # check if we start with if
         if len(self.paragraph.items['conditions']) == 2 and \
-           ((isinstance(self.paragraph.items['conditions'][0], list) and \
-           self.paragraph.items['conditions'][0][0].startswith("%if")) or \
-           self.paragraph.items['conditions'][0].startswith("%if")):
+             ((isinstance(self.paragraph.items['conditions'][0], list) and \
+             self.paragraph.items['conditions'][0][0].startswith("%if")) or \
+             self.paragraph.items['conditions'][0].startswith("%if")):
             self.paragraph.items['conditions'] = []
 
     PYPI_SOURCE_HOSTS = ("pypi.io", "files.pythonhosted.org", "pypi.python.org")
