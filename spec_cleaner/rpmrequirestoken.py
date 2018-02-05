@@ -1,5 +1,6 @@
 from .rpmexception import RpmException
 
+
 class RpmRequiresToken(object):
     """
     Class containing informations about the dependency token
@@ -22,7 +23,8 @@ class RpmRequiresToken(object):
         self.operator = operator
         self.version = version
 
-    def _format_operator(self, operator):
+    @staticmethod
+    def _format_operator(operator):
         """
         Make sure the operators look sane and not use all permutations
         """
@@ -31,7 +33,8 @@ class RpmRequiresToken(object):
         operator = operator.replace('==', '=')
         return operator
 
-    def _format_name(self, name):
+    @staticmethod
+    def _format_name(name):
         # we just rename pkgconfig names to one unified one working everywhere
         if name == 'pkgconfig(pkg-config)' or name == 'pkg-config':
             name = 'pkgconfig'

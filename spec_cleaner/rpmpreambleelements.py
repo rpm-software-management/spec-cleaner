@@ -4,6 +4,7 @@ from .rpmhelpers import sort_uniq, add_group, find_pkgconfig_statement, find_pkg
 from .rpmexception import RpmException
 from .rpmrequirestoken import RpmRequiresToken
 
+
 class RpmPreambleElements(object):
     """
     Class containing structure used in rpmpreamble.
@@ -179,7 +180,8 @@ class RpmPreambleElements(object):
             if self.br_pkgconfig_required and not find_pkgconfig_declaration(buildrequires):
                 self._insert_value('buildrequires', 'pkgconfig')
 
-    def _verify_prereq_message(self, elements):
+    @staticmethod
+    def _verify_prereq_message(elements):
         """
         Verify if the prereq is present in the Requires(*) and add the fixme
         comment if needed
@@ -212,7 +214,8 @@ class RpmPreambleElements(object):
 
         return elements
 
-    def _remove_duplicates(self, elements):
+    @staticmethod
+    def _remove_duplicates(elements):
         """
         Remove duplicate requires/buildrequires/etc
         """
@@ -264,7 +267,6 @@ class RpmPreambleElements(object):
                 results.append(element)
         return results
 
-
     def _run_global_list_operations(self, phase, elements):
         """
         Run all the checks that need to be run on the finalized sorted list
@@ -303,7 +305,7 @@ class RpmPreambleElements(object):
             key += ' '
         return key
 
-    def flatten_output(self, needs_license=False, nested = False):
+    def flatten_output(self, needs_license=False, nested=False):
         """
         Do the finalized output for the itemlist.
         """
