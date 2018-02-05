@@ -18,6 +18,7 @@ def tests():
     testglob = os.path.join('tests', 'in', '*.spec')
     return [os.path.basename(f) for f in glob.glob(testglob)]
 
+
 @pytest.fixture(scope='session')
 def space_tests():
     """
@@ -25,6 +26,7 @@ def space_tests():
     """
     testglob = os.path.join('tests', 'keep-space', '*.spec')
     return [os.path.basename(f) for f in glob.glob(testglob)]
+
 
 class TestCompare(object):
 
@@ -70,7 +72,7 @@ class TestCompare(object):
         cleaner.run()
 
         if compare_dir is not None:
-            compare  = os.path.join('tests', compare_dir, test)
+            compare = os.path.join('tests', compare_dir, test)
             testfile = full_options['inline'] and infile or outfile
             with open(compare) as ref, open(testfile) as test:
                 assert ref.read() == test.read()
@@ -101,16 +103,16 @@ class TestCompare(object):
     def test_diff_function(self, tmpfile):
         test = 'bconds.spec'
         with pytest.raises(RpmException):
-            self._run_individual_test(test, None, outfile='', options={'diff': True, 'diff_prog':'error'})
+            self._run_individual_test(test, None, outfile='', options={'diff': True, 'diff_prog': 'error'})
 
     @pytest.mark.parametrize(
         'test, compare_dir, options',
         [
-        ('header.spec', 'header', {'minimal': True, 'no_copyright': False}),
-        ('pkgconfrequires.spec', 'out', {'pkgconfig': False}),
-        ('tex.spec', 'tex', {'tex': True}),
-        ('perl.spec', 'perl', {'perl': True}),
-        ('cmake.spec', 'cmake', {'cmake': True}),
+            ('header.spec', 'header', {'minimal': True, 'no_copyright': False}),
+            ('pkgconfrequires.spec', 'out', {'pkgconfig': False}),
+            ('tex.spec', 'tex', {'tex': True}),
+            ('perl.spec', 'perl', {'perl': True}),
+            ('cmake.spec', 'cmake', {'cmake': True}),
         ]
     )
     def test_single_output(self, tmpfile, test, compare_dir, options):
