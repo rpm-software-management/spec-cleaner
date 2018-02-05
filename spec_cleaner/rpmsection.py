@@ -100,7 +100,8 @@ class Section(object):
         for line in self.lines:
             fout.write(line + '\n')
 
-    def strip_useless_spaces(self, line):
+    @staticmethod
+    def strip_useless_spaces(line):
         """
         Function to remove useless multiple spaces in some areas.
         It can't be called everywhere so we have to call it in
@@ -196,7 +197,8 @@ class Section(object):
 
         return line
 
-    def replace_buildservice(self, line):
+    @staticmethod
+    def replace_buildservice(line):
         """
         Pretty format the conditions for distribution/version detection.
         Replace %{suse_version} for 0%{?suse_version}
