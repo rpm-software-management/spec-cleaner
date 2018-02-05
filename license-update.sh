@@ -8,7 +8,7 @@ grep ^SUSE- licenses_changes.ntxt | cut -d'	' -f1 | while read -r l; do
   echo "$l+	$l+" >> licenses_changes.ptxt ; 
 done
 
-for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *Y *License Text,,; s, *License Text,,; s,.* ,,;'); do 
+for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *Y *Y *License Text,,; s, *Y *License Text,,; s, *License Text,,; s,.* ,,;'); do
 	echo "$i	$i" >> licenses_changes.ntxt ; 
 	echo "$i+	$i+" >> licenses_changes.ptxt ;
 done
@@ -34,7 +34,7 @@ echo ""
 echo "License Tag | Description"
 echo "----------- | -----------"
 IFS=:
-w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *Y *License Text,,; s, *License Text,,; s,\s* \([^ ]*\)$,:\1,' | while read -r text license; do
+w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *Y *Y *License Text,,; s, *Y *License Text,,; s, *License Text,,; s,\s* \([^ ]*\)$,:\1,' | while read -r text license; do
   echo "$license | $text"
   echo "$license" >> licenses_changes.raw
 done

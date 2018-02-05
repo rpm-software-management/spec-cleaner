@@ -2,6 +2,7 @@
 Autoconf-exception-2.0
 Autoconf-exception-3.0
 Bison-exception-2.2
+Bootloader-exception
 CLISP-exception-2.0
 Classpath-exception-2.0
 DigiRule-FOSS-exception
@@ -12,6 +13,7 @@ GCC-exception-2.0
 GCC-exception-3.1
 LZMA-exception
 Libtool-exception
+Linux-syscall-note
 Nokia-Qt-exception-1.1
 OCCT-exception-1.0
 Qwt-exception-1.0
