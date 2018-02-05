@@ -14,6 +14,7 @@ from .dependency_parser import DependencyParser
 from .rpmhelpers import fix_license
 from .rpmrequirestoken import RpmRequiresToken
 
+
 class RpmPreamble(Section):
 
     """
@@ -158,10 +159,12 @@ class RpmPreamble(Section):
         the first letter of the name, so that is going to be explicit anyway)
         """
         parsed = urlparse.urlparse(url)
-        if not parsed.scheme: # not a URL
+        # not an URL
+        if not parsed.scheme:
             return url
 
-        if parsed.netloc not in self.PYPI_SOURCE_HOSTS: # not pypi
+        # not pypi location
+        if parsed.netloc not in self.PYPI_SOURCE_HOSTS:
             return url
 
         filename = os.path.basename(parsed.path)
@@ -223,7 +226,8 @@ class RpmPreamble(Section):
                 self._condition_bcond = False
             self.paragraph.items['conditions'] = []
 
-    def _pkgname_to_brackety(self, token, brackety, conversions):
+    @staticmethod
+    def _pkgname_to_brackety(token, brackety, conversions):
         converted = []
         # just never convert pkgconfig dependency
         # The same if we do not have a match
