@@ -34,6 +34,10 @@ Requires: wine
 %if %{?pkg_vcmp:%pkg_vcmp java-devel >= 9}%{!?pkg_vcmp:0}
 Requires:       other
 %endif
+# Fix no-dependency-on python-base on SLE11 and openSUSE 11.4
+%if 0%{?suse_version} <= 1140
+%py_requires
+%endif
 %if (0%{?sle_version} == 120100 && 0%{?is_opensuse} == 0) || 0%{?suse_version} == 1310
 Requires:       something
 %endif
