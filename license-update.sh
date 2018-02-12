@@ -55,7 +55,7 @@ unset IFS
 rm licenses_changes.raw
 ) > README.md
 
-for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/exceptions-index.html | grep "License Exception Text" | sed -e 's, *Y *License Exception Text,,; s, *License Exception Text,,; s,\s* \([^ ]*\)$,:\1,' | cut -d: -f2`); do
+for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/exceptions-index.html | grep "License Exception Text" | sed -e 's, *Y *License Exception Text,,; s, *License Exception Text,,; s,\s* \([^ ]*\)$,:\1,' | cut -d: -f2); do
     echo "$i" >> license_exceptions.ntxt ;
 done
 
