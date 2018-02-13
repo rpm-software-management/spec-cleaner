@@ -127,10 +127,10 @@ class RpmPreamble(Section):
         Check if we have ppc64 obsolete and delete it
         """
         if not self.minimal and \
-             len(self.paragraph.items['conditions']) == 3 and \
-             isinstance(self.paragraph.items['conditions'][0], list) and \
-             self.paragraph.items['conditions'][0][0] == '# bug437293' and \
-             self.paragraph.items['conditions'][1].endswith('64bit'):
+                len(self.paragraph.items['conditions']) == 3 and \
+                isinstance(self.paragraph.items['conditions'][0], list) and \
+                self.paragraph.items['conditions'][0][0] == '# bug437293' and \
+                self.paragraph.items['conditions'][1].endswith('64bit'):
             self.paragraph.items['conditions'] = []
 
     def _prune_empty_condition(self):
@@ -139,9 +139,9 @@ class RpmPreamble(Section):
         """
         # check if we start with if
         if len(self.paragraph.items['conditions']) == 2 and \
-             ((isinstance(self.paragraph.items['conditions'][0], list) and \
-             self.paragraph.items['conditions'][0][-1].startswith("%if")) or \
-             self.paragraph.items['conditions'][0].startswith("%if")):
+                ((isinstance(self.paragraph.items['conditions'][0], list) and \
+                self.paragraph.items['conditions'][0][-1].startswith("%if")) or \
+                self.paragraph.items['conditions'][0].startswith("%if")):
             self.paragraph.items['conditions'] = []
 
     PYPI_SOURCE_HOSTS = ("pypi.io", "files.pythonhosted.org", "pypi.python.org")
@@ -182,9 +182,7 @@ class RpmPreamble(Section):
                 # don't know what to do
                 return url
 
-        return urlparse.urlunparse(('https', 'files.pythonhosted.org',
-                '/packages/source/{}/{}/{}'.format(modname[0], modname, filename),
-                '', '', ''))
+        return urlparse.urlunparse(('https', 'files.pythonhosted.org', '/packages/source/{}/{}/{}'.format(modname[0], modname, filename), '', '', ''))
 
     def end_subparagraph(self, endif=False):
         if not self._oldstore:
