@@ -12,7 +12,7 @@ state_types = ['start', 'name', 'operator', 'version']
 re_brackets = {}
 re_brackets['('] = re.compile(
     r'(' +
-    r'\('  + r'|' + r'\)'  + r'|' +
+    r'\(' + r'|' + r'\)' + r'|' +
     r'\\(' + r'|' + r'\\)' + r'|' +
     r'[^\()]+' +
     r')'
@@ -20,7 +20,7 @@ re_brackets['('] = re.compile(
 
 re_brackets['{'] = re.compile(
     r'(' +
-    r'\{'  + r'|' + r'\}'  + r'|' +
+    r'\{' + r'|' + r'\}' + r'|' +
     r'\\{' + r'|' + r'\\}' + r'|' +
     r'[^\{}]+' +
     r')'
