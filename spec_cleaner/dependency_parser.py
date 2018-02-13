@@ -28,7 +28,7 @@ re_brackets['{'] = re.compile(
 
 re_name = re.compile(r'[-A-Za-z0-9_~(){}@:;.+/*\[\]]+')
 re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
-re_spaces = re.compile(r'(\s+|\s*,\s*)')
+re_spaces = re.compile(r'(\s*,\s*|\s+)')
 re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
 
