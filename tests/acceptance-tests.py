@@ -54,7 +54,7 @@ class TestCompare(object):
         tmpfile = tmpdir_factory.mktemp('run', numbered=True).join('testing.spec')
         return str(tmpfile)
 
-    def _run_individual_test(self, test, compare_dir, infile=None, outfile=None, options={}):
+    def _run_individual_test(self, test, compare_dir, infile=None, outfile=None, options=None):
         """
         Run the cleaner as specified and store the output for further comparison.
         """
@@ -77,7 +77,7 @@ class TestCompare(object):
             with open(compare) as ref, open(testfile) as test:
                 assert ref.read() == test.read()
 
-    def _compare_and_rerun(self, test, compare_dir, tmpfile, options={}):
+    def _compare_and_rerun(self, test, compare_dir, tmpfile, options=None):
         self._run_individual_test(test, compare_dir, None, tmpfile, options)
         tmpfile_rerun = tmpfile + '_rerun'
         self._run_individual_test(test, compare_dir, tmpfile, tmpfile_rerun, options)
