@@ -363,6 +363,38 @@ ZPL-1.1 | Zope Public License 1.1
 ZPL-2.0 | Zope Public License 2.0
 ZPL-2.1 | Zope Public License 2.1
 
+# SPDX Exceptions
+
+|Exception name|
+|--------------|
+389-exception
+Autoconf-exception-2.0
+Autoconf-exception-3.0
+Bison-exception-2.2
+Bootloader-exception
+CLISP-exception-2.0
+Classpath-exception-2.0
+DigiRule-FOSS-exception
+FLTK-exception
+Fawkes-Runtime-exception
+Font-exception-2.0
+GCC-exception-2.0
+GCC-exception-3.1
+LZMA-exception
+Libtool-exception
+Linux-syscall-note
+Nokia-Qt-exception-1.1
+OCCT-exception-1.0
+Qwt-exception-1.0
+WxWindows-exception-3.1
+eCos-exception-2.0
+freertos-exception-2.0
+gnu-javamail-exception
+i2p-gpl-java-exception
+mif-exception
+openvpn-openssl-exception
+u-boot-exception-2.0
+
 # SUSE Additions
 
 |License Tag|

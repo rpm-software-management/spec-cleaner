@@ -35,6 +35,14 @@ if test -n "$dups"; then
 fi
 
 : > licenses_changes.raw
+
+for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/exceptions-index.html | grep "License Exception Text" | sed -e 's, *Y *License Exception Text,,; s, *License Exception Text,,; s,\s* \([^ ]*\)$,:\1,' | cut -d: -f2); do
+    echo "$i" >> license_exceptions.ntxt ;
+done
+
+sort -u -o data/licenses_exceptions.txt license_exceptions.ntxt
+rm license_exceptions.ntxt
+
 (
 cat README.md.in 
 echo ""
@@ -50,6 +58,13 @@ done
 unset IFS
 
 echo ""
+echo "# SPDX Exceptions"
+echo ""
+echo "|Exception name|"
+echo "|--------------|"
+cat data/licenses_exceptions.txt
+
+echo ""
 echo "# SUSE Additions"
 echo ""
 echo "|License Tag|"
@@ -63,13 +78,6 @@ unset IFS
 
 rm licenses_changes.raw
 ) > README.md
-
-for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/exceptions-index.html | grep "License Exception Text" | sed -e 's, *Y *License Exception Text,,; s, *License Exception Text,,; s,\s* \([^ ]*\)$,:\1,' | cut -d: -f2); do
-    echo "$i" >> license_exceptions.ntxt ;
-done
-
-sort -u -o data/licenses_exceptions.txt license_exceptions.ntxt
-rm license_exceptions.ntxt
 
 cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o licenses_changes.stxt
 ( echo "First line" ; cat licenses_changes.stxt ) > data/licenses_changes.txt
