@@ -22,7 +22,7 @@ Name:           libmicrohttpd
 Version:        0.9.49
 Release:        0
 Summary:        Small Embeddable HTTP Server Library
-License:        LGPL-2.1+
+License:        LGPL-2.1-or-later
 Group:          Productivity/Networking/Web/Servers
 URL:            https://www.gnu.org/software/libmicrohttpd/
 Source0:        http://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz

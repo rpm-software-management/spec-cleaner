@@ -21,7 +21,7 @@ Name:           mingw32-clutter
 Version:        1.6.20
 Release:        0
 Summary:        The clutter library
-License:        LGPL-2.1+
+License:        LGPL-2.1-or-later
 Group:          Development/Libraries
 URL:            http://clutter-project.org/
 Source:         http://www.clutter-project.org/sources/clutter/1.5/clutter-%{version}.tar.bz2

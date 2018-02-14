@@ -1,5 +1,5 @@
 Name:           licenses
-License:        GPL-2.0
+License:        GPL-2.0-only
 
 %package samelicense
 Summary:        blabla
