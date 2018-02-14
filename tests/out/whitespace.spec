@@ -12,7 +12,8 @@ file formats, audio and video codecs, and subtitle types.
 
 %files
 # justcomment
-%doc LICENSE Copyright README.md etc/example.conf etc/encoding-example-profiles.conf etc/input.conf
+%license LICENSE
+%doc Copyright README.md etc/example.conf etc/encoding-example-profiles.conf etc/input.conf
 %{_bindir}/%{name}
 %{_mandir}/man1/%{name}.1*
 %{_datadir}/applications/%{name}.desktop

@@ -15,6 +15,7 @@ class RpmFiles(Section):
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
         line = self._remove_doc_on_man(line)
+        line = self._move_license_from_doc(line)
 
         if not self.minimal:
             # prune obsolete defattr that is default
@@ -46,4 +47,15 @@ class RpmFiles(Section):
             line = self.reg.re_compression.sub('%{ext_man}', line)
         if line.startswith("%{_infodir}"):
             line = self.reg.re_compression.sub('%{ext_info}', line)
+        return line
+
+    def _move_license_from_doc(self, line):
+        if line.startswith("%doc") and self.reg.re_doclicense.search(line):
+            license = self.reg.re_doclicense.search(line).group()
+            line = self.reg.re_doclicense.sub('', line)
+            # we only got empty %doc then ommit it
+            if line == "%doc ":
+                line = ''
+            if license:
+                Section.add(self, "%license {}".format(license))
         return line

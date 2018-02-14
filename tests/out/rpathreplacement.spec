@@ -3,7 +3,8 @@ export PATH="$PATH:%{_sbindir}"
 mkdir -p %{buildroot}%{_sbindir}
 
 %files
-%doc ChangeLog README COPYING
+%license COPYING
+%doc ChangeLog README
 %{_prefix}/name/
 %{_prefix}/lib/name/
 %{_libdir}/name
