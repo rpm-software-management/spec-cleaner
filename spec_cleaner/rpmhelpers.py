@@ -139,7 +139,7 @@ def fix_license(value, conversions):
         licenses[index] = my_license
 
     # create back new string with replaced licenses
-    s = ' '.join(licenses).replace("( ", "(").replace(" )", ")").replace(' and ', ' AND ').replace(' or ', ' OR ')
+    s = ' '.join(licenses).replace("( ", "(").replace(" )", ")").replace(' and ', ' AND ').replace(' or ', ' OR ').replace(' with ', ' WITH ')
     return s
 
 
