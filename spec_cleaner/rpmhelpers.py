@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import re
-from subprocess import Popen, PIPE
+from subprocess import check_output, PIPE
 
 from .fileutils import FileUtils
 from .rpmexception import RpmException
@@ -20,7 +20,7 @@ def parse_rpm_showrc():
     macros = []
 
     re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
-    output = Popen(['rpm', '--showrc'], stdout=PIPE).communicate()[0]
+    output = check_output(['rpm', '--showrc'])
     for line in output.decode().split('\n'):
         found_macro = re_rc_macrofunc.sub(r'\1', line)
         if found_macro != line:
