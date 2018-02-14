@@ -18,7 +18,7 @@ for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" 
   fi
   # replace old -only without the name
   if [[ ${i/-only/} != ${i} ]]; then
-    echo "$i ${i/-only/}" >> licenses_changes.ntxt ;
+    echo "$i	${i/-only/}" >> licenses_changes.ntxt ;
   fi
 done
 IFS=:
