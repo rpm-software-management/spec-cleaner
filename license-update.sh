@@ -1,16 +1,21 @@
 #!/bin/bash
 export LC_ALL=C
+# the second sed replaces only the first found + in the target license
 curl -s 'https://docs.google.com/spreadsheets/d/14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs/export?format=tsv&id=14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs&gid=0' | grep -v "New format" \
-  | sed -e 's,\s*$,,' > licenses_changes.ntxt
+  | sed -e 's,\s*$,,' -e 's,+,-or-later,' > licenses_changes.ntxt
 
 : > licenses_changes.ptxt
 grep ^SUSE- licenses_changes.ntxt | cut -d'	' -f1 | while read -r l; do
-  echo "$l+	$l+" >> licenses_changes.ptxt ; 
+  echo "$l-or-later	$l-or-later" >> licenses_changes.ptxt ;
+  echo "$l-or-later	$l+" >> licenses_changes.ptxt ;
 done
 
 for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *Y *Y *License Text,,; s, *Y *License Text,,; s, *License Text,,; s,.* ,,;'); do
-	echo "$i	$i" >> licenses_changes.ntxt ; 
-	echo "$i+	$i+" >> licenses_changes.ptxt ;
+  echo "$i	$i" >> licenses_changes.ntxt ;
+  # For these that can be "or later" generate also replacement of + SPDX-2.0
+  if [[ ${i/-or-later/} != ${i} ]]; then
+    echo "$i	${i/-or-later/}+" >> licenses_changes.ntxt ;
+  fi
 done
 IFS=:
 dups=$(tr '	' ':' < licenses_changes.ntxt | while read -r nl ol; do echo "$nl"; done | sed -e 's,^,B-,; s,B-SUSE-,A-,' | sort | uniq | sed -e 's,^.-,,' | sort | uniq -d)
