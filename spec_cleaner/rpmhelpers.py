@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import re
-from subprocess import check_output, PIPE
+from subprocess import check_output
 
 from .fileutils import FileUtils
 from .rpmexception import RpmException
