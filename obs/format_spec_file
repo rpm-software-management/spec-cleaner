@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 # this is just a wrapper calling spec-cleaner binary
 
 MYOUTDIR=/tmp
