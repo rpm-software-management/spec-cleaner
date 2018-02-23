@@ -58,7 +58,7 @@ class TestCompare(object):
         """
         Run the cleaner as specified and store the output for further comparison.
         """
-        if infile is None:
+        if not infile:
             infile = os.path.join('tests', 'in', test)
 
         full_options = {
@@ -71,7 +71,7 @@ class TestCompare(object):
         cleaner = RpmSpecCleaner(full_options)
         cleaner.run()
 
-        if compare_dir is not None:
+        if compare_dir:
             compare = os.path.join('tests', compare_dir, test)
             testfile = full_options['inline'] and infile or outfile
             with open(compare) as ref, open(testfile) as test:

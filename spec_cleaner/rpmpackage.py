@@ -13,7 +13,7 @@ class RpmPackage(RpmPreamble):
     def add(self, line):
         # The first line (%package) should always be added and is different
         # from the lines we handle in RpmPreamble.
-        if self.previous_line is None:
+        if not self.previous_line:
             Section.add(self, line)
             return
         # If the package is lang package we add here comment about the lang
