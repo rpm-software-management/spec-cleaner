@@ -1,5 +1,5 @@
 %files
-%license COPYING
+%license COPYING ringtones/default.wav.LICENSE
 %doc AUTHOR README
 
 %files a
