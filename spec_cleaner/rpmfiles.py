@@ -51,9 +51,12 @@ class RpmFiles(Section):
 
     def _move_license_from_doc(self, line):
         if line.startswith("%doc") and self.reg.re_doclicense.search(line):
-            match = self.reg.re_doclicense.search(line).group()
+            match = ''
+            while self.reg.re_doclicense.search(line):
+                match += self.reg.re_doclicense.search(line).group()
+                line = self.reg.re_doclicense.sub('', line, 1)
             Section.add(self, "%license {}".format(match))
-            line = self.reg.re_doclicense.sub('', line)
+
             # we only got empty %doc then ommit it
             if line == "%doc ":
                 line = ''
