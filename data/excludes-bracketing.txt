@@ -74,8 +74,7 @@ make_install
 make_jobs
 makeinstall
 meson
-meson_build
-meson_install
+meson_[^\s]*
 ninja_[^\s]*
 mime_database_post[^\s]*
 _mingw32_configure
