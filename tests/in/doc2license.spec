@@ -10,4 +10,8 @@
 %files c
 %doc COPYING LICENSE*
 
+%files FOO
+%doc COPYING
+%{_libdir/library.so
+
 %changelog

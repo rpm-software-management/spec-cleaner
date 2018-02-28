@@ -12,4 +12,8 @@
 %files c
 %license COPYING LICENSE*
 
+%files FOO
+%license COPYING
+%{_libdir/library.so
+
 %changelog
