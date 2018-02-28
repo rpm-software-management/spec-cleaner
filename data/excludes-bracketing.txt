@@ -76,6 +76,7 @@ makeinstall
 meson
 meson_build
 meson_install
+ninja_[^\s]*
 mime_database_post[^\s]*
 _mingw32_configure
 nagios_command_user_group_add
