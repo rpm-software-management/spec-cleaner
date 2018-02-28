@@ -16,6 +16,9 @@ class RpmFiles(Section):
         line = self.strip_useless_spaces(line)
         line = self._remove_doc_on_man(line)
         line = self._move_license_from_doc(line)
+        # we only get empty %doc left over
+        if line == '%doc ':
+            return
 
         if not self.minimal:
             # prune obsolete defattr that is default
@@ -56,8 +59,4 @@ class RpmFiles(Section):
                 match += self.reg.re_doclicense.search(line).group()
                 line = self.reg.re_doclicense.sub('', line, 1)
             Section.add(self, "%license {}".format(match))
-
-            # we only got empty %doc then ommit it
-            if line == "%doc ":
-                line = ''
         return line
