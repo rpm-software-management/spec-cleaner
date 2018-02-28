@@ -9,4 +9,7 @@
 %files b
 %license COPYING.*
 
+%files c
+%license COPYING LICENSE*
+
 %changelog

@@ -7,4 +7,7 @@
 %files b
 %doc COPYING.*
 
+%files c
+%doc COPYING LICENSE*
+
 %changelog
