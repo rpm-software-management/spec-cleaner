@@ -47,9 +47,9 @@ class RpmFiles(Section):
         the proper macro variable
         """
         if line.startswith("%{_mandir}"):
-            line = self.reg.re_compression.sub('%{ext_man}', line)
+            line = self.reg.re_compression.sub('%{?ext_man}', line)
         if line.startswith("%{_infodir}"):
-            line = self.reg.re_compression.sub('%{ext_info}', line)
+            line = self.reg.re_compression.sub('%{?ext_info}', line)
         return line
 
     def _move_license_from_doc(self, line):
