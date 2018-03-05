@@ -133,7 +133,7 @@ make -j 1 check
 %{_includedir}/microhttpd.h
 %{_libdir}/%{name}.so
 %{_libdir}/pkgconfig/%{name}.pc
-%{_infodir}/%{name}*.info%{ext_info}
-%{_mandir}/man3/%{name}.3%{ext_man}
+%{_infodir}/%{name}*.info%{?ext_info}
+%{_mandir}/man3/%{name}.3%{?ext_man}
 
 %changelog
