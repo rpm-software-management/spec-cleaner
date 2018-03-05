@@ -47,7 +47,7 @@ class RpmFiles(Section):
         the proper macro variable
         """
         if line.startswith("%{_mandir}"):
-            line = self.reg.re_man_compression.sub('%{?ext_man}', line)
+            line = self.reg.re_man_compression.sub(r'\1%{?ext_man}', line)
         if line.startswith("%{_infodir}"):
             line = self.reg.re_info_compression.sub('.info%{?ext_info}', line)
         return line
