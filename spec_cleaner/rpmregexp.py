@@ -72,9 +72,9 @@ class Regexp(object):
     re_mingw = re.compile(r'^\s*%{?_mingw.*$', re.IGNORECASE)
     re_tail_macros = re.compile(r'^%{?python_subpackages}?')
     re_preamble_prefix = re.compile(r'^Prefix:\s*(.*)', re.IGNORECASE)
-    # here we need to grab all submacros with rpm calls so just match almost
-    # everything
-    re_rpm_command = re.compile(r'%\(.*\)')
+    # grab all macros with rpm call that query for version, this still might
+    # be bit too greedy but it is good enough now
+    re_rpm_command = re.compile(r'%\(\s*(rpm|echo\s+`rpm).*--queryformat\s+\'%{?VERSION}?\'.*\)')
     re_requires_eq = re.compile(r'^\s*(%{\?requires_eq:\s*)?%requires_eq\s*(.*)')
     re_requires_ge = re.compile(r'^\s*(%{\?requires_ge:\s*)?%requires_ge\s*(.*)')
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
