@@ -1,4 +1,5 @@
 %define version %(rpm -q --qf '%{VERSION}' kernel-source)
+Requires:       %(rpm --qf "%%{name}" -qf $(readlink -f %{_libdir}/libavcodec.so))(unrestricted)
 Requires:       akonadi-runtime >= %( echo `rpm -q --queryformat '%{VERSION}' akonadi-runtime`)
 Requires:       ant = %(echo `rpm -q --queryformat '%{VERSION}' ant`)
 Requires:       mozilla-nspr >= %(rpm -q --queryformat '%{VERSION}' mozilla-nspr)

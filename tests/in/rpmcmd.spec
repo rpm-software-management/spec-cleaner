@@ -7,4 +7,5 @@ Requires:       mozilla-nspr-devel >= %(rpm -q --queryformat '%{VERSION}' mozill
 Requires:       mozilla-nss-devel >= %(rpm -q --queryformat '%{VERSION}' mozilla-nss-devel)
 Requires:       ant = %(echo `rpm -q --queryformat '%{VERSION}' ant`)
 Requires:       akonadi-runtime >= %( echo `rpm -q --queryformat '%{VERSION}' akonadi-runtime`)
+Requires:       %(rpm --qf "%%{name}" -qf $(readlink -f %{_libdir}/libavcodec.so))(unrestricted)
 Provides: NetworkManager-lang = %(rpm -q --queryformat '%{VERSION}' NetworkManager-lang)

@@ -1,4 +1,5 @@
 %define version %(rpm -q --qf '%{VERSION}' kernel-source)
+Requires:       %(rpm --qf "%%{name}" -qf $(readlink -f %{_libdir}/libavcodec.so))(unrestricted)
 # FIXME: Use %requires_eq macro instead
 Requires:       akonadi-runtime >= %( echo `rpm -q --queryformat '%{VERSION}' akonadi-runtime`)
 # FIXME: Use %requires_eq macro instead
