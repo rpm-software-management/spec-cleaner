@@ -141,6 +141,7 @@ triggerpostun
 triggerun
 udev_rules_update
 undefine
+update_bootloader_check_type_refresh_post
 verify[^\s]*
 verify(\s*\([^)]*\))?
 with
