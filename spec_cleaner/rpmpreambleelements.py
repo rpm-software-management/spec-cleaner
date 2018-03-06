@@ -145,13 +145,15 @@ class RpmPreambleElements(object):
             match = self.reg.re_source.match(key)
             value = match.group(1)
             if not value:
-                value = '0'
+                value = '1'
             key = int(value)
         # Put brackety ()-style deps at the end of the list, after all other
         elif self.reg.re_brackety_requires.search(key):
-            key = '1' + key
-        else:
+            key = '2' + key
+        elif self.reg.re_patternmacro.search(key):
             key = '0' + key
+        else:
+            key = '1' + key
         return key
 
     def _insert_value(self, category, value, key=None):
