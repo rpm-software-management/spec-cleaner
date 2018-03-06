@@ -9,8 +9,8 @@ Provides:       pattern-visible()
 Provides:       patterns-openSUSE-dhcp_dns_server = %{version}
 Obsoletes:      patterns-openSUSE-dhcp_dns_server < %{version}
 Requires:       pattern() = basesystem
-Recommends:     pattern() = yast_basis
 Requires:       curl
+Recommends:     pattern() = yast_basis
 Recommends:     wget
 
 %changelog
