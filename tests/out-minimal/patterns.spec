@@ -17,7 +17,6 @@ Recommends:     wget
 %pattern_development
 Summary:        GNOME Development
 Group:          Metapackages
-# SECTION PATTERNDATA
 Provides:       pattern() = devel_gnome
 Provides:       pattern-icon() = pattern-gnome-devel
 # Don't freely assign order values, contact release managers
@@ -25,12 +24,12 @@ Provides:       pattern-order() = 3160
 Provides:       pattern-visible()
 Provides:       patterns-openSUSE-devel_gnome = %{version}
 Obsoletes:      patterns-openSUSE-devel_gnome < %{version}
-Requires:       pattern() = devel_C_C++
+# SECTION PATTERNDATA
 Requires:       pattern() = gnome_basis
+Suggests:       pattern() = devel_C_C++
 # /SECTION PATTERNDATA
 Requires:       vim
 Recommends:     gtk3
 Suggests:       python-gobject
-
 
 %changelog
