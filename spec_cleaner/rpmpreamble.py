@@ -197,7 +197,6 @@ class RpmPreamble(Section):
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph.items['conditions'] += lines
-        print(self.paragraph.items['conditions'])
 
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
