@@ -70,6 +70,7 @@ class Regexp(object):
     re_debugpkg = re.compile(r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE)
     re_py_requires = re.compile(r'^%{?\??py_requires}?\s*$', re.IGNORECASE)
     re_mingw = re.compile(r'^\s*%{?_mingw.*$', re.IGNORECASE)
+    re_patterndefine = re.compile(r'^\s*%{?pattern_\S+}?\s*$', re.IGNORECASE)
     re_tail_macros = re.compile(r'^%{?python_subpackages}?')
     re_preamble_prefix = re.compile(r'^Prefix:\s*(.*)', re.IGNORECASE)
     # grab all macros with rpm call that query for version, this still might
