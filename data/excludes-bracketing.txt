@@ -101,7 +101,10 @@ filetriggerpostun
 transfiletriggerin
 transfiletriggerun
 transfiletriggerpostun
+pattern_[^\s]*
 py_compile
+py2_compile
+py3_compile
 python_alternative
 python_install_alternative
 python_uninstall_alternative
