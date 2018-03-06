@@ -405,6 +405,16 @@ class RpmPreamble(Section):
             self._add_line_value_to('patternprovides', match.group(1), key='Provides')
             return
 
+        elif self.reg.re_provides.match(line) and self.reg.re_patternobsolete.search(line):
+            match = self.reg.re_provides.match(line)
+            self._add_line_value_to('patternobsoletes', match.group(1), key='Provides')
+            return
+
+        elif self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(line):
+            match = self.reg.re_obsoletes.match(line)
+            self._add_line_value_to('patternobsoletes', match.group(1), key='Obsoletes')
+            return
+
         elif self.reg.re_requires_eq.match(line):
             match = self.reg.re_requires_eq.match(line)
             if match.group(1):
