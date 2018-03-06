@@ -57,6 +57,7 @@ class RpmPreambleElements(object):
         'source',
         'nosource',
         'patch',
+        'patternprovides', # fake provides with special function for patterns
         'buildrequires',
         'buildconflicts',
         'buildignores',
@@ -82,6 +83,7 @@ class RpmPreambleElements(object):
 
     # categories that are sorted based on value in them
     categories_with_sorted_package_tokens = [
+        'patternprovides',
         'buildrequires',
         'buildconflicts',
         'buildignores',
