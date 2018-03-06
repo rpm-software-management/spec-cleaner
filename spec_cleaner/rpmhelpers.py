@@ -120,9 +120,11 @@ def read_group_changes():
 def fix_license(value, conversions):
     # license ; should be replaced by ands so find it
     re_license_semicolon = re.compile(r'\s*;\s*')
+    value = value.rstrip(';')
+    value = re_license_semicolon.sub(' and ', value)
     # split using 'or', 'and' and parenthesis, ignore empty strings
     licenses = []
-    for a in re.split(r'(\(|\)| and | or (?!later))', value):
+    for a in re.split(r'(\(|\)| and | AND | OR | or (?!later)|;)', value):
         if a != '':
             licenses.append(a)
     if not licenses:
@@ -132,8 +134,6 @@ def fix_license(value, conversions):
         my_license = ' '.join(my_license.split())
         my_license = my_license.replace('ORlater', 'or later')
         my_license = my_license.replace('ORsim', 'or similar')
-        my_license = my_license.rstrip(';')
-        my_license = re_license_semicolon.sub(' and ', my_license)
         if my_license in conversions:
             my_license = conversions[my_license]
         licenses[index] = my_license
