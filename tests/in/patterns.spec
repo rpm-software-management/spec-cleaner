@@ -12,3 +12,22 @@ Recommends:     pattern() = yast_basis
 Provides:       pattern-order() = 3040
 Requires:       curl
 Recommends:     wget
+
+%package devel_gnome
+%pattern_development
+Summary:        GNOME Development
+Group:          Metapackages
+Recommends:     gtk3-devel
+# BEGIN-PATTERNDATA
+Provides:       pattern() = devel_gnome
+Provides:       pattern-icon() = pattern-gnome-devel
+# Don't freely assign order values, contact release managers
+Provides:       pattern-order() = 3160
+Provides:       pattern-visible()
+Requires:       pattern() = devel_C_C++
+Requires:       pattern() = gnome_basis
+Provides:       patterns-openSUSE-devel_gnome = %{version}
+Obsoletes:      patterns-openSUSE-devel_gnome < %{version}
+# END-PATTERNDATA
+Suggests:       python-gobject-devel
+Requires:       vim
