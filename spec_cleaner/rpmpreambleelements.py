@@ -59,6 +59,7 @@ class RpmPreambleElements(object):
         'patch',
         'patternprovides',  # fake provides with special function for patterns
         'patternobsoletes',  # fake provide/obsoletes with old pattern symbols
+        'patterncodeblock',  # fake condition placement for patterns to stay on top
         'buildrequires',
         'buildconflicts',
         'buildignores',

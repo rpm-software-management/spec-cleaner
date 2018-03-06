@@ -50,6 +50,8 @@ class RpmPreamble(Section):
         self._condition_define = False
         # Is the condition based probably on bcond evaluation
         self._condition_bcond = False
+        # Is the condition based on the pattern
+        self._pattern_condition = False
         self.options = options
         # do we want pkgconfig and others?
         self.pkgconfig = options['pkgconfig']
@@ -195,6 +197,7 @@ class RpmPreamble(Section):
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph.items['conditions'] += lines
+        print(self.paragraph.items['conditions'])
 
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
@@ -216,12 +219,16 @@ class RpmPreamble(Section):
                 if len(self._oldstore) == 0:
                     self._condition_define = False
             else:
-                self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
+                if self._pattern_condition:
+                    self.paragraph.items['patterncodeblock'] += self.paragraph.items['conditions']
+                else:
+                    self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
 
             # bcond must be reseted when on top and can be set even outside of the
             # define scope. So reset it here always
             if len(self._oldstore) == 0:
                 self._condition_bcond = False
+                self._pattern_condition = False
             self.paragraph.items['conditions'] = []
 
     @staticmethod
@@ -316,6 +323,9 @@ class RpmPreamble(Section):
 
     def add(self, line):
         line = self._complete_cleanup(line)
+
+        if self.condition and self.reg.re_patternmacro.search(line):
+            self._pattern_condition = True
 
         # if the line is empty, just skip it, unless keep_space is true
         if not self.keep_space and len(line) == 0:
