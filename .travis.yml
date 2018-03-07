@@ -15,12 +15,3 @@ script:
   - tox
 after_success:
   - coveralls
-deploy:
-  provider: pypi
-  user: suse
-  password:
-    secure: ZHOssGPx1yaC7ny/+OnsFZQM7f1/E1KoVyR4ePIegZmKDhbzHwPHTdTCGmgFHd2O4iZ3OFy6SHWDh95d4GdnY803nDTEdIuvb+HrL6OtFXWjTso4Yde2PaHqKlLv82ki0KvQkoJMi9gsNsJETtkeFH6lxtgUrMt2assLzMIxapk=
-  on:
-    tags: true
-    distributions: sdist bdist_wheel
-    repo: openSUSE/spec-cleaner
