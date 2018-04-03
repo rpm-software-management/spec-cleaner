@@ -34,6 +34,7 @@ files_fontsconf_file
 fillup_[^\s]*
 find_gconf_schemas
 find_lang
+firewalld_reload
 gem_install
 gem_packages
 ghc_bin_build
