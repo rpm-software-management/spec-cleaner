@@ -71,6 +71,7 @@ lang_package
 lang(\s*\([^)]*\))
 langpack
 license
+limit_build
 make_build
 make_install
 make_jobs
