@@ -10,6 +10,9 @@
 %files c
 %doc COPYING LICENSE*
 
+%files d
+%doc acknow.txt license.txt readme.txt
+
 %files FOO
 %doc COPYING
 %{_libdir/library.so
