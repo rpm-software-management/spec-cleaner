@@ -11,11 +11,13 @@ Fawkes-Runtime-exception
 Font-exception-2.0
 GCC-exception-2.0
 GCC-exception-3.1
+LLVM-exception
 LZMA-exception
 Libtool-exception
 Linux-syscall-note
 Nokia-Qt-exception-1.1
 OCCT-exception-1.0
+OpenJDK-assembly-exception-1.0
 Qwt-exception-1.0
 WxWindows-exception-3.1
 eCos-exception-2.0

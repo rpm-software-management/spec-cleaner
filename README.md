@@ -32,7 +32,8 @@ AFL-2.0 | Academic Free License v2.0
 AFL-2.1 | Academic Free License v2.1
 AFL-3.0 | Academic Free License v3.0
 Afmparse | Afmparse License
-AGPL-1.0 | Affero General Public License v1.0
+AGPL-1.0-only | Affero General Public License v1.0 only
+AGPL-1.0-or-later | Affero General Public License v1.0 or later
 AGPL-3.0-only | GNU Affero General Public License v3.0 only
 AGPL-3.0-or-later | GNU Affero General Public License v3.0 or later
 Aladdin | Aladdin Free Public License
@@ -80,36 +81,36 @@ bzip2-1.0.5 | bzip2 and libbzip2 License v1.0.5
 bzip2-1.0.6 | bzip2 and libbzip2 License v1.0.6
 Caldera | Caldera License
 CATOSL-1.1 | Computer Associates Trusted Open Source License 1.1
-CC-BY-1.0 | Creative Commons Attribution 1.0
-CC-BY-2.0 | Creative Commons Attribution 2.0
-CC-BY-2.5 | Creative Commons Attribution 2.5
-CC-BY-3.0 | Creative Commons Attribution 3.0
-CC-BY-4.0 | Creative Commons Attribution 4.0
-CC-BY-NC-1.0 | Creative Commons Attribution Non Commercial 1.0
-CC-BY-NC-2.0 | Creative Commons Attribution Non Commercial 2.0
-CC-BY-NC-2.5 | Creative Commons Attribution Non Commercial 2.5
-CC-BY-NC-3.0 | Creative Commons Attribution Non Commercial 3.0
-CC-BY-NC-4.0 | Creative Commons Attribution Non Commercial 4.0
-CC-BY-NC-ND-1.0 | Creative Commons Attribution Non Commercial No Derivatives 1.0
-CC-BY-NC-ND-2.0 | Creative Commons Attribution Non Commercial No Derivatives 2.0
-CC-BY-NC-ND-2.5 | Creative Commons Attribution Non Commercial No Derivatives 2.5
-CC-BY-NC-ND-3.0 | Creative Commons Attribution Non Commercial No Derivatives 3.0
-CC-BY-NC-ND-4.0 | Creative Commons Attribution Non Commercial No Derivatives 4.0
-CC-BY-NC-SA-1.0 | Creative Commons Attribution Non Commercial Share Alike 1.0
-CC-BY-NC-SA-2.0 | Creative Commons Attribution Non Commercial Share Alike 2.0
-CC-BY-NC-SA-2.5 | Creative Commons Attribution Non Commercial Share Alike 2.5
-CC-BY-NC-SA-3.0 | Creative Commons Attribution Non Commercial Share Alike 3.0
-CC-BY-NC-SA-4.0 | Creative Commons Attribution Non Commercial Share Alike 4.0
-CC-BY-ND-1.0 | Creative Commons Attribution No Derivatives 1.0
-CC-BY-ND-2.0 | Creative Commons Attribution No Derivatives 2.0
-CC-BY-ND-2.5 | Creative Commons Attribution No Derivatives 2.5
-CC-BY-ND-3.0 | Creative Commons Attribution No Derivatives 3.0
-CC-BY-ND-4.0 | Creative Commons Attribution No Derivatives 4.0
-CC-BY-SA-1.0 | Creative Commons Attribution Share Alike 1.0
-CC-BY-SA-2.0 | Creative Commons Attribution Share Alike 2.0
-CC-BY-SA-2.5 | Creative Commons Attribution Share Alike 2.5
-CC-BY-SA-3.0 | Creative Commons Attribution Share Alike 3.0
-CC-BY-SA-4.0 | Creative Commons Attribution Share Alike 4.0
+CC-BY-1.0 | Creative Commons Attribution 1.0 Generic
+CC-BY-2.0 | Creative Commons Attribution 2.0 Generic
+CC-BY-2.5 | Creative Commons Attribution 2.5 Generic
+CC-BY-3.0 | Creative Commons Attribution 3.0 Unported
+CC-BY-4.0 | Creative Commons Attribution 4.0 International
+CC-BY-NC-1.0 | Creative Commons Attribution Non Commercial 1.0 Generic
+CC-BY-NC-2.0 | Creative Commons Attribution Non Commercial 2.0 Generic
+CC-BY-NC-2.5 | Creative Commons Attribution Non Commercial 2.5 Generic
+CC-BY-NC-3.0 | Creative Commons Attribution Non Commercial 3.0 Unported
+CC-BY-NC-4.0 | Creative Commons Attribution Non Commercial 4.0 International
+CC-BY-NC-ND-1.0 | Creative Commons Attribution Non Commercial No Derivatives 1.0 Generic
+CC-BY-NC-ND-2.0 | Creative Commons Attribution Non Commercial No Derivatives 2.0 Generic
+CC-BY-NC-ND-2.5 | Creative Commons Attribution Non Commercial No Derivatives 2.5 Generic
+CC-BY-NC-ND-3.0 | Creative Commons Attribution Non Commercial No Derivatives 3.0 Unported
+CC-BY-NC-ND-4.0 | Creative Commons Attribution Non Commercial No Derivatives 4.0 International
+CC-BY-NC-SA-1.0 | Creative Commons Attribution Non Commercial Share Alike 1.0 Generic
+CC-BY-NC-SA-2.0 | Creative Commons Attribution Non Commercial Share Alike 2.0 Generic
+CC-BY-NC-SA-2.5 | Creative Commons Attribution Non Commercial Share Alike 2.5 Generic
+CC-BY-NC-SA-3.0 | Creative Commons Attribution Non Commercial Share Alike 3.0 Unported
+CC-BY-NC-SA-4.0 | Creative Commons Attribution Non Commercial Share Alike 4.0 International
+CC-BY-ND-1.0 | Creative Commons Attribution No Derivatives 1.0 Generic
+CC-BY-ND-2.0 | Creative Commons Attribution No Derivatives 2.0 Generic
+CC-BY-ND-2.5 | Creative Commons Attribution No Derivatives 2.5 Generic
+CC-BY-ND-3.0 | Creative Commons Attribution No Derivatives 3.0 Unported
+CC-BY-ND-4.0 | Creative Commons Attribution No Derivatives 4.0 International
+CC-BY-SA-1.0 | Creative Commons Attribution Share Alike 1.0 Generic
+CC-BY-SA-2.0 | Creative Commons Attribution Share Alike 2.0 Generic
+CC-BY-SA-2.5 | Creative Commons Attribution Share Alike 2.5 Generic
+CC-BY-SA-3.0 | Creative Commons Attribution Share Alike 3.0 Unported
+CC-BY-SA-4.0 | Creative Commons Attribution Share Alike 4.0 International
 CC0-1.0 | Creative Commons Zero v1.0 Universal
 CDDL-1.0 | Common Development and Distribution License 1.0
 CDDL-1.1 | Common Development and Distribution License 1.1
@@ -212,6 +213,7 @@ libtiff | libtiff License
 LiLiQ-P-1.1 | Licence Libre du Qu?bec ? Permissive version 1.1
 LiLiQ-R-1.1 | Licence Libre du Qu?bec ? R?ciprocit? version 1.1
 LiLiQ-Rplus-1.1 | Licence Libre du Qu?bec ? R?ciprocit? forte version 1.1
+Linux-OpenIB | Linux Kernel Variant of OpenIB.org license
 LPL-1.0 | Lucent Public License Version 1.0
 LPL-1.02 | Lucent Public License v1.02
 LPPL-1.0 | LaTeX Project Public License v1.0
@@ -221,6 +223,7 @@ LPPL-1.3a | LaTeX Project Public License v1.3a
 LPPL-1.3c | LaTeX Project Public License v1.3c
 MakeIndex | MakeIndex License
 MirOS | MirOS License
+MIT-0 | MIT No Attribution
 MIT-advertising | Enlightenment License (e16)
 MIT-CMU | CMU License
 MIT-enna | enna License
@@ -380,11 +383,13 @@ Fawkes-Runtime-exception
 Font-exception-2.0
 GCC-exception-2.0
 GCC-exception-3.1
+LLVM-exception
 LZMA-exception
 Libtool-exception
 Linux-syscall-note
 Nokia-Qt-exception-1.1
 OCCT-exception-1.0
+OpenJDK-assembly-exception-1.0
 Qwt-exception-1.0
 WxWindows-exception-3.1
 eCos-exception-2.0

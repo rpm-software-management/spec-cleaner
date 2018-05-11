@@ -17,8 +17,12 @@ AFL-2.1	Academic Free License 2.1
 AFL-2.1+	AFL-2.1+
 AFL-3.0	AFL-3.0
 AFL-3.0+	AFL-3.0+
-AGPL-1.0	AGPL-1.0
-AGPL-1.0+	AGPL-1.0+
+AGPL-1.0-only	AGPL-1.0
+AGPL-1.0-only	AGPL-1.0-only
+AGPL-1.0-only+	AGPL-1.0-only+
+AGPL-1.0-or-later	AGPL-1.0+
+AGPL-1.0-or-later	AGPL-1.0-or-later
+AGPL-1.0-or-later+	AGPL-1.0-or-later+
 AGPL-3.0-only	AGPL-3.0
 AGPL-3.0-only	AGPL-3.0-only
 AGPL-3.0-only	AGPLv3
@@ -574,6 +578,8 @@ LiLiQ-Rplus-1.1	LiLiQ-Rplus-1.1
 LiLiQ-Rplus-1.1+	LiLiQ-Rplus-1.1+
 Libpng	Libpng
 Libpng+	Libpng+
+Linux-OpenIB	Linux-OpenIB
+Linux-OpenIB+	Linux-OpenIB+
 MIT	Expat
 MIT	Expat License
 MIT	MIT
@@ -583,6 +589,8 @@ MIT	MIT licence
 MIT	MIT license
 MIT	MIT-Licence
 MIT+	MIT+
+MIT-0	MIT-0
+MIT-0+	MIT-0+
 MIT-CMU	MIT-CMU
 MIT-CMU+	MIT-CMU+
 MIT-advertising	MIT-advertising
