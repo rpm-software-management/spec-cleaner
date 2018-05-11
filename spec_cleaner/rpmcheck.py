@@ -25,9 +25,4 @@ class RpmCheck(Section):
                 if not line.endswith('\\') and not line.lstrip().startswith('#'):
                     line = self.reg.re_make.sub(r'\1make %{?_smp_mflags}\2', line)
 
-        # find all make %{?_smp_mflags} and replace them with %make_build
-        # this is two step process as we can replace %make_build more radically
-        if not self.minimal:
-            line = line.replace('make %{?_smp_mflags}', '%make_build')
-
         Section.add(self, line)

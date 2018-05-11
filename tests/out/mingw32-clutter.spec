@@ -104,7 +104,7 @@ PATH="%{_mingw32_bindir}:$PATH" \
 	--disable-static --enable-shared \
 	--with-flavour=win32 \
 	--disable-glibtest --disable-conformance
-%make_build || make
+make %{?_smp_mflags} || make
 
 %install
 %make_install

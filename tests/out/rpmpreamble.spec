@@ -105,7 +105,7 @@ Headers, pkg-config files, so link and other development files for %{name}
   --disable-static \
   --disable-examples \
   --enable-curl
-%make_build
+make %{?_smp_mflags}
 
 %install
 %make_install

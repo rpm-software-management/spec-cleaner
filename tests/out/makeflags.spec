@@ -3,7 +3,7 @@ export CFLAGS="%{optflags}"
 # make this easy
 export CFLAGS="%{optflags} -blabla"
 cd make
-%make_build
+make %{?_smp_mflags}
 make PREFIX=/ \
      STATIC=""
 make -j1
