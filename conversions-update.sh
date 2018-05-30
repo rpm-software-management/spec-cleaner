@@ -19,7 +19,7 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
-BASEURL="http://download.opensuse.org/distribution/$2/repo/oss/suse/"
+BASEURL="http://download.opensuse.org/distribution/$2/repo/oss/"
 fetch "${BASEURL}$(fetch "${BASEURL}repodata/repomd.xml" \
     | perl -ne 'print $1 if /"(.*?primary.xml.gz)"/')" \
     | zcat | perl "$(cd "$(dirname $0)" && pwd)/conversions-update.pl" $1
