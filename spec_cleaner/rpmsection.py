@@ -32,6 +32,8 @@ class Section(object):
         """
 
         line = line.rstrip()
+        # remove nbsp for normal spaces
+        line = line.replace(u'\xa0', ' ')
 
         if not line.startswith('#'):
             if not self.minimal and not self.no_curlification:

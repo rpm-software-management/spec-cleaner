@@ -19,7 +19,7 @@ Authors:
         * Jay Painter
 
 %description devel
-Headers and another development files for TomMath library.
+Headers and another development files for TomMath library.
 
 Author:
 --------
