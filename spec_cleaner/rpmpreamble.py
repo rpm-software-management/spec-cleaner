@@ -2,11 +2,7 @@
 
 import os.path
 import re
-
-try:
-    from urllib import parse as urlparse
-except ImportError:
-    import urlparse
+from urllib import parse
 
 from .rpmsection import Section
 from .rpmpreambleelements import RpmPreambleElements
@@ -160,7 +156,7 @@ class RpmPreamble(Section):
         (which doesn't really make much sense, given that the url contains
         the first letter of the name, so that is going to be explicit anyway)
         """
-        parsed = urlparse.urlparse(url)
+        parsed = parse.urlparse(url)
         # not an URL
         if not parsed.scheme:
             return url
@@ -184,7 +180,7 @@ class RpmPreamble(Section):
                 # don't know what to do
                 return url
 
-        return urlparse.urlunparse(('https', 'files.pythonhosted.org', '/packages/source/{}/{}/{}'.format(modname[0], modname, filename), '', '', ''))
+        return parse.urlunparse(('https', 'files.pythonhosted.org', '/packages/source/{}/{}/{}'.format(modname[0], modname, filename), '', '', ''))
 
     def end_subparagraph(self, endif=False):
         if not self._oldstore:

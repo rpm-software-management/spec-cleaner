@@ -4,7 +4,6 @@ strictness: veryhigh
 max-line-length: 150
 autodetect: yes
 python-targets:
-    - 2
     - 3
 pep8:
   full: true

@@ -1,10 +1,6 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
+from io import StringIO
 import sys
 import tempfile
 import subprocess
