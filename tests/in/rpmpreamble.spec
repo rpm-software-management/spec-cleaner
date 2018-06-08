@@ -85,8 +85,7 @@ Group:          Development/Libraries/C and C++
 Requires:       %{libmicrohttpd} = %{version}
 Requires:       pkg-config
 Requires:       pkgconfig(gnutls)
-Requires(post): info
-Requires(preun): info
+Requires(post,preun): info
 
 %description devel
 Headers, pkg-config files, so link and other development files for %{name}
