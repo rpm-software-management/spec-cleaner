@@ -1,7 +1,7 @@
 # spec-cleaner #
 
 [![Build Status](https://travis-ci.org/openSUSE/spec-cleaner.svg?branch=master)](https://travis-ci.org/openSUSE/spec-cleaner)
-[![Coverage Status](https://coveralls.io/repos/openSUSE/spec-cleaner/badge.svg?branch=master&service=github)](https://coveralls.io/github/openSUSE/spec-cleaner?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/openSUSE/spec-cleaner/badge.svg?branch=master)](https://coveralls.io/github/openSUSE/spec-cleaner?branch=master)
 [![Code Health](https://landscape.io/github/openSUSE/spec-cleaner/master/landscape.svg?style=flat)](https://landscape.io/github/openSUSE/spec-cleaner/master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/58de1bb1553e4c24843f4ca1bf9048a2)](https://www.codacy.com/app/scarabeusiv/spec-cleaner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=openSUSE/spec-cleaner&amp;utm_campaign=Badge_Grade)
 
