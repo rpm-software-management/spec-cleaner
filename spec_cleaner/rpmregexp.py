@@ -168,6 +168,9 @@ class Regexp(object):
     re_initddir = re.compile(r'%{?_initrddir}?' + endmacro)
     re_rpmbuildroot = re.compile(r'(\${?RPM_BUILD_ROOT}?|"%{?buildroot}?")([/\s%]|$)')
     re_rpmbuildroot_quotes = re.compile(r'"\${?RPM_BUILD_ROOT}?"')
+    # deprecated greps
+    re_deprecated_egrep_regex = re.compile(r'\begrep\b')
+    re_deprecated_fgrep_regex = re.compile(r'\bfgrep\b')
 
     def __init__(self, keywords):
         self.re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords) + ')}')

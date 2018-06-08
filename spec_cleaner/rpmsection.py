@@ -195,6 +195,9 @@ class Section(object):
             if self.minimal:
                 line = line.replace('%__' + i, i)
 
+        line = self.reg.re_deprecated_egrep_regex.sub(r'grep -E', line)
+        line = self.reg.re_deprecated_fgrep_regex.sub(r'grep -F', line)
+
         return line
 
     @staticmethod
