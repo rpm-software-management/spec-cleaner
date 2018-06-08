@@ -52,6 +52,13 @@ class FileUtils(object):
         except IOError as error:
             raise RpmException(str(error))
 
+        try:
+            _file.read()
+        except UnicodeDecodeError as error:
+            raise RpmException(str(error))
+
+        _file.seek(0,0)
+
         self.f = _file
 
     def close(self):

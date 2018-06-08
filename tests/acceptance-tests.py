@@ -105,6 +105,12 @@ class TestCompare(object):
         with pytest.raises(RpmException):
             self._run_individual_test(test, None, outfile='', options={'diff': True, 'diff_prog': 'error'})
 
+    def test_unicode(self, tmpfile):
+        test = 'perl-Text-Unidecode.spec'
+        testpath = 'unicode' + test
+        with pytest.raises(RpmException):
+            self._run_individual_test(test, None, infile=testpath, outfile='', options={'minimal': False})
+
     @pytest.mark.parametrize(
         'test, compare_dir, options',
         [
