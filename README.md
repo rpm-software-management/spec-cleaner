@@ -13,7 +13,7 @@ It is intended to provide same or better features in order for us to be able to 
 spec-cleaner uses tox to run the testsuite in a clean enviroment. To run the
 tests locally, do:
 
-    tox -epy27
+    tox -epy36
 
 
 # [SPDX Licenses](http://spdx.org/licenses)
