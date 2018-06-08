@@ -31,7 +31,7 @@ Source2:        libmicrohttpd.keyring
 # PATCH-WORKAROUND-OPENSUSE: the threads have a problem deadlocking (in OBS)
 Patch1:         disable-stalling-test.patch
 Patch2:         libmicrohttpd_test_data.patch
-BuildRequires:  curl
+BuildPreReq:    curl
 BuildRequires:  file-devel
 BuildRequires:  libgcrypt-devel >= 1.2.4
 BuildRequires:  libtool
