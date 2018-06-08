@@ -1,5 +1,5 @@
 Name:           bundle-lang-other
-BuildArch:      noarch
+BuildArch:      x86_64
 Provides:       locale(aa;af;am;ang;as;az;be;bg;bn;bo;br;bs;byn)
 Provides:       locale(csb;cy;dv;dz;ee;eo;et;eu)
 Provides:       locale(fa;fo;fy;ga;gd;gez;gl;gn;gu;gv;haw;he;hi;hr)

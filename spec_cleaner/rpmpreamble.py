@@ -518,6 +518,14 @@ class RpmPreamble(Section):
             self._add_line_value_to('group', value)
             return
 
+        elif self.reg.re_buildarch.match(line):
+            match = self.reg.re_buildarch.match(line)
+            value = match.group(2)
+            if value.startswith('noarch'):
+                self._add_line_value_to('buildarch', value)
+            else:
+                self._add_line_value_to('exclusivearch', value)
+
         # loop for all other matching categories which
         # do not require special attention
         else:

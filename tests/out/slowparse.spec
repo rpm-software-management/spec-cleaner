@@ -10,6 +10,6 @@ Provides:       locale(rw;sa;se;si;sid;sk;sl;so;sp;sq;sr)
 Provides:       locale(ss;st;sw;syr;ta;te;tg;th;ti;tig;tk;tl;tr;tt;ug;uk;ur;urd;uz)
 Provides:       locale(ve;ven;vi;wa;wal;wo;xh;yi;yo;zu)
 Provides:       locale(af;ar;bg;be;bn;bs;ca;cs;cy;da;de;el;en_GB;en_US;eo;es;et;fi;fr;gl;gu;he;hi;hr;hu;id;it;ja;ka;km;ko;lo;lt;mk;mr;nb;nl;pa;pl;pt;ro;ru;si;sk;sl;sr;sr@Latn;sv;ta;tr;uk;vi;wa;xh;zh_CN;zh_TW;zu)
-BuildArch:      noarch
+ExclusiveArch:  x86_64
 
 %changelog
