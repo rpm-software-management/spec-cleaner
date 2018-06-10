@@ -3,7 +3,7 @@
 import re
 from subprocess import check_output
 
-from .fileutils import open_datafile, open_spec
+from .fileutils import open_datafile, open_stringio_spec
 from .rpmexception import RpmException
 from .rpmrequirestoken import RpmRequiresToken
 
@@ -37,7 +37,7 @@ def find_macros_with_arg(spec):
     macrofuncs = []
 
     re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
-    with open_spec(spec, 'r') as f:
+    with open_stringio_spec(spec) as f:
         for line in (l.rstrip('\n') for l in f):
             found_macro = re_spec_macrofunc.sub(r'\1', line)
             if found_macro != line:

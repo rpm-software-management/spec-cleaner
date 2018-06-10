@@ -1,12 +1,12 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-from io import StringIO
 import sys
 import tempfile
 import subprocess
 import shlex
 import os.path
 
+from .fileutils import open_stringio_spec
 from .rpmsection import Section
 from .rpmexception import RpmException
 from .rpmcopyright import RpmCopyright
@@ -68,7 +68,7 @@ class RpmSpecCleaner(object):
         if self.options['diff_prog'].startswith("gvim") and " -f" not in self.options['diff_prog']:
             self.options['diff_prog'] += " -f"
         self.reg = self.options['reg']
-        self.fin = open(self.options['specfile'])
+        self.fin = open_stringio_spec(self.options['specfile'])
 
         # Section starts detection
         self.section_starts = [
@@ -99,16 +99,6 @@ class RpmSpecCleaner(object):
         if self.options['output']:
             self.fout = open(self.options['output'], 'w')
         elif self.options['inline']:
-            fifo = StringIO()
-            while True:
-                string = self.fin.read(500 * 1024)
-                if len(string) == 0:
-                    break
-                fifo.write(string)
-
-            self.fin.close()
-            fifo.seek(0)
-            self.fin = fifo
             self.fout = open(self.options['specfile'], 'w')
         elif self.options['diff']:
             self.fout = tempfile.NamedTemporaryFile(mode='w+', prefix=os.path.split(self.options['specfile'])[-1] + '.', suffix='.spec')
@@ -185,11 +175,10 @@ class RpmSpecCleaner(object):
         #   if previous non-empty-uncommented line was starting the condition
         # we end up the condition section in preamble (if applicable) and
         # proceed to output
-        if self._detect_condition_change(line) or \
-                (type(self.current_section) is Section and (self.reg.re_if.match(line)
-                or self.reg.re_codeblock.match(line))):
-            if not hasattr(self.current_section, 'condition') or \
-                    (hasattr(self.current_section, 'condition') and not self.current_section.condition):
+        if self._detect_condition_change(line) or(type(self.current_section) is Section and (self.reg.re_if.match(line)
+                                                                                             or self.reg.re_codeblock.match(line))):
+            if not hasattr(self.current_section, 'condition') or (hasattr(self.current_section, 'condition')
+                                                                  and not self.current_section.condition):
                 # If we have to break out we go ahead with small class
                 # which just print the one evil line
                 return Section
