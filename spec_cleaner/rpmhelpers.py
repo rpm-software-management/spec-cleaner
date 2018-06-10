@@ -4,6 +4,7 @@ import re
 from subprocess import check_output
 
 from .fileutils import FileUtils
+from .fileutils import open_datafile
 from .rpmexception import RpmException
 from .rpmrequirestoken import RpmRequiresToken
 
@@ -29,15 +30,8 @@ def parse_rpm_showrc():
 
 
 def load_keywords_whitelist():
-    keywords = []
-
-    files = FileUtils()
-    files.open_datafile(BRACKETING_EXCLUDES)
-    for line in files.f:
-        keywords.append(line.rstrip('\n'))
-    files.close()
-
-    return keywords
+    with open_datafile(BRACKETING_EXCLUDES) as f:
+        return [line.rstrip('\n') for line in f]
 
 
 def find_macros_with_arg(spec):
@@ -56,16 +50,9 @@ def find_macros_with_arg(spec):
 
 
 def read_conversion_changes(conversion_file):
-    conversions = {}
-
-    files = FileUtils()
-    files.open_datafile(conversion_file)
-    for line in files.f:
+    with open_datafile(conversion_file) as f:
         # the values are split by  ': '
-        pair = line.split(': ')
-        conversions[pair[0]] = pair[1][:-1]
-    files.close()
-    return conversions
+        return {key: value for key, value in (line.split(": ") for line in f)}
 
 
 def read_tex_changes():
@@ -85,36 +72,20 @@ def read_cmake_changes():
 
 
 def read_licenses_changes():
-    licenses = {}
-
-    files = FileUtils()
-    files.open_datafile(LICENSES_CHANGES)
-    # Header starts with # first line so skip
-    next(files.f)
-    for line in files.f:
+    with open_datafile(LICENSES_CHANGES) as f:
         # strip newline
-        line = line.rstrip('\n')
+        next(f)
         # file has format
         # correct license string<tab>known bad license string
         # tab is used as separator
-        pair = line.split('\t')
-        licenses[pair[1]] = pair[0]
-    files.close()
-    return licenses
+        return {old: correct for correct, old in (line.rstrip("\n").split("\t") for line in f)}
 
 
 def read_group_changes():
-    groups = []
-
-    files = FileUtils()
-    files.open_datafile(GROUPS_LIST)
-    # header starts with link where we find the groups
-    next(files.f)
-    for line in files.f:
-        line = line.rstrip('\n')
-        groups.append(line)
-    files.close()
-    return groups
+    with open_datafile(GROUPS_LIST) as f:
+        # header starts with link where we find the groups
+        next(f)
+        return [line.rstrip('\n') for line in f]
 
 
 def fix_license(value, conversions):
@@ -139,7 +110,12 @@ def fix_license(value, conversions):
         licenses[index] = my_license
 
     # create back new string with replaced licenses
-    s = ' '.join(licenses).replace("( ", "(").replace(" )", ")").replace(' and ', ' AND ').replace(' or ', ' OR ').replace(' with ', ' WITH ')
+    s = ' '.join(licenses).replace(
+        "( ", "(").replace(
+        " )", ")").replace(
+        ' and ', ' AND ').replace(
+        ' or ', ' OR ').replace(
+        ' with ', ' WITH ')
     return s
 
 
