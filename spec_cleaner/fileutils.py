@@ -4,6 +4,8 @@ import os
 import sys
 import sysconfig
 
+from io import StringIO
+
 from .rpmexception import RpmException
 
 
@@ -32,16 +34,16 @@ def open_datafile(name):
         raise RpmException("File '{}' not found in datadirs".format(name))
 
 
-def open_spec(name, mode="r"):
+def open_stringio_spec(name):
     """
     Function to open regular files with exception handling.
     """
 
+    data = StringIO()
     try:
-        _file = open(name, mode)
-        _file.read()
-        _file.seek(0, 0)
+        with open(name, mode="r") as f:
+            data.write(f.read())
+            data.seek(0,0)
     except (IOError, UnicodeDecodeError) as error:
         raise RpmException(str(error))
-
-    return _file
+    return data
