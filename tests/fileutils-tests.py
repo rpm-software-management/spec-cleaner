@@ -3,9 +3,8 @@
 
 import pytest
 
-from spec_cleaner.fileutils import FileUtils, open_datafile
+from spec_cleaner.fileutils import open_datafile, open_spec
 from spec_cleaner import RpmException
-
 
 
 class TestFileutils(object):
@@ -14,24 +13,17 @@ class TestFileutils(object):
     We run few tests to ensure fileutils class works fine
     """
 
-    def setup_class(self):
-        """
-        Declare global scope variables for further use.
-        """
-        self.fileutils = FileUtils()
-
     def test_open_assertion(self):
         with pytest.raises(RpmException):
-            self.fileutils.open('missing-file.txt', 'r')
+            open_spec('missing-file.txt', 'r')
 
     def test_open_datafile_assertion(self):
         with pytest.raises(RpmException):
             open_datafile('missing-file.txt')
 
     def test_open(self):
-        self.fileutils.open('tests/fileutils-tests.py', 'r')
-        self.fileutils.close()
-        assert self.fileutils.f is None
+        data = open_spec('tests/fileutils-tests.py', 'r')
+        data.close()
 
     def test_open_datafile(self):
         data = open_datafile('excludes-bracketing.txt')

@@ -32,44 +32,16 @@ def open_datafile(name):
         raise RpmException("File '{}' not found in datadirs".format(name))
 
 
-class FileUtils(object):
-
+def open_spec(name, mode="r"):
     """
-    Class working with file operations.
-    Read/write..
+    Function to open regular files with exception handling.
     """
 
-    # file variable
-    f = None
-
-    def open(self, name, mode):
-        """
-        Function to open regular files with exception handling.
-        """
-
-        try:
-            _file = open(name, mode)
-        except IOError as error:
-            raise RpmException(str(error))
-
-        try:
-            _file.read()
-        except UnicodeDecodeError as error:
-            raise RpmException(str(error))
-
+    try:
+        _file = open(name, mode)
+        _file.read()
         _file.seek(0, 0)
+    except (IOError, UnicodeDecodeError) as error:
+        raise RpmException(str(error))
 
-        self.f = _file
-
-    def close(self):
-        """
-        Just wrapper for closing the file
-        """
-
-        if self.f:
-            self.f.close()
-            self.f = None
-
-    def __del__(self):
-        self.close()
-        self.f = None
+    return _file

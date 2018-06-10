@@ -3,8 +3,7 @@
 import re
 from subprocess import check_output
 
-from .fileutils import FileUtils
-from .fileutils import open_datafile
+from .fileutils import open_datafile, open_spec
 from .rpmexception import RpmException
 from .rpmrequirestoken import RpmRequiresToken
 
@@ -38,16 +37,12 @@ def find_macros_with_arg(spec):
     macrofuncs = []
 
     re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
-    files = FileUtils()
-    files.open(spec, 'r')
-    for line in files.f:
-        line = line.rstrip('\n')
-        found_macro = re_spec_macrofunc.sub(r'\1', line)
-        if found_macro != line:
-            macrofuncs += [found_macro]
-    files.close()
+    with open_spec(spec, 'r') as f:
+        for line in (l.rstrip('\n') for l in f):
+            found_macro = re_spec_macrofunc.sub(r'\1', line)
+            if found_macro != line:
+                macrofuncs += [found_macro]
     return macrofuncs
-
 
 def read_conversion_changes(conversion_file):
     with open_datafile(conversion_file) as f:
