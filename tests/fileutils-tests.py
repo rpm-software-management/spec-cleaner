@@ -3,8 +3,9 @@
 
 import pytest
 
-from spec_cleaner.fileutils import FileUtils
+from spec_cleaner.fileutils import FileUtils, open_datafile
 from spec_cleaner import RpmException
+
 
 
 class TestFileutils(object):
@@ -25,7 +26,7 @@ class TestFileutils(object):
 
     def test_open_datafile_assertion(self):
         with pytest.raises(RpmException):
-            self.fileutils.open_datafile('missing-file.txt')
+            open_datafile('missing-file.txt')
 
     def test_open(self):
         self.fileutils.open('tests/fileutils-tests.py', 'r')
@@ -33,6 +34,5 @@ class TestFileutils(object):
         assert self.fileutils.f is None
 
     def test_open_datafile(self):
-        self.fileutils.open_datafile('excludes-bracketing.txt')
-        self.fileutils.close()
-        assert self.fileutils.f is None
+        data = open_datafile('excludes-bracketing.txt')
+        data.close()
