@@ -107,7 +107,7 @@ class TestCompare(object):
 
     def test_unicode(self, tmpfile):
         test = 'perl-Text-Unidecode.spec'
-        testpath = 'unicode' + test
+        testpath = os.path.join('tests', 'unicode', test)
         with pytest.raises(RpmException):
             self._run_individual_test(test, None, infile=testpath, outfile='', options={'minimal': False})
 
