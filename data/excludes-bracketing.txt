@@ -7,6 +7,8 @@ attr(\s*\([^)]*\))?
 bcond_with[^\s]*
 build
 cabal_test
+cake_build
+cake_install
 caps(\s*\([^)]*\))?
 changelog
 check
@@ -83,6 +85,7 @@ mime_database_post[^\s]*
 _mingw32_configure
 nagios_command_user_group_add
 nagios_user_group_add
+nodejs_install
 __os_install_post
 package
 patch[0-9]*
