@@ -26,12 +26,12 @@ def open_datafile(name):
     for path in possible_paths:
         try:
             _file = open(path, mode='r')
-        except IOError:
+        except OSError:
             pass
         else:
             return _file
-        # file not found
-        raise RpmException("File '{}' not found in datadirs".format(name))
+    # file not found
+    raise RpmException("File '{}' not found in datadirs".format(name))
 
 
 def open_stringio_spec(name):
