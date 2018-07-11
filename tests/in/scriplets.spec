@@ -8,7 +8,7 @@
 someothercommand
 
 %post -n %{_libname}
-/sbin/ldconfig
+%{run_ldconfig}
 
 %filetriggerin tools -- %{_datadir}/icons
 if [ "$(realpath %{_bindir}/gtk-update-icon-cache)" = "%{_bindir}/gtk-update-icon-cache-2.0" ]; then

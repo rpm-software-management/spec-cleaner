@@ -126,6 +126,8 @@ class Regexp(object):
     re_defattr = re.compile(r'^\s*%defattr\s*\(\s*-\s*,\s*root\s*,\s*root\s*(,\s*-\s*)?\)\s*')
     re_doclicense = re.compile(r'(\S+)?(LICENSE|COPYING)(\*|\.(\*|\S+))?($|\s)', re.IGNORECASE)
 
+    # rpmscriptlets
+    re_ldconfig = re.compile(r'(^|(.*\s)?)%{?run_ldconfig}?(\s.*|)$', re.IGNORECASE)
     # patches/sources
     re_ptch = re.compile(r'%{P:(\d+)}')
     re_src = re.compile(r'%{S:(\d+)}')

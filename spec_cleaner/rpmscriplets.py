@@ -9,6 +9,15 @@ class RpmScriptlets(Section):
         Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig
     '''
 
+    def add(self, line):
+        line = self._complete_cleanup(line)
+        line = self._remove_deprecated_ldconfig(line)
+        Section.add(self, line)
+
+    def _remove_deprecated_ldconfig(self, line):
+        line = self.reg.re_ldconfig.sub('/sbin/ldconfig', line)
+        return line
+
     def output(self, fout, newline=True, new_class=None):
         if not self.minimal:
             self._collapse_multiline_ldconfig()
