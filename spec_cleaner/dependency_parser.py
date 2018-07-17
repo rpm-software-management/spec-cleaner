@@ -3,11 +3,11 @@ import logging
 from .rpmexception import NoMatchException
 from .rpmrequirestoken import RpmRequiresToken
 
-chunk_types = [
+chunk_types = (
     'text', 'space', 'macro', 'operator', 'version'
-]
+)
 
-state_types = ['start', 'name', 'operator', 'version']
+state_types = ('start', 'name', 'operator', 'version')
 
 re_brackets = {}
 re_brackets['('] = re.compile(
@@ -98,12 +98,12 @@ def read_next_chunk(string):
     if not string:
         return '', '', 'text'
 
-    if string[0:2] in ['>=', '<=', '=>', '=<']:
+    if string[0:2] in ('>=', '<=', '=>', '=<'):
         chunk = string[0:2]
         chunk_type = 'operator'
         rest = string[2:]
 
-    elif string[0:1] in ['<', '>', '=']:
+    elif string[0:1] in ('<', '>', '='):
         chunk = string[0:1]
         chunk_type = 'operator'
         rest = string[1:]
@@ -118,7 +118,7 @@ def read_next_chunk(string):
         chunk_type = 'text'
         rest = string[2:]
 
-    elif string[0:2] in ['%{', '%(']:
+    elif string[0:2] in ('%{', '%('):
         chunk, rest = read_macro(string)
         chunk_type = 'macro'
 

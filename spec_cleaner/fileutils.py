@@ -16,12 +16,12 @@ def open_datafile(name):
     """
     homedir = os.getenv('HOME', '~') + '/.local/'
 
-    possible_paths = [
+    possible_paths = (
         '{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), name),
         '{0}/share/spec-cleaner/{1}'.format(homedir, name),
         '{0}/share/spec-cleaner/{1}'.format(sysconfig.get_path('data'), name),
         '{0}/share/spec-cleaner/{1}'.format(sys.prefix, name),
-    ]
+    )
 
     for path in possible_paths:
         try:

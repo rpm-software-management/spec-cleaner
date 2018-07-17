@@ -42,7 +42,7 @@ class RpmPreambleElements(object):
         'excludearch': 'ExcludeArch',
     }
 
-    categories_order = [
+    categories_order = (
         'define',
         'bconds',
         'bcond_conditions',
@@ -81,7 +81,7 @@ class RpmPreambleElements(object):
         'build_conditions',
         'conditions',
         'tail',
-    ]
+    )
 
     # categories that are sorted based on value in them
     categories_with_sorted_package_tokens = [
@@ -102,10 +102,10 @@ class RpmPreambleElements(object):
     ]
 
     # categories that are sorted based on key value (eg Patch0 before Patch1)
-    categories_with_sorted_keyword_tokens = [
+    categories_with_sorted_keyword_tokens = (
         'source',
         'patch',
-    ]
+    )
 
     def __init__(self, options):
         self.items = {}
