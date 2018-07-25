@@ -5,10 +5,10 @@ from .rpmsection import Section
 
 class RpmPrep(Section):
 
-    '''
+    """
         Try to simplify to %setup -q when possible.
         Replace %patch with %patch0
-    '''
+    """
 
     def add(self, line):
         line = self._complete_cleanup(line)

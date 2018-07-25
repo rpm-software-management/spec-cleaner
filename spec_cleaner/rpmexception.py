@@ -34,4 +34,3 @@ class NoMatchException(RpmBaseException):
     """
     Exception raised by not matching corresponding brackets/etc
     """
-

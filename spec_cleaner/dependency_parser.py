@@ -1,5 +1,6 @@
-import re
 import logging
+import re
+
 from .rpmexception import NoMatchException
 from .rpmrequirestoken import RpmRequiresToken
 
@@ -32,7 +33,7 @@ re_spaces = re.compile(r'(\s*,\s*|\s+)')
 re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
 
-logger = logging.getLogger("DepParser")
+logger = logging.getLogger('DepParser')
 # Switch to logging.DEBUG if needed
 logger.setLevel(logging.ERROR)
 
@@ -80,8 +81,8 @@ def matching_bracket(bracket):
         return '}'
     elif bracket == '(':
         return ')'
-    raise Exception("Undefined bracket matching - add defintion of '%s' to "
-                    "matching_bracket()" % bracket)
+    raise Exception('Undefined bracket matching - add defintion of "%s" to '
+                    'matching_bracket()' % bracket)
 
 
 def read_macro(string):
@@ -144,7 +145,7 @@ class DepParserError(Exception):
 class DependencyParser:
     def __init__(self, line):
         # adding comma will cause flush in the end of line
-        self.string = line + ", "
+        self.string = line + ', '
         self.parsed = []
         self.token = []
         self.state = 'start'
@@ -214,7 +215,7 @@ class DependencyParser:
             self.space = True
         elif self.next_type == 'operator':
             if self.space:
-                raise DepParserError("found operator after operator")
+                raise DepParserError('found operator after operator')
 
         self.token.append(self.next)
 
@@ -229,7 +230,7 @@ class DependencyParser:
         elif self.next_type == 'macro':
             pass
         elif self.next_type == 'operator':
-            raise DepParserError("found operator after version")
+            raise DepParserError('found operator after version')
 
         self.token.append(self.next)
 
@@ -241,7 +242,7 @@ class DependencyParser:
         elif self.next_type == 'macro':
             self.state = 'name'
         elif self.next_type == 'operator':
-            raise DepParserError("found operator when name expected")
+            raise DepParserError('found operator when name expected')
 
         self.token.append(self.next)
 
@@ -254,4 +255,4 @@ class DependencyParser:
             self.version_state_change()
         elif self.state == 'start':
             self.start_state_change()
-        logger.debug("new state: %s", self.state)
+        logger.debug('new state: %s', self.state)

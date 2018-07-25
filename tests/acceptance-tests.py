@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import glob
+from glob import glob
 import os
 from shutil import copyfile
-import pytest
 
+import pytest
 from spec_cleaner import RpmException
 from spec_cleaner import RpmSpecCleaner
 
@@ -16,7 +16,7 @@ def tests():
     Generate list of tests we are going to use according to what is on hdd
     """
     testglob = os.path.join('tests', 'in', '*.spec')
-    return [os.path.basename(f) for f in glob.glob(testglob)]
+    return [os.path.basename(f) for f in glob(testglob)]
 
 
 @pytest.fixture(scope='session')
@@ -25,7 +25,7 @@ def space_tests():
     Generate list of tests we are going to use according to what is on hdd
     """
     testglob = os.path.join('tests', 'keep-space', '*.spec')
-    return [os.path.basename(f) for f in glob.glob(testglob)]
+    return [os.path.basename(f) for f in glob(testglob)]
 
 
 class TestCompare(object):

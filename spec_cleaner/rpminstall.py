@@ -5,10 +5,10 @@ from .rpmsection import Section
 
 class RpmInstall(Section):
 
-    '''
+    """
         Remove commands that wipe out the build root.
         Replace %makeinstall (suse-ism).
-    '''
+    """
 
     def add(self, line):
         line = self._complete_cleanup(line)

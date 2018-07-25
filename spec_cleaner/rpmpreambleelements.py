@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-from .rpmhelpers import sort_uniq, add_group, find_pkgconfig_statement, find_pkgconfig_declaration, fix_license
 from .rpmexception import RpmException
+from .rpmhelpers import add_group, find_pkgconfig_declaration, find_pkgconfig_statement, fix_license, sort_uniq
 from .rpmrequirestoken import RpmRequiresToken
 
 

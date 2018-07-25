@@ -4,13 +4,13 @@
 # All rights reserved.
 # See COPYING for details.
 
-import os
-import sys
 import argparse
 from datetime import datetime
+import os
+import sys
 
-from .rpmexception import RpmWrongArgs, RpmException
 from .rpmcleaner import RpmSpecCleaner
+from .rpmexception import RpmException, RpmWrongArgs
 
 
 __version__ = '1.1.1'

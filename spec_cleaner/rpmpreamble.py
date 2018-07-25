@@ -4,11 +4,11 @@ import os.path
 import re
 from urllib import parse
 
-from .rpmsection import Section
-from .rpmpreambleelements import RpmPreambleElements
 from .dependency_parser import DependencyParser
 from .rpmhelpers import fix_license
+from .rpmpreambleelements import RpmPreambleElements
 from .rpmrequirestoken import RpmRequiresToken
+from .rpmsection import Section
 
 
 class RpmPreamble(Section):
@@ -137,12 +137,12 @@ class RpmPreamble(Section):
         """
         # check if we start with if
         if len(self.paragraph.items['conditions']) == 2 and \
-                ((isinstance(self.paragraph.items['conditions'][0], list) and \
-                self.paragraph.items['conditions'][0][-1].startswith("%if")) or \
-                self.paragraph.items['conditions'][0].startswith("%if")):
+           ((isinstance(self.paragraph.items['conditions'][0], list) and \
+            self.paragraph.items['conditions'][0][-1].startswith('%if')) or \
+           self.paragraph.items['conditions'][0].startswith('%if')):
             self.paragraph.items['conditions'] = []
 
-    PYPI_SOURCE_HOSTS = ("pypi.io", "files.pythonhosted.org", "pypi.python.org")
+    PYPI_SOURCE_HOSTS = ('pypi.io', 'files.pythonhosted.org', 'pypi.python.org')
 
     def _fix_pypi_source(self, url):
         """
@@ -166,14 +166,14 @@ class RpmPreamble(Section):
             return url
 
         filename = os.path.basename(parsed.path)
-        modname = filename[:filename.rfind("-")]
+        modname = filename[:filename.rfind('-')]
 
         # TODO the following condition checks if the filename starts with a macro,
         # and expects that if it does, the macro is called "modname". This is not
         # always the case. It would be better to detect the name of the macro and
         # browse local definitions to find its value.
-        if modname[0] == "%":
-            if (modname == "%modname" or modname == "%{modname}") \
+        if modname[0] == '%':
+            if (modname == '%modname' or modname == '%{modname}') \
                     and self.modname:
                 modname = self.modname
             else:
@@ -345,7 +345,7 @@ class RpmPreamble(Section):
             self._add_line_to('conditions', line)
             self.condition = True
             # check for possibility of the bcond conditional
-            if "%{with" in line or "%{without" in line:
+            if '%{with' in line or '%{without' in line:
                 self._condition_bcond = True
             self.start_subparagraph()
             self.previous_line = line
@@ -447,14 +447,14 @@ class RpmPreamble(Section):
                 self.multiline = True
             # if we are kernel and not multiline we need to be at bottom, so
             # lets use misc section, otherwise go for define
-            if not self.multiline and line.find("kernel_module") >= 0:
+            if not self.multiline and line.find('kernel_module') >= 0:
                 self._add_line_to('misc', line)
             else:
                 self._add_line_to('define', line)
 
             # catch "modname" for use in pypi url rewriting
-            if (line.startswith("%define") or line.startswith("%global")) and \
-                 line.find("modname") >= 0:
+            if (line.startswith('%define') or line.startswith('%global')) and \
+               line.find('modname') >= 0:
                 define, name, value = line.split(None, 2)
                 self.modname = value
 
@@ -530,7 +530,7 @@ class RpmPreamble(Section):
         # do not require special attention
         else:
             # cleanup
-            for (category, regexp) in self.category_to_clean.items():
+            for (_category, regexp) in self.category_to_clean.items():
                 match = regexp.match(line)
                 if match:
                     return

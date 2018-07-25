@@ -5,9 +5,9 @@ from .rpmsection import Section
 
 class RpmScriptlets(Section):
 
-    '''
+    """
         Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig
-    '''
+    """
 
     def add(self, line):
         line = self._complete_cleanup(line)

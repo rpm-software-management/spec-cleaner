@@ -1,10 +1,9 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+from io import StringIO
 import os
 import sys
 import sysconfig
-
-from io import StringIO
 
 from .rpmexception import RpmException
 
@@ -41,9 +40,9 @@ def open_stringio_spec(name):
 
     data = StringIO()
     try:
-        with open(name, mode="r") as f:
+        with open(name, mode='r') as f:
             data.write(f.read())
-            data.seek(0,0)
+            data.seek(0, 0)
     except (IOError, UnicodeDecodeError) as error:
         raise RpmException(str(error))
     return data

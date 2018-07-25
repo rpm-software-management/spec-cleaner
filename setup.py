@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """Setup file for easy installation."""
+from glob import glob
+
 from setuptools import setup
-import glob
 from spec_cleaner import __version__
 
 setup(
@@ -45,8 +46,8 @@ setup(
     packages=['spec_cleaner'],
 
     data_files=[
-        ('lib/obs/service/', glob.glob('obs/*')),
-        ('share/spec-cleaner', glob.glob('data/*')),
+        ('lib/obs/service/', glob('obs/*')),
+        ('share/spec-cleaner', glob('data/*')),
     ],
 
     entry_points={

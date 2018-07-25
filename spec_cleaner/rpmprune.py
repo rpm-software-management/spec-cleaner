@@ -24,4 +24,4 @@ class RpmChangelog(Section):
         This translates to adding just %changelog
         """
         if len(self.lines) == 0:
-            Section.add(self, "%changelog")
+            Section.add(self, '%changelog')

@@ -44,10 +44,11 @@ def find_macros_with_arg(spec):
                 macrofuncs += [found_macro]
     return macrofuncs
 
+
 def read_conversion_changes(conversion_file):
     with open_datafile(conversion_file) as f:
         # the values are split by  ': '
-        return {key: value for key, value in (line.split(": ") for line in f)}
+        return {key: value for key, value in (line.split(': ') for line in f)}
 
 
 def read_tex_changes():
@@ -73,7 +74,7 @@ def read_licenses_changes():
         # file has format
         # correct license string<tab>known bad license string
         # tab is used as separator
-        return {old: correct for correct, old in (line.rstrip("\n").split("\t") for line in f)}
+        return {old: correct for correct, old in (line.rstrip('\n').split('\t') for line in f)}
 
 
 def read_group_changes():
@@ -106,8 +107,8 @@ def fix_license(value, conversions):
 
     # create back new string with replaced licenses
     s = ' '.join(licenses).replace(
-        "( ", "(").replace(
-        " )", ")").replace(
+        '( ', '(').replace(
+        ' )', ')').replace(
         ' and ', ' AND ').replace(
         ' or ', ' OR ').replace(
         ' with ', ' WITH ')

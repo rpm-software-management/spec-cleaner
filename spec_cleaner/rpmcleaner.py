@@ -1,28 +1,27 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+import os.path
+import shlex
+import subprocess
 import sys
 import tempfile
-import subprocess
-import shlex
-import os.path
 
 from .fileutils import open_stringio_spec
-from .rpmsection import Section
-from .rpmexception import RpmException
-from .rpmcopyright import RpmCopyright
-from .rpmdescription import RpmDescription
-from .rpmprune import RpmClean
-from .rpmprune import RpmChangelog
-from .rpmpreamble import RpmPreamble
-from .rpmpackage import RpmPackage
-from .rpmprep import RpmPrep
 from .rpmbuild import RpmBuild
 from .rpmcheck import RpmCheck
-from .rpminstall import RpmInstall
-from .rpmscriplets import RpmScriptlets
+from .rpmcopyright import RpmCopyright
+from .rpmdescription import RpmDescription
+from .rpmexception import RpmException
 from .rpmfiles import RpmFiles
+from .rpmhelpers import find_macros_with_arg, load_keywords_whitelist, parse_rpm_showrc, read_cmake_changes, read_group_changes, read_licenses_changes, read_perl_changes, read_pkgconfig_changes, read_tex_changes
+from .rpminstall import RpmInstall
+from .rpmpackage import RpmPackage
+from .rpmpreamble import RpmPreamble
+from .rpmprep import RpmPrep
+from .rpmprune import RpmChangelog, RpmClean
 from .rpmregexp import Regexp
-from .rpmhelpers import load_keywords_whitelist, parse_rpm_showrc, find_macros_with_arg, read_group_changes, read_licenses_changes, read_pkgconfig_changes, read_perl_changes, read_tex_changes, read_cmake_changes
+from .rpmscriplets import RpmScriptlets
+from .rpmsection import Section
 
 
 class RpmSpecCleaner(object):
@@ -65,8 +64,8 @@ class RpmSpecCleaner(object):
         self.options['allowed_groups'] = read_group_changes()
         self.options['reg'] = Regexp(self.options['unbrace_keywords'])
         # run gvim(diff) in foreground mode
-        if self.options['diff_prog'].startswith("gvim") and " -f" not in self.options['diff_prog']:
-            self.options['diff_prog'] += " -f"
+        if self.options['diff_prog'].startswith('gvim') and ' -f' not in self.options['diff_prog']:
+            self.options['diff_prog'] += ' -f'
         self.reg = self.options['reg']
         self.fin = open_stringio_spec(self.options['specfile'])
 
@@ -284,7 +283,7 @@ class RpmSpecCleaner(object):
         self.fout.flush()
 
         if self.options['diff']:
-            cmd = shlex.split(self.options['diff_prog'] + " " + self.options['specfile'].replace(" ", "\\ ") + " " + self.fout.name.replace(" ", "\\ "))
+            cmd = shlex.split(self.options['diff_prog'] + ' ' + self.options['specfile'].replace(' ', '\\ ') + ' ' + self.fout.name.replace(' ', '\\ '))
             try:
                 subprocess.call(cmd, shell=False)
             except OSError as error:
