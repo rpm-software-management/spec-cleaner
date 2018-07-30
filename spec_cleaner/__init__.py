@@ -48,7 +48,7 @@ def process_args(argv):
     parser.add_argument('--no-copyright', action='store_true',
                         help='do not include official SUSE copyright hear and just keep what is present')
     parser.add_argument('--no-libexecdir', action='store_true',
-                        help='do not convert /usr/lib to %{_libexecdir}, ie if platform is having different libexecdir')
+                        help='do not convert /usr/lib to %%{_libexecdir}, ie if platform is having different libexecdir')
     parser.add_argument('--copyright-year', metavar='YYYY', type=int, default=datetime.now().year,
                         help='year to insert into the copyright header when re-generating it')
     output_group.add_argument('-o', '--output', default='',
