@@ -16,4 +16,8 @@ LDFLAGS="-pie" \
 
 CFLAGS="-g" ./configure
 
+qmake-qt5 %{name}.pro -spec linux-g++
+
+meson
+
 %changelog

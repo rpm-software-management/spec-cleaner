@@ -96,6 +96,8 @@ class Regexp(object):
     re_suseupdateconfig = re.compile(r'(%{?suse_update_config|${?\?suse_update_config:)')
     re_configure = re.compile(r'(^|(.*\s)?)./configure(\s.*|)$')
     re_cmake = re.compile(r'(^|(.*\s)?)cmake(\s.*|)$')
+    re_qmake_qt5 = re.compile(r'(^|(.*\s)?)qmake-qt5(\s.*|)$')
+    re_meson = re.compile(r'(^|(.*\s)?)meson(\s.*|)$')
 
     # rpmcopyright
     re_copyright = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
