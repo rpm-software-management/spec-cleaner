@@ -8,7 +8,7 @@
 %doc COPYING.*
 
 %files c
-%doc COPYING LICENSE*
+%doc COPYING LICENCE*
 
 %files d
 %doc acknow.txt license.txt readme.txt

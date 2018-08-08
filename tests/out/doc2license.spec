@@ -10,7 +10,7 @@
 %license COPYING.*
 
 %files c
-%license COPYING LICENSE*
+%license COPYING LICENCE*
 
 %files d
 %license license.txt
