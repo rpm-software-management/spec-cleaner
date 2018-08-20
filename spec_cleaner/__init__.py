@@ -47,8 +47,8 @@ def process_args(argv):
                         help='do not convert variables bracketing (%%{macro}) and keep it as it was on the input')
     parser.add_argument('--no-copyright', action='store_true',
                         help='do not include official SUSE copyright hear and just keep what is present')
-    parser.add_argument('--no-libexecdir', action='store_true',
-                        help='do not convert /usr/lib to %%{_libexecdir}, ie if platform is having different libexecdir')
+    parser.add_argument('--libexecdir', action='store_true',
+                        help='convert /usr/lib to %%{_libexecdir}')
     parser.add_argument('--copyright-year', metavar='YYYY', type=int, default=datetime.now().year,
                         help='year to insert into the copyright header when re-generating it')
     output_group.add_argument('-o', '--output', default='',

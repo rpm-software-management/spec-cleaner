@@ -19,7 +19,7 @@ class Section(object):
         self.spec = options['specfile']
         self.minimal = options['minimal']
         self.no_curlification = options['no_curlification']
-        self.no_libexecdir = options['no_libexecdir']
+        self.libexecdir = options['libexecdir']
         self.reg = options['reg']
         # Are we inside of conditional or not
         self.condition = False
@@ -165,7 +165,7 @@ class Section(object):
         line = self.reg.re_prefix.sub(r'%{_prefix}\1', line)
         line = self.reg.re_bindir.sub(r'%{_bindir}\1', line)
         line = self.reg.re_sbindir.sub(r'%{_sbindir}\1', line)
-        if not self.minimal and not self.no_libexecdir:
+        if not self.minimal and self.libexecdir:
             line = self.reg.re_libexecdir.sub(r'%{_libexecdir}\1', line)
         line = self.reg.re_includedir.sub(r'%{_includedir}\1', line)
         line = self.reg.re_datadir.sub(r'%{_datadir}\1', line)
