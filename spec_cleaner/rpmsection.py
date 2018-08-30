@@ -83,21 +83,19 @@ class Section(object):
         # Also if we are jumping away just after writing one macroed line
         # we don't want to create new line
         if newline and len(self.lines) >= 1:
-            if self.lines[-1] != '' and \
-               self.lines[-1] != '%changelog' and not \
-               self.lines[-1].startswith('%if') and not \
-               self.lines[-1].startswith('%pre') and not \
-               self.lines[-1].startswith('%post'):
+            if (
+                self.lines[-1] != ''
+                and self.lines[-1] != '%changelog'
+                and not self.lines[-1].startswith('%if')
+                and not self.lines[-1].startswith('%pre')
+                and not self.lines[-1].startswith('%post')
+            ):
                 self.lines.append('')
-            if new_class != 'RpmScriptlets' and \
-               (self.lines[-1].startswith('%pre') or
-                    self.lines[-1].startswith('%post')):
+            if new_class != 'RpmScriptlets' and (self.lines[-1].startswith('%pre') or self.lines[-1].startswith('%post')):
                 self.lines.append('')
             # remove the newlines around ifs if they are not wanted
             if len(self.lines) >= 2:
-                if self.lines[-1] == '' and \
-                   (self.lines[-2].startswith('%if') or
-                        self.lines[-2].startswith('%else')):
+                if self.lines[-1] == '' and (self.lines[-2].startswith('%if') or self.lines[-2].startswith('%else')):
                     self.lines.pop()
 
         for line in self.lines:
@@ -185,14 +183,68 @@ class Section(object):
         Remove the macro calls for utilities and rather use direct commands.
         OBS ensures there is only one anyway.
         """
-        r = {'id_u': 'id -u', 'ln_s': 'ln -s', 'lzma': 'xz --format-lzma', 'mkdir_p': 'mkdir -p',
-             'awk': 'gawk', 'cc': 'gcc', 'cpp': 'gcc -E', 'cxx': 'g++', 'remsh': 'rsh', }
+        r = {
+            'id_u': 'id -u',
+            'ln_s': 'ln -s',
+            'lzma': 'xz --format-lzma',
+            'mkdir_p': 'mkdir -p',
+            'awk': 'gawk',
+            'cc': 'gcc',
+            'cpp': 'gcc -E',
+            'cxx': 'g++',
+            'remsh': 'rsh',
+        }
         for i in r:
             line = line.replace('%{__' + i + '}', r[i])
             if self.minimal:
                 line = line.replace('%__' + i, r[i])
 
-        for i in ('aclocal', 'ar', 'as', 'autoconf', 'autoheader', 'automake', 'bzip2', 'cat', 'chgrp', 'chmod', 'chown', 'cp', 'cpio', 'file', 'gpg', 'grep', 'gzip', 'id', 'install', 'ld', 'libtoolize', 'make', 'mkdir', 'mv', 'nm', 'objcopy', 'objdump', 'patch', 'perl', 'python', 'python2', 'python3', 'pypy3', 'ranlib', 'restorecon', 'rm', 'rsh', 'sed', 'semodule', 'ssh', 'strip', 'tar', 'unzip', 'xz'):
+        for i in (
+            'aclocal',
+            'ar',
+            'as',
+            'autoconf',
+            'autoheader',
+            'automake',
+            'bzip2',
+            'cat',
+            'chgrp',
+            'chmod',
+            'chown',
+            'cp',
+            'cpio',
+            'file',
+            'gpg',
+            'grep',
+            'gzip',
+            'id',
+            'install',
+            'ld',
+            'libtoolize',
+            'make',
+            'mkdir',
+            'mv',
+            'nm',
+            'objcopy',
+            'objdump',
+            'patch',
+            'perl',
+            'python',
+            'python2',
+            'python3',
+            'pypy3',
+            'ranlib',
+            'restorecon',
+            'rm',
+            'rsh',
+            'sed',
+            'semodule',
+            'ssh',
+            'strip',
+            'tar',
+            'unzip',
+            'xz',
+        ):
             line = line.replace('%{__' + i + '}', i)
             if self.minimal:
                 line = line.replace('%__' + i, i)

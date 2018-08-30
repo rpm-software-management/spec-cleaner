@@ -102,10 +102,7 @@ class RpmPreambleElements(object):
     ]
 
     # categories that are sorted based on key value (eg Patch0 before Patch1)
-    categories_with_sorted_keyword_tokens = (
-        'source',
-        'patch',
-    )
+    categories_with_sorted_keyword_tokens = ('source', 'patch')
 
     def __init__(self, options):
         self.items = {}
@@ -178,8 +175,7 @@ class RpmPreambleElements(object):
         for group in self.items['buildrequires']:
             buildrequires += add_group(group)
         # Check if we need the pkgconfig
-        if not self.br_pkgconfig_required and \
-           find_pkgconfig_statement(buildrequires):
+        if not self.br_pkgconfig_required and find_pkgconfig_statement(buildrequires):
             self.br_pkgconfig_required = True
         # only in case we are in main scope
         if not nested:

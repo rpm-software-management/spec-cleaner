@@ -13,7 +13,17 @@ from .rpmcopyright import RpmCopyright
 from .rpmdescription import RpmDescription
 from .rpmexception import RpmException
 from .rpmfiles import RpmFiles
-from .rpmhelpers import find_macros_with_arg, load_keywords_whitelist, parse_rpm_showrc, read_cmake_changes, read_group_changes, read_licenses_changes, read_perl_changes, read_pkgconfig_changes, read_tex_changes
+from .rpmhelpers import (
+    find_macros_with_arg,
+    load_keywords_whitelist,
+    parse_rpm_showrc,
+    read_cmake_changes,
+    read_group_changes,
+    read_licenses_changes,
+    read_perl_changes,
+    read_pkgconfig_changes,
+    read_tex_changes,
+)
 from .rpminstall import RpmInstall
 from .rpmpackage import RpmPackage
 from .rpmpreamble import RpmPreamble
@@ -32,6 +42,7 @@ class RpmSpecCleaner(object):
     If the section is required and not found it is created with
     blank values as fixme for the spec creator.
     """
+
     specfile = None
     fin = None
     fout = None
@@ -81,7 +92,7 @@ class RpmSpecCleaner(object):
             (self.reg.re_spec_scriptlets, RpmScriptlets),
             (self.reg.re_spec_triggers, RpmScriptlets),
             (self.reg.re_spec_files, RpmFiles),
-            (self.reg.re_spec_changelog, RpmChangelog)
+            (self.reg.re_spec_changelog, RpmChangelog),
         ]
 
         # Find all the present licenses
@@ -143,22 +154,18 @@ class RpmSpecCleaner(object):
     def _detect_preamble_section(self, line):
         # This is seriously ugly but can't think of cleaner way
         if not isinstance(self.current_section, (RpmPreamble, RpmPackage)):
-            if any([re.match(line) for re in [
-                   self.reg.re_bcond_with,
-                   self.reg.re_debugpkg,
-                   ]]):
+            if any([re.match(line) for re in [self.reg.re_bcond_with, self.reg.re_debugpkg]]):
                 return True
 
             # We can have locally defined variables in phases
-            if not isinstance(self.current_section,
-                              (RpmInstall, RpmCheck, RpmBuild, RpmPrep)) and \
-               (self.reg.re_define.match(line) or self.reg.re_global.match(line)):
+            if not isinstance(self.current_section, (RpmInstall, RpmCheck, RpmBuild, RpmPrep)) and (
+                self.reg.re_define.match(line) or self.reg.re_global.match(line)
+            ):
                 return True
         return False
 
     def _detect_condition_change(self, line):
-        if any([re.match(line) for re in [
-               self.reg.re_endif, self.reg.re_else, self.reg.re_endcodeblock]]):
+        if any([re.match(line) for re in [self.reg.re_endif, self.reg.re_else, self.reg.re_endcodeblock]]):
             return True
         return False
 
@@ -174,10 +181,10 @@ class RpmSpecCleaner(object):
         #   if previous non-empty-uncommented line was starting the condition
         # we end up the condition section in preamble (if applicable) and
         # proceed to output
-        if self._detect_condition_change(line) or(type(self.current_section) is Section and (self.reg.re_if.match(line)
-                                                                                             or self.reg.re_codeblock.match(line))):
-            if not hasattr(self.current_section, 'condition') or (hasattr(self.current_section, 'condition')
-                                                                  and not self.current_section.condition):
+        if self._detect_condition_change(line) or (
+            type(self.current_section) is Section and (self.reg.re_if.match(line) or self.reg.re_codeblock.match(line))
+        ):
+            if not hasattr(self.current_section, 'condition') or (hasattr(self.current_section, 'condition') and not self.current_section.condition):
                 # If we have to break out we go ahead with small class
                 # which just print the one evil line
                 return Section
@@ -283,7 +290,9 @@ class RpmSpecCleaner(object):
         self.fout.flush()
 
         if self.options['diff']:
-            cmd = shlex.split(self.options['diff_prog'] + ' ' + self.options['specfile'].replace(' ', '\\ ') + ' ' + self.fout.name.replace(' ', '\\ '))
+            cmd = shlex.split(
+                self.options['diff_prog'] + ' ' + self.options['specfile'].replace(' ', '\\ ') + ' ' + self.fout.name.replace(' ', '\\ ')
+            )
             try:
                 subprocess.call(cmd, shell=False)
             except OSError as error:

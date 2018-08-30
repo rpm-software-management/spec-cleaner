@@ -4,28 +4,14 @@ import re
 from .rpmexception import NoMatchException
 from .rpmrequirestoken import RpmRequiresToken
 
-chunk_types = (
-    'text', 'space', 'macro', 'operator', 'version'
-)
+chunk_types = ('text', 'space', 'macro', 'operator', 'version')
 
 state_types = ('start', 'name', 'operator', 'version')
 
 re_brackets = {}
-re_brackets['('] = re.compile(
-    r'(' +
-    r'\(' + r'|' + r'\)' + r'|' +
-    r'\\(' + r'|' + r'\\)' + r'|' +
-    r'[^\()]+' +
-    r')'
-)
+re_brackets['('] = re.compile(r'(' + r'\(' + r'|' + r'\)' + r'|' + r'\\(' + r'|' + r'\\)' + r'|' + r'[^\()]+' + r')')
 
-re_brackets['{'] = re.compile(
-    r'(' +
-    r'\{' + r'|' + r'\}' + r'|' +
-    r'\\{' + r'|' + r'\\}' + r'|' +
-    r'[^\{}]+' +
-    r')'
-)
+re_brackets['{'] = re.compile(r'(' + r'\{' + r'|' + r'\}' + r'|' + r'\\{' + r'|' + r'\\}' + r'|' + r'[^\{}]+' + r')')
 
 re_name = re.compile(r'[-A-Za-z0-9_~(){}@:;.+/*\[\]]+')
 re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
@@ -48,8 +34,7 @@ def find_end_of_bracketed_macro(string, regex, opening, closing):
         try:
             bite, string = consume_chars(regex, string)
         except NoMatchException:
-            raise Exception('unexpected parser error when looking for end of '
-                            'macro')
+            raise Exception('unexpected parser error when looking for end of macro')
 
         if bite == opening:
             opened += 1
@@ -58,8 +43,7 @@ def find_end_of_bracketed_macro(string, regex, opening, closing):
         macro += bite
 
     if opened:
-        raise Exception('Unexpectedly met end of string when looking for end '
-                        'of macro')
+        raise Exception('Unexpectedly met end of string when looking for end of macro')
     return macro, string
 
 
@@ -81,15 +65,13 @@ def matching_bracket(bracket):
         return '}'
     elif bracket == '(':
         return ')'
-    raise Exception('Undefined bracket matching - add defintion of "%s" to '
-                    'matching_bracket()' % bracket)
+    raise Exception('Undefined bracket matching - add defintion of "%s" to ' 'matching_bracket()' % bracket)
 
 
 def read_macro(string):
     opening = string[1]
     closing = matching_bracket(opening)
-    return find_end_of_bracketed_macro(
-        string, re_brackets[opening], opening, closing)
+    return find_end_of_bracketed_macro(string, re_brackets[opening], opening, closing)
 
 
 def read_next_chunk(string):
@@ -163,7 +145,12 @@ class DependencyParser:
                 rest: '%s'
                 token: '%s'
                 parsed: '%s'""",
-                self.next, self.next_type, self.string, self.token, self.parsed)
+                self.next,
+                self.next_type,
+                self.string,
+                self.token,
+                self.parsed,
+            )
             self.state_change()
 
     def flat_out(self):
@@ -173,9 +160,7 @@ class DependencyParser:
         return result
 
     def flush(self):
-        self.parsed.append(
-            (self.token_name, self.token_operator, self.token_version)
-        )
+        self.parsed.append((self.token_name, self.token_operator, self.token_version))
         # cleanup state
         self.token = []
         self.token_name = ''

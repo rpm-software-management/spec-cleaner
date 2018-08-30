@@ -62,10 +62,7 @@ class TestCompare(object):
         if not infile:
             infile = os.path.join('tests', 'in', test)
 
-        full_options = {
-            'specfile': infile,
-            'output': outfile,
-        }
+        full_options = {'specfile': infile, 'output': outfile}
         full_options.update(self.option_presets)
         full_options.update(options)
 
@@ -120,7 +117,7 @@ class TestCompare(object):
             ('tex.spec', 'tex', {'tex': True}),
             ('perl.spec', 'perl', {'perl': True}),
             ('cmake.spec', 'cmake', {'cmake': True}),
-        ]
+        ],
     )
     def test_single_output(self, tmpfile, test, compare_dir, options):
         self._run_individual_test(test, compare_dir, outfile=tmpfile, options=options)

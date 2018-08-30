@@ -24,9 +24,13 @@ class RpmCopyright(Section):
 
     def _add_pkg_header(self):
         specname = os.path.splitext(os.path.basename(self.spec))[0]
-        self.lines.append("""#
+        self.lines.append(
+            """#
 # spec file for package {0}
-#""".format(specname))
+#""".format(
+                specname
+            )
+        )
 
     def _create_default_copyright(self):
         self.my_copyright = '# Copyright (c) {0} SUSE LINUX GmbH, Nuernberg, Germany.'.format(self.year)
@@ -39,7 +43,8 @@ class RpmCopyright(Section):
             self.lines.append(i)
 
     def _add_default_license(self):
-        self.lines.append("""#
+        self.lines.append(
+            """#
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
 # upon. The license for this file, and modifications and additions to the
@@ -50,7 +55,8 @@ class RpmCopyright(Section):
 # published by the Open Source Initiative.
 
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
-#""")
+#"""
+        )
 
     def _add_buildrules(self):
         for i in sorted(self.buildrules):

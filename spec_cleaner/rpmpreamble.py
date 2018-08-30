@@ -124,11 +124,13 @@ class RpmPreamble(Section):
         """
         Check if we have ppc64 obsolete and delete it
         """
-        if not self.minimal and \
-                len(self.paragraph.items['conditions']) == 3 and \
-                isinstance(self.paragraph.items['conditions'][0], list) and \
-                self.paragraph.items['conditions'][0][0] == '# bug437293' and \
-                self.paragraph.items['conditions'][1].endswith('64bit'):
+        if (
+            not self.minimal
+            and len(self.paragraph.items['conditions']) == 3
+            and isinstance(self.paragraph.items['conditions'][0], list)
+            and self.paragraph.items['conditions'][0][0] == '# bug437293'
+            and self.paragraph.items['conditions'][1].endswith('64bit')
+        ):
             self.paragraph.items['conditions'] = []
 
     def _prune_empty_condition(self):
@@ -136,10 +138,10 @@ class RpmPreamble(Section):
         Remove empty conditions
         """
         # check if we start with if
-        if len(self.paragraph.items['conditions']) == 2 and \
-           ((isinstance(self.paragraph.items['conditions'][0], list) and \
-            self.paragraph.items['conditions'][0][-1].startswith('%if')) or \
-           self.paragraph.items['conditions'][0].startswith('%if')):
+        if len(self.paragraph.items['conditions']) == 2 and (
+            (isinstance(self.paragraph.items['conditions'][0], list) and self.paragraph.items['conditions'][0][-1].startswith('%if'))
+            or self.paragraph.items['conditions'][0].startswith('%if')
+        ):
             self.paragraph.items['conditions'] = []
 
     PYPI_SOURCE_HOSTS = ('pypi.io', 'files.pythonhosted.org', 'pypi.python.org')
@@ -166,15 +168,14 @@ class RpmPreamble(Section):
             return url
 
         filename = os.path.basename(parsed.path)
-        modname = filename[:filename.rfind('-')]
+        modname = filename[: filename.rfind('-')]
 
         # TODO the following condition checks if the filename starts with a macro,
         # and expects that if it does, the macro is called "modname". This is not
         # always the case. It would be better to detect the name of the macro and
         # browse local definitions to find its value.
         if modname[0] == '%':
-            if (modname == '%modname' or modname == '%{modname}') \
-                    and self.modname:
+            if (modname == '%modname' or modname == '%{modname}') and self.modname:
                 modname = self.modname
             else:
                 # don't know what to do
@@ -188,8 +189,7 @@ class RpmPreamble(Section):
         else:
             nested = True
         lines = self.paragraph.flatten_output(False, nested)
-        if len(self.paragraph.items['define']) > 0 or \
-           len(self.paragraph.items['bconds']) > 0:
+        if len(self.paragraph.items['define']) > 0 or len(self.paragraph.items['bconds']) > 0:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph.items['conditions'] += lines
@@ -453,8 +453,7 @@ class RpmPreamble(Section):
                 self._add_line_to('define', line)
 
             # catch "modname" for use in pypi url rewriting
-            if (line.startswith('%define') or line.startswith('%global')) and \
-               line.find('modname') >= 0:
+            if (line.startswith('%define') or line.startswith('%global')) and line.find('modname') >= 0:
                 define, name, value = line.split(None, 2)
                 self.modname = value
 

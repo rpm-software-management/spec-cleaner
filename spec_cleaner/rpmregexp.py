@@ -18,8 +18,14 @@ class Regexp(object):
     re_spec_install = re.compile(r'^%install\s*$', re.IGNORECASE)
     re_spec_clean = re.compile(r'^%clean\s*$', re.IGNORECASE)
     re_spec_check = re.compile(r'^%check\s*$', re.IGNORECASE)
-    re_spec_scriptlets = re.compile(r'(?:^%pretrans(\s+|$))|(?:^%pre(\s+|$))|(?:^%post(\s+|$))|(?:^%verifyscript(\s+|$))|(?:^%preun(\s+|$))|(?:^%postun(\s+|$))|(?:^%posttrans(\s+|$))', re.IGNORECASE)
-    re_spec_triggers = re.compile(r'(?:^%filetriggerin(\s+|$))|(?:^%filetriggerun(\s+|$))|(?:^%filetriggerpostun(\s+|$))|(?:^%transfiletriggerin(\s+|$))|(?:^%transfiletriggerun(\s+|$))|(?:^%transfiletriggerpostun(\s+|$))', re.IGNORECASE)
+    re_spec_scriptlets = re.compile(
+        r'(?:^%pretrans(\s+|$))|(?:^%pre(\s+|$))|(?:^%post(\s+|$))|(?:^%verifyscript(\s+|$))|(?:^%preun(\s+|$))|(?:^%postun(\s+|$))|(?:^%posttrans(\s+|$))',
+        re.IGNORECASE,
+    )
+    re_spec_triggers = re.compile(
+        r'(?:^%filetriggerin(\s+|$))|(?:^%filetriggerun(\s+|$))|(?:^%filetriggerpostun(\s+|$))|(?:^%transfiletriggerin(\s+|$))|(?:^%transfiletriggerun(\s+|$))|(?:^%transfiletriggerpostun(\s+|$))',
+        re.IGNORECASE,
+    )
     re_spec_files = re.compile(r'^%files(\s+|$)', re.IGNORECASE)
     re_spec_changelog = re.compile(r'^%changelog\s*$', re.IGNORECASE)
 
@@ -142,13 +148,16 @@ class Regexp(object):
         # find start of macro:
         #   either beggining of string or something which is not '%' or :
         #   where : is used after macro declaration we should not curlify
-        r'(^|([^%:]))' +
+        r'(^|([^%:]))'
+        +
         # macro itself:
         # '%' followed by either number not starting with '0'
         # or by chars where first is a-z or A-Z or underscore
-        r'%([1-9]\d*|[a-zA-Z_]\w*' +
+        r'%([1-9]\d*|[a-zA-Z_]\w*'
+        +
         # possibly followed by parens
-        r'(\s*\([^)]*\))?' +
+        r'(\s*\([^)]*\))?'
+        +
         # beyond the end of the macro
         r')(|(\W))'
     )
