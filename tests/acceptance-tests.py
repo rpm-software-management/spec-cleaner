@@ -10,7 +10,6 @@ from spec_cleaner import RpmException
 from spec_cleaner import RpmSpecCleaner
 
 
-@pytest.fixture(scope='session')
 def tests():
     """
     Generate list of tests we are going to use according to what is on hdd
@@ -19,7 +18,6 @@ def tests():
     return [os.path.basename(f) for f in glob(testglob)]
 
 
-@pytest.fixture(scope='session')
 def space_tests():
     """
     Generate list of tests we are going to use according to what is on hdd
