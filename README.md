@@ -127,6 +127,7 @@ CNRI-Jython | CNRI Jython License
 CNRI-Python-GPL-Compatible | CNRI Python Open Source GPL Compatible License Agreement
 CNRI-Python | CNRI Python License
 Condor-1.1 | Condor Public License v1.1
+copyleft-next-0.3.1 | copyleft-next 0.3.1
 CPAL-1.0 | Common Public Attribution License 1.0
 CPL-1.0 | Common Public License 1.0
 CPOL-1.02 | Code Project Open License 1.02
@@ -262,8 +263,12 @@ NTP | NTP License
 OCCT-PL | Open CASCADE Technology Public License
 OCLC-2.0 | OCLC Research Public License 2.0
 ODbL-1.0 | ODC Open Database License v1.0
+ODC-By-1.0 | Open Data Commons Attribution License v1.0
 OFL-1.0 | SIL Open Font License 1.0
 OFL-1.1 | SIL Open Font License 1.1
+OGL-UK-1.0 | Open Government Licence v1.0
+OGL-UK-2.0 | Open Government Licence v2.0
+OGL-UK-3.0 | Open Government Licence v3.0
 OGTSL | Open Group Test Suite License
 OLDAP-1.1 | Open LDAP Public License v1.1
 OLDAP-1.2 | Open LDAP Public License v1.2
@@ -311,6 +316,7 @@ Ruby | Ruby License
 SAX-PD | Sax Public Domain Notice
 Saxpath | Saxpath License
 SCEA | SCEA Shared Source License
+Sendmail-8.23 | Sendmail License 8.23
 Sendmail | Sendmail License
 SGI-B-1.0 | SGI Free Software License B v1.0
 SGI-B-1.1 | SGI Free Software License B v1.1
@@ -333,6 +339,8 @@ TCP-wrappers | TCP Wrappers License
 TMate | TMate Open Source License
 TORQUE-1.1 | TORQUE v2.5+ Software License v1.1
 TOSL | Trusster Open Source License
+TU-Berlin-1.0 | Technische Universitaet Berlin License 1.0
+TU-Berlin-2.0 | Technische Universitaet Berlin License 2.0
 Unicode-DFS-2015 | Unicode License Agreement - Data Files and Software (2015)
 Unicode-DFS-2016 | Unicode License Agreement - Data Files and Software (2016)
 Unicode-TOU | Unicode Terms of Use
@@ -389,7 +397,11 @@ Libtool-exception
 Linux-syscall-note
 Nokia-Qt-exception-1.1
 OCCT-exception-1.0
+OCaml-LGPL-linking-exception
 OpenJDK-assembly-exception-1.0
+PS-or-PDF-font-exception-20170817
+Qt-GPL-exception-1.0
+Qt-LGPL-exception-1.1
 Qwt-exception-1.0
 WxWindows-exception-3.1
 eCos-exception-2.0

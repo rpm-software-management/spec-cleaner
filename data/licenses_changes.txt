@@ -678,6 +678,8 @@ OCCT-PL	OCCT-PL
 OCCT-PL+	OCCT-PL+
 OCLC-2.0	OCLC-2.0
 OCLC-2.0+	OCLC-2.0+
+ODC-By-1.0	ODC-By-1.0
+ODC-By-1.0+	ODC-By-1.0+
 ODbL-1.0	ODbL-1.0
 ODbL-1.0+	ODbL-1.0+
 OFL-1.0	OFL-1.0
@@ -688,6 +690,12 @@ OFL-1.1	Open Font License
 OFL-1.1	SIL Open Font License
 OFL-1.1	SIL Open Font License 1.1
 OFL-1.1+	OFL-1.1+
+OGL-UK-1.0	OGL-UK-1.0
+OGL-UK-1.0+	OGL-UK-1.0+
+OGL-UK-2.0	OGL-UK-2.0
+OGL-UK-2.0+	OGL-UK-2.0+
+OGL-UK-3.0	OGL-UK-3.0
+OGL-UK-3.0+	OGL-UK-3.0+
 OGTSL	OGTSL
 OGTSL+	OGTSL+
 OLDAP-1.1	OLDAP-1.1
@@ -1062,6 +1070,8 @@ Saxpath+	Saxpath+
 Sendmail	SUSE-Sendmail
 Sendmail	Sendmail
 Sendmail+	Sendmail+
+Sendmail-8.23	Sendmail-8.23
+Sendmail-8.23+	Sendmail-8.23+
 SimPL-2.0	SimPL-2.0
 SimPL-2.0+	SimPL-2.0+
 Sleepycat	Sleepycat
@@ -1085,6 +1095,10 @@ TORQUE-1.1	TORQUE-1.1
 TORQUE-1.1+	TORQUE-1.1+
 TOSL	TOSL
 TOSL+	TOSL+
+TU-Berlin-1.0	TU-Berlin-1.0
+TU-Berlin-1.0+	TU-Berlin-1.0+
+TU-Berlin-2.0	TU-Berlin-2.0
+TU-Berlin-2.0+	TU-Berlin-2.0+
 UPL-1.0	UPL-1.0
 UPL-1.0+	UPL-1.0+
 Unicode	http://www.unicode.org/copyright.html
@@ -1164,6 +1178,8 @@ bzip2-1.0.5	bzip2-1.0.5
 bzip2-1.0.5+	bzip2-1.0.5+
 bzip2-1.0.6	bzip2-1.0.6
 bzip2-1.0.6+	bzip2-1.0.6+
+copyleft-next-0.3.1	copyleft-next-0.3.1
+copyleft-next-0.3.1+	copyleft-next-0.3.1+
 curl	curl
 curl+	curl+
 diffmark	diffmark
