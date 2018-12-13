@@ -13,7 +13,7 @@ from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmException, RpmWrongArgs
 
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 
 def process_args(argv):
