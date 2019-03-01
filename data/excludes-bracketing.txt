@@ -121,6 +121,8 @@ pypy(.?)_only
 pycache_only
 python(.?)_build
 python(.?)_install
+py(.?)_build
+py(.?)_install
 pypy3_build
 pypy3_install
 python_exec
