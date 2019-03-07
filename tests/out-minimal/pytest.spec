@@ -1,8 +1,8 @@
 %check
 %python_expand PYTHONPATH=%{buildroot}%{$python_sitelib} py.test-%{$python_version}
 %python_expand py.test-%{$python_version}
-%python_expand PYTHONPATH=%{buildroot}%{python_sitelib} $python py.test-%{python_version}
-%python_expand PYTHONPATH=%{buildroot}%{python_sitelib} $python %{_bindir}/py.test -o addopts=-v
+%python_expand PYTHONPATH=%{buildroot}%{$python_sitelib} $python py.test-%{$python_version}
+%python_expand PYTHONPATH=%{buildroot}%{$python_sitelib} $python %{_bindir}/py.test -o addopts=-v
 %python_expand PYTHONPATH=%{buildroot}%{$python_sitelib} py.test-%{$python_bin_suffix}
 %python_expand PYTHONPATH=%{buildroot}%{$python_sitelib} %{_bindir}py.test-%{$python_bin_suffix} -v
 %python_expand PYTHONPATH=%{buildroot}%{$python_sitelib} pytest
