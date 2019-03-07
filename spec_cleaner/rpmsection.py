@@ -45,6 +45,7 @@ class Section(object):
             line = self.replace_utils(line)
             line = self.replace_buildservice(line)
             line = self.replace_preamble_macros(line)
+            line = self.replace_python_expand(line)
 
         return line
 
@@ -153,6 +154,12 @@ class Section(object):
         # if the optflags is the only thing then also add quotes around it
         line = self.reg.re_optflags_quotes.sub('="%{optflags}"', line)
         line = self.reg.re_optflags.sub('%{optflags}', line)
+        return line
+
+    def replace_python_expand(self, line):
+        if line.startswith('%python_expand') or line.startswith('%{python_expand'):
+            line = self.reg.re_python_expand.sub(r'%{$\1}', line)
+            line = self.reg.re_python_interp_expand.sub(r' $\1 ', line)
         return line
 
     def replace_known_dirs(self, line):
