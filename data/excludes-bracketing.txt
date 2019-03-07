@@ -119,6 +119,8 @@ python_uninstall_alternative
 python(.?)_only
 pypy(.?)_only
 pycache_only
+pytest
+pytest_arch
 python(.?)_build
 python(.?)_install
 py(.?)_build
