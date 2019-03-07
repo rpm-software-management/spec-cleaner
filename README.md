@@ -127,6 +127,7 @@ CNRI-Jython | CNRI Jython License
 CNRI-Python-GPL-Compatible | CNRI Python Open Source GPL Compatible License Agreement
 CNRI-Python | CNRI Python License
 Condor-1.1 | Condor Public License v1.1
+copyleft-next-0.3.0 | copyleft-next 0.3.0
 copyleft-next-0.3.1 | copyleft-next 0.3.1
 CPAL-1.0 | Common Public Attribution License 1.0
 CPL-1.0 | Common Public License 1.0
@@ -395,7 +396,6 @@ LLVM-exception
 LZMA-exception
 Libtool-exception
 Linux-syscall-note
-Nokia-Qt-exception-1.1
 OCCT-exception-1.0
 OCaml-LGPL-linking-exception
 OpenJDK-assembly-exception-1.0
