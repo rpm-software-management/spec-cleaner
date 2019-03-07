@@ -20,8 +20,6 @@ setup(
     maintainer_email='tchvatal@suse.cz',
     license='License :: OSI Approved :: BSD License',
     classifiers=[
-        # complete classifier list:
-        # http://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
