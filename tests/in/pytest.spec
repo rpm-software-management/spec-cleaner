@@ -11,3 +11,4 @@
 %python_expand PYTHONPATH=%{buildroot}%{$python_sitearch} py.test-%{$python_bin_suffix}
 %python_exec -m pytest -v                                                      
 %python_exec -m pytest -o addopts=-v
+%python_expand PYTHONPATH=%{buildroot}%{$python_sitelib} py.test-%{$python_bin_suffix} -v src/txacme/test -k 'not (matchers or util or client)'

@@ -104,6 +104,8 @@ class Regexp(object):
     re_cmake = re.compile(r'(^|(.*\s)?)cmake(\s.*|)$')
     re_qmake5 = re.compile(r'(^|(.*\s)?)qmake-qt5(\s.*|)$')
     re_meson = re.compile(r'(^|(.*\s)?)meson(\s.*|)$')
+    re_pytest = re.compile(r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?')
+    re_pytest_arch = re.compile(r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?')
 
     # rpmcopyright
     re_copyright = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
