@@ -89,6 +89,7 @@ class Section(object):
                 and not self.lines[-1].startswith('%if')
                 and not self.lines[-1].startswith('%pre')
                 and not self.lines[-1].startswith('%post')
+                and not self.lines[-1].endswith('\\')
             ):
                 self.lines.append('')
             if new_class != 'RpmScriptlets' and (self.lines[-1].startswith('%pre') or self.lines[-1].startswith('%post')):
