@@ -109,10 +109,17 @@ filetriggerpostun
 transfiletriggerin
 transfiletriggerun
 transfiletriggerpostun
+openstack_test_package_install
+openstack_pre_user_group_create
+py2_entrypoint
 pattern_[^\s]*
+py_build
+py2_build
+py2_install
 py_compile
 py2_compile
 py3_compile
+py_req_cleanup
 python_alternative
 python_install_alternative
 python_uninstall_alternative
