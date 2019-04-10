@@ -17,6 +17,12 @@ BRACKETING_EXCLUDES = 'excludes-bracketing.txt'
 
 
 def parse_rpm_showrc():
+    """
+    Create a list of all macro functions in the 'rpm --showrc' output.
+
+    Returns:
+        A list of such macro functions.
+    """
     macros = []
 
     re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
@@ -29,11 +35,26 @@ def parse_rpm_showrc():
 
 
 def load_keywords_whitelist():
+    """
+    Create a list of keywords contained in BRACKETING_EXCLUDES file (keywords that shouldn't be in brackets).
+
+    Returns:
+        A list of such keywords.
+    """
     with open_datafile(BRACKETING_EXCLUDES) as f:
         return [line.rstrip('\n') for line in f]
 
 
 def find_macros_with_arg(spec):
+    """
+    Create a list of all macro functions in the spec file.
+
+    Args:
+        spec: A string with the path to the specfile.
+
+    Returns:
+        A list of such macro functions.
+    """
     macrofuncs = []
 
     re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
@@ -68,19 +89,27 @@ def read_cmake_changes():
 
 
 def read_licenses_changes():
+    """
+    Create mapping of old licences to new licences.
+
+    It uses LICENCES_CHANGES file that has the following format:
+
+    correct license string<tab>known bad license string
+
+    Tab is used as a separator.
+
+    Returns:
+        A dict with the mapping.
+
+    """
     with open_datafile(LICENSES_CHANGES) as f:
-        # strip newline
-        next(f)
-        # file has format
-        # correct license string<tab>known bad license string
-        # tab is used as separator
+        next(f)  # strip newline
         return {old: correct for correct, old in (line.rstrip('\n').split('\t') for line in f)}
 
 
 def read_group_changes():
     with open_datafile(GROUPS_LIST) as f:
-        # header starts with link where we find the groups
-        next(f)
+        next(f)  # header starts with link where we find the groups
         return [line.rstrip('\n') for line in f]
 
 
@@ -179,7 +208,13 @@ def add_group(group):
 
 def find_pkgconfig_statement(elements):
     """
-    Find pkgconfig() statement in the list and return true if matched
+    Find pkgconfig() statement.
+
+    Args:
+        elements: A list of items we want to scan.
+
+    Returns:
+        True if pkgconfig() statement was found (and pkgconfig declaration wasn't), False otherwise.
     """
 
     pkgconfig_found = find_pkgconfig_declaration(elements)
@@ -192,7 +227,13 @@ def find_pkgconfig_statement(elements):
 
 def find_pkgconfig_declaration(elements):
     """
-    Find if there is direct pkgconfig dependency in the paragraph
+    Find if there is direct pkgconfig dependency in the paragraph.
+
+    Args:
+        elements: A list of items we want to scan.
+
+    Returns:
+        True if a pkgconfig dependency was found, False otherwise.
     """
     for i in elements:
         if isinstance(i, RpmRequiresToken):

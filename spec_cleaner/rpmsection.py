@@ -5,12 +5,24 @@ class Section(object):
 
     """
     Basic object for parsing each section of spec file.
+
     It stores the lines in a list and remembers content of
     previous line at hand.
     The unbrace_keywords content is passed from creating
     object to reduce calculation price.
     Various functions do replacement of common typos to
-    unificate all the content.
+    unify all the content.
+
+    Attributes:
+        lines: A list of all lines of the section.
+        previous_line: A string that represents the previous line.
+        spec: A string with the path to the processed specfile.
+        minimal: A flag indicating whether we run in minimal mode (no intrusive operations).
+        no_curlification: A flag indicating whether we want to convert variables to curly brackets.
+        libexecdir: A flag indicating whether we want convert /usr/lib to %%{_libexecdir}.
+        reg: A Regexp object that holds all regexps that will be used in spec-cleaner.
+        condition: A flag representing if we are in the conditional or not.
+        _condition_counter: An int for counting in how many (nested) condition we currently are.
     """
 
     def __init__(self, options):
@@ -27,11 +39,16 @@ class Section(object):
 
     def _complete_cleanup(self, line):
         """
-        Function that just calls all the cleanups in proper order so it
+        Call all the cleanups in proper order so it
         can be called beforehand if we override add phase and want to
         do our replaces after cleanup.
-        """
 
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The cleaned line.
+        """
         line = line.rstrip()
         # remove nbsp for normal spaces
         line = line.replace(u'\xa0', ' ')
@@ -51,7 +68,12 @@ class Section(object):
 
     def _check_conditions(self, line):
         """
-        Check if we are in condition that is contained or not
+        Set 'condition' member to True if we are in condition that is contained (False otherwise).
+
+        Also adjusts '_condition_counter' member according to the fact whether we enter or leave the condition.
+
+        Args:
+            line: A string representing a line to process.
         """
         if self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
             self._condition_counter += 1
@@ -65,12 +87,14 @@ class Section(object):
 
     def add(self, line):
         """
-        Run the cleanup and add the line to the list of lines
-        """
+        Run the cleanup of the line and add the line to the list of lines.
 
+        Args:
+            line: A string representing a line to process.
+        """
         line = self._complete_cleanup(line)
 
-        # condtions detect
+        # conditions detect
         self._check_conditions(line)
 
         # append to the file
@@ -78,10 +102,17 @@ class Section(object):
         self.previous_line = line
 
     def output(self, fout, newline=True, new_class=None):
-        # Always append one empty line at the end if it is not present
-        # and changelog is trailing part of our spec so do not put nothing
-        # bellow
-        # Also if we are jumping away just after writing one macroed line
+        """
+        Manage printing of the section.
+
+        Always append one empty line at the end if it is not present and a changelog is a trailing part of our spec
+        so do not put nothing bellow. Also if we are jumping away just after writing one macroed line.
+
+        Args:
+            fout: A file object representing the output file.
+            newline: A flag indicating whether we want to add a newline.
+            new_class: A Section (or a subclass).
+        """
         # we don't want to create new line
         if newline and len(self.lines) >= 1:
             if (
@@ -106,9 +137,16 @@ class Section(object):
     @staticmethod
     def strip_useless_spaces(line):
         """
-        Function to remove useless multiple spaces in some areas.
+        Remove useless multiple spaces in some areas.
+
         It can't be called everywhere so we have to call it in
         children classes where fit.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The line without useless spaces.
         """
         return ' '.join(line.split())
 
@@ -116,9 +154,15 @@ class Section(object):
         """
         Add {} around known macros that have no arguments and are not
         on whitelist.
-        Whitelist is passed from caller object
-        """
 
+        Whitelist is passed from caller object.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The line with curlified macros.
+        """
         # I don't think that this can be done within one regexp replacement
         # if you have idea, send me a patch :)
 
@@ -141,7 +185,13 @@ class Section(object):
 
     def replace_buildroot(self, line):
         """
-        Replace RPM_BUILD_ROOT for buildroot
+        Replace RPM_BUILD_ROOT for buildroot.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The processed line.
         """
         line = self.reg.re_rpmbuildroot.sub(r'%{buildroot}\2', line)
         line = self.reg.re_rpmbuildroot_quotes.sub(r'%{buildroot}', line)
@@ -149,7 +199,13 @@ class Section(object):
 
     def replace_optflags(self, line):
         """
-        Replace RPM_OPT_FLAGS for %{optflags}
+        Replace RPM_OPT_FLAGS for %{optflags}.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The processed line.
         """
         # if the optflags is the only thing then also add quotes around it
         line = self.reg.re_optflags_quotes.sub('="%{optflags}"', line)
@@ -164,7 +220,13 @@ class Section(object):
 
     def replace_known_dirs(self, line):
         """
-        Replace hardcoded stuff like /usr/share -> %{_datadir}
+        Replace hardcoded stuff like /usr/share -> %{_datadir}.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The processed line.
         """
 
         line = self.reg.re_oldprefix.sub(r'%{_prefix}\1', line)
@@ -188,8 +250,13 @@ class Section(object):
 
     def replace_utils(self, line):
         """
-        Remove the macro calls for utilities and rather use direct commands.
-        OBS ensures there is only one anyway.
+        Remove the macro calls for utilities and rather use direct commands (OBS ensures there is only one anyway).
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The line without macros for utilities.
         """
         r = {
             'id_u': 'id -u',
@@ -266,7 +333,14 @@ class Section(object):
     def replace_buildservice(line):
         """
         Pretty format the conditions for distribution/version detection.
-        Replace %{suse_version} for 0%{?suse_version}
+
+        Replace %{suse_version} for 0%{?suse_version} and the like.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The line with formatted version conditions.
         """
         for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'suse', 'ubuntu']:
             line = line.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace('00%{', '0%{')
@@ -274,7 +348,12 @@ class Section(object):
 
     def replace_preamble_macros(self, line):
         """
-        Replace %{S:0} for %{SOURCE0} and so on.
+        Replace %{S:0} and %{P:0} for %{SOURCE0} and %{PATCH0}.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns: The processed line.
         """
         line = self.reg.re_ptch.sub(r'%{PATCH\1}', line)
         line = self.reg.re_src.sub(r'%{SOURCE\1}', line)

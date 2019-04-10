@@ -8,7 +8,9 @@ from .rpmsection import Section
 class RpmCopyright(Section):
 
     """
-    Class that always creates default SUSE copyright.
+    A class providing methods for copyright section cleaning.
+
+    It always creates default SUSE copyright.
     Keeps around Copyrights of other uses and some of the build defines
     that are still relevant. Everything else is ignored.
     """

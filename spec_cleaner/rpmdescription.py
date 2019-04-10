@@ -6,6 +6,8 @@ from .rpmsection import Section
 class RpmDescription(Section):
 
     """
+    A class providing methods for %description section cleaning.
+
     Only keep one empty line for many consecutive ones.
     Remove Authors from description.
     """

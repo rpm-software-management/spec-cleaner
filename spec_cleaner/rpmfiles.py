@@ -6,7 +6,7 @@ from .rpmsection import Section
 class RpmFiles(Section):
 
     """
-        Class that does replacements on the %files section.
+    A class providing methods for %files section cleaning.
     """
 
     comment_present = False
@@ -35,7 +35,13 @@ class RpmFiles(Section):
     @staticmethod
     def _remove_doc_on_man(line):
         """
-        Remove all %doc %_mandir to -> %_mandir as it is pointless to do twice
+        Remove all "%doc %_mandir" to -> "%_mandir" as it is pointless to do twice.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The processed line.
         """
         line = line.replace('%doc %{_mandir}', '%{_mandir}', 1)
         line = line.replace('%doc %{_infodir}', '%{_infodir}', 1)
@@ -44,7 +50,13 @@ class RpmFiles(Section):
     def _set_man_compression(self, line):
         """
         Set proper compression suffix on man/info pages, instead of .gz/.* use
-        the proper macro variable
+        the proper macro variable.
+
+        Args:
+           line: A string representing a line to process.
+
+        Returns:
+            The processed line.
         """
         if line.startswith('%{_mandir}'):
             line = self.reg.re_man_compression.sub(r'\1%{?ext_man}', line)
@@ -53,6 +65,15 @@ class RpmFiles(Section):
         return line
 
     def _move_license_from_doc(self, line):
+        """
+        Move license file from %doc to %license.
+
+        Args:
+           line: A string representing a line to process.
+
+        Returns:
+            The processed line.
+        """
         if line.startswith('%doc') and self.reg.re_doclicense.search(line):
             match = ''
             while self.reg.re_doclicense.search(line):

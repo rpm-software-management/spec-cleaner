@@ -7,7 +7,9 @@ from .rpmsection import Section
 class RpmPackage(RpmPreamble):
 
     """
-    We handle subpackage case as the normal preamble
+    A class providing methods for %package section cleaning.
+
+    We handle subpackage case as the normal preamble.
     """
 
     def add(self, line):
@@ -16,6 +18,7 @@ class RpmPackage(RpmPreamble):
         if not self.previous_line:
             Section.add(self, line)
             return
+
         # If the package is lang package we add here comment about the lang
         # package
         if (

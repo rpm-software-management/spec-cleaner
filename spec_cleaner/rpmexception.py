@@ -18,19 +18,19 @@ class RpmBaseException(Exception):
 class RpmWrongArgs(RpmBaseException):
 
     """
-    Exception raised by wrong arguments pased by cli
+    Exception raised by wrong arguments passed by cli.
     """
 
 
 class RpmException(RpmBaseException):
 
     """
-    Exception raised by wrong parsed content from rpm
+    Exception raised by wrong parsed content from rpm.
     """
 
 
 class NoMatchException(RpmBaseException):
 
     """
-    Exception raised by not matching corresponding brackets/etc
+    Exception raised by not matching corresponding brackets/etc.
     """

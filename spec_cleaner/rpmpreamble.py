@@ -14,6 +14,8 @@ from .rpmsection import Section
 class RpmPreamble(Section):
 
     """
+    A class providing methods for preamble section cleaning.
+
         Only keep one empty line for many consecutive ones.
         Reorder lines.
         Fix bad licenses.

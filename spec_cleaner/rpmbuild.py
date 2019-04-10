@@ -7,7 +7,7 @@ from .rpmcheck import RpmCheck
 class RpmBuild(RpmCheck):
 
     """
-        Replace various troublemakers in build phase
+    A class providing methods for %build section cleaning.
     """
 
     def add(self, line):
@@ -23,7 +23,13 @@ class RpmBuild(RpmCheck):
 
     def _comment_macro_calls(self, line):
         """
-        Add comment if the package uses direct call instead of macro
+        Add a comment if the package uses direct call of certain build tools instead of macro.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The processed line or None if there is nothing to be changed.
         """
         if self.reg.re_configure.match(line):
             msg = '# FIXME: you should use the %%configure macro'
