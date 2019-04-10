@@ -6,7 +6,9 @@ from .rpmsection import Section
 class RpmCheck(Section):
 
     """
-        Replace various troublemakers in check phase
+    A class providing methods for %check section cleaning.
+
+    Replace various troublemakers in check phase.
     """
 
     def add(self, line):
@@ -22,6 +24,15 @@ class RpmCheck(Section):
         Section.add(self, line)
 
     def _add_jobs(self, line):
+        """
+        Add %{?_smp_mflags} to 'make' call.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The processed line.
+        """
         # add jobs if we have just make call on line
         # if user want single thread he should specify -j1
         if self.reg.re_make.match(line):
@@ -34,6 +45,15 @@ class RpmCheck(Section):
         return line
 
     def _replace_pytest(self, line):
+        """
+        Replace various pytest calls with %pytest or %pytest_arch macros.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The processed line.
+        """
         line = self.reg.re_pytest.sub('%pytest', line)
         line = self.reg.re_pytest_arch.sub('%pytest_arch', line)
         return line

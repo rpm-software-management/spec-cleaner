@@ -10,7 +10,8 @@ from .rpmexception import RpmException
 
 def open_datafile(name):
     """
-    Function to open data files.
+    Open data files.
+
     Used all around so kept glob here for importing.
     """
     homedir = os.getenv('HOME', '~') + '/.local/'
@@ -35,9 +36,17 @@ def open_datafile(name):
 
 def open_stringio_spec(name):
     """
-    Function to open regular files with exception handling.
-    """
+    Open regular files with exception handling.
 
+    Args:
+        name: A string with the file name.
+
+    Returns:
+        A file object.
+
+    Raises:
+        RpmException if the file is not readable.
+    """
     data = StringIO()
     try:
         with open(name, mode='r') as f:

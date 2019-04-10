@@ -37,12 +37,24 @@ from .rpmsection import Section
 class RpmSpecCleaner(object):
 
     """
-    Class wrapping all section parsers reponsible for ensuring
+    Class wrapping all section parsers responsible for ensuring
     that all sections are checked and accounted for.
     If the section is required and not found it is created with
     blank values as fixme for the spec creator.
-    """
 
+    Attributes:
+        specfile: A string with the path to the specfile to process.
+        fin: An in-memory input stream with the input file data.
+        fout: A file object representing output file.
+        current_section: A Section object representing current section of spec file.
+        skip_run: A bool indicating whether the cleaning of the specfile should be skipped.
+        options: A dictionary holding both spec-cleaner commandline arguments and auxiliary options.
+        reg: A Regexp object that holds all regexps that will be used in spec-cleaner.
+        section_starts: A list of tuples where the first item is regex object representing a start of the specfile
+                        section and the second is a corresponding class that should handle it.
+        _previous_line: A string holding the previous line of the currently processed specfile.
+        _previous_nonempty_line: A string holding a nonempty previous line of the currently processed specfile.
+    """
     specfile = None
     fin = None
     fout = None
@@ -52,13 +64,21 @@ class RpmSpecCleaner(object):
     _previous_nonempty_line = None
 
     def __init__(self, options):
+        """Initialize and load options into the RpmSpecCleaner object and runs prep methods.
+
+        Args:
+            options: A dictionary holding spec-cleaner command line options.
+        """
         self.options = options
-        # inicialize main license and subpkg option
+
+        # Initialize main license and subpkg option
         self.options['license'] = None
         self.options['subpkglicense'] = False
-        # compile keywords for unbracing
+
+        # Compile keywords for unbracing
         self.options['unbrace_keywords'] = self._unbrace_keywords()
-        # load all the remaining file operations
+
+        # Load all the remaining file operations
         self.options['tex_conversions'] = []
         self.options['pkgconfig_conversions'] = []
         self.options['cmake_conversions'] = []
@@ -74,9 +94,11 @@ class RpmSpecCleaner(object):
         self.options['license_conversions'] = read_licenses_changes()
         self.options['allowed_groups'] = read_group_changes()
         self.options['reg'] = Regexp(self.options['unbrace_keywords'])
-        # run gvim(diff) in foreground mode
+
+        # If gvim is used for the diff then run it in foreground mode
         if self.options['diff_prog'].startswith('gvim') and ' -f' not in self.options['diff_prog']:
             self.options['diff_prog'] += ' -f'
+
         self.reg = self.options['reg']
         self.fin = open_stringio_spec(self.options['specfile'])
 
@@ -97,14 +119,19 @@ class RpmSpecCleaner(object):
 
         # Find all the present licenses
         self._load_licenses()
-        # Determine if we need to skip the spec
+
+        # Determine if we need to skip the spec ('#nospeccleaner' tag)
         self._find_skip_parser()
-        # set the filemode
+
+        # Set what will be the output of the cleaning
         self._select_mode()
 
     def _select_mode(self):
         """
-        Set up input and output based on the options
+        Set up what will be the output of the cleaning process.
+
+        Based on the options given to the commandline possible options are: output file, inline or a diff program
+        showing differences.
         """
         if self.options['output']:
             self.fout = open(self.options['output'], 'w')
@@ -116,6 +143,15 @@ class RpmSpecCleaner(object):
             self.fout = sys.stdout
 
     def _unbrace_keywords(self):
+        """
+        Create a list of keywords that shouldn't be in the curly brackets.
+
+        It searches for keywords in the whitelist file, global macro functions in 'rpm --showrc' and macro functions
+        in the specfile.
+
+        Returns:
+            A list of such keywords.
+        """
         keywords = load_keywords_whitelist()
         global_macrofuncs = parse_rpm_showrc()
         spec_macrofuncs = find_macros_with_arg(self.options['specfile'])
@@ -123,8 +159,9 @@ class RpmSpecCleaner(object):
 
     def _find_skip_parser(self):
         """
-        Try to figure out if user defined that this file should not be
-        ever parsed by spec-cleaner
+        Search the specfile for the user defined '#nospeccleaner' tag (means that specfile shouldn't be cleaned).
+
+        If the tag is found then skip_run member is set to True, else it's False.
         """
         for line in self.fin:
             if self.reg.re_skipcleaner.match(line):
@@ -133,8 +170,11 @@ class RpmSpecCleaner(object):
         self.fin.seek(0)
 
     def _load_licenses(self):
-        # detect all present licenses in the spec and detect if we have more
-        # than one. If we do put license to each subpkg
+        """
+        Detect all present licenses in the specfile and load them into 'options' member.
+
+        If we have more than one then put license to the each subpkg.
+        """
         licenses = []
         for line in self.fin:
             if self.reg.re_license.match(line):
@@ -152,7 +192,16 @@ class RpmSpecCleaner(object):
         self.fin.seek(0)
 
     def _detect_preamble_section(self, line):
-        # This is seriously ugly but can't think of cleaner way
+        """
+        Detect if the line starts a preamble or not.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            True if it's a preamble, False otherwise.
+        """
+        # This is seriously ugly but can't think of cleaner way FIXME
         if not isinstance(self.current_section, (RpmPreamble, RpmPackage)):
             if any([re.match(line) for re in [self.reg.re_bcond_with, self.reg.re_debugpkg]]):
                 return True
@@ -165,11 +214,30 @@ class RpmSpecCleaner(object):
         return False
 
     def _detect_condition_change(self, line):
+        """
+        Detect if the line contains a condition change (e.g. '%endif', '%else' or the end of the code block).
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+             True if a condition change was found, False otherwise.
+        """
         if any([re.match(line) for re in [self.reg.re_endif, self.reg.re_else, self.reg.re_endcodeblock]]):
             return True
         return False
 
     def _detect_new_section(self, line):
+        """
+        Detect if the line contains a new section (and which) or not.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            A Section (or a subclass) object that was detected.
+            None if we are staying in the same section or if we have a multiline value from preamble.
+        """
         # Detect if we have multiline value from preamble
         if hasattr(self.current_section, 'multiline') and self.current_section.multiline:
             return None
@@ -205,7 +273,7 @@ class RpmSpecCleaner(object):
         if isinstance(self.current_section, RpmCopyright):
             if not self.reg.re_comment.match(line):
                 return RpmPreamble
-            # if we got two whitespaces then the copyright also ended
+            # if we got two empty lines then the copyright also ended
             if self._previous_line == '' and line == '':
                 self.current_section.add(line)
                 return RpmPreamble
@@ -226,7 +294,13 @@ class RpmSpecCleaner(object):
 
     def _check_for_newline(self, detected_class, line):
         """
-        Check if by default we want newline or not after the end of section detected
+        Check if we want newline or not after the end of section detected.
+
+        Args:
+            detected_class: A Section class (or a subclass) representing section that needs to be checked.
+            line: A string representing a line to process.
+
+        Returns: True if we want a newline, False otherwise.
         """
         # We don't want to print newlines before %else and %endif
         if detected_class == Section and self._detect_condition_change(line):
@@ -241,7 +315,12 @@ class RpmSpecCleaner(object):
                 return True
 
     def run(self):
-        # If we are skipping we should do nothing
+        """ The main spec-cleaner method.
+
+        Raises:
+            RpmException if a diff program can't be executed.
+        """
+        # If we are skipping the specfile we should do nothing
         if self.skip_run:
             sys.stderr.write(".spec file {0} is not being processed due to definiton of 'nospeccleaner'\n".format(self.options['specfile']))
             for line in self.fin:
@@ -252,12 +331,12 @@ class RpmSpecCleaner(object):
         # We always start with Copyright
         self.current_section = RpmCopyright(self.options)
 
-        # FIXME: we need to store the content localy and then reorder
+        # FIXME: we need to store the content locally and then reorder
         #        to maintain the specs all the same (eg somebody put
         #        filelist to the top).
         line = None
         for line in self.fin:
-            # Remove \n to make it easier to parse things
+            # Remove newlines to make it easier to parse things
             line = line.rstrip('\n')
             line = line.rstrip('\r')
 
@@ -289,6 +368,7 @@ class RpmSpecCleaner(object):
             self.fout.write('%changelog\n')
         self.fout.flush()
 
+        # if the '--diff' option was used, run the diff program
         if self.options['diff']:
             cmd = shlex.split(
                 self.options['diff_prog'] + ' ' + self.options['specfile'].replace(' ', '\\ ') + ' ' + self.fout.name.replace(' ', '\\ ')
@@ -300,7 +380,7 @@ class RpmSpecCleaner(object):
 
     def __del__(self):
         """
-        We need to close the input and output files
+        Close the input and output files.
         """
 
         if self.fin:

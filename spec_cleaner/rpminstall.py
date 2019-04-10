@@ -6,8 +6,10 @@ from .rpmsection import Section
 class RpmInstall(Section):
 
     """
-        Remove commands that wipe out the build root.
-        Replace %makeinstall (suse-ism).
+    A class providing methods for %install section cleaning.
+
+    Remove commands that wipe out the build root.
+    Replace %makeinstall (suse-ism).
     """
 
     def add(self, line):
@@ -26,7 +28,13 @@ class RpmInstall(Section):
 
     def _replace_install_command(self, line):
         """
-        Replace various install commands with one unified mutation
+        Replace various install commands with one unified mutation.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The line with install commands replaced.
         """
         make_install = '%make_install'
 
@@ -42,7 +50,13 @@ class RpmInstall(Section):
 
     def _replace_remove_la(self, line):
         """
-        Replace all known variations of la file deletion with one unified
+        Replace all known variations of .la files deletion with one unified.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The processed line.
         """
         if (self.reg.re_rm.search(line) and len(self.reg.re_rm_double.split(line)) == 1) or (
             self.reg.re_find.search(line) and len(self.reg.re_find_double.split(line)) == 2

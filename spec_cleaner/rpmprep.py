@@ -6,8 +6,9 @@ from .rpmsection import Section
 class RpmPrep(Section):
 
     """
-        Try to simplify to %setup -q when possible.
-        Replace %patch with %patch0
+    A class providing methods for %prep section cleaning.
+
+    It simplifies %setup and %patch lines.
     """
 
     def add(self, line):
@@ -19,7 +20,13 @@ class RpmPrep(Section):
 
     def _cleanup_setup(self, line):
         """
-        Remove the useless stuff from %setup line
+        Remove the useless stuff from %setup line.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The processed line.
         """
         # NOTE: not using regexp as this covers 99% cases for now
         if line.startswith('%setup'):
@@ -33,7 +40,15 @@ class RpmPrep(Section):
 
     def _prepare_patch(self, line):
         """
-        Convert patchlines to something pretty
+        Convert patchlines to something pretty.
+
+        E.g. it converts "%patch -P 50 -p10" to "%patch50 -p10" and so on.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The line with pretty patchlines.
         """
         # -p0 is default
         line = line.replace('-p0', '')

@@ -6,7 +6,9 @@ from .rpmsection import Section
 class RpmScriptlets(Section):
 
     """
-        Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig
+    A class providing methods for scriptlet section cleaning.
+
+    Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig.
     """
 
     def add(self, line):
@@ -15,6 +17,15 @@ class RpmScriptlets(Section):
         Section.add(self, line)
 
     def _remove_deprecated_ldconfig(self, line):
+        """
+        Replace %run_ldconfig with /sbin/ldconfig.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The processed line.
+        """
         line = self.reg.re_ldconfig.sub('/sbin/ldconfig', line)
         return line
 
@@ -24,6 +35,9 @@ class RpmScriptlets(Section):
         Section.output(self, fout, newline, new_class)
 
     def _collapse_multiline_ldconfig(self):
+        """
+        Merge two lines ldconfig call to the one line and adjust lines member accordingly.
+        """
         # if we have 2 lines or rest of them are empty, pop those
         for i in reversed(self.lines):
             if i:

@@ -3,9 +3,12 @@ from .rpmexception import RpmException
 
 class RpmRequiresToken(object):
     """
-    Class containing informations about the dependency token
-    Can be used to specify all the values present on the line
-    Later on we use this to do various conversions
+    Class containing information about the dependency token.
+
+    Can be used to specify all the values present on the line.
+    Later on we use this to do various conversions.
+
+    This class uses the following format and naming:
 
     prefix            name          operator   version
     BuildRequires:    boringpackage >=         5.2.8
@@ -26,7 +29,13 @@ class RpmRequiresToken(object):
     @staticmethod
     def _format_operator(operator):
         """
-        Make sure the operators look sane and not use all permutations
+        Make sure the operators look sane and not use all permutations.
+
+        Args:
+            operator: A string representing the operator used in the dependency token.
+
+        Returns:
+            Formatted operator.
         """
         operator = operator.replace('=<', '<=')
         operator = operator.replace('=>', '>=')
@@ -35,6 +44,15 @@ class RpmRequiresToken(object):
 
     @staticmethod
     def _format_name(name):
+        """
+        Make sure the name looks sane.
+
+        Args:
+            name: A string representing the name used in the dependency token.
+
+        Returns:
+            Formatted name.
+        """
         # we just rename pkgconfig names to one unified one working everywhere
         if name == 'pkgconfig(pkg-config)' or name == 'pkg-config':
             name = 'pkgconfig'
@@ -47,6 +65,9 @@ class RpmRequiresToken(object):
     def __str__(self):
         """
         Output it all on nice pretty line
+
+        Returns:
+            A string with a formatted output.
         """
 
         self.name = self._format_name(self.name)

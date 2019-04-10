@@ -18,10 +18,18 @@ __version__ = '1.1.4'
 
 def process_args(argv):
     """
-    Process the parsed arguments and return the result
-    :param argv: passed arguments
-    """
+    Parse and process commandline arguments.
 
+    Args:
+        argv: A list of passed arguments.
+
+    Returns:
+        A dict mapping arguments to the corresponding values.
+
+    Raises:
+        RpmWrongArgs: If the specfile doesn't exist or
+                      if the output file already exists but '--force' option (overwrite the output) wasn't used.
+    """
     parser = argparse.ArgumentParser(
         prog='spec-cleaner',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
