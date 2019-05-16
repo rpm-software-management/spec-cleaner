@@ -109,6 +109,7 @@ filetriggerpostun
 transfiletriggerin
 transfiletriggerun
 transfiletriggerpostun
+openstack_cleanup_prep
 openstack_test_package_install
 openstack_pre_user_group_create
 py2_entrypoint
