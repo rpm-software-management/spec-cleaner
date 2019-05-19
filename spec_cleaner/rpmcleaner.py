@@ -185,7 +185,7 @@ class RpmSpecCleaner(object):
                 line = line.rstrip('\r')
                 line = line.rstrip()
                 match = self.reg.re_license.match(line)
-                value = match.groups()[len(match.groups()) - 1]
+                value = match.groups()[-1]
                 if value not in licenses:
                     licenses.append(value)
         if len(licenses) > 1:
