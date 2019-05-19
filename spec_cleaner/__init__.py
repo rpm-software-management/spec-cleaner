@@ -34,7 +34,8 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
     parser = argparse.ArgumentParser(
         prog='spec-cleaner',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Cleans the given spec file according to style guide and returns the result.',
+        description='Cleans the given spec file according to style guide and returns the result. If "#nospeccleaner"'
+                    'tag is used in the spec file than the spec file will not be cleaned.',
     )
 
     # Make the -d, -i, and -o exclusive as we can do only one of those
