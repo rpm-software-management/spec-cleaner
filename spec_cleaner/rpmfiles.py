@@ -8,9 +8,6 @@ class RpmFiles(Section):
     """
     A class providing methods for %files section cleaning.
     """
-
-    comment_present = False
-
     def add(self, line: str) -> None:
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
