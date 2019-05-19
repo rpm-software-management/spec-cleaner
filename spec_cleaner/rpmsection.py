@@ -1,4 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
+from typing import List, Optional, Dict, Any, IO
+
+from .rpmregexp import Regexp
 
 
 class Section(object):
@@ -25,19 +28,19 @@ class Section(object):
         _condition_counter: An int for counting in how many (nested) condition we currently are.
     """
 
-    def __init__(self, options):
-        self.lines = []
-        self.previous_line = None
-        self.spec = options['specfile']
-        self.minimal = options['minimal']
-        self.no_curlification = options['no_curlification']
-        self.libexecdir = options['libexecdir']
-        self.reg = options['reg']
+    def __init__(self, options: Dict[str, Any]) -> None:
+        self.lines: List[str] = []
+        self.previous_line: Optional[str] = None
+        self.spec: str = options['specfile']
+        self.minimal: bool = options['minimal']
+        self.no_curlification: bool = options['no_curlification']
+        self.libexecdir: bool = options['libexecdir']
+        self.reg: Regexp = options['reg']
         # Are we inside of conditional or not
-        self.condition = False
-        self._condition_counter = 0
+        self.condition: bool = False
+        self._condition_counter: int = 0
 
-    def _complete_cleanup(self, line):
+    def _complete_cleanup(self, line: str) -> str:
         """
         Call all the cleanups in proper order so it
         can be called beforehand if we override add phase and want to
@@ -66,7 +69,7 @@ class Section(object):
 
         return line
 
-    def _check_conditions(self, line):
+    def _check_conditions(self, line: str) -> None:
         """
         Set 'condition' member to True if we are in condition that is contained (False otherwise).
 
@@ -85,7 +88,7 @@ class Section(object):
         else:
             self.condition = False
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         """
         Run the cleanup of the line and add the line to the list of lines.
 
@@ -101,7 +104,7 @@ class Section(object):
         self.lines.append(line)
         self.previous_line = line
 
-    def output(self, fout, newline=True, new_class=None):
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = None) -> None:
         """
         Manage printing of the section.
 
@@ -111,7 +114,7 @@ class Section(object):
         Args:
             fout: A file object representing the output file.
             newline: A flag indicating whether we want to add a newline.
-            new_class: A Section (or a subclass).
+            new_class_name: A string with the Section name.
         """
         # we don't want to create new line
         if newline and len(self.lines) >= 1:
@@ -124,7 +127,7 @@ class Section(object):
                 and not self.lines[-1].endswith('\\')
             ):
                 self.lines.append('')
-            if new_class != 'RpmScriptlets' and (self.lines[-1].startswith('%pre') or self.lines[-1].startswith('%post')):
+            if new_class_name != 'RpmScriptlets' and (self.lines[-1].startswith('%pre') or self.lines[-1].startswith('%post')):
                 self.lines.append('')
             # remove the newlines around ifs if they are not wanted
             if len(self.lines) >= 2:
@@ -135,7 +138,7 @@ class Section(object):
             fout.write(line + '\n')
 
     @staticmethod
-    def strip_useless_spaces(line):
+    def strip_useless_spaces(line: str) -> str:
         """
         Remove useless multiple spaces in some areas.
 
@@ -150,7 +153,7 @@ class Section(object):
         """
         return ' '.join(line.split())
 
-    def embrace_macros(self, line):
+    def embrace_macros(self, line: str) -> str:
         """
         Add {} around known macros that have no arguments and are not
         on whitelist.
@@ -183,7 +186,7 @@ class Section(object):
         # re-create the line back
         return '#'.join(sp)
 
-    def replace_buildroot(self, line):
+    def replace_buildroot(self, line: str) -> str:
         """
         Replace RPM_BUILD_ROOT for buildroot.
 
@@ -197,7 +200,7 @@ class Section(object):
         line = self.reg.re_rpmbuildroot_quotes.sub(r'%{buildroot}', line)
         return line
 
-    def replace_optflags(self, line):
+    def replace_optflags(self, line: str) -> str:
         """
         Replace RPM_OPT_FLAGS for %{optflags}.
 
@@ -212,13 +215,26 @@ class Section(object):
         line = self.reg.re_optflags.sub('%{optflags}', line)
         return line
 
-    def replace_python_expand(self, line):
+    def replace_python_expand(self, line: str) -> str:
+        """
+        Replace classic python macros with those starting with '$' if it's used with %python_expand macro.
+
+        E.g. with %python_expand one must use "%python_expand %{$python_sitelib}" instead of
+        "%python_expand %{python_sitelib}". Known variables: python_sitearch, python_sitelib, python_version,
+        python_bin_suffix and python.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The line with python macros replaced.
+        """
         if line.startswith('%python_expand') or line.startswith('%{python_expand'):
             line = self.reg.re_python_expand.sub(r'%{$\1}', line)
             line = self.reg.re_python_interp_expand.sub(r' $\1 ', line)
         return line
 
-    def replace_known_dirs(self, line):
+    def replace_known_dirs(self, line: str) -> str:
         """
         Replace hardcoded stuff like /usr/share -> %{_datadir}.
 
@@ -228,7 +244,6 @@ class Section(object):
         Returns:
             The processed line.
         """
-
         line = self.reg.re_oldprefix.sub(r'%{_prefix}\1', line)
         line = self.reg.re_prefix.sub(r'%{_prefix}\1', line)
         line = self.reg.re_bindir.sub(r'%{_bindir}\1', line)
@@ -248,7 +263,7 @@ class Section(object):
 
         return line
 
-    def replace_utils(self, line):
+    def replace_utils(self, line: str) -> str:
         """
         Remove the macro calls for utilities and rather use direct commands (OBS ensures there is only one anyway).
 
@@ -330,7 +345,7 @@ class Section(object):
         return line
 
     @staticmethod
-    def replace_buildservice(line):
+    def replace_buildservice(line: str) -> str:
         """
         Pretty format the conditions for distribution/version detection.
 
@@ -346,7 +361,7 @@ class Section(object):
             line = line.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace('00%{', '0%{')
         return line
 
-    def replace_preamble_macros(self, line):
+    def replace_preamble_macros(self, line: str) -> str:
         """
         Replace %{S:0} and %{P:0} for %{SOURCE0} and %{PATCH0}.
 

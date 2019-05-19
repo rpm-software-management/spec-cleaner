@@ -1,6 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import re
+from typing import List
 
 
 class Regexp(object):
@@ -189,5 +190,5 @@ class Regexp(object):
     re_deprecated_egrep_regex = re.compile(r'\begrep\b')
     re_deprecated_fgrep_regex = re.compile(r'\bfgrep\b')
 
-    def __init__(self, keywords):
+    def __init__(self, keywords: List[str]) -> None:
         self.re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords) + ')}')

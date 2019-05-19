@@ -7,11 +7,11 @@ class RpmBaseException(Exception):
     Class wrapping Exception class so we throw neat exceptions.
     """
 
-    def __init__(self, args=()):
+    def __init__(self, args=()) -> None:
         Exception.__init__(self)
         self.args = args
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ''.join(self.args)
 
 

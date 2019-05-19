@@ -1,4 +1,5 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
+from typing import Dict, Any
 
 from .rpmsection import Section
 
@@ -12,7 +13,7 @@ class RpmDescription(Section):
     Remove Authors from description.
     """
 
-    def __init__(self, options):
+    def __init__(self, options: Dict[str, Any]) -> None:
         Section.__init__(self, options)
         self.removing_authors = False
         # Tracks the use of a macro. When this happens and we're still in a
@@ -20,7 +21,7 @@ class RpmDescription(Section):
         # the following lines blindly, without trying to fix anything.
         self.unknown_line = False
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         if self.previous_line and len(line) > 0 and line[0] == '%':
             self.unknown_line = True
 

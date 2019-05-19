@@ -33,6 +33,8 @@ from .rpmregexp import Regexp
 from .rpmscriplets import RpmScriptlets
 from .rpmsection import Section
 
+from typing import List, Dict, Any, IO, Union, Type, Optional
+
 
 class RpmSpecCleaner(object):
 
@@ -55,15 +57,16 @@ class RpmSpecCleaner(object):
         _previous_line: A string holding the previous line of the currently processed specfile.
         _previous_nonempty_line: A string holding a nonempty previous line of the currently processed specfile.
     """
-    specfile = None
-    fin = None
-    fout = None
-    current_section = None
-    skip_run = False
-    _previous_line = None
-    _previous_nonempty_line = None
+    specfile: Optional[str] = None
+    fin: Optional[IO[str]] = None
+    fout: Optional[IO[str]] = None
+    current_section: Optional[Section] = None
+    skip_run: bool = False
+    _previous_line: Optional[str] = None
+    _previous_nonempty_line: Optional[str] = None
 
-    def __init__(self, options):
+    def __init__(self, options: Dict[str, Any]) -> None:
+
         """Initialize and load options into the RpmSpecCleaner object and runs prep methods.
 
         Args:
@@ -126,7 +129,7 @@ class RpmSpecCleaner(object):
         # Set what will be the output of the cleaning
         self._select_mode()
 
-    def _select_mode(self):
+    def _select_mode(self) -> None:
         """
         Set up what will be the output of the cleaning process.
 
@@ -142,7 +145,7 @@ class RpmSpecCleaner(object):
         else:
             self.fout = sys.stdout
 
-    def _unbrace_keywords(self):
+    def _unbrace_keywords(self) -> List[str]:
         """
         Create a list of keywords that shouldn't be in the curly brackets.
 
@@ -157,7 +160,7 @@ class RpmSpecCleaner(object):
         spec_macrofuncs = find_macros_with_arg(self.options['specfile'])
         return keywords + global_macrofuncs + spec_macrofuncs
 
-    def _find_skip_parser(self):
+    def _find_skip_parser(self) -> None:
         """
         Search the specfile for the user defined '#nospeccleaner' tag (means that specfile shouldn't be cleaned).
 
@@ -169,13 +172,13 @@ class RpmSpecCleaner(object):
                 break
         self.fin.seek(0)
 
-    def _load_licenses(self):
+    def _load_licenses(self) -> None:
         """
         Detect all present licenses in the specfile and load them into 'options' member.
 
         If we have more than one then put license to the each subpkg.
         """
-        licenses = []
+        licenses: List[str] = []
         for line in self.fin:
             if self.reg.re_license.match(line):
                 line = line.rstrip('\n')
@@ -191,7 +194,7 @@ class RpmSpecCleaner(object):
             self.options['license'] = licenses[0]
         self.fin.seek(0)
 
-    def _detect_preamble_section(self, line):
+    def _detect_preamble_section(self, line: str) -> bool:
         """
         Detect if the line starts a preamble or not.
 
@@ -213,7 +216,7 @@ class RpmSpecCleaner(object):
                 return True
         return False
 
-    def _detect_condition_change(self, line):
+    def _detect_condition_change(self, line: str) -> bool:
         """
         Detect if the line contains a condition change (e.g. '%endif', '%else' or the end of the code block).
 
@@ -227,7 +230,7 @@ class RpmSpecCleaner(object):
             return True
         return False
 
-    def _detect_new_section(self, line):
+    def _detect_new_section(self, line: str) -> Optional[Type[Section]]:
         """
         Detect if the line contains a new section (and which) or not.
 
@@ -239,7 +242,9 @@ class RpmSpecCleaner(object):
             None if we are staying in the same section or if we have a multiline value from preamble.
         """
         # Detect if we have multiline value from preamble
-        if hasattr(self.current_section, 'multiline') and self.current_section.multiline:
+        # mypy: we need to ignore type check here because mypy cannot detect that we are checking the existence of
+        # the 'multiline' attribute before accessing it
+        if hasattr(self.current_section, 'multiline') and self.current_section.multiline:  # type: ignore
             return None
 
         # Detect if we match condition and that is from global space
@@ -265,7 +270,9 @@ class RpmSpecCleaner(object):
                 if hasattr(self.current_section, 'condition') and self.current_section.condition:
                     self.current_section.condition = False
                     if hasattr(self.current_section, 'end_subparagraph'):
-                        self.current_section.end_subparagraph(True)
+                        # mypy: we need to ignore type check here because mypy cannot detect that we are checking the
+                        # existence of the 'end_subparagraph' attribute before accessing it
+                        self.current_section.end_subparagraph(True)  # type: ignore
                 return newclass
 
         # if we still are here and we are just doing copyright
@@ -292,7 +299,7 @@ class RpmSpecCleaner(object):
         # we are staying in the section
         return None
 
-    def _check_for_newline(self, detected_class, line):
+    def _check_for_newline(self, detected_class: Optional[Type[Section]], line: str) -> bool:
         """
         Check if we want newline or not after the end of section detected.
 
@@ -314,8 +321,11 @@ class RpmSpecCleaner(object):
             else:
                 return True
 
-    def run(self):
+    def run(self) -> int:
         """ The main spec-cleaner method.
+
+        Returns:
+            A zero if we are skipping the specfile.
 
         Raises:
             RpmException if a diff program can't be executed.
@@ -378,7 +388,7 @@ class RpmSpecCleaner(object):
             except OSError as error:
                 raise RpmException('Could not execute %s (%s)' % (self.options['diff_prog'].split()[0], error.strerror))
 
-    def __del__(self):
+    def __del__(self) -> None:
         """
         Close the input and output files.
         """

@@ -18,7 +18,7 @@ class RpmPrep(Section):
             line = self._prepare_patch(line)
         Section.add(self, line)
 
-    def _cleanup_setup(self, line):
+    def _cleanup_setup(self, line: str) -> str:
         """
         Remove the useless stuff from %setup line.
 
@@ -38,7 +38,7 @@ class RpmPrep(Section):
 
         return line
 
-    def _prepare_patch(self, line):
+    def _prepare_patch(self, line: str) -> str:
         """
         Convert patchlines to something pretty.
 

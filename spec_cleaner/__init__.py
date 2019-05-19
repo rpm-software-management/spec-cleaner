@@ -8,6 +8,7 @@ import argparse
 from datetime import datetime
 import os
 import sys
+from typing import List, Dict, Any
 
 from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmException, RpmWrongArgs
@@ -16,7 +17,7 @@ from .rpmexception import RpmException, RpmWrongArgs
 __version__ = '1.1.4'
 
 
-def process_args(argv):
+def process_args(argv: List[str]) -> Dict[str, Any]:
     """
     Parse and process commandline arguments.
 
@@ -102,7 +103,7 @@ def process_args(argv):
     return options_dict
 
 
-def main():
+def main() -> int:
     """
     Main function that calls argument parsing ensures their sanity
     and then creates RpmSpecCleaner object that works with passed spec file.

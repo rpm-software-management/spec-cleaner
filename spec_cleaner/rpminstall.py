@@ -12,7 +12,7 @@ class RpmInstall(Section):
     Replace %makeinstall (suse-ism).
     """
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         line = self._complete_cleanup(line)
 
         # we do not want to cleanup buildroot, it is already clean
@@ -26,7 +26,7 @@ class RpmInstall(Section):
 
         Section.add(self, line)
 
-    def _replace_install_command(self, line):
+    def _replace_install_command(self, line: str) -> str:
         """
         Replace various install commands with one unified mutation.
 
@@ -48,7 +48,7 @@ class RpmInstall(Section):
 
         return line
 
-    def _replace_remove_la(self, line):
+    def _replace_remove_la(self, line: str) -> str:
         """
         Replace all known variations of .la files deletion with one unified.
 
