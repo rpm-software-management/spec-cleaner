@@ -321,11 +321,8 @@ class RpmSpecCleaner(object):
             else:
                 return True
 
-    def run(self) -> int:
+    def run(self) -> None:
         """ The main spec-cleaner method.
-
-        Returns:
-            A zero if we are skipping the specfile.
 
         Raises:
             RpmException if a diff program can't be executed.
@@ -336,7 +333,7 @@ class RpmSpecCleaner(object):
             for line in self.fin:
                 self.fout.write(line)
             self.fout.flush()
-            return 0
+            return
 
         # We always start with Copyright
         self.current_section = RpmCopyright(self.options)
