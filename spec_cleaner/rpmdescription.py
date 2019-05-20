@@ -1,5 +1,5 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
-from typing import Dict, Any
+from typing import Any, Dict
 
 from .rpmsection import Section
 

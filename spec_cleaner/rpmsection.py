@@ -1,5 +1,5 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
-from typing import List, Optional, Dict, Any, IO
+from typing import Any, Dict, IO, List, Optional
 
 from .rpmregexp import Regexp
 

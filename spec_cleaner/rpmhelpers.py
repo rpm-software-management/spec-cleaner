@@ -2,7 +2,7 @@
 
 import re
 from subprocess import check_output
-from typing import List, Dict
+from typing import Dict, List
 
 from .fileutils import open_datafile, open_stringio_spec
 from .rpmexception import RpmException

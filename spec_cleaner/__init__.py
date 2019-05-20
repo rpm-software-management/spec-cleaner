@@ -8,7 +8,7 @@ import argparse
 from datetime import datetime
 import os
 import sys
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmException, RpmWrongArgs

@@ -17,7 +17,7 @@ class RpmRequiresToken(object):
     """
 
     name: Optional[str] = None
-    operator: Optional[str]  = None
+    operator: Optional[str] = None
     version: Optional[str] = None
     prefix: Optional[str] = None
     comments: Optional[str] = None

@@ -5,6 +5,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+from typing import Any, Dict, IO, List, Optional, Type
 
 from .fileutils import open_stringio_spec
 from .rpmbuild import RpmBuild
@@ -32,8 +33,6 @@ from .rpmprune import RpmChangelog, RpmClean
 from .rpmregexp import Regexp
 from .rpmscriplets import RpmScriptlets
 from .rpmsection import Section
-
-from typing import List, Dict, Any, IO, Union, Type, Optional
 
 
 class RpmSpecCleaner(object):

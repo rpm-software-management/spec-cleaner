@@ -1,8 +1,6 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 # We basically extend rpmcheck
-from typing import Optional
-
 from .rpmcheck import RpmCheck
 
 
