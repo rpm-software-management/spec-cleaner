@@ -4,15 +4,22 @@ from io import StringIO
 import os
 import sys
 import sysconfig
+from typing import IO
 
 from .rpmexception import RpmException
 
 
-def open_datafile(name):
+def open_datafile(name: str) -> IO[str]:
     """
     Open data files.
 
     Used all around so kept glob here for importing.
+
+    Args:
+        name: A string representing the name of the datafile to open.
+
+    Raises:
+        RpmException if the file is not found in predefined datadirs.
     """
     homedir = os.getenv('HOME', '~') + '/.local/'
 
@@ -34,7 +41,7 @@ def open_datafile(name):
     raise RpmException("File '{}' not found in datadirs".format(name))
 
 
-def open_stringio_spec(name):
+def open_stringio_spec(name: str) -> IO[str]:
     """
     Open regular files with exception handling.
 

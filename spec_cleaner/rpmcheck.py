@@ -11,7 +11,7 @@ class RpmCheck(Section):
     Replace various troublemakers in check phase.
     """
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         line = self._complete_cleanup(line)
 
         # smp_mflags for jobs macro replacement
@@ -23,7 +23,7 @@ class RpmCheck(Section):
 
         Section.add(self, line)
 
-    def _add_jobs(self, line):
+    def _add_jobs(self, line: str) -> str:
         """
         Add %{?_smp_mflags} to 'make' call.
 
@@ -44,7 +44,7 @@ class RpmCheck(Section):
                     line = self.reg.re_make.sub(r'\1make %{?_smp_mflags}\2', line)
         return line
 
-    def _replace_pytest(self, line):
+    def _replace_pytest(self, line: str) -> str:
         """
         Replace various pytest calls with %pytest or %pytest_arch macros.
 

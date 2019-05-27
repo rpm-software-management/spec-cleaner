@@ -10,7 +10,7 @@ class RpmBuild(RpmCheck):
     A class providing methods for %build section cleaning.
     """
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         # we do not want to run suseupdateconfig, deprecated
         if self.reg.re_suseupdateconfig.search(line):
             return
@@ -21,15 +21,12 @@ class RpmBuild(RpmCheck):
 
         RpmCheck.add(self, line)
 
-    def _comment_macro_calls(self, line):
+    def _comment_macro_calls(self, line: str) -> None:
         """
         Add a comment if the package uses direct call of certain build tools instead of macro.
 
         Args:
             line: A string representing a line to process.
-
-        Returns:
-            The processed line or None if there is nothing to be changed.
         """
         if self.reg.re_configure.match(line):
             msg = '# FIXME: you should use the %%configure macro'
@@ -43,7 +40,7 @@ class RpmBuild(RpmCheck):
             return
 
         position = len(self.lines)
-        if self.previous_line.endswith('\\'):
+        if self.previous_line and self.previous_line.endswith('\\'):
             # Backtrack until we are on top of multiline command
             for i in reversed(self.lines):
                 if i.endswith('\\'):

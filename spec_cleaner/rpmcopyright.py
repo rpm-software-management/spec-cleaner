@@ -1,6 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import os
+from typing import IO
 
 from .rpmsection import Section
 
@@ -60,16 +61,16 @@ class RpmCopyright(Section):
 #"""
         )
 
-    def _add_buildrules(self):
+    def _add_buildrules(self) -> None:
         for i in sorted(self.buildrules):
             self.lines.append(i)
 
-    def _add_modelines(self):
+    def _add_modelines(self) -> None:
         # add vim modeline if found
         if self.vimmodeline:
             self.lines.append(self.vimmodeline)
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         # if we have no copyright header we actually should not touch it not
         # wipe out, thus just add everything to known lines
         if self.no_copyright:
@@ -77,10 +78,10 @@ class RpmCopyright(Section):
             return
         if not self.lines and not line:
             return
-        if self.reg.re_copyright.match(line) and not self.reg.re_suse_copyright.search(line):
-            match = self.reg.re_copyright.match(line)
+        copyright_match = self.reg.re_copyright.match(line)
+        if copyright_match and not self.reg.re_suse_copyright.search(line):
             # always replace whitespace garbage on copyright line
-            line = '# Copyright (c) {0}'.format(match.group(1))
+            line = '# Copyright (c) {0}'.format(copyright_match.group(1))
             self.copyrights.append(line)
         elif self.reg.re_rootforbuild.match(line):
             self.buildrules.append('# needsrootforbuild')
@@ -98,7 +99,7 @@ class RpmCopyright(Section):
             # anything not in our rules gets tossed out
             return
 
-    def output(self, fout, newline=True, new_class=None):
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = None):
         if not self.no_copyright:
             self._add_modelines()
             self._add_pkg_header()
@@ -109,4 +110,4 @@ class RpmCopyright(Section):
             self.lines.append('')
         else:
             newline = False
-        Section.output(self, fout, newline, new_class)
+        Section.output(self, fout, newline, new_class_name)

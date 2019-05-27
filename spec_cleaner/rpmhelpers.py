@@ -2,6 +2,7 @@
 
 import re
 from subprocess import check_output
+from typing import Dict, List
 
 from .fileutils import open_datafile, open_stringio_spec
 from .rpmexception import RpmException
@@ -16,14 +17,14 @@ GROUPS_LIST = 'allowed_groups.txt'
 BRACKETING_EXCLUDES = 'excludes-bracketing.txt'
 
 
-def parse_rpm_showrc():
+def parse_rpm_showrc() -> List[str]:
     """
     Create a list of all macro functions in the 'rpm --showrc' output.
 
     Returns:
         A list of such macro functions.
     """
-    macros = []
+    macros: List[str] = []
 
     re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
     output = check_output(['rpm', '--showrc'])
@@ -34,7 +35,7 @@ def parse_rpm_showrc():
     return macros
 
 
-def load_keywords_whitelist():
+def load_keywords_whitelist() -> List[str]:
     """
     Create a list of keywords contained in BRACKETING_EXCLUDES file (keywords that shouldn't be in brackets).
 
@@ -45,7 +46,7 @@ def load_keywords_whitelist():
         return [line.rstrip('\n') for line in f]
 
 
-def find_macros_with_arg(spec):
+def find_macros_with_arg(spec: str) -> List[str]:
     """
     Create a list of all macro functions in the spec file.
 
@@ -55,7 +56,7 @@ def find_macros_with_arg(spec):
     Returns:
         A list of such macro functions.
     """
-    macrofuncs = []
+    macrofuncs: List[str] = []
 
     re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
     with open_stringio_spec(spec) as f:
@@ -88,7 +89,7 @@ def read_cmake_changes():
     return read_conversion_changes(CMAKE_CONVERSIONS)
 
 
-def read_licenses_changes():
+def read_licenses_changes() -> Dict[str, str]:
     """
     Create mapping of old licences to new licences.
 

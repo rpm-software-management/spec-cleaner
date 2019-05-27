@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .rpmexception import RpmException
 
 
@@ -14,20 +16,17 @@ class RpmRequiresToken(object):
     BuildRequires:    boringpackage >=         5.2.8
     """
 
-    name = None
-    operator = None
-    version = None
-    prefix = None
-    comments = None
+    comments: Optional[str] = None
 
-    def __init__(self, name, operator=None, version=None, prefix=None):
+    def __init__(self, name: str, operator: Optional[str] = None, version: Optional[str] = None,
+                 prefix: Optional[str] = None) -> None:
         self.prefix = prefix
         self.name = name
         self.operator = operator
         self.version = version
 
     @staticmethod
-    def _format_operator(operator):
+    def _format_operator(operator: str) -> str:
         """
         Make sure the operators look sane and not use all permutations.
 
@@ -43,7 +42,7 @@ class RpmRequiresToken(object):
         return operator
 
     @staticmethod
-    def _format_name(name):
+    def _format_name(name: str) -> str:
         """
         Make sure the name looks sane.
 
@@ -62,12 +61,15 @@ class RpmRequiresToken(object):
             name = name.replace('otherproviders(', '')
         return name
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
-        Output it all on nice pretty line
+        Output it all on nice pretty line.
 
         Returns:
             A string with a formatted output.
+
+        Raises:
+            RpmException if prefix or name is not defined or the version is defined but no operator is present.
         """
 
         self.name = self._format_name(self.name)
@@ -84,9 +86,9 @@ class RpmRequiresToken(object):
                 )
             )
         string = self.prefix + self.name
-        if self.version and not self.operator:
-            raise RpmException('Have defined version and no operator %s' % self.version)
-        if self.version:
+        if (self.version and not self.operator) or (not self.version and self.operator):
+            raise RpmException('Have defined version and no operator or vice versa')
+        if self.version and self.operator:
             self.operator = self._format_operator(self.operator)
             string += ' ' + self.operator + ' ' + self.version
 

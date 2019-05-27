@@ -12,7 +12,7 @@ class RpmPackage(RpmPreamble):
     We handle subpackage case as the normal preamble.
     """
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         # The first line (%package) should always be added and is different
         # from the lines we handle in RpmPreamble.
         if not self.previous_line:

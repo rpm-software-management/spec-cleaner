@@ -8,6 +8,7 @@ import argparse
 from datetime import datetime
 import os
 import sys
+from typing import Any, Dict, List
 
 from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmException, RpmWrongArgs
@@ -16,7 +17,7 @@ from .rpmexception import RpmException, RpmWrongArgs
 __version__ = '1.1.4'
 
 
-def process_args(argv):
+def process_args(argv: List[str]) -> Dict[str, Any]:
     """
     Parse and process commandline arguments.
 
@@ -33,7 +34,8 @@ def process_args(argv):
     parser = argparse.ArgumentParser(
         prog='spec-cleaner',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Cleans the given spec file according to style guide and returns the result.',
+        description='Cleans the given spec file according to style guide and returns the result. If "#nospeccleaner"'
+                    'tag is used in the spec file than the spec file will not be cleaned.',
     )
 
     # Make the -d, -i, and -o exclusive as we can do only one of those
@@ -102,7 +104,7 @@ def process_args(argv):
     return options_dict
 
 
-def main():
+def main() -> int:
     """
     Main function that calls argument parsing ensures their sanity
     and then creates RpmSpecCleaner object that works with passed spec file.
