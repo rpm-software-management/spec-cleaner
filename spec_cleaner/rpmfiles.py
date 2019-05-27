@@ -72,9 +72,11 @@ class RpmFiles(Section):
             The processed line.
         """
         if line.startswith('%doc') and self.reg.re_doclicense.search(line):
-            match = ''
-            while self.reg.re_doclicense.search(line):
-                match += self.reg.re_doclicense.search(line).group()
+            licences = ''
+            match = self.reg.re_doclicense.search(line)
+            while match:
+                licences += match.group()
                 line = self.reg.re_doclicense.sub('', line, 1)
-            Section.add(self, '%license {}'.format(match))
+                match = self.reg.re_doclicense.search(line)
+            Section.add(self, '%license {}'.format(licences))
         return line

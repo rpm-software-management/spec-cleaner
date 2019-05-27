@@ -57,9 +57,7 @@ class RpmSpecCleaner(object):
         _previous_nonempty_line: A string holding a nonempty previous line of the currently processed specfile.
     """
     specfile: Optional[str] = None
-    fin: Optional[IO[str]] = None
-    fout: Optional[IO[str]] = None
-    current_section: Optional[Section] = None
+    current_section: Section
     skip_run: bool = False
     _previous_line: Optional[str] = None
     _previous_nonempty_line: Optional[str] = None
@@ -135,6 +133,7 @@ class RpmSpecCleaner(object):
         Based on the options given to the commandline possible options are: output file, inline or a diff program
         showing differences.
         """
+        self.fout: IO[Any]
         if self.options['output']:
             self.fout = open(self.options['output'], 'w')
         elif self.options['inline']:
@@ -340,7 +339,6 @@ class RpmSpecCleaner(object):
         # FIXME: we need to store the content locally and then reorder
         #        to maintain the specs all the same (eg somebody put
         #        filelist to the top).
-        line = None
         for line in self.fin:
             # Remove newlines to make it easier to parse things
             line = line.rstrip('\n')
@@ -391,7 +389,5 @@ class RpmSpecCleaner(object):
 
         if self.fin:
             self.fin.close()
-            self.fin = None
         if self.fout:
             self.fout.close()
-            self.fout = None

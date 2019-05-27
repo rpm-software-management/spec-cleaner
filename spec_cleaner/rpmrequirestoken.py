@@ -16,10 +16,6 @@ class RpmRequiresToken(object):
     BuildRequires:    boringpackage >=         5.2.8
     """
 
-    name: Optional[str] = None
-    operator: Optional[str] = None
-    version: Optional[str] = None
-    prefix: Optional[str] = None
     comments: Optional[str] = None
 
     def __init__(self, name: str, operator: Optional[str] = None, version: Optional[str] = None,
@@ -90,9 +86,9 @@ class RpmRequiresToken(object):
                 )
             )
         string = self.prefix + self.name
-        if self.version and not self.operator:
-            raise RpmException('Have defined version and no operator %s' % self.version)
-        if self.version:
+        if (self.version and not self.operator) or (not self.version and self.operator):
+            raise RpmException('Have defined version and no operator or vice versa')
+        if self.version and self.operator:
             self.operator = self._format_operator(self.operator)
             string += ' ' + self.operator + ' ' + self.version
 

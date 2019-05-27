@@ -58,8 +58,8 @@ class RpmPrep(Section):
 
         # convert the %patch -P 50 -p10 to %patch50 -p10
         # this apply only if there is ONE -P on the line, not multiple ones
-        if self.reg.re_patch_prep.match(line):
-            match = self.reg.re_patch_prep.match(line)
+        match = self.reg.re_patch_prep.match(line)
+        if match:
             line = self.strip_useless_spaces('%%patch%s %s %s' % (match.group(2), match.group(1), match.group(3)))
 
         return line

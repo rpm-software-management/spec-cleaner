@@ -40,7 +40,7 @@ class RpmBuild(RpmCheck):
             return
 
         position = len(self.lines)
-        if self.previous_line.endswith('\\'):
+        if self.previous_line and self.previous_line.endswith('\\'):
             # Backtrack until we are on top of multiline command
             for i in reversed(self.lines):
                 if i.endswith('\\'):
