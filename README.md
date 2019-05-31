@@ -1,18 +1,70 @@
-# spec-cleaner #
+
+# spec-cleaner
 
 [![Build Status](https://travis-ci.org/openSUSE/spec-cleaner.svg?branch=master)](https://travis-ci.org/openSUSE/spec-cleaner)
 [![Coverage Status](https://coveralls.io/repos/github/openSUSE/spec-cleaner/badge.svg?branch=master)](https://coveralls.io/github/openSUSE/spec-cleaner?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/58de1bb1553e4c24843f4ca1bf9048a2)](https://www.codacy.com/app/scarabeusiv/spec-cleaner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=openSUSE/spec-cleaner&amp;utm_campaign=Badge_Grade)
 
-spec-cleaner is a tool that is planned to be replacement for "osc service localrun format_spec_file".
-It is intended to provide same or better features in order for us to be able to unify all the spec files in obs.
 
-# Running the testsuite locally
+spec-cleaner is a tool that cleans the given RPM spec file according to the style guide and returns the result. It's planned to be a replacement for `osc service localrun format_spec_file` and it is intended to provide the same or better features in order to be able to unify all the spec files in [OBS](https://build.opensuse.org/).
 
-spec-cleaner uses tox to run the testsuite in a clean enviroment. To run the
-tests locally, do:
+# Packages
+spec-cleaner is provided as an RPM package for openSUSE Leap ([15.0](https://build.opensuse.org/package/show/openSUSE:Leap:15.0:Update/spec-cleaner) and [15.1](https://build.opensuse.org/package/show/openSUSE:Leap:15.1:Update/spec-cleaner)) and [openSUSE Tumbleweed](https://build.opensuse.org/package/show/openSUSE:Factory/spec-cleaner). When the new spec-cleaner is released then the version updates are done for all maintained openSUSE codestreams. That means that there is always the latest version available as a package in OBS.
 
-    tox -epy36
+The latest version is also available on [PyPI](https://pypi.org/project/spec_cleaner/). You can install it via `pip install spec-cleaner`.
+
+
+# Tests
+
+## Running the tests
+spec-cleaner provides quite an extensive testsuite. You can run these tests locally either directly via `pytest` or in a clean environment via`tox` where besides pytest also flake8 or mypy is called.
+
+### pytest
+Just install `python3-pytest`, `python3-pytest-cov` and `python3-pytest-sugar` (for a nice progress bar) and then run all test via:
+
+    pytest
+
+### tox
+Install `tox` and run
+
+    tox
+for running tests for the test environments stated in `tox.ini` configuration file. Or you can run the tests for a specified environment (e.g. Python 3.7) via calling
+
+	tox -epy37
+
+
+## Adding new tests
+When a new feature is added to spec-cleaner then a test for this piece of code must be added. See
+
+[how to write tests for spec-cleaner](TESTSUITE.md).
+
+## mypy
+
+Recently, optional static type checker support was implemented for the most important parts of the code. It runs automatically (using the recent mypy version) when you run `tox`. If you want to run it on your own, just install `python3-mypy` and run
+
+    mypy spec_cleaner
+
+## Contributing
+You are more than welcome to contribute to this project. If your are not sure about your changes, feel free to create an issue where you can discuss it prior to the implementation.
+
+When changing anything in the code, make sure that you don't forget to
+  * add proper comments and docstrings
+  * run and pass all tests, `flake8` and `mypy` (just run `tox`)
+  * add  [tests](TESTSUITE.md) (mainly if you implement a new feature)
+  * add `mypy` support for the new code
+
+
+## Versioning and releasing
+ For the versions available, see the [tags on this repository](https://github.com/openSUSE/spec-cleaner/releases).
+
+If you have proper permissions you can find handy [how to do a new release](RELEASE.md).
+
+
+## Authors
+
+* **Tomas Chvatal** [scarabeusiv](https://github.com/scarabeusiv)  - *Initial work*
+
+See also the list of [contributors](AUTHORS) who participated in this project.
 
 
 # [SPDX Licenses](http://spdx.org/licenses)
@@ -49,9 +101,9 @@ APSL-1.0 | Apple Public Source License 1.0
 APSL-1.1 | Apple Public Source License 1.1
 APSL-1.2 | Apple Public Source License 1.2
 APSL-2.0 | Apple Public Source License 2.0
+Artistic-1.0 | Artistic License 1.0
 Artistic-1.0-cl8 | Artistic License 1.0 w/clause 8
 Artistic-1.0-Perl | Artistic License 1.0 (Perl)
-Artistic-1.0 | Artistic License 1.0
 Artistic-2.0 | Artistic License 2.0
 Bahyph | Bahyph License
 Barr | Barr License
@@ -60,19 +112,19 @@ BitTorrent-1.0 | BitTorrent Open Source License v1.0
 BitTorrent-1.1 | BitTorrent Open Source License v1.1
 Borceux | Borceux license
 BSD-1-Clause | BSD 1-Clause License
+BSD-2-Clause | BSD 2-Clause "Simplified" License
 BSD-2-Clause-FreeBSD | BSD 2-Clause FreeBSD License
 BSD-2-Clause-NetBSD | BSD 2-Clause NetBSD License
 BSD-2-Clause-Patent | BSD-2-Clause Plus Patent License
-BSD-2-Clause | BSD 2-Clause "Simplified" License
+BSD-3-Clause | BSD 3-Clause "New" or "Revised" License
 BSD-3-Clause-Attribution | BSD with attribution
 BSD-3-Clause-Clear | BSD 3-Clause Clear License
 BSD-3-Clause-LBNL | Lawrence Berkeley National Labs BSD variant license
-BSD-3-Clause-No-Nuclear-License-2014 | BSD 3-Clause No Nuclear License 2014
 BSD-3-Clause-No-Nuclear-License | BSD 3-Clause No Nuclear License
+BSD-3-Clause-No-Nuclear-License-2014 | BSD 3-Clause No Nuclear License 2014
 BSD-3-Clause-No-Nuclear-Warranty | BSD 3-Clause No Nuclear Warranty
-BSD-3-Clause | BSD 3-Clause "New" or "Revised" License
-BSD-4-Clause-UC | BSD-4-Clause (University of California-Specific)
 BSD-4-Clause | BSD 4-Clause "Original" or "Old" License
+BSD-4-Clause-UC | BSD-4-Clause (University of California-Specific)
 BSD-Protection | BSD Protection License
 BSD-Source-Code | BSD Source Code Attribution
 BSL-1.0 | Boost Software License 1.0
@@ -121,10 +173,12 @@ CECILL-2.0 | CeCILL Free Software License Agreement v2.0
 CECILL-2.1 | CeCILL Free Software License Agreement v2.1
 CECILL-B | CeCILL-B Free Software License Agreement
 CECILL-C | CeCILL-C Free Software License Agreement
+CERN-OHL-1.1 | CERN Open Hardware License v1.1
+CERN-OHL-1.2 | CERN Open Hardware Licence v1.2
 ClArtistic | Clarified Artistic License
 CNRI-Jython | CNRI Jython License
-CNRI-Python-GPL-Compatible | CNRI Python Open Source GPL Compatible License Agreement
 CNRI-Python | CNRI Python License
+CNRI-Python-GPL-Compatible | CNRI Python Open Source GPL Compatible License Agreement
 Condor-1.1 | Condor Public License v1.1
 copyleft-next-0.3.0 | copyleft-next 0.3.0
 copyleft-next-0.3.1 | copyleft-next 0.3.1
@@ -183,6 +237,7 @@ GPL-3.0-or-later | GNU General Public License v3.0 or later
 gSOAP-1.3b | gSOAP Public License v1.3b
 HaskellReport | Haskell Language Report License
 HPND | Historical Permission Notice and Disclaimer
+HPND-sell-variant | Historical Permission Notice and Disclaimer - sell variant
 IBM-pibs | IBM PowerPC Initialization and Boot Software
 ICU | ICU License
 IJG | Independent JPEG Group License
@@ -190,13 +245,14 @@ ImageMagick | ImageMagick License
 iMatix | iMatix Standard Function Library Agreement
 Imlib2 | Imlib2 License
 Info-ZIP | Info-ZIP License
-Intel-ACPI | Intel ACPI Software License Agreement
 Intel | Intel Open Source License
+Intel-ACPI | Intel ACPI Software License Agreement
 Interbase-1.0 | Interbase Public License v1.0
 IPA | IPA Font License
 IPL-1.0 | IBM Public License v1.0
 ISC | ISC License
 JasPer-2.0 | JasPer License
+JPNIC | Japan Network Information Center License
 JSON | JSON License
 LAL-1.2 | Licence Art Libre 1.2
 LAL-1.3 | Licence Art Libre 1.3
@@ -210,6 +266,7 @@ LGPL-3.0-only | GNU Lesser General Public License v3.0 only
 LGPL-3.0-or-later | GNU Lesser General Public License v3.0 or later
 LGPLLR | Lesser General Public License For Linguistic Resources
 Libpng | libpng License
+libpng-2.0 | PNG Reference Library version 2
 libtiff | libtiff License
 LiLiQ-P-1.1 | Licence Libre du Qu?bec ? Permissive version 1.1
 LiLiQ-R-1.1 | Licence Libre du Qu?bec ? R?ciprocit? version 1.1
@@ -224,19 +281,19 @@ LPPL-1.3a | LaTeX Project Public License v1.3a
 LPPL-1.3c | LaTeX Project Public License v1.3c
 MakeIndex | MakeIndex License
 MirOS | MirOS License
+MIT | MIT License
 MIT-0 | MIT No Attribution
 MIT-advertising | Enlightenment License (e16)
 MIT-CMU | CMU License
 MIT-enna | enna License
 MIT-feh | feh License
-MIT | MIT License
 MITNFA | MIT +no-false-attribs license
 Motosoto | Motosoto License
 mpich2 | mpich2 License
 MPL-1.0 | Mozilla Public License 1.0
 MPL-1.1 | Mozilla Public License 1.1
-MPL-2.0-no-copyleft-exception | Mozilla Public License 2.0 (no copyleft exception)
 MPL-2.0 | Mozilla Public License 2.0
+MPL-2.0-no-copyleft-exception | Mozilla Public License 2.0 (no copyleft exception)
 MS-PL | Microsoft Public License
 MS-RL | Microsoft Reciprocal License
 MTLL | Matrix Template Library License
@@ -274,12 +331,12 @@ OLDAP-1.1 | Open LDAP Public License v1.1
 OLDAP-1.2 | Open LDAP Public License v1.2
 OLDAP-1.3 | Open LDAP Public License v1.3
 OLDAP-1.4 | Open LDAP Public License v1.4
-OLDAP-2.0.1 | Open LDAP Public License v2.0.1
 OLDAP-2.0 | Open LDAP Public License v2.0 (or possibly 2.0A and 2.0B)
+OLDAP-2.0.1 | Open LDAP Public License v2.0.1
 OLDAP-2.1 | Open LDAP Public License v2.1
+OLDAP-2.2 | Open LDAP Public License v2.2
 OLDAP-2.2.1 | Open LDAP Public License v2.2.1
 OLDAP-2.2.2 | Open LDAP Public License 2.2.2
-OLDAP-2.2 | Open LDAP Public License v2.2
 OLDAP-2.3 | Open LDAP Public License v2.3
 OLDAP-2.4 | Open LDAP Public License v2.4
 OLDAP-2.5 | Open LDAP Public License v2.5
@@ -316,14 +373,14 @@ Ruby | Ruby License
 SAX-PD | Sax Public Domain Notice
 Saxpath | Saxpath License
 SCEA | SCEA Shared Source License
-Sendmail-8.23 | Sendmail License 8.23
 Sendmail | Sendmail License
+Sendmail-8.23 | Sendmail License 8.23
 SGI-B-1.0 | SGI Free Software License B v1.0
 SGI-B-1.1 | SGI Free Software License B v1.1
 SGI-B-2.0 | SGI Free Software License B v2.0
 SimPL-2.0 | Simple Public License 2.0
-SISSL-1.2 | Sun Industry Standards Source License v1.2
 SISSL | Sun Industry Standards Source License v1.1
+SISSL-1.2 | Sun Industry Standards Source License v1.2
 Sleepycat | Sleepycat License
 SMLNJ | Standard ML of New Jersey License
 SMPPL | Secure Messaging Protocol Public License
@@ -334,6 +391,7 @@ Spencer-99 | Spencer License 99
 SPL-1.0 | Sun Public License v1.0
 SugarCRM-1.1.3 | SugarCRM Public License v1.1.3
 SWL | Scheme Widget Library (SWL) Software License Agreement
+TAPR-OHL-1.0 | TAPR Open Hardware License v1.0
 TCL | TCL/TK License
 TCP-wrappers | TCP Wrappers License
 TMate | TMate Open Source License
@@ -349,9 +407,9 @@ UPL-1.0 | Universal Permissive License v1.0
 Vim | Vim License
 VOSTROM | VOSTROM Public License for Open Source
 VSL-1.0 | Vovida Software License v1.0
+W3C | W3C Software Notice and License (2002-12-31)
 W3C-19980720 | W3C Software Notice and License (1998-07-20)
 W3C-20150513 | W3C Software Notice and Document License (2015-05-13)
-W3C | W3C Software Notice and License (2002-12-31)
 Watcom-1.0 | Sybase Open Watcom Public License 1.0
 Wsuipa | Wsuipa License
 WTFPL | Do What The F*ck You Want To Public License
@@ -368,8 +426,8 @@ Zed | Zed License
 Zend-2.0 | Zend License v2.0
 Zimbra-1.3 | Zimbra Public License v1.3
 Zimbra-1.4 | Zimbra Public License v1.4
-zlib-acknowledgement | zlib/libpng License with Acknowledgement
 Zlib | zlib License
+zlib-acknowledgement | zlib/libpng License with Acknowledgement
 ZPL-1.1 | Zope Public License 1.1
 ZPL-2.0 | Zope Public License 2.0
 ZPL-2.1 | Zope Public License 2.1
@@ -391,6 +449,7 @@ Fawkes-Runtime-exception
 Font-exception-2.0
 GCC-exception-2.0
 GCC-exception-3.1
+GPL-CC-1.0
 LLVM-exception
 LZMA-exception
 Libtool-exception

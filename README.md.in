@@ -1,16 +1,68 @@
-# spec-cleaner #
+
+# spec-cleaner
 
 [![Build Status](https://travis-ci.org/openSUSE/spec-cleaner.svg?branch=master)](https://travis-ci.org/openSUSE/spec-cleaner)
 [![Coverage Status](https://coveralls.io/repos/github/openSUSE/spec-cleaner/badge.svg?branch=master)](https://coveralls.io/github/openSUSE/spec-cleaner?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/58de1bb1553e4c24843f4ca1bf9048a2)](https://www.codacy.com/app/scarabeusiv/spec-cleaner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=openSUSE/spec-cleaner&amp;utm_campaign=Badge_Grade)
 
-spec-cleaner is a tool that is planned to be replacement for "osc service localrun format_spec_file".
-It is intended to provide same or better features in order for us to be able to unify all the spec files in obs.
 
-# Running the testsuite locally
+spec-cleaner is a tool that cleans the given RPM spec file according to the style guide and returns the result. It's planned to be a replacement for `osc service localrun format_spec_file` and it is intended to provide the same or better features in order to be able to unify all the spec files in [OBS](https://build.opensuse.org/).
 
-spec-cleaner uses tox to run the testsuite in a clean enviroment. To run the
-tests locally, do:
+# Packages
+spec-cleaner is provided as an RPM package for openSUSE Leap ([15.0](https://build.opensuse.org/package/show/openSUSE:Leap:15.0:Update/spec-cleaner) and [15.1](https://build.opensuse.org/package/show/openSUSE:Leap:15.1:Update/spec-cleaner)) and [openSUSE Tumbleweed](https://build.opensuse.org/package/show/openSUSE:Factory/spec-cleaner). When the new spec-cleaner is released then the version updates are done for all maintained openSUSE codestreams. That means that there is always the latest version available as a package in OBS.
 
-    tox -epy36
+The latest version is also available on [PyPI](https://pypi.org/project/spec_cleaner/). You can install it via `pip install spec-cleaner`.
+
+
+# Tests
+
+## Running the tests
+spec-cleaner provides quite an extensive testsuite. You can run these tests locally either directly via `pytest` or in a clean environment via`tox` where besides pytest also flake8 or mypy is called.
+
+### pytest
+Just install `python3-pytest`, `python3-pytest-cov` and `python3-pytest-sugar` (for a nice progress bar) and then run all test via:
+
+    pytest
+
+### tox
+Install `tox` and run
+
+    tox
+for running tests for the test environments stated in `tox.ini` configuration file. Or you can run the tests for a specified environment (e.g. Python 3.7) via calling
+
+	tox -epy37
+
+
+## Adding new tests
+When a new feature is added to spec-cleaner then a test for this piece of code must be added. See
+
+[how to write tests for spec-cleaner](TESTSUITE.md).
+
+## mypy
+
+Recently, optional static type checker support was implemented for the most important parts of the code. It runs automatically (using the recent mypy version) when you run `tox`. If you want to run it on your own, just install `python3-mypy` and run
+
+    mypy spec_cleaner
+
+## Contributing
+You are more than welcome to contribute to this project. If your are not sure about your changes, feel free to create an issue where you can discuss it prior to the implementation.
+
+When changing anything in the code, make sure that you don't forget to
+  * add proper comments and docstrings
+  * run and pass all tests, `flake8` and `mypy` (just run `tox`)
+  * add  [tests](TESTSUITE.md) (mainly if you implement a new feature)
+  * add `mypy` support for the new code
+
+
+## Versioning and releasing
+For the versions available, see the [tags on this repository](https://github.com/openSUSE/spec-cleaner/releases).
+
+If you have proper permissions you can find handy [how to do a new release](RELEASE.md).
+
+
+## Authors
+
+* **Tomas Chvatal** [scarabeusiv](https://github.com/scarabeusiv)  - *Initial work*
+
+See also the list of [contributors](AUTHORS) who participated in this project.
 
