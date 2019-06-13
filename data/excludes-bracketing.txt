@@ -167,4 +167,5 @@ verify[^\s]*
 verify(\s*\([^)]*\))?
 with
 without
-yast_(build|install)[^\s]*
+yast_(build|check|install)[^\s]*
+yast_metainfo
