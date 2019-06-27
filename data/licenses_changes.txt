@@ -262,6 +262,10 @@ CECILL-B	CECILL-B
 CECILL-B+	CECILL-B+
 CECILL-C	CECILL-C
 CECILL-C+	CECILL-C+
+CERN-OHL-1.1	CERN-OHL-1.1
+CERN-OHL-1.1+	CERN-OHL-1.1+
+CERN-OHL-1.2	CERN-OHL-1.2
+CERN-OHL-1.2+	CERN-OHL-1.2+
 CNRI-Jython	CNRI-Jython
 CNRI-Jython+	CNRI-Jython+
 CNRI-Python	CNRI-Python
@@ -455,6 +459,8 @@ Glulxe	Glulxe
 Glulxe+	Glulxe+
 HPND	HPND
 HPND+	HPND+
+HPND-sell-variant	HPND-sell-variant
+HPND-sell-variant+	HPND-sell-variant+
 HaskellReport	HaskellReport
 HaskellReport+	HaskellReport+
 IBM-pibs	IBM-pibs
@@ -487,6 +493,8 @@ Intel-ACPI	Intel-ACPI
 Intel-ACPI+	Intel-ACPI+
 Interbase-1.0	Interbase-1.0
 Interbase-1.0+	Interbase-1.0+
+JPNIC	JPNIC
+JPNIC+	JPNIC+
 JSON	JSON
 JSON	SUSE-JSON
 JSON+	JSON+
@@ -1084,6 +1092,8 @@ Spencer-99	Spencer-99
 Spencer-99+	Spencer-99+
 SugarCRM-1.1.3	SugarCRM-1.1.3
 SugarCRM-1.1.3+	SugarCRM-1.1.3+
+TAPR-OHL-1.0	TAPR-OHL-1.0
+TAPR-OHL-1.0+	TAPR-OHL-1.0+
 TCL	SUSE-TCL
 TCL	TCL
 TCL+	TCL+
@@ -1196,6 +1206,8 @@ gnuplot	gnuplot
 gnuplot+	gnuplot+
 iMatix	iMatix
 iMatix+	iMatix+
+libpng-2.0	libpng-2.0
+libpng-2.0+	libpng-2.0+
 libtiff	libtiff
 libtiff+	libtiff+
 mpich2	mpich2
