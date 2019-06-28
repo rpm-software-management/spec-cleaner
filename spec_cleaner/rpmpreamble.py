@@ -466,10 +466,25 @@ class RpmPreamble(Section):
             self._add_line_value_to('prereq', match.group(1))
             return
 
+        # replace pwdutils with shadow in Requires (#247)
+        elif self.reg.re_requires.match(line):
+            match = self.reg.re_requires.match(line)
+            if match.group(1) == 'pwdutils' and not self.condition and not self.minimal:
+                value = 'shadow'
+            else:
+                value = match.group(1)
+            self._add_line_value_to('requires', value, key='Requires')
+            return
+
+        # replace pwdutils with shadow in Requires(phase) (#247)
         elif self.reg.re_requires_phase.match(line):
             match = self.reg.re_requires_phase.match(line)
             # Put the requires content properly as key for formatting
-            self._add_line_value_to('requires_phase', match.group(2), key='Requires{0}'.format(match.group(1)))
+            if match.group(2) == 'pwdutils' and not self.condition and not self.minimal:
+                value = 'shadow'
+            else:
+                value = match.group(2)
+            self._add_line_value_to('requires_phase', value, key='Requires{0}'.format(match.group(1)))
             return
 
         elif self.reg.re_provides.match(line):
