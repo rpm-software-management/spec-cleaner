@@ -1,4 +1,4 @@
-Source61:       %sbt_ivy_artifact process 
+Source61:       %sbt_ivy_artifact process
 Source62:       %sbt_ivy_artifact actions
 Source63:       %sbt_ivy_artifact sbt-launch
 Source64:       %sbt_ivy_artifact scripted-plugin

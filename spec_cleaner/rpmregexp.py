@@ -46,7 +46,7 @@ class Regexp(object):
     re_url = re.compile(r'^Url:\s*(\S*)', re.IGNORECASE)
     re_group = re.compile(r'^Group:\s*(.*)', re.IGNORECASE)
     re_vendor = re.compile(r'^Vendor:\s*(.*)', re.IGNORECASE)
-    re_source = re.compile(r'^Source(\d*):\s*(\S*)', re.IGNORECASE)
+    re_source = re.compile(r'^Source(\d*):\s*(.*)', re.IGNORECASE)
     re_nosource = re.compile(r'^NoSource:\s*(.*)', re.IGNORECASE)
     re_patch = re.compile(r'^((?:#[#\s]*)?)Patch(\d*):\s*(\S*)', re.IGNORECASE)
     re_buildrequires = re.compile(r'^(BuildRequires|BuildPreReq):\s*(.*)', re.IGNORECASE)
