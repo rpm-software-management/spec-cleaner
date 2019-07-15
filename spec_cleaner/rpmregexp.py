@@ -91,6 +91,7 @@ class Regexp(object):
     # Special bracketed deps dection
     re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')
     re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')
+    re_packageand = re.compile(r'^packageand\(\s*(\S+)\s*:\s*(\S+)\s*\)\s*$')
 
     # rpmdescription
     re_authors = re.compile(r'^\s*Author(s)?:\s*')
