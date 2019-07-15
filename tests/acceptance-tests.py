@@ -10,26 +10,35 @@ from spec_cleaner import RpmException
 from spec_cleaner import RpmSpecCleaner
 
 
-def tests():
+def collect_tests(directory):
     """
-    Generate list of tests we are going to use according to what is on hdd
-    """
-    testglob = os.path.join('tests', 'in', '*.spec')
-    return [os.path.basename(f) for f in glob(testglob)]
+    Generate a list of tests we are going to use according to what is on hdd.
 
+    Args:
+        directory: A string representing a directory with tests.
 
-def space_tests():
+    Return:
+        A list with test names in the given directory.
     """
-    Generate list of tests we are going to use according to what is on hdd
-    """
-    testglob = os.path.join('tests', 'keep-space', '*.spec')
+    testglob = os.path.join('tests', directory, '*.spec')
     return [os.path.basename(f) for f in glob(testglob)]
 
 
 class TestCompare(object):
-
     """
-    We run individual tests to verify the content compared to expected results
+    We run individual tests to verify the content compared to expected results.
+
+    All input test files are stored in 'in' directory. Then the test outputs are divided to categories in separate
+    output directories:
+
+    E.g.:
+      * 'out' - all outputs (no particular spec-cleaner option is used),
+      * 'out-minimal' - outputs for tests using '--minimal' option,
+      * 'web' - outputs for tests requiring internet connection,
+      * 'tex', 'perl', 'cmake' - outputs for tests using '--tex', '--perl' or '--cmake' option,
+      ...
+
+    These output directories are used to help collect and run tests with the same parameters.
     """
 
     option_presets = {
@@ -78,30 +87,56 @@ class TestCompare(object):
         tmpfile_rerun = tmpfile + '_rerun'
         self._run_individual_test(test, compare_dir, tmpfile, tmpfile_rerun, options)
 
-    @pytest.mark.parametrize('test', tests())
+    @pytest.mark.parametrize('test', collect_tests('out'))
     def test_normal_outputs(self, tmpfile, test):
+        """
+        Run all tests in 'out' directory without any particular spec-cleaner option.
+        """
         self._compare_and_rerun(test, 'out', tmpfile, {'pkgconfig': True})
 
-    @pytest.mark.parametrize('test', tests())
+    @pytest.mark.parametrize('test', collect_tests('out-minimal'))
     def test_minimal_outputs(self, test, tmpfile):
+        """
+        Run tests in 'out-minimal' directory in a minimal mode.
+        """
         self._compare_and_rerun(test, 'out-minimal', tmpfile, {'pkgconfig': True, 'minimal': True})
 
-    @pytest.mark.parametrize('test', space_tests())
+    @pytest.mark.parametrize('test', collect_tests('keep-space'))
     def test_keep_space_output(self, tmpfile, test):
+        """
+        Run tests in 'keep-space' directory with '--keep-space' option.
+        """
         self._compare_and_rerun(test, 'keep-space', tmpfile, options={'keep_space': True})
 
+    @pytest.mark.webtest
+    @pytest.mark.parametrize('test', collect_tests('web'))
+    def test_web_output(self, tmpfile, test):
+        """
+        Run tests in 'web' directory (these tests need an internet connection).
+        """
+        self._compare_and_rerun(test, 'web', tmpfile, {'pkgconfig': True})
+
     def test_inline_function(self, tmpfile):
+        """
+        Test an inline option.
+        """
         test = 'bconds.spec'
         infile = os.path.join('tests', 'in', test)
         copyfile(infile, tmpfile)
         self._run_individual_test(test, None, infile=tmpfile, outfile='', options={'pkgconfig': True, 'inline': True})
 
     def test_diff_function(self, tmpfile):
+        """
+        Test passing an incorrect '--diff_prog' option.
+        """
         test = 'bconds.spec'
         with pytest.raises(RpmException):
             self._run_individual_test(test, None, outfile='', options={'diff': True, 'diff_prog': 'error'})
 
     def test_unicode(self, tmpfile):
+        """
+        Test encoding.
+        """
         test = 'perl-Text-Unidecode.spec'
         testpath = os.path.join('tests', 'unicode', test)
         with pytest.raises(RpmException):
@@ -118,4 +153,7 @@ class TestCompare(object):
         ],
     )
     def test_single_output(self, tmpfile, test, compare_dir, options):
+        """
+        Test various spec-cleaner options.
+        """
         self._run_individual_test(test, compare_dir, outfile=tmpfile, options=options)
