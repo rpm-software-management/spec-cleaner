@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Setup file for easy installation."""
 from glob import glob
 
 from setuptools import setup
