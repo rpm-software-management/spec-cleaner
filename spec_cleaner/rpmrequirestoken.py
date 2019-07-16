@@ -1,14 +1,15 @@
 from typing import Optional
 
 from .rpmexception import RpmException
+from .rpmregexp import Regexp
 
 
 class RpmRequiresToken(object):
     """
     Class containing information about the dependency token.
 
-    Can be used to specify all the values present on the line.
-    Later on we use this to do various conversions.
+    Process dependencies like Requires, Recommends, Suggests, Supplements, Enhances, Conflicts. Can be used to specify
+    all the values present on the line. Later on we use this to do various conversions.
 
     This class uses the following format and naming:
 
@@ -44,7 +45,7 @@ class RpmRequiresToken(object):
     @staticmethod
     def _format_name(name: str) -> str:
         """
-        Make sure the name looks sane.
+        Make sure the name looks sane and make various replacements.
 
         Args:
             name: A string representing the name used in the dependency token.
@@ -55,10 +56,16 @@ class RpmRequiresToken(object):
         # we just rename pkgconfig names to one unified one working everywhere
         if name == 'pkgconfig(pkg-config)' or name == 'pkg-config':
             name = 'pkgconfig'
-        # if there is otherproviders codeblock just ommit it
-        if name.startswith('otherproviders('):
-            name = name.rstrip(')')
-            name = name.replace('otherproviders(', '')
+
+        # omit legacy 'otherproviders' codeblock
+        match = Regexp.re_otherproviders.match(name)
+        if match:
+            name = match.group(1)
+
+        # replace 'packageand(pkgA:pkgB)' with '(pkgA and pkgB)' - new in RPM 4.13
+        match = Regexp.re_packageand.match(name)
+        if match:
+            name = f'({match.group(1)} and {match.group(2)})'
         return name
 
     def __str__(self) -> str:
