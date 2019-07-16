@@ -2,7 +2,9 @@
 
 import os.path
 import re
-from urllib import parse
+from ssl import CertificateError, SSLError
+from urllib import error, parse
+from urllib.request import urlopen
 
 from .dependency_parser import DependencyParser
 from .rpmhelpers import fix_license
@@ -75,12 +77,13 @@ class RpmPreamble(Section):
         self.modname = None
 
         # simple categories matching
+        # missing categories have a special match in add() method (comments explain what and why is missing there)
         self.category_to_re = {
             'name': self.reg.re_name,
             'version': self.reg.re_version,
             # license need fix replacment
             'summary': self.reg.re_summary,
-            'url': self.reg.re_url,
+            # for url we have a special match - http -> https replacement
             'group': self.reg.re_group,
             'nosource': self.reg.re_nosource,
             # for source, we have a special match to keep the source number
@@ -375,6 +378,35 @@ class RpmPreamble(Section):
             if line or self.previous_line:
                 self.paragraph.current_group.append(line)
                 self.previous_line = line
+            return
+
+        # replace 'http' with 'https' in URL if https is reachable (#246)
+        elif self.reg.re_url.match(line):
+            match = self.reg.re_url.match(line)
+            orig_url = match.group(1)
+            value = orig_url
+
+            if orig_url.startswith('https://') or self.minimal:
+                self._add_line_value_to('url', orig_url, key='URL')
+                return
+
+            if orig_url.startswith('http://'):
+                https_url = orig_url.replace('http', 'https', 1)
+            elif parse.urlparse(orig_url).scheme == '':
+                https_url = 'https://' + orig_url
+
+            response = None
+            try:
+                response = urlopen(https_url)
+                if response.getcode() == 200:
+                    value = https_url
+            # ssl.CertificateError is a subclass of SSLError in Python 3.7. In Python 3.6 it's not.
+            except (error.URLError, SSLError, CertificateError):
+                pass
+            finally:
+                self._add_line_value_to('url', value, key='URL')
+                if response:
+                    response.close()
             return
 
         elif self.reg.re_source.match(line):
