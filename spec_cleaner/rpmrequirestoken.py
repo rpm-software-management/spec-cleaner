@@ -58,9 +58,9 @@ class RpmRequiresToken(object):
             name = 'pkgconfig'
 
         # omit legacy 'otherproviders' codeblock
-        if name.startswith('otherproviders('):
-            name = name.rstrip(')')
-            name = name.replace('otherproviders(', '')
+        match = Regexp.re_otherproviders.match(name)
+        if match:
+            name = match.group(1)
 
         # replace 'packageand(pkgA:pkgB)' with '(pkgA and pkgB)' - new in RPM 4.13
         match = Regexp.re_packageand.match(name)
