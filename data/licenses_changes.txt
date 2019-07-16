@@ -146,6 +146,8 @@ BSD-3-Clause-No-Nuclear-License-2014	BSD-3-Clause-No-Nuclear-License-2014
 BSD-3-Clause-No-Nuclear-License-2014+	BSD-3-Clause-No-Nuclear-License-2014+
 BSD-3-Clause-No-Nuclear-Warranty	BSD-3-Clause-No-Nuclear-Warranty
 BSD-3-Clause-No-Nuclear-Warranty+	BSD-3-Clause-No-Nuclear-Warranty+
+BSD-3-Clause-Open-MPI	BSD-3-Clause-Open-MPI
+BSD-3-Clause-Open-MPI+	BSD-3-Clause-Open-MPI+
 BSD-4-Clause	BSD-4-Clause
 BSD-4-Clause	BSD4c
 BSD-4-Clause	BSD4c(or similar)
@@ -169,6 +171,8 @@ BitTorrent-1.0	BitTorrent-1.0
 BitTorrent-1.0+	BitTorrent-1.0+
 BitTorrent-1.1	BitTorrent-1.1
 BitTorrent-1.1+	BitTorrent-1.1+
+BlueOak-1.0.0	BlueOak-1.0.0
+BlueOak-1.0.0+	BlueOak-1.0.0+
 Borceux	Borceux
 Borceux+	Borceux+
 CATOSL-1.1	CATOSL-1.1
@@ -238,6 +242,8 @@ CC-BY-SA-3.0+	CC-BY-SA-3.0+
 CC-BY-SA-4.0	CC-BY-SA-4.0
 CC-BY-SA-4.0	http://creativecommons.org/licenses/by-sa/4.0/legalcode
 CC-BY-SA-4.0+	CC-BY-SA-4.0+
+CC-PDDC	CC-PDDC
+CC-PDDC+	CC-PDDC+
 CC0-1.0	CC0-1.0
 CC0-1.0+	CC0-1.0+
 CDDL-1.0	CDDL
@@ -769,6 +775,8 @@ PHP-3.01	PHP-3.0.1
 PHP-3.01	PHP-3.01
 PHP-3.01	The PHP License, version 3.01
 PHP-3.01+	PHP-3.01+
+Parity-6.0.0	Parity-6.0.0
+Parity-6.0.0+	Parity-6.0.0+
 Plexus	Plexus
 Plexus+	Plexus+
 PostgreSQL	PostgreSQL
@@ -817,6 +825,10 @@ SGI-B-1.1	SGI-B-1.1
 SGI-B-1.1+	SGI-B-1.1+
 SGI-B-2.0	SGI-B-2.0
 SGI-B-2.0+	SGI-B-2.0+
+SHL-0.5	SHL-0.5
+SHL-0.5+	SHL-0.5+
+SHL-0.51	SHL-0.51
+SHL-0.51+	SHL-0.51+
 SISSL	SISSL
 SISSL+	SISSL+
 SISSL-1.2	SISSL-1.2
@@ -829,6 +841,8 @@ SNIA	SNIA
 SNIA+	SNIA+
 SPL-1.0	SPL-1.0
 SPL-1.0+	SPL-1.0+
+SSPL-1.0	SSPL-1.0
+SSPL-1.0+	SSPL-1.0+
 SUSE-Arphic	SUSE-Arphic
 SUSE-Arphic	http://ftp.gnu.org/gnu/non-gnu/chinese-fonts-truetype/LICENSE
 SUSE-Arphic+	SUSE-Arphic+
@@ -1184,6 +1198,8 @@ Zlib	Zlib License
 Zlib	zlib
 Zlib	zlib/libpng License
 Zlib+	Zlib+
+blessing	blessing
+blessing+	blessing+
 bzip2-1.0.5	bzip2-1.0.5
 bzip2-1.0.5+	bzip2-1.0.5+
 bzip2-1.0.6	bzip2-1.0.6

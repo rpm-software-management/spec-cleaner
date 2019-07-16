@@ -55,7 +55,7 @@ When changing anything in the code, make sure that you don't forget to
 
 
 ## Versioning and releasing
- For the versions available, see the [tags on this repository](https://github.com/openSUSE/spec-cleaner/releases).
+For the versions available, see the [tags on this repository](https://github.com/openSUSE/spec-cleaner/releases).
 
 If you have proper permissions you can find handy [how to do a new release](RELEASE.md).
 
@@ -110,6 +110,8 @@ Barr | Barr License
 Beerware | Beerware License
 BitTorrent-1.0 | BitTorrent Open Source License v1.0
 BitTorrent-1.1 | BitTorrent Open Source License v1.1
+blessing | SQLite Blessing
+BlueOak-1.0.0 | Blue Oak Model License 1.0.0
 Borceux | Borceux license
 BSD-1-Clause | BSD 1-Clause License
 BSD-2-Clause | BSD 2-Clause "Simplified" License
@@ -123,6 +125,7 @@ BSD-3-Clause-LBNL | Lawrence Berkeley National Labs BSD variant license
 BSD-3-Clause-No-Nuclear-License | BSD 3-Clause No Nuclear License
 BSD-3-Clause-No-Nuclear-License-2014 | BSD 3-Clause No Nuclear License 2014
 BSD-3-Clause-No-Nuclear-Warranty | BSD 3-Clause No Nuclear Warranty
+BSD-3-Clause-Open-MPI | BSD 3-Clause Open MPI variant
 BSD-4-Clause | BSD 4-Clause "Original" or "Old" License
 BSD-4-Clause-UC | BSD-4-Clause (University of California-Specific)
 BSD-Protection | BSD Protection License
@@ -162,6 +165,7 @@ CC-BY-SA-2.0 | Creative Commons Attribution Share Alike 2.0 Generic
 CC-BY-SA-2.5 | Creative Commons Attribution Share Alike 2.5 Generic
 CC-BY-SA-3.0 | Creative Commons Attribution Share Alike 3.0 Unported
 CC-BY-SA-4.0 | Creative Commons Attribution Share Alike 4.0 International
+CC-PDDC | Creative Commons Public Domain Dedication and Certification
 CC0-1.0 | Creative Commons Zero v1.0 Universal
 CDDL-1.0 | Common Development and Distribution License 1.0
 CDDL-1.1 | Common Development and Distribution License 1.1
@@ -352,6 +356,7 @@ OSL-1.1 | Open Software License 1.1
 OSL-2.0 | Open Software License 2.0
 OSL-2.1 | Open Software License 2.1
 OSL-3.0 | Open Software License 3.0
+Parity-6.0.0 | The Parity Public License 6.0.0
 PDDL-1.0 | ODC Public Domain Dedication & License 1.0
 PHP-3.0 | PHP License v3.0
 PHP-3.01 | PHP License v3.01
@@ -378,6 +383,8 @@ Sendmail-8.23 | Sendmail License 8.23
 SGI-B-1.0 | SGI Free Software License B v1.0
 SGI-B-1.1 | SGI Free Software License B v1.1
 SGI-B-2.0 | SGI Free Software License B v2.0
+SHL-0.5 | Solderpad Hardware License v0.5
+SHL-0.51 | Solderpad Hardware License, Version 0.51
 SimPL-2.0 | Simple Public License 2.0
 SISSL | Sun Industry Standards Source License v1.1
 SISSL-1.2 | Sun Industry Standards Source License v1.2
@@ -389,6 +396,7 @@ Spencer-86 | Spencer License 86
 Spencer-94 | Spencer License 94
 Spencer-99 | Spencer License 99
 SPL-1.0 | Sun Public License v1.0
+SSPL-1.0 | Server Side Public License, v 1
 SugarCRM-1.1.3 | SugarCRM Public License v1.1.3
 SWL | Scheme Widget Library (SWL) Software License Agreement
 TAPR-OHL-1.0 | TAPR Open Hardware License v1.0
@@ -461,6 +469,8 @@ PS-or-PDF-font-exception-20170817
 Qt-GPL-exception-1.0
 Qt-LGPL-exception-1.1
 Qwt-exception-1.0
+Swift-exception
+Universal-FOSS-exception-1.0
 WxWindows-exception-3.1
 eCos-exception-2.0
 freertos-exception-2.0
