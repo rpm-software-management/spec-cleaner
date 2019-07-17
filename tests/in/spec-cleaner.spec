@@ -24,7 +24,7 @@ Release:        0
 Summary:        .spec file cleaner
 License:        BSD-3-Clause
 Group:          Development/Tools/Other
-Url:            http://github.com/openSUSE/spec-cleaner
+Url:            https://github.com/openSUSE/spec-cleaner
 Source0:        https://github.com/openSUSE/%{name}/archive/%{name}-%{version}.tar.gz
 BuildRequires:  python
 %if 0%{?suse_version} > 01220
