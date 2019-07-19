@@ -93,7 +93,7 @@ class RpmPreamble(Section):
             'buildignores': self.reg.re_buildignores,
             'conflicts': self.reg.re_conflicts,
             # for prereq we append warning comment so we don't mess it there
-            'requires': self.reg.re_requires,
+            # requires has a special match - pwdutils -> shadow replacement
             'recommends': self.reg.re_recommends,
             'suggests': self.reg.re_suggests,
             'enhances': self.reg.re_enhances,
