@@ -104,7 +104,7 @@ class Regexp(object):
     re_make = re.compile(r'(^\s*)make(\s.*|)$')
     re_optflags_quotes = re.compile(r'=\s*\${?RPM_OPT_FLAGS}?\s*$')
     re_optflags = re.compile(r'\${?RPM_OPT_FLAGS}?')
-    re_suseupdateconfig = re.compile(r'(%{?suse_update_config|${?\?suse_update_config:)')
+    re_suseupdateconfig = re.compile(r'%{?\??suse_update_config')
     re_configure = re.compile(r'(^|(.*\s)?)./configure(\s.*|)$')
     re_cmake = re.compile(r'(^|(.*\s)?)cmake(\s.*|)$')
     re_qmake5 = re.compile(r'(^|(.*\s)?)qmake-qt5(\s.*|)$')
