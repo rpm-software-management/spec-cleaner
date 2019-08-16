@@ -1,9 +1,10 @@
 
 # spec-cleaner
 
-[![Build Status](https://travis-ci.org/openSUSE/spec-cleaner.svg?branch=master)](https://travis-ci.org/openSUSE/spec-cleaner)
-[![Coverage Status](https://coveralls.io/repos/github/openSUSE/spec-cleaner/badge.svg?branch=master)](https://coveralls.io/github/openSUSE/spec-cleaner?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/58de1bb1553e4c24843f4ca1bf9048a2)](https://www.codacy.com/app/scarabeusiv/spec-cleaner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=openSUSE/spec-cleaner&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://travis-ci.org/rpm-software-management/spec-cleaner.svg?branch=master)](https://travis-ci.org/rpm-software-management/spec-cleaner)
+[![Coverage Status](https://coveralls.io/repos/github/rpm-software-management/spec-cleaner/badge.svg?branch=master)](https://coveralls.io/github/rpm-software-management/spec-cleaner?branch=master)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/rpm-software-management/spec-cleaner.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rpm-software-management/spec-cleaner/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/rpm-software-management/spec-cleaner.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rpm-software-management/spec-cleaner/context:python)
 
 
 spec-cleaner is a tool that cleans the given RPM spec file according to the style guide and returns the result. It's planned to be a replacement for `osc service localrun format_spec_file` and it is intended to provide the same or better features in order to be able to unify all the spec files in [OBS](https://build.opensuse.org/).
