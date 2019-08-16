@@ -24,14 +24,20 @@ calendarsupport-devel: KF5CalendarSupport
 cgal-devel: CGAL CGALLib CGAL_CoreLib CGAL_ImageIOLib CGAL_Qt5Lib 
 clFFT-devel: clFFT 
 clang5-devel: Clang 
+clang7-devel: Clang 
 cmake: x86-64 
 dcmtk-devel: DCMTK 
 dolphin-devel: DolphinVcs 
+dtkcore-devel: Dtk DtkCMake DtkCore 
+dtkwidget-devel: DtkWidget 
+dtkwm-devel: DtkWm 
 eventviews-devel: KF5EventViews 
 fcitx-qt5-devel: FcitxQt5DBusAddons FcitxQt5WidgetsAddons 
+fmt-devel: fmt 
 frameworkintegration-devel: KF5FrameworkIntegration 
 freerdp-devel: FreeRDP FreeRDP-Client FreeRDP-Server FreeRDP-Shadow 
 gammaray-devel: GammaRay 
+gflags-devel: gflags 
 glm-devel: glm 
 gnuradio-devel: Gnuradio Volk 
 gpgmepp5-devel: KF5Gpgmepp 
@@ -41,6 +47,7 @@ grpc-devel: gRPC
 gstreamer-plugins-qt-devel: QtGStreamer 
 gstreamer-plugins-qt5-devel: Qt5GStreamer 
 gwenhywfar-devel: gwengui-cpp gwengui-qt4 gwengui-qt5 gwenhywfar 
+hpx-devel: HPX 
 incidenceeditor-devel: KF5IncidenceEditor 
 jrtplib-devel: JRTPLIB 
 jsoncpp-devel: jsoncpp 
@@ -74,6 +81,7 @@ kdepim-apps-libs-devel: KF5FollowupReminder KF5KaddressbookGrantlee KF5Kaddressb
 kdesignerplugin-devel: KF5DesignerPlugin 
 kdesu-devel: KF5Su 
 kdevelop5-pg-qt: KDevelop-PG-Qt 
+kdevelop5-plugin-php-devel: KDevPHP 
 kdevelop5: KDevelop 
 kdevplatform-devel: KDevPlatform 
 kdewebkit-devel: KF5WebKit 
@@ -100,6 +108,7 @@ kirigami-devel: KF5Kirigami
 kirigami2-devel: KF5Kirigami2 
 kitemmodels-devel: KF5ItemModels 
 kitemviews-devel: KF5ItemViews 
+kitinerary-devel: KPimItinerary 
 kjobwidgets-devel: KF5JobWidgets 
 kjs-devel: KF5JS 
 kjsembed-devel: KF5JsEmbed 
@@ -119,6 +128,7 @@ kpackage-devel: KF5Package
 kparts-devel: KF5Parts 
 kpeople5-devel: KF5People 
 kpimtextedit-devel: KF5PimTextEdit 
+kpkpass-devel: KPimPkPass 
 kplotting-devel: KF5Plotting 
 kpmcore-devel: KPMcore 
 kproperty-devel: KPropertyCore KPropertyWidgets 
@@ -132,6 +142,7 @@ ksmtp-devel: KPimSMTP
 ktexteditor-devel: KF5TextEditor 
 ktextwidgets-devel: KF5TextWidgets 
 ktnef-devel: KF5Tnef 
+ktp-common-internals-devel: KTp 
 kunitconversion-devel: KF5UnitConversion 
 kwallet-devel: KF5Wallet 
 kwayland-devel: KF5Wayland 
@@ -141,6 +152,7 @@ kwindowsystem-devel: KF5WindowSystem
 kxmlgui-devel: KF5XmlGui 
 kxmlrpcclient5-devel: KF5XmlRpcClient 
 libAppStreamQt-devel: AppStreamQt 
+libArcus-devel: Arcus 
 libArcus-lulzbot-devel: Arcus 
 libBox2D-devel: Box2D 
 libKF5ModemManagerQt-devel: KF5ModemManagerQt 
@@ -176,14 +188,16 @@ libQt5WebKitWidgets-devel: Qt5WebKitWidgets
 libQt5Widgets-devel: Qt5Widgets 
 libQt5Xml-devel: Qt5Xml 
 libSDL2-devel: sdl2 
+libSavitar-devel: Savitar 
 libaccounts-qt5-devel: AccountsQt5 
 libakonadiprotocolinternals-devel: Akonadi 
-libalkimia-devel: LibAlkimia 
 libalkimia5-devel: LibAlkimia5 
 libbullet-devel: Bullet 
 libcmocka-devel: cmocka 
 libdbusmenu-qt-devel: dbusmenu-qt 
 libdbusmenu-qt5-devel: dbusmenu-qt5 
+libdframeworkdbus-devel: DFrameworkdbus 
+libebml-devel: Ebml 
 libelektra-devel: Elektra 
 libftdi1-devel: LibFTDI1 
 libglfw-devel: glfw3 
@@ -214,15 +228,16 @@ libkmahjongg-devel: KF5KMahjongglib
 libkolabxml-devel: Libkolabxml 
 libkomparediff2-devel: LibKompareDiff2 
 libksane-devel: KF5Sane 
-libkscreen-devel: LibKScreen 
 libkscreen2-devel: KF5Screen 
 libksieve-devel: KF5LibKSieve 
 libksysguard5-devel: KF5SysGuard 
 libktorrent-devel: KF5Torrent 
 libkvkontakte-devel: KF5Vkontakte 
+libmatroska-devel: Matroska 
 libmediawiki-devel: KF5MediaWiki 
 libmygpo-qt-devel: Mygpo-qt 
 libmygpo-qt5-devel: Mygpo-qt5 
+libopentracing-cpp1: OpenTracing 
 liboyranos-devel: Oyranos 
 libpamtest-devel: libpamtest 
 libpolkit-qt-1-devel: PolkitQt-1 
@@ -270,6 +285,8 @@ libyui-qt-graph-devel: Libyui-qt-graph
 libyui-qt-pkg-devel: Libyui-qt-pkg 
 limesuite-devel: LimeSuite 
 llvm5-devel: LLVM LLVM- 
+llvm7-devel: LLVM LLVM- 
+llvm7-polly-devel: Polly 
 mailcommon-devel: KF5MailCommon 
 mailimporter-devel: KF5MailImporter KF5MailImporterAkonadi 
 marble-devel: Astro Marble 
@@ -277,8 +294,13 @@ mathgl-devel: MathGL2
 messagelib-devel: KF5MessageComposer KF5MessageCore KF5MessageList KF5MessageViewer KF5MimeTreeParser KF5TemplateParser KF5WebEngineViewer 
 mobipocket-devel: QMobipocket 
 msgpack-devel: msgpack 
+nanomsg-devel: nanomsg 
+nanopb-devel: nanopb 
 neko-devel: Neko 
+netgen-devel: Netgen 
 nlohmann_json-devel: nlohmann_json 
+nlopt-devel: NLopt 
+noson-devel: noson 
 nss_wrapper: nss_wrapper 
 occt-devel: OpenCASCADE 
 okteta-devel: KastenControllers KastenCore KastenGui OktetaCore OktetaGui OktetaKastenControllers OktetaKastenCore OktetaKastenGui 
@@ -286,6 +308,7 @@ okular-devel: Okular5
 openbabel-devel: OpenBabel2 
 openobex-devel: openobex 
 pam_wrapper: pam_wrapper 
+paraview-devel: ParaView VTK 
 phonon-devel: Phonon PhononExperimental 
 phonon4qt5-devel: Phonon4Qt5 Phonon4Qt5Experimental 
 pimcommon-devel: KF5PimCommon KF5PimCommonAkonadi 
@@ -301,10 +324,10 @@ python3-pyside2-devel: PySide2 Shiboken2
 qpid-cpp-client-devel: Qpid 
 qpid-proton-devel: Proton ProtonCpp 
 qqc2-desktop-style-devel: KF5QQC2DeskopStyle 
-qtkeychain-devel: QtKeychain 
 qtkeychain-qt5-devel: Qt5Keychain 
 qxtglobalshortcut-devel: qxtglobalshortcut 
 resolv_wrapper: resolv_wrapper 
+sfml2-devel: SFML 
 snorenotify-qt5-devel: LibsnoreQt5 LibsnoreSettingsQt5 
 socket_wrapper: socket_wrapper 
 solid-devel: KF5Solid 
@@ -313,8 +336,10 @@ spdlog-devel: spdlog
 stp-devel: STP 
 syndication-devel: KF5Syndication 
 syntax-highlighting-devel: KF5SyntaxHighlighting 
+telepathy-logger-qt5-devel: TelepathyLoggerQt 
 telepathy-qt5-devel: TelepathyQt5 TelepathyQt5Farstream TelepathyQt5Service 
 threadweaver-devel: KF5ThreadWeaver 
+trilinos-devel: Amesos Amesos2 Anasazi AztecOO Belos Epetra EpetraExt Galeri Ifpack Ifpack2 Intrepid Intrepid2 Isorropia Kokkos KokkosAlgorithms KokkosContainers KokkosCore ML MueLu NOX Pamgen Phalanx RTOp Sacado Shards Stokhos Stratimikos Teko Teuchos TeuchosComm TeuchosCore TeuchosKokkosComm TeuchosKokkosCompat TeuchosNumerics TeuchosParameterList TeuchosRemainder Thyra ThyraCore ThyraEpetraAdapters ThyraEpetraExtAdapters ThyraTpetraAdapters Tpetra TpetraClassic TpetraCore TpetraKernels TpetraTSQR TriBITS Trilinos TrilinosCouplings Triutils Xpetra Zoltan Zoltan2 
 uhd-devel: UHD 
 uid_wrapper: uid_wrapper 
 unittest-cpp-devel: UnitTest++ 
