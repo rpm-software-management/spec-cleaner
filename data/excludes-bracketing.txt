@@ -67,6 +67,7 @@ jar
 java
 javac
 jpackage_script
+jupyter_move_config
 kde_post_install
 kde4_makeinstall
 kernel_module_package
