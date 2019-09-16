@@ -35,5 +35,17 @@ URL:            http://wrong.host.badssl.com/
 %package null
 Summary:        Null cipher suite
 URL:            http://null.badssl.com/
+# URL is FTP (issue#258)
+%package ftp
+Summary:        Url is FTP
+URL:            ftp://ftp.null.badssl.com/
+
+%package ftp1
+Summary:        Url is FTP
+URL:            ftp.null.badssl.com/
+# other prefix
+%package other
+Summary:        Url is not http, https or ftp
+URL:            abc://null.badssl.com/
 
 %changelog

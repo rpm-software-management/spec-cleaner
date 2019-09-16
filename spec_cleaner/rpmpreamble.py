@@ -386,20 +386,19 @@ class RpmPreamble(Section):
             orig_url = match.group(1)
             value = orig_url
 
-            if orig_url.startswith('https://') or self.minimal:
-                self._add_line_value_to('url', orig_url, key='URL')
-                return
-
             if orig_url.startswith('http://'):
                 https_url = orig_url.replace('http', 'https', 1)
             elif parse.urlparse(orig_url).scheme == '':
                 https_url = 'https://' + orig_url
+            else:
+                https_url = None
 
             response = None
             try:
-                response = urlopen(https_url)
-                if response.getcode() == 200:
-                    value = https_url
+                if https_url and not self.minimal:
+                    response = urlopen(https_url)
+                    if response.getcode() == 200:
+                        value = https_url
             # ssl.CertificateError is a subclass of SSLError in Python 3.7. In Python 3.6 it's not.
             except (error.URLError, SSLError, CertificateError):
                 pass
