@@ -6,6 +6,7 @@ dist/
 .*.swp
 .cache
 .coverage
+.mypy_cache
 *.orig
 .coveralls.yml
 .pytest_cache
