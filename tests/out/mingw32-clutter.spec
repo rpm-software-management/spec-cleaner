@@ -22,8 +22,6 @@ Version:        1.6.20
 Release:        0
 Summary:        The clutter library
 License:        LGPL-2.1-or-later
-# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"
-Group:          Development/Libraries
 URL:            http://clutter-project.org/
 Source:         http://www.clutter-project.org/sources/clutter/1.5/clutter-%{version}.tar.bz2
 Patch0:         clutter-1.6.14-windows.patch
@@ -65,7 +63,6 @@ shared library.
 
 %package -n mingw32-libclutter-win32-1_0-0
 Summary:        MinGW Windows port of the Clutter library
-Group:          System/Libraries
 Obsoletes:      mingw32-clutter
 Provides:       mingw32-clutter
 
@@ -76,8 +73,6 @@ shared library.
 
 %package devel
 Summary:        The clutter library (Development)
-# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"
-Group:          Development/Libraries
 Requires:       mingw32-glee-devel
 
 %description devel

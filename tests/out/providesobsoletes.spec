@@ -1,6 +1,5 @@
 %package -n %{libname}
 Summary:        Library for Importing WordPerfect (tm) Documents
-Group:          System/Libraries
 Provides:       NetworkManager-lang = %(rpm -q --queryformat '%{VERSION}' NetworkManager-lang)
 Obsoletes:      NetworkManager-lang < %(rpm -q --queryformat '%{VERSION}' NetworkManager-lang)
 # remove the old non-versioned package (built in the bs for instance)

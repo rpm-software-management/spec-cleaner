@@ -23,7 +23,6 @@ Version:        0.9.49
 Release:        0
 Summary:        Small Embeddable HTTP Server Library
 License:        LGPL-2.1-or-later
-Group:          Productivity/Networking/Web/Servers
 URL:            https://www.gnu.org/software/libmicrohttpd/
 Source0:        http://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz
 Source1:        http://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz.sig
@@ -71,14 +70,12 @@ application, check it out.
 
 %package -n %{libmicrohttpd}
 Summary:        Small embeddable http server library
-Group:          System/Libraries
 
 %description -n %{libmicrohttpd}
 Shared library for %{name} (%{summary}).
 
 %package devel
 Summary:        Small Embeddable HTTP Server Library
-Group:          Development/Libraries/C and C++
 Requires:       %{libmicrohttpd} = %{version}
 Requires:       pkgconfig
 Requires:       pkgconfig(gnutls)

@@ -1,6 +1,5 @@
 %package guest-KMP
 Summary:        Guest kernel modules for VirtualBox
-Group:          System/Emulators/PC
 Supplements:    modalias(dmi:*:[bs]vnD[Ee][Ll][Ll]*:*)
 Supplements:    modalias(x86cpu:vendor%%3A0002%%3Afamily%%3A*%%3Amodel%%3A*%%3Afeature%%3A*)
 #SUSE specify macro to define guest kmp package

@@ -3,7 +3,6 @@ Version:        3.1.23
 Release:        0
 Summary:        A Job Manager
 License:        GPL-2.0-or-later
-Group:          System/Daemons
 URL:            http://ftp.debian.org/debian/pool/main/a/at
 Source:         http://ftp.debian.org/debian/pool/main/a/at/%{name}_%{version}.orig.tar.gz
 BuildRequires:  autoconf >= 2.69

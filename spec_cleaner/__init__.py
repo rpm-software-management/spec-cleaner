@@ -60,6 +60,7 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
     )
     parser.add_argument('--no-copyright', action='store_true', help='do not include official SUSE copyright hear and just keep what is present')
     parser.add_argument('--libexecdir', action='store_true', help='convert /usr/lib to %%{_libexecdir}')
+    parser.add_argument('--preserve-groups', action='store_true', help='validate group tags instead of removing them')
     parser.add_argument(
         '--copyright-year',
         metavar='YYYY',

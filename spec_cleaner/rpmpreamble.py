@@ -557,6 +557,13 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_group.match(line):
+            # if we do not have list of groups we are removing them in non
+            # minimal mode
+            if not self.minimal and not self.allowed_groups:
+                return
+
+            # otherwise we scan up and warn if the group does not match allowed
+            # list of groups
             match = self.reg.re_group.match(line)
             value = match.group(1)
             if not self.minimal:
