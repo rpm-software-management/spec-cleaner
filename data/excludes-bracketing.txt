@@ -53,6 +53,7 @@ glib2_gsettings_schema_[^\s]*
 global
 gpg_verify
 hpc_setup
+hpc_configure
 hpc_write_modules_files
 icon_theme_cache_post[^\s]*
 icon_theme_cache_create_ghost
