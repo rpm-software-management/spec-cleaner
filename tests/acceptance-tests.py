@@ -49,7 +49,6 @@ class TestCompare(object):
         'minimal': False,
         'no_curlification': False,
         'no_copyright': True,
-        'libexecdir': True,
         'copyright_year': 2013,
         'remove_groups': False,
         'tex': False,

@@ -22,7 +22,6 @@ class Section(object):
         spec: A string with the path to the processed specfile.
         minimal: A flag indicating whether we run in minimal mode (no intrusive operations).
         no_curlification: A flag indicating whether we want to convert variables to curly brackets.
-        libexecdir: A flag indicating whether we want convert /usr/lib to %%{_libexecdir}.
         reg: A Regexp object that holds all regexps that will be used in spec-cleaner.
         condition: A flag representing if we are in the conditional or not.
         _condition_counter: An int for counting in how many (nested) condition we currently are.
@@ -34,7 +33,6 @@ class Section(object):
         self.spec: str = options['specfile']
         self.minimal: bool = options['minimal']
         self.no_curlification: bool = options['no_curlification']
-        self.libexecdir: bool = options['libexecdir']
         self.reg: Regexp = options['reg']
         # Are we inside of conditional or not
         self.condition: bool = False
@@ -248,8 +246,7 @@ class Section(object):
         line = self.reg.re_prefix.sub(r'%{_prefix}\1', line)
         line = self.reg.re_bindir.sub(r'%{_bindir}\1', line)
         line = self.reg.re_sbindir.sub(r'%{_sbindir}\1', line)
-        if not self.minimal and self.libexecdir:
-            line = self.reg.re_libexecdir.sub(r'%{_libexecdir}\1', line)
+        line = self.reg.re_libexecdir.sub(r'%{_libexecdir}\1', line)
         line = self.reg.re_includedir.sub(r'%{_includedir}\1', line)
         line = self.reg.re_datadir.sub(r'%{_datadir}\1', line)
         line = self.reg.re_mandir.sub(r'%{_mandir}\1', line)

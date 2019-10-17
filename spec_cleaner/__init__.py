@@ -59,7 +59,6 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         '--no-curlification', action='store_true', help='do not convert variables bracketing (%%{macro}) and keep it as it was on the input'
     )
     parser.add_argument('--no-copyright', action='store_true', help='do not include official SUSE copyright hear and just keep what is present')
-    parser.add_argument('--libexecdir', action='store_true', help='convert /usr/lib to %%{_libexecdir}')
     parser.add_argument('--remove-groups', action='store_true', help='remove groups from the specfile.')
     parser.add_argument(
         '--copyright-year',

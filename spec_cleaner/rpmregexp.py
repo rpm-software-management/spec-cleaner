@@ -177,7 +177,7 @@ class Regexp(object):
     re_prefix = re.compile(r'(?<!\w)/usr' + endmacro)
     re_bindir = re.compile(r'%{?_prefix}?/bin' + endmacro)
     re_sbindir = re.compile(r'%{?_prefix}?/sbin' + endmacro)
-    re_libexecdir = re.compile(r'%{?_prefix}?/lib' + endmacro)
+    re_libexecdir = re.compile(r'%{?_prefix}?/libexec' + endmacro)
     re_includedir = re.compile(r'%{?_prefix}?/include' + endmacro)
     re_datadir = re.compile(r'%{?_prefix}?/share' + endmacro)
     re_mandir = re.compile(r'%{?_datadir}?/man' + endmacro)

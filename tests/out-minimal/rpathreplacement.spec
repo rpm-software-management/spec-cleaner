@@ -7,7 +7,7 @@ mkdir -p %{buildroot}%{_sbindir}
 %license COPYING
 %doc ChangeLog README
 %{_prefix}/name/
-%{_prefix}/lib/name/
+%{_libexecdir}/name/
 %{_libdir}/name
 %{_datadir}/data/name
 %{_includedir}/name
