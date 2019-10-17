@@ -2,7 +2,7 @@
 # local install
 python scons/scons.py PREFIX=/usr/local
 # more complicated case
-python scons/scons.py PREFIX=/usr/lib/test/usr
+python scons/scons.py PREFIX=/usr/libexec/test/usr
 # with spaces
 python scons/scons.py PREFIX=/usr blah
 # ending with newline

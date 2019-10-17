@@ -6,7 +6,7 @@ mkdir -p %{buildroot}/usr/sbin
 %defattr(-,root,root)
 %doc ChangeLog README COPYING
 /usr/name/
-/usr/lib/name/
+/usr/libexec/name/
 /usr/lib64/name
 /usr/share/data/name
 /usr/include/name
