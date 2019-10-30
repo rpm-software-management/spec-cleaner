@@ -36,7 +36,7 @@ class RpmCopyright(Section):
         )
 
     def _create_default_copyright(self):
-        self.my_copyright = '# Copyright (c) {0} SUSE LINUX GmbH, Nuernberg, Germany.'.format(self.year)
+        self.my_copyright = '# Copyright (c) {0} SUSE Linux LLC'.format(self.year)
 
     def _add_copyright(self):
         self._create_default_copyright()
