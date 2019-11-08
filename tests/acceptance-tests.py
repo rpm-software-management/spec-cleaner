@@ -51,7 +51,7 @@ class TestCompare(object):
         'no_copyright': True,
         'libexecdir': True,
         'copyright_year': 2013,
-        'preserve_groups': False,
+        'remove_groups': False,
         'tex': False,
         'perl': False,
         'cmake': False,
@@ -151,7 +151,7 @@ class TestCompare(object):
             ('tex.spec', 'tex', {'tex': True}),
             ('perl.spec', 'perl', {'perl': True}),
             ('cmake.spec', 'cmake', {'cmake': True}),
-            ('langpackage.spec', 'group', {'preserve_groups': True}),
+            ('langpackage.spec', 'group', {'remove_groups': True}),
         ],
     )
     def test_single_output(self, tmpfile, test, compare_dir, options):
