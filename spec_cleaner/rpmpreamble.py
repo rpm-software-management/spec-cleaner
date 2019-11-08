@@ -60,6 +60,8 @@ class RpmPreamble(Section):
         self.tex = options['tex']
         # are we supposed to keep empty lines intact?
         self.keep_space = options['keep_space']
+        # do we want to remove groups from the specfile?
+        self.remove_groups = options['remove_groups']
         # dict of license replacement options
         self.license_conversions = options['license_conversions']
         # dict of pkgconfig and other conversions
@@ -557,18 +559,19 @@ class RpmPreamble(Section):
             return
 
         elif self.reg.re_group.match(line):
-            # if we do not have list of groups we are removing them in non
-            # minimal mode
-            if not self.minimal and not self.allowed_groups:
+            # remove groups if requested
+            if not self.minimal and self.remove_groups:
                 return
 
-            # otherwise we scan up and warn if the group does not match allowed
-            # list of groups
+            # validate (if we have a list of groups)
             match = self.reg.re_group.match(line)
             value = match.group(1)
-            if not self.minimal:
-                if self.previous_line and not self.previous_line.startswith('# FIXME') and value not in self.allowed_groups:
-                    self.paragraph.current_group.append('# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
+            if not self.minimal and self.allowed_groups:
+                if self.previous_line and not self.previous_line.startswith(
+                        '# FIXME') and value not in self.allowed_groups:
+                    self.paragraph.current_group.append(
+                        '# FIXME: use correct group or remove it,'
+                        ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
             self._add_line_value_to('group', value)
             return
 

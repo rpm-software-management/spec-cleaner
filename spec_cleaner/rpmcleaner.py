@@ -92,10 +92,10 @@ class RpmSpecCleaner(object):
         if self.options['perl']:
             self.options['perl_conversions'] = read_perl_changes()
         self.options['license_conversions'] = read_licenses_changes()
-        if self.options['preserve_groups']:
-            self.options['allowed_groups'] = read_group_changes()
-        else:
+        if self.options['remove_groups']:
             self.options['allowed_groups'] = None
+        else:
+            self.options['allowed_groups'] = read_group_changes()
         self.options['reg'] = Regexp(self.options['unbrace_keywords'])
 
         # If gvim is used for the diff then run it in foreground mode
