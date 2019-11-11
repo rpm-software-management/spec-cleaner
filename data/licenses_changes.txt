@@ -645,6 +645,8 @@ MirOS	MirOS
 MirOS+	MirOS+
 Motosoto	Motosoto
 Motosoto+	Motosoto+
+MulanPSL-1.0	MulanPSL-1.0
+MulanPSL-1.0+	MulanPSL-1.0+
 Multics	Multics
 Multics+	Multics+
 Mup	Mup
@@ -704,6 +706,8 @@ OFL-1.1	Open Font License
 OFL-1.1	SIL Open Font License
 OFL-1.1	SIL Open Font License 1.1
 OFL-1.1+	OFL-1.1+
+OGL-Canada-2.0	OGL-Canada-2.0
+OGL-Canada-2.0+	OGL-Canada-2.0+
 OGL-UK-1.0	OGL-UK-1.0
 OGL-UK-1.0+	OGL-UK-1.0+
 OGL-UK-2.0	OGL-UK-2.0
@@ -841,6 +845,10 @@ SNIA	SNIA
 SNIA+	SNIA+
 SPL-1.0	SPL-1.0
 SPL-1.0+	SPL-1.0+
+SSH-OpenSSH	SSH-OpenSSH
+SSH-OpenSSH+	SSH-OpenSSH+
+SSH-short	SSH-short
+SSH-short+	SSH-short+
 SSPL-1.0	SSPL-1.0
 SSPL-1.0+	SSPL-1.0+
 SUSE-Arphic	SUSE-Arphic
@@ -1123,6 +1131,8 @@ TU-Berlin-1.0	TU-Berlin-1.0
 TU-Berlin-1.0+	TU-Berlin-1.0+
 TU-Berlin-2.0	TU-Berlin-2.0
 TU-Berlin-2.0+	TU-Berlin-2.0+
+UCL-1.0	UCL-1.0
+UCL-1.0+	UCL-1.0+
 UPL-1.0	UPL-1.0
 UPL-1.0+	UPL-1.0+
 Unicode	http://www.unicode.org/copyright.html
@@ -1216,6 +1226,8 @@ dvipdfm	dvipdfm
 dvipdfm+	dvipdfm+
 eGenix	eGenix
 eGenix+	eGenix+
+etalab-2.0	etalab-2.0
+etalab-2.0+	etalab-2.0+
 gSOAP-1.3b	gSOAP-1.3b
 gSOAP-1.3b+	gSOAP-1.3b+
 gnuplot	gnuplot

@@ -178,7 +178,7 @@ CECILL-2.0 | CeCILL Free Software License Agreement v2.0
 CECILL-2.1 | CeCILL Free Software License Agreement v2.1
 CECILL-B | CeCILL-B Free Software License Agreement
 CECILL-C | CeCILL-C Free Software License Agreement
-CERN-OHL-1.1 | CERN Open Hardware License v1.1
+CERN-OHL-1.1 | CERN Open Hardware Licence v1.1
 CERN-OHL-1.2 | CERN Open Hardware Licence v1.2
 ClArtistic | Clarified Artistic License
 CNRI-Jython | CNRI Jython License
@@ -210,6 +210,7 @@ Entessa | Entessa Public License v1.0
 EPL-1.0 | Eclipse Public License 1.0
 EPL-2.0 | Eclipse Public License 2.0
 ErlPL-1.1 | Erlang Public License v1.1
+etalab-2.0 | Etalab Open License 2.0
 EUDatagrid | EU DataGrid Software License
 EUPL-1.0 | European Union Public License 1.0
 EUPL-1.1 | European Union Public License 1.1
@@ -285,7 +286,7 @@ LPPL-1.2 | LaTeX Project Public License v1.2
 LPPL-1.3a | LaTeX Project Public License v1.3a
 LPPL-1.3c | LaTeX Project Public License v1.3c
 MakeIndex | MakeIndex License
-MirOS | MirOS License
+MirOS | The MirOS Licence
 MIT | MIT License
 MIT-0 | MIT No Attribution
 MIT-advertising | Enlightenment License (e16)
@@ -302,6 +303,7 @@ MPL-2.0-no-copyleft-exception | Mozilla Public License 2.0 (no copyleft exceptio
 MS-PL | Microsoft Public License
 MS-RL | Microsoft Reciprocal License
 MTLL | Matrix Template Library License
+MulanPSL-1.0 | Mulan Permissive Software License, Version 1
 Multics | Multics License
 Mup | Mup License
 NASA-1.3 | NASA Open Source Agreement 1.3
@@ -328,6 +330,7 @@ ODbL-1.0 | ODC Open Database License v1.0
 ODC-By-1.0 | Open Data Commons Attribution License v1.0
 OFL-1.0 | SIL Open Font License 1.0
 OFL-1.1 | SIL Open Font License 1.1
+OGL-Canada-2.0 | Open Government Licence - Canada
 OGL-UK-1.0 | Open Government Licence v1.0
 OGL-UK-2.0 | Open Government Licence v2.0
 OGL-UK-3.0 | Open Government Licence v3.0
@@ -397,6 +400,8 @@ Spencer-86 | Spencer License 86
 Spencer-94 | Spencer License 94
 Spencer-99 | Spencer License 99
 SPL-1.0 | Sun Public License v1.0
+SSH-OpenSSH | SSH OpenSSH license
+SSH-short | SSH short notice
 SSPL-1.0 | Server Side Public License, v 1
 SugarCRM-1.1.3 | SugarCRM Public License v1.1.3
 SWL | Scheme Widget Library (SWL) Software License Agreement
@@ -408,6 +413,7 @@ TORQUE-1.1 | TORQUE v2.5+ Software License v1.1
 TOSL | Trusster Open Source License
 TU-Berlin-1.0 | Technische Universitaet Berlin License 1.0
 TU-Berlin-2.0 | Technische Universitaet Berlin License 2.0
+UCL-1.0 | Upstream Compatibility License v1.0
 Unicode-DFS-2015 | Unicode License Agreement - Data Files and Software (2015)
 Unicode-DFS-2016 | Unicode License Agreement - Data Files and Software (2016)
 Unicode-TOU | Unicode Terms of Use
