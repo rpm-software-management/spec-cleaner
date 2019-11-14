@@ -3,6 +3,7 @@
 # spec file for package broken
 #
 # Copyright (c) 2011 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2019 SUSE LLC
 # Copyright (c) 2012 Dominique Leuenberger, Amsterdam, The Netherlands
 # Copyright #C 2013 Broken copyright
 #
