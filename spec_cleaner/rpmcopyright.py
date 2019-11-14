@@ -22,7 +22,7 @@ class RpmCopyright(Section):
         self.year = options['copyright_year']
         self.copyrights = []
         self.buildrules = []
-        self.my_copyright = ''
+        self.distro_copyright = '# Copyright (c) {0} SUSE LLC'.format(self.year)
         self.vimmodeline = ''
 
     def _add_pkg_header(self):
@@ -35,12 +35,8 @@ class RpmCopyright(Section):
             )
         )
 
-    def _create_default_copyright(self):
-        self.my_copyright = '# Copyright (c) {0} SUSE LLC'.format(self.year)
-
     def _add_copyright(self):
-        self._create_default_copyright()
-        self.lines.append(self.my_copyright)
+        self.lines.append(self.distro_copyright)
 
         for i in self.copyrights:
             self.lines.append(i)

@@ -116,7 +116,7 @@ class Regexp(object):
 
     # rpmcopyright
     re_copyright_string = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
-    re_suse_copyright = re.compile(r'SUSE LINUX (Products )?GmbH, Nuernberg, Germany.\s*$', re.IGNORECASE)
+    re_suse_copyright = re.compile(r'SUSE (LLC\.?|LINUX (Products )?GmbH, Nuernberg, Germany\.)\s*$', re.IGNORECASE)
     re_rootforbuild = re.compile(r'^#\s*needsrootforbuild\s*$', re.IGNORECASE)
     re_binariesforbuild = re.compile(r'^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
     re_nodebuginfo = re.compile(r'^#\s*nodebuginfo\s*$', re.IGNORECASE)
