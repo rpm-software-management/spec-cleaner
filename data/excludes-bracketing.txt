@@ -1,4 +1,5 @@
 add_maven_depmap
+apache_rex_check
 apache_test_module_start_apache
 apache_test_module_stop_apache
 apache_test_module_curl
