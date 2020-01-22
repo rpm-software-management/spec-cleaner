@@ -16,6 +16,7 @@ Patch: test
 %global test somethingelse
 
 %prep
+%autosetup -p0
 %setup -qn %name-%version
 %setup -q -n "%name-%version" -a1
 %setup -n "%name-%version" -q -b2

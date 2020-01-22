@@ -51,7 +51,8 @@ class RpmPrep(Section):
             The line with pretty patchlines.
         """
         # -p0 is default
-        line = line.replace('-p0', '')
+        if line.startswith('%patch'):
+            line = line.replace('-p0', '')
         # %patch0 is desired
         if (line.startswith('%patch ') or line == '%patch') and '-P' not in line:
             line = line.replace('%patch', '%patch0')

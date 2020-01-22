@@ -16,6 +16,7 @@ Patch0:         test
 Patch10:        test2
 
 %prep
+%autosetup -p0
 %setup -q
 %setup -q -a1
 %setup -q -b2
