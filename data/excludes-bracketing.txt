@@ -29,6 +29,7 @@ dir
 doc
 docdir
 else
+elif[^\s]*
 endif
 exclude
 fdupes

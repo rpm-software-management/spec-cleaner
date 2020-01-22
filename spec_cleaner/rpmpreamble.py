@@ -358,7 +358,7 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_else.match(line):
+        elif self.reg.re_else_elif.match(line):
             if self.condition:
                 self._add_line_to('conditions', line)
                 self.end_subparagraph()
