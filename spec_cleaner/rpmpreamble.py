@@ -398,7 +398,7 @@ class RpmPreamble(Section):
             response = None
             try:
                 if https_url and not self.minimal:
-                    response = urlopen(https_url)
+                    response = urlopen(https_url, timeout=1)
                     if response.getcode() == 200:
                         value = https_url
             # ssl.CertificateError is a subclass of SSLError in Python 3.7. In Python 3.6 it's not.

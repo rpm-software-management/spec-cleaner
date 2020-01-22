@@ -48,4 +48,8 @@ URL:            ftp.null.badssl.com/
 Summary:        Url is not http, https or ftp
 URL:            abc://null.badssl.com/
 
+%package brokenserver
+Summary:        The server reconnects and cycles
+URL:            http://xavprods.free.fr/lzx
+
 %changelog
