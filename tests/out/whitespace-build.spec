@@ -2,7 +2,7 @@
 pushd bulshit
 # FIXME: you should use the %%configure macro
 	./configure
-  make %{?_smp_mflags}
+  %make_build
 popd
 
 %changelog

@@ -20,6 +20,7 @@ class RpmCheck(Section):
         if not self.minimal:
             line = self._add_jobs(line)
             line = self._replace_pytest(line)
+            line = self._replace_make(line)
 
         Section.add(self, line)
 
@@ -56,4 +57,12 @@ class RpmCheck(Section):
         """
         line = self.reg.re_pytest.sub('%pytest', line)
         line = self.reg.re_pytest_arch.sub('%pytest_arch', line)
+        return line
+
+    def _replace_make(self, line: str) -> str:
+        # find all make %{?_smp_mflags} and replace them with %make_build
+        # this is two step process as we can replace %make_build more radically
+        if not self.minimal:
+            line = line.replace('make %{?_smp_mflags}', '%make_build')
+        
         return line
