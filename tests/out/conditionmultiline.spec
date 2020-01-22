@@ -49,6 +49,8 @@ BuildRequires:  something
     --with-openjdk-src-zip=%{SOURCE1} \
 %ifnarch %{arm} %{aarch64}
     --with-parallel-jobs=${NUMCPUS} \
+%elifarch %{ix86}
+    --with-parallel-jobs=2 \
 %else
     --with-parallel-jobs=1 \
 %endif

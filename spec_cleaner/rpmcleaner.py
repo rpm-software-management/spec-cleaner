@@ -227,7 +227,7 @@ class RpmSpecCleaner(object):
         Returns:
              True if a condition change was found, False otherwise.
         """
-        if any([re.match(line) for re in [self.reg.re_endif, self.reg.re_else, self.reg.re_endcodeblock]]):
+        if any([re.match(line) for re in [self.reg.re_endif, self.reg.re_else_elif, self.reg.re_endcodeblock]]):
             return True
         return False
 
