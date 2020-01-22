@@ -64,5 +64,5 @@ class RpmCheck(Section):
         # this is two step process as we can replace %make_build more radically
         if not self.minimal:
             line = line.replace('make %{?_smp_mflags}', '%make_build')
-        
+
         return line
