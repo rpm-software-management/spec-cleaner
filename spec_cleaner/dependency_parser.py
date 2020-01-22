@@ -25,10 +25,13 @@ logger.setLevel(logging.ERROR)
 
 
 def find_end_of_bracketed_macro(string, regex, opening, closing):
-    macro = string[0:2]
-    # eat '%{'
-    string = string[2:]
-
+    # ommit the initial bracket, or %bracket
+    if string.startswith('%'):
+        macro = string[0:2]
+        string = string[2:]
+    else:
+        macro = string[0:1]
+        string = string[1:]
     opened = 1
     while opened and string:
         try:
