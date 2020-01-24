@@ -7,5 +7,7 @@ make
 make PREFIX=/ \
      STATIC=""
 make -j1
+make %{?_smp_mflags} VERBOSE=1
+make V=1 %{?_smp_mflags} all doc
 
 %changelog

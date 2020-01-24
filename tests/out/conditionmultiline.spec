@@ -11,7 +11,7 @@ BuildRequires:  something
  %ifnarch %{arm}
      --with-num-cores="$NUM_PROC" \
  %endif
- make -j1
+ %make_build -j1
 
 %ifarch %{jit_arches}
 %if 0%{?suse_version} >= 1120

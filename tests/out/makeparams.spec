@@ -28,7 +28,7 @@
 %make_build
 %make_build check ||:
 %make_build && mv mtr xmtr
-%make_build VERBOSE=1
+%make_build
 
 %install
 %make_install install-etc

@@ -18,32 +18,10 @@ class RpmCheck(Section):
         line = self.reg.re_jobs.sub('%{?_smp_mflags}', line)
 
         if not self.minimal:
-            line = self._add_jobs(line)
             line = self._replace_pytest(line)
             line = self._replace_make(line)
 
         Section.add(self, line)
-
-    def _add_jobs(self, line: str) -> str:
-        """
-        Add %{?_smp_mflags} to 'make' call.
-
-        Args:
-            line: A string representing a line to process.
-
-        Return:
-            The processed line.
-        """
-        # add jobs if we have just make call on line
-        # if user want single thread he should specify -j1
-        if self.reg.re_make.match(line):
-            # if there are no smp_flags or jobs spec
-            if line.find('%{?_smp_mflags}') == -1 and line.find('-j') == -1:
-                # Don't append %_smp_mflags if the line ends with a backslash,
-                # it would break the formatting
-                if not line.endswith('\\') and not line.lstrip().startswith('#'):
-                    line = self.reg.re_make.sub(r'\1make %{?_smp_mflags}\2', line)
-        return line
 
     def _replace_pytest(self, line: str) -> str:
         """
@@ -60,9 +38,27 @@ class RpmCheck(Section):
         return line
 
     def _replace_make(self, line: str) -> str:
-        # find all make %{?_smp_mflags} and replace them with %make_build
-        # this is two step process as we can replace %make_build more radically
-        if not self.minimal:
-            line = line.replace('make %{?_smp_mflags}', '%make_build')
+        """
+        Replace 'make' call with '%make_build' macro.
 
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The processed line.
+        """
+
+        # if it is comment line then do nothing
+        if line.lstrip().startswith('#'):
+            return line
+        # find all make calls and replace them with %make_build
+        if self.reg.re_make.match(line):
+            line = self.reg.re_make.sub(r'\1%make_build\2', line)
+        # remove from line all the options that are part of %make_build macro
+        if self.reg.re_make_build.match(line):
+            # remove smp flags
+            line = line.replace(' %{?_smp_mflags}', '')
+            # remove verbosity
+            line = line.replace(' V=1', '')
+            line = line.replace(' VERBOSE=1', '')
         return line

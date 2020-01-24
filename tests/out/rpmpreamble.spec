@@ -112,7 +112,7 @@ find %{buildroot} -type f -name "*.la" -delete -print
 
 %check
 # Paralel execution of tests fail
-make -j 1 check
+%make_build -j 1 check
 
 %post -n %{libmicrohttpd} -p /sbin/ldconfig
 %postun -n %{libmicrohttpd} -p /sbin/ldconfig
