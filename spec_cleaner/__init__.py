@@ -14,7 +14,7 @@ from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmException, RpmWrongArgs
 
 
-__version__ = '1.1.8'
+__version__ = '1.1.9'
 
 
 def process_args(argv: List[str]) -> Dict[str, Any]:
