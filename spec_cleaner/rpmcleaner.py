@@ -207,7 +207,7 @@ class RpmSpecCleaner(object):
         """
         # This is seriously ugly but can't think of cleaner way FIXME
         if not isinstance(self.current_section, (RpmPreamble, RpmPackage)):
-            if any([re.match(line) for re in [self.reg.re_bcond_with, self.reg.re_debugpkg]]):
+            if any(re.match(line) for re in [self.reg.re_bcond_with, self.reg.re_debugpkg]):
                 return True
 
             # We can have locally defined variables in phases
@@ -227,7 +227,7 @@ class RpmSpecCleaner(object):
         Returns:
              True if a condition change was found, False otherwise.
         """
-        if any([re.match(line) for re in [self.reg.re_endif, self.reg.re_else_elif, self.reg.re_endcodeblock]]):
+        if any(re.match(line) for re in [self.reg.re_endif, self.reg.re_else_elif, self.reg.re_endcodeblock]):
             return True
         return False
 
