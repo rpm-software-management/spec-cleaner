@@ -675,6 +675,8 @@ NRL	NRL
 NRL+	NRL+
 NTP	NTP
 NTP+	NTP+
+NTP-0	NTP-0
+NTP-0+	NTP-0+
 Naumen	Naumen
 Naumen+	Naumen+
 Net-SNMP	Net-SNMP
@@ -700,12 +702,20 @@ ODbL-1.0	ODbL-1.0
 ODbL-1.0+	ODbL-1.0+
 OFL-1.0	OFL-1.0
 OFL-1.0+	OFL-1.0+
+OFL-1.0-RFN	OFL-1.0-RFN
+OFL-1.0-RFN+	OFL-1.0-RFN+
+OFL-1.0-no-RFN	OFL-1.0-no-RFN
+OFL-1.0-no-RFN+	OFL-1.0-no-RFN+
 OFL-1.1	OFL
 OFL-1.1	OFL-1.1
 OFL-1.1	Open Font License
 OFL-1.1	SIL Open Font License
 OFL-1.1	SIL Open Font License 1.1
 OFL-1.1+	OFL-1.1+
+OFL-1.1-RFN	OFL-1.1-RFN
+OFL-1.1-RFN+	OFL-1.1-RFN+
+OFL-1.1-no-RFN	OFL-1.1-no-RFN
+OFL-1.1-no-RFN+	OFL-1.1-no-RFN+
 OGL-Canada-2.0	OGL-Canada-2.0
 OGL-Canada-2.0+	OGL-Canada-2.0+
 OGL-UK-1.0	OGL-UK-1.0
@@ -779,6 +789,8 @@ PHP-3.01	PHP-3.0.1
 PHP-3.01	PHP-3.01
 PHP-3.01	The PHP License, version 3.01
 PHP-3.01+	PHP-3.01+
+PSF-2.0	PSF-2.0
+PSF-2.0+	PSF-2.0+
 Parity-6.0.0	Parity-6.0.0
 Parity-6.0.0+	Parity-6.0.0+
 Plexus	Plexus
@@ -1236,6 +1248,8 @@ iMatix	iMatix
 iMatix+	iMatix+
 libpng-2.0	libpng-2.0
 libpng-2.0+	libpng-2.0+
+libselinux-1.0	libselinux-1.0
+libselinux-1.0+	libselinux-1.0+
 libtiff	libtiff
 libtiff+	libtiff+
 mpich2	mpich2

@@ -1,7 +1,7 @@
 
 # spec-cleaner
 
-[![Build Status](https://travis-ci.org/rpm-software-management/spec-cleaner.svg?branch=master)](https://travis-ci.org/rpm-software-management/spec-cleaner)
+![Build Status](https://github.com/rpm-software-management/spec-cleaner/workflows/Python%20package/badge.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/rpm-software-management/spec-cleaner/badge.svg?branch=master)](https://coveralls.io/github/rpm-software-management/spec-cleaner?branch=master)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/rpm-software-management/spec-cleaner.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rpm-software-management/spec-cleaner/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/rpm-software-management/spec-cleaner.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rpm-software-management/spec-cleaner/context:python)
@@ -273,6 +273,7 @@ LGPL-3.0-or-later | GNU Lesser General Public License v3.0 or later
 LGPLLR | Lesser General Public License For Linguistic Resources
 Libpng | libpng License
 libpng-2.0 | PNG Reference Library version 2
+libselinux-1.0 | libselinux public domain notice
 libtiff | libtiff License
 LiLiQ-P-1.1 | Licence Libre du Qu?bec ? Permissive version 1.1
 LiLiQ-R-1.1 | Licence Libre du Qu?bec ? R?ciprocit? version 1.1
@@ -324,12 +325,17 @@ NPL-1.1 | Netscape Public License v1.1
 NPOSL-3.0 | Non-Profit Open Software License 3.0
 NRL | NRL License
 NTP | NTP License
+NTP-0 | NTP No Attribution
 OCCT-PL | Open CASCADE Technology Public License
 OCLC-2.0 | OCLC Research Public License 2.0
 ODbL-1.0 | ODC Open Database License v1.0
 ODC-By-1.0 | Open Data Commons Attribution License v1.0
 OFL-1.0 | SIL Open Font License 1.0
+OFL-1.0-no-RFN | SIL Open Font License 1.0 with no Reserved Font Name
+OFL-1.0-RFN | SIL Open Font License 1.0 with Reserved Font Name
 OFL-1.1 | SIL Open Font License 1.1
+OFL-1.1-no-RFN | SIL Open Font License 1.1 with no Reserved Font Name
+OFL-1.1-RFN | SIL Open Font License 1.1 with Reserved Font Name
 OGL-Canada-2.0 | Open Government Licence - Canada
 OGL-UK-1.0 | Open Government Licence v1.0
 OGL-UK-2.0 | Open Government Licence v2.0
@@ -366,6 +372,7 @@ PHP-3.0 | PHP License v3.0
 PHP-3.01 | PHP License v3.01
 Plexus | Plexus Classworlds License
 PostgreSQL | PostgreSQL License
+PSF-2.0 | Python Software Foundation License 2.0
 psfrag | psfrag License
 psutils | psutils License
 Python-2.0 | Python License 2.0
@@ -464,6 +471,8 @@ Fawkes-Runtime-exception
 Font-exception-2.0
 GCC-exception-2.0
 GCC-exception-3.1
+GPL-3.0-linking-exception
+GPL-3.0-linking-source-exception
 GPL-CC-1.0
 LLVM-exception
 LZMA-exception
