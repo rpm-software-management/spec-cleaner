@@ -11,7 +11,7 @@ setup(
     download_url='https://github.com/rpm-software-management/spec-cleaner',
     version=__version__,
     author='Tomáš Chvátal',
-    author_email='tchvatal@suse.cz',
+    author_email='tchvatal@suse.com',
     maintainer='Tomáš Chvátal',
     maintainer_email='tchvatal@suse.cz',
     license='License :: OSI Approved :: BSD License',
