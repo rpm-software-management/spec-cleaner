@@ -35,7 +35,8 @@ jobs:
       run: |
         mypy spec_cleaner
     - name: Collect the coveralls report
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: .coverage
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python3 -m pytest
+        coveralls
