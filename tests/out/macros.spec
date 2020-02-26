@@ -20,10 +20,12 @@ LDFLAGS="-pie" \
 # FIXME: you should use the %%configure macro
 CFLAGS="-g" ./configure
 
-# FIXME: you should use %qmake5 macro
+# FIXME: you should use %%qmake5 macro
 qmake-qt5 %{name}.pro -spec linux-g++
 
 # FIXME: you should use %%meson macros
 meson
+
+# we are doing stuff with cmake and should not add fixme above this comment
 
 %changelog

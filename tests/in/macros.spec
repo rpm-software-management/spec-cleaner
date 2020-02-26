@@ -22,3 +22,5 @@ CFLAGS="-g" ./configure
 qmake-qt5 %{name}.pro -spec linux-g++
 
 meson
+
+# we are doing stuff with cmake and should not add fixme above this comment
