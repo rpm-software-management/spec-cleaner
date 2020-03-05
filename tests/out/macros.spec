@@ -2,7 +2,7 @@
 %define useful_macro() ( echo 'Useful macro has been used with arg %{1}' )
 
 %build
-# FIXME: you should use %%cmake macros
+# FIXME: you should use the %%cmake macros
 cmake . \
 	-DIHATECMAKE=OFF
 # FIXME: you should use the %%configure macro
@@ -20,10 +20,10 @@ LDFLAGS="-pie" \
 # FIXME: you should use the %%configure macro
 CFLAGS="-g" ./configure
 
-# FIXME: you should use %%qmake5 macro
+# FIXME: you should use the %%qmake5 macro
 qmake-qt5 %{name}.pro -spec linux-g++
 
-# FIXME: you should use %%meson macros
+# FIXME: you should use the %%meson macros
 meson
 
 # we are doing stuff with cmake and should not add fixme above this comment

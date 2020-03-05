@@ -8,7 +8,7 @@ export CFLAGS="%{optflags}"
 export CXXFLAGS="%{optflags}"
 mkdir -p build
 cd build
-# FIXME: you should use %%cmake macros
+# FIXME: you should use the %%cmake macros
 cmake \
 %ifarch ppc ppc64
     -DNOTHREADS=ON \

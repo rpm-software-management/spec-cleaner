@@ -35,11 +35,11 @@ class RpmBuild(RpmCheck):
         if self.reg.re_configure.match(line):
             msg = '# FIXME: you should use the %%configure macro'
         elif self.reg.re_cmake.match(line):
-            msg = '# FIXME: you should use %%cmake macros'
+            msg = '# FIXME: you should use the %%cmake macros'
         elif self.reg.re_meson.match(line):
-            msg = '# FIXME: you should use %%meson macros'
+            msg = '# FIXME: you should use the %%meson macros'
         elif self.reg.re_qmake5.match(line):
-            msg = '# FIXME: you should use %%qmake5 macro'
+            msg = '# FIXME: you should use the %%qmake5 macro'
         else:
             return
 
