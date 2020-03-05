@@ -89,6 +89,7 @@ meson_[^\s]*
 ninja_[^\s]*
 mime_database_post[^\s]*
 _mingw32_configure
+mysql_testserver[^\s]*
 nagios_command_user_group_add
 nagios_user_group_add
 nodejs_install
