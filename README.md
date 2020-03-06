@@ -5,54 +5,85 @@
 [![Coverage Status](https://coveralls.io/repos/github/rpm-software-management/spec-cleaner/badge.svg?branch=master)](https://coveralls.io/github/rpm-software-management/spec-cleaner?branch=master)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/rpm-software-management/spec-cleaner.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rpm-software-management/spec-cleaner/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/rpm-software-management/spec-cleaner.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rpm-software-management/spec-cleaner/context:python)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
-spec-cleaner is a tool that cleans the given RPM spec file according to the style guide and returns the result. It's planned to be a replacement for `osc service localrun format_spec_file` and it is intended to provide the same or better features in order to be able to unify all the spec files in [OBS](https://build.opensuse.org/).
+spec-cleaner is a tool that cleans the given RPM spec file according to the style guide and returns the result.
 
-# Packages
-spec-cleaner is provided as an RPM package for openSUSE Leap ([15.0](https://build.opensuse.org/package/show/openSUSE:Leap:15.0:Update/spec-cleaner) and [15.1](https://build.opensuse.org/package/show/openSUSE:Leap:15.1:Update/spec-cleaner)) and [openSUSE Tumbleweed](https://build.opensuse.org/package/show/openSUSE:Factory/spec-cleaner). When the new spec-cleaner is released then the version updates are done for all maintained openSUSE codestreams. That means that there is always the latest version available as a package in OBS.
+It's used for [openSUSE](https://www.opensuse.org), where it's planned to be a replacement for `osc service localrun format_spec_file` and it is intended to provide the same or better features in order to be able to unify all the spec files in [OBS](https://build.opensuse.org/).
 
-The latest version is also available on [PyPI](https://pypi.org/project/spec_cleaner/). You can install it via `pip install spec-cleaner`.
+# Table of contents
+* [Installation and usage](#installation-and-usage)
+* [Tests](#tests)
+* [Contributing](#contributing)
+* [Versioning and releasing](#versioning-and-releasing)
+* [Authors](#authors)
+
+## Installation and usage
+
+### Installation
+The latest version is available on [PyPI](https://pypi.org/project/spec_cleaner/). It can be installed by running `pip install spec_cleaner`.
+
+spec-cleaner is also provided as an RPM package for openSUSE Leap ([15.0](https://build.opensuse.org/package/show/openSUSE:Leap:15.0:Update/spec-cleaner) and [15.1](https://build.opensuse.org/package/show/openSUSE:Leap:15.1:Update/spec-cleaner)) and [openSUSE Tumbleweed](https://build.opensuse.org/package/show/openSUSE:Factory/spec-cleaner). When the new version of spec-cleaner is released then the version updates are performed for all maintained openSUSE codestreams. That means that there is always the latest version available in openSUSE:Leap.
+
+### Usage
+Simply run `spec-cleaner -i <specfile>` to clean your specfile up.
 
 
-# Tests
+## Tests
 
-## Running the tests
-spec-cleaner provides quite an extensive testsuite. You can run these tests locally either directly via `pytest` or in a clean environment via`tox` where besides pytest also flake8 or mypy is called.
+### Running the tests
+spec-cleaner provides quite an extensive testsuite. You can run these tests locally either directly via `pytest` or in a clean environment via`tox` where besides pytest also `flake8` or `mypy` is called.
 
-### pytest
-Just install `python3-pytest`, `python3-pytest-cov` and `python3-pytest-sugar` (for a nice progress bar) and then run all test via:
+#### pytest
+Just install `python3-pytest`, `python3-pytest-cov` and `python3-pytest-sugar` (for a nice progress bar) and then run all tests via:
 
     pytest
 
-### tox
+#### tox
 Install `tox` and run
 
     tox
-for running tests for the test environments stated in `tox.ini` configuration file. Or you can run the tests for a specified environment (e.g. Python 3.7) via calling
+for running tests for the test environments stated in `tox.ini` configuration file. Or you can run the tests for a specified environment (e.g. Python 3.7) by calling
 
 	tox -epy37
 
 
-## Adding new tests
-When a new feature is added to spec-cleaner then a test for this piece of code must be added. See
-
-[how to write tests for spec-cleaner](TESTSUITE.md).
-
-## mypy
-
-Recently, optional static type checker support was implemented for the most important parts of the code. It runs automatically (using the recent mypy version) when you run `tox`. If you want to run it on your own, just install `python3-mypy` and run
-
-    mypy spec_cleaner
-
 ## Contributing
-You are more than welcome to contribute to this project. If your are not sure about your changes, feel free to create an issue where you can discuss it prior to the implementation.
+You are more than welcome to contribute to this project. If you are not sure about your changes, feel free to create an issue where you can discuss it before the implementation.
 
-When changing anything in the code, make sure that you don't forget to
-  * add proper comments and docstrings
-  * run and pass all tests, `flake8` and `mypy` (just run `tox`)
-  * add  [tests](TESTSUITE.md) (mainly if you implement a new feature)
-  * add `mypy` support for the new code
+### Contribution Guidelines
+
+When changing anything in the code, make sure that you don't forget to:
+
+  * Follow [pep8](https://www.python.org/dev/peps/pep-0008/).
+  * Install [pre-commit](https://pre-commit.com/) framework and run `pre-commit install` to install `pre-commit` into your git hooks.
+  * Add proper comments and docstrings (follow [pep257](https://www.python.org/dev/peps/pep-0257/) and [Google Python Style Guide for docstrings and comments](http://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings))
+  * Add [tests](TESTSUITE.md) (mainly if you implement a new feature).
+  * Add `mypy` support for the new code.
+  * Run and pass all tests, `flake8` and `mypy` checks (just run `tox` for all these checks).
+
+See below for more details.
+
+### pre-commit
+
+spec-cleaner project adopted `pre-commit` framework for managing and maintaining pre-commit hooks. After you clone the spec-cleaner repository, please install [pre-commit](https://pre-commit.com/) framework (`pip install pre-commit`) and run `pre-commit install` to install `pre-commit` into your git hooks. Then `pre-commit` will run automatically on `git commit` and it will check your contribution with `black`, `flake8`, `flake8-docstrings` and `mypy`.
+
+Please note that similar checks run in CI when you submit a PR and it won't pass code review without passing these checks.
+
+### mypy
+
+Optional static type checker support was implemented for the most important parts of the code. It runs automatically (using the recent mypy version) when you run `tox`. If you want to run it on your own, just install `python3-mypy` and run
+
+     mypy spec_cleaner
+
+### Black
+
+The code of spec-cleaner is formated with [Black](https://github.com/psf/black). We use default options, except for `--skip-string-normalization` option. Black runs automatically in the `pre-commit` hook.
+
+### Adding new tests
+When a new feature is added to spec-cleaner then a test for this piece of code must be added. See [how to write tests for spec-cleaner](TESTSUITE.md).
 
 
 ## Versioning and releasing
@@ -60,12 +91,10 @@ For the versions available, see the [tags on this repository](https://github.com
 
 If you have proper permissions you can find handy [how to do a new release](RELEASE.md).
 
-
 ## Authors
 
 * **Tomas Chvatal** [scarabeusiv](https://github.com/scarabeusiv)  - *Initial work*
-
-See also the list of [contributors](AUTHORS) who participated in this project.
+* See also the list of [contributors](AUTHORS) who participated in this project
 
 
 # [SPDX Licenses](http://spdx.org/licenses)
