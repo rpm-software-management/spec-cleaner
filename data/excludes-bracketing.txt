@@ -155,6 +155,7 @@ setup
 stop_on_removal
 suse_kernel_module_package
 suse_update_desktop_file
+systemd_ordering
 systemd_preun
 systemd_requires
 sysusers_create
