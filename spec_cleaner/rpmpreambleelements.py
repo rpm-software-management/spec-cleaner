@@ -8,6 +8,7 @@ from .rpmrequirestoken import RpmRequiresToken
 class RpmPreambleElements(object):
     """
     Class containing structure used in rpmpreamble.
+
     List of all the elements possible to be provided in dict and list forms.
     """
 
@@ -155,17 +156,17 @@ class RpmPreambleElements(object):
         return key
 
     def _insert_value(self, category, value, key=None):
-        """
-        Add value to specified keystore
-        """
+        """Add value to specified keystore."""
         key = self.compile_category_prefix(category, key)
         line = RpmRequiresToken(value, None, None, key)
         self.items[category].append(line)
 
     def _add_pkgconfig_buildrequires(self, nested):
         """
-        Check the content of buildrequires and add pkgconfig as an item
-        in case there are any pkgconfig() style dependencies present
+        Check the content of buildrequires and add pkgconfig if needed.
+
+        It adds pkgconfig as an item in case there are any pkgconfig() style
+        dependencies present.
 
         If we are in the top level object for preamble we append the BR,
         otherwise we do just verify if there are nay dependencies
@@ -185,8 +186,9 @@ class RpmPreambleElements(object):
     @staticmethod
     def _verify_prereq_message(elements):
         """
-        Verify if the prereq is present in the Requires(*) and add the fixme
-        comment if needed
+        Verify if prereq is present in Requires(*).
+
+        Add "fixme" comment if needed.
         """
         message = '# FIXME: use proper Requires(pre/post/preun/...)'
 
@@ -218,9 +220,7 @@ class RpmPreambleElements(object):
 
     @staticmethod
     def _remove_duplicates(elements):
-        """
-        Remove duplicate requires/buildrequires/etc
-        """
+        """Remove duplicate requires/buildrequires/etc."""
         results = []
         for element in elements:
             match = False
@@ -271,8 +271,10 @@ class RpmPreambleElements(object):
 
     def _run_global_list_operations(self, phase, elements):
         """
+        Run all the needed checks on the finalized sorted list.
+
         Run all the checks that need to be run on the finalized sorted list
-        rather than on invidiual value
+        rather than on invidiual value.
         """
         # check if we need to add comment for the prereq
         if not self.minimal and phase == 'prereq':
@@ -282,8 +284,10 @@ class RpmPreambleElements(object):
 
     def compile_category_prefix(self, category, key=None):
         """
-        Simply compile the category key and provide enough whitespace for the
-        values to be alligned
+        Provide enough whitespace so the values are aligned.
+
+        Simply compile the category key and provide enough whitespace for the values
+        to be aligned.
         """
         keylen = len('BuildRequires:  ')
 
@@ -308,9 +312,7 @@ class RpmPreambleElements(object):
         return key
 
     def flatten_output(self, needs_license=False, nested=False):
-        """
-        Do the finalized output for the itemlist.
-        """
+        """Do the finalized output for the itemlist."""
         lines = []
         elements = []
 

@@ -106,10 +106,11 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
 
 def main() -> int:
     """
-    Main function that calls argument parsing ensures their sanity
-    and then creates RpmSpecCleaner object that works with passed spec file.
-    """
+    Run main function.
 
+    It calls argument parsing ensures their sanity and then creates
+    RpmSpecCleaner object that works with passed spec file.
+    """
     try:
         options = process_args(sys.argv[1:])
     except RpmWrongArgs as exception:

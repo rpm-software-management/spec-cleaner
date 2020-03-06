@@ -4,7 +4,6 @@ from .rpmsection import Section
 
 
 class RpmInstall(Section):
-
     """
     A class providing methods for %install section cleaning.
 

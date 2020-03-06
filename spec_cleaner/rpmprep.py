@@ -4,7 +4,6 @@ from .rpmsection import Section
 
 
 class RpmPrep(Section):
-
     """
     A class providing methods for %prep section cleaning.
 

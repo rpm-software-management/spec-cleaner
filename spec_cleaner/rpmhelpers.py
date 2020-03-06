@@ -187,9 +187,7 @@ def sort_uniq(seq):
 
 
 def add_group(group):
-    """
-    Flatten the lines of the group from sublits to one simple list
-    """
+    """Flatten the lines of the group from sublits to one simple list."""
     if isinstance(group, str):
         return [group]
     elif isinstance(group, RpmRequiresToken):
@@ -217,7 +215,6 @@ def find_pkgconfig_statement(elements):
     Returns:
         True if pkgconfig() statement was found (and pkgconfig declaration wasn't), False otherwise.
     """
-
     pkgconfig_found = find_pkgconfig_declaration(elements)
     for i in elements:
         if isinstance(i, RpmRequiresToken):
