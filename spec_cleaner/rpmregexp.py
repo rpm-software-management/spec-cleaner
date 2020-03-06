@@ -32,11 +32,19 @@ class Regexp(object):
 
     # rpmpreamble
     # WARNING: keep in sync with rpmcleaner Section change detection
-    re_if = re.compile(r'^\s*(?:%{?if\s|%{?ifarch\s|%{?ifnarch\s|%{?if\S*}?(\s.*|)$)', re.IGNORECASE)
-    re_codeblock = re.compile(r'^\s*((### COMMON-([a-zA-Z0-9]+)-BEGIN ###|# MANUAL BEGIN|# SECTION)(\s.*|)|# MANUAL)$', re.IGNORECASE)
+    re_if = re.compile(
+        r'^\s*(?:%{?if\s|%{?ifarch\s|%{?ifnarch\s|%{?if\S*}?(\s.*|)$)', re.IGNORECASE
+    )
+    re_codeblock = re.compile(
+        r'^\s*((### COMMON-([a-zA-Z0-9]+)-BEGIN ###|# MANUAL BEGIN|# SECTION)(\s.*|)|# MANUAL)$',
+        re.IGNORECASE,
+    )
     re_else_elif = re.compile(r'^\s*%(else|elif)(\s.*|)$', re.IGNORECASE)
     re_endif = re.compile(r'^\s*%endif(\s.*|)$', re.IGNORECASE)
-    re_endcodeblock = re.compile(r'^\s*(### COMMON-([a-zA-Z0-9]+)-END ###|# MANUAL END|# /MANUAL|# (END|/)SECTION)(\s.*|)$', re.IGNORECASE)
+    re_endcodeblock = re.compile(
+        r'^\s*(### COMMON-([a-zA-Z0-9]+)-END ###|# MANUAL END|# /MANUAL|# (END|/)SECTION)(\s.*|)$',
+        re.IGNORECASE,
+    )
     re_name = re.compile(r'^Name:\s*(\S*)', re.IGNORECASE)
     re_version = re.compile(r'^Version:\s*(.*)', re.IGNORECASE)
     re_release = re.compile(r'^Release:\s*(\S*)', re.IGNORECASE)
@@ -49,7 +57,9 @@ class Regexp(object):
     re_source = re.compile(r'^Source(\d*):\s*(.*)', re.IGNORECASE)
     re_nosource = re.compile(r'^NoSource:\s*(.*)', re.IGNORECASE)
     re_patch = re.compile(r'^((?:#[#\s]*)?)Patch(\d*):\s*(\S*)', re.IGNORECASE)
-    re_buildrequires = re.compile(r'^(BuildRequires|BuildPreReq):\s*(.*)', re.IGNORECASE)
+    re_buildrequires = re.compile(
+        r'^(BuildRequires|BuildPreReq):\s*(.*)', re.IGNORECASE
+    )
     re_buildconflicts = re.compile(r'^BuildConflicts:\s*(.*)', re.IGNORECASE)
     re_buildignores = re.compile(r'^#!BuildIgnore:\s*(.*)', re.IGNORECASE)
     re_prereq = re.compile(r'^PreReq:\s*(.*)', re.IGNORECASE)
@@ -64,7 +74,9 @@ class Regexp(object):
     re_obsoletes = re.compile(r'^Obsoletes:\s*(.*)', re.IGNORECASE)
     re_buildroot = re.compile(r'^\s*BuildRoot:', re.IGNORECASE)
     re_buildarch = re.compile(r'^\s*BuildArch(itectures)?:\s*(.*)', re.IGNORECASE)
-    re_exclusivearch = re.compile(r'^\s*ExclusiveArch(itectures)?:\s*(.*)', re.IGNORECASE)
+    re_exclusivearch = re.compile(
+        r'^\s*ExclusiveArch(itectures)?:\s*(.*)', re.IGNORECASE
+    )
     re_excludearch = re.compile(r'^\s*ExcludeArch(itectures)?:\s*(.*)', re.IGNORECASE)
     re_epoch = re.compile(r'^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_icon = re.compile(r'^\s*Icon:\s*(.*)', re.IGNORECASE)
@@ -74,7 +86,9 @@ class Regexp(object):
     re_global = re.compile(r'^\s*%global\s*(.*)', re.IGNORECASE)
     re_bcond_with = re.compile(r'^\s*%bcond_with(out)?\s*(.*)', re.IGNORECASE)
     re_autoreqprov = re.compile(r'^\s*AutoReqProv:.*$', re.IGNORECASE)
-    re_debugpkg = re.compile(r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE)
+    re_debugpkg = re.compile(
+        r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE
+    )
     re_py_requires = re.compile(r'^%{?\??py_requires}?\s*$', re.IGNORECASE)
     re_mingw = re.compile(r'^\s*%{?_mingw.*$', re.IGNORECASE)
     re_patterndefine = re.compile(r'^\s*%{?pattern_\S+}?\s*$', re.IGNORECASE)
@@ -84,7 +98,9 @@ class Regexp(object):
     re_preamble_prefix = re.compile(r'^Prefix:\s*(.*)', re.IGNORECASE)
     # grab all macros with rpm call that query for version, this still might
     # be bit too greedy but it is good enough now
-    re_rpm_command = re.compile(r'%\(\s*(rpm|echo\s+`rpm).*--queryformat\s+\'%{?VERSION}?\'.*\)')
+    re_rpm_command = re.compile(
+        r'%\(\s*(rpm|echo\s+`rpm).*--queryformat\s+\'%{?VERSION}?\'.*\)'
+    )
     re_requires_eq = re.compile(r'^\s*(%{\?requires_eq:\s*)?%requires_eq\s*(.*)')
     re_requires_ge = re.compile(r'^\s*(%{\?requires_ge:\s*)?%requires_ge\s*(.*)')
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
@@ -100,7 +116,9 @@ class Regexp(object):
     re_authors = re.compile(r'^\s*Author(s)?:\s*')
 
     # rpmbuild
-    re_jobs = re.compile(r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?')
+    re_jobs = re.compile(
+        r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?'
+    )
     re_make = re.compile(r'(^\s*)make(\s.*|)$')
     re_make_build = re.compile(r'(^\s*)%make_build(\s.*|)$')
     re_optflags_quotes = re.compile(r'=\s*\${?RPM_OPT_FLAGS}?\s*$')
@@ -110,14 +128,22 @@ class Regexp(object):
     re_cmake = re.compile(r'(^|(.*\s)?)cmake(\s.*|)$')
     re_qmake5 = re.compile(r'(^|(.*\s)?)qmake-qt5(\s.*|)$')
     re_meson = re.compile(r'(^|(.*\s)?)meson(\s.*|)$')
-    re_pytest = re.compile(r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?')
-    re_pytest_arch = re.compile(r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?')
-    re_python_expand = re.compile(r'%{?(python_sitelib|python_sitearch|python_bin_suffix|python_version)}?')
+    re_pytest = re.compile(
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?'
+    )
+    re_pytest_arch = re.compile(
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?'
+    )
+    re_python_expand = re.compile(
+        r'%{?(python_sitelib|python_sitearch|python_bin_suffix|python_version)}?'
+    )
     re_python_interp_expand = re.compile(r'\s+(python)\s+')
 
     # rpmcopyright
     re_copyright_string = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
-    re_suse_copyright = re.compile(r'SUSE (LLC\.?|LINUX (Products )?GmbH, Nuernberg, Germany\.)\s*$', re.IGNORECASE)
+    re_suse_copyright = re.compile(
+        r'SUSE (LLC\.?|LINUX (Products )?GmbH, Nuernberg, Germany\.)\s*$', re.IGNORECASE
+    )
     re_rootforbuild = re.compile(r'^#\s*needsrootforbuild\s*$', re.IGNORECASE)
     re_binariesforbuild = re.compile(r'^#\s*needsbinariesforbuild\s*$', re.IGNORECASE)
     re_nodebuginfo = re.compile(r'^#\s*nodebuginfo\s*$', re.IGNORECASE)
@@ -128,9 +154,17 @@ class Regexp(object):
 
     # rpminstall
     re_clean = re.compile(r'rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?$')
-    re_install = re.compile(r'{0}*(%{{makeinstall}}|make{0}+install){0}*$'.format(r'(DESTDIR=%{buildroot}|%{\?_smp_mflags}|\s|V=1|VERBOSE=1|-j\d+)'))
-    re_rm = re.compile(r'rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.*\*\.la;?$')
-    re_find = re.compile(r'find\s+"?(%{buildroot}|\$b)("?\S?/?)*\s*.*\s+-i?name\s+["\'\\]?\*\.la($|.*[^\\]$)')
+    re_install = re.compile(
+        r'{0}*(%{{makeinstall}}|make{0}+install){0}*$'.format(
+            r'(DESTDIR=%{buildroot}|%{\?_smp_mflags}|\s|V=1|VERBOSE=1|-j\d+)'
+        )
+    )
+    re_rm = re.compile(
+        r'rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.*\*\.la;?$'
+    )
+    re_find = re.compile(
+        r'find\s+"?(%{buildroot}|\$b)("?\S?/?)*\s*.*\s+-i?name\s+["\'\\]?\*\.la($|.*[^\\]$)'
+    )
     re_find_double = re.compile(r'-i?name')
     re_rm_double = re.compile(r'(\.|{)a')
 
@@ -141,8 +175,12 @@ class Regexp(object):
     # rpmfiles
     re_man_compression = re.compile(r'(\d)(\.?\*|\.gz|%{?ext_man}?)$')
     re_info_compression = re.compile(r'\.info(\.?\*|\.gz|%{?ext_info}?)$')
-    re_defattr = re.compile(r'^\s*%defattr\s*\(\s*-\s*,\s*root\s*,\s*root\s*(,\s*-\s*)?\)\s*')
-    re_doclicense = re.compile(r'(\S+)?(LICEN(S|C)E|COPYING)(\*|\.(\*|\S+))?($|\s)', re.IGNORECASE)
+    re_defattr = re.compile(
+        r'^\s*%defattr\s*\(\s*-\s*,\s*root\s*,\s*root\s*(,\s*-\s*)?\)\s*'
+    )
+    re_doclicense = re.compile(
+        r'(\S+)?(LICEN(S|C)E|COPYING)(\*|\.(\*|\S+))?($|\s)', re.IGNORECASE
+    )
 
     # rpmscriptlets
     re_ldconfig = re.compile(r'(^|(.*\s)?)%{?run_ldconfig}?(\s.*|)$', re.IGNORECASE)

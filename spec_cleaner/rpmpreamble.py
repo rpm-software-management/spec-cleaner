@@ -141,7 +141,10 @@ class RpmPreamble(Section):
         """Remove empty conditions."""
         # check if we start with if
         if len(self.paragraph.items['conditions']) == 2 and (
-            (isinstance(self.paragraph.items['conditions'][0], list) and self.paragraph.items['conditions'][0][-1].startswith('%if'))
+            (
+                isinstance(self.paragraph.items['conditions'][0], list)
+                and self.paragraph.items['conditions'][0][-1].startswith('%if')
+            )
             or self.paragraph.items['conditions'][0].startswith('%if')
         ):
             self.paragraph.items['conditions'] = []
@@ -184,7 +187,16 @@ class RpmPreamble(Section):
                 # don't know what to do
                 return url
 
-        return parse.urlunparse(('https', 'files.pythonhosted.org', '/packages/source/{}/{}/{}'.format(modname[0], modname, filename), '', '', ''))
+        return parse.urlunparse(
+            (
+                'https',
+                'files.pythonhosted.org',
+                '/packages/source/{}/{}/{}'.format(modname[0], modname, filename),
+                '',
+                '',
+                '',
+            )
+        )
 
     def end_subparagraph(self, endif=False):
         if not self._oldstore:
@@ -192,7 +204,10 @@ class RpmPreamble(Section):
         else:
             nested = True
         lines = self.paragraph.flatten_output(False, nested)
-        if len(self.paragraph.items['define']) > 0 or len(self.paragraph.items['bconds']) > 0:
+        if (
+            len(self.paragraph.items['define']) > 0
+            or len(self.paragraph.items['bconds']) > 0
+        ):
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph.items['conditions'] += lines
@@ -207,7 +222,9 @@ class RpmPreamble(Section):
                 # we need to put it bellow bcond definitions as otherwise
                 # the switches do not have any effect
                 if self._condition_bcond:
-                    self.paragraph.items['bcond_conditions'] += self.paragraph.items['conditions']
+                    self.paragraph.items['bcond_conditions'] += self.paragraph.items[
+                        'conditions'
+                    ]
                 elif len(self.paragraph.items['define']) == 0:
                     self.paragraph.items['bconds'] += self.paragraph.items['conditions']
                 else:
@@ -218,9 +235,13 @@ class RpmPreamble(Section):
                     self._condition_define = False
             else:
                 if self._pattern_condition:
-                    self.paragraph.items['patterncodeblock'] += self.paragraph.items['conditions']
+                    self.paragraph.items['patterncodeblock'] += self.paragraph.items[
+                        'conditions'
+                    ]
                 else:
-                    self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
+                    self.paragraph.items['build_conditions'] += self.paragraph.items[
+                        'conditions'
+                    ]
 
             # bcond must be reseted when on top and can be set even outside of the
             # define scope. So reset it here always
@@ -250,8 +271,14 @@ class RpmPreamble(Section):
         # we do fix the package list only if there is no rpm call there on line
         # otherwise print there warning about nicer content and skip
         if self.reg.re_rpm_command.search(value):
-            if category == 'requires' and not self.previous_line.startswith('#') and not self.minimal:
-                self.paragraph.current_group.append('# FIXME: Use %requires_eq macro instead')
+            if (
+                category == 'requires'
+                and not self.previous_line.startswith('#')
+                and not self.minimal
+            ):
+                self.paragraph.current_group.append(
+                    '# FIXME: Use %requires_eq macro instead'
+                )
             return [value]
         tokens = DependencyParser(value).flat_out()
         # loop over all and do formatting as we can get more deps for one
@@ -269,15 +296,23 @@ class RpmPreamble(Section):
                 # the strings by some optimistic value of brackety dep
                 # priority is based on the first come first serve
                 if self.pkgconfig:
-                    token = self._pkgname_to_brackety(token, 'pkgconfig', self.pkgconfig_conversions)
+                    token = self._pkgname_to_brackety(
+                        token, 'pkgconfig', self.pkgconfig_conversions
+                    )
                 # checking if it is not list is simple avoidance of running
                 # over already converted values
                 if not isinstance(token, list) and self.perl:
-                    token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
+                    token = self._pkgname_to_brackety(
+                        token, 'perl', self.perl_conversions
+                    )
                 if not isinstance(token, list) and self.tex:
-                    token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
+                    token = self._pkgname_to_brackety(
+                        token, 'tex', self.tex_conversions
+                    )
                 if not isinstance(token, list) and self.cmake:
-                    token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
+                    token = self._pkgname_to_brackety(
+                        token, 'cmake', self.cmake_conversions
+                    )
             if isinstance(token, list):
                 expanded += token
             else:
@@ -372,7 +407,9 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_comment.match(line) and not self.reg.re_buildignores.match(line):
+        elif self.reg.re_comment.match(line) and not self.reg.re_buildignores.match(
+            line
+        ):
             if line or self.previous_line:
                 self.paragraph.current_group.append(line)
                 self.previous_line = line
@@ -421,7 +458,11 @@ class RpmPreamble(Section):
                 zero = '0'
             else:
                 zero = ''
-            self._add_line_value_to('patch', match.group(3), key='%sPatch%s%s' % (match.group(1), zero, match.group(2)))
+            self._add_line_value_to(
+                'patch',
+                match.group(3),
+                key='%sPatch%s%s' % (match.group(1), zero, match.group(2)),
+            )
             return
 
         elif self.reg.re_bcond_with.match(line):
@@ -441,12 +482,16 @@ class RpmPreamble(Section):
             self._add_line_value_to('patternprovides', match.group(1), key='Provides')
             return
 
-        elif self.reg.re_provides.match(line) and self.reg.re_patternobsolete.search(line):
+        elif self.reg.re_provides.match(line) and self.reg.re_patternobsolete.search(
+            line
+        ):
             match = self.reg.re_provides.match(line)
             self._add_line_value_to('patternobsoletes', match.group(1), key='Provides')
             return
 
-        elif self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(line):
+        elif self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(
+            line
+        ):
             match = self.reg.re_obsoletes.match(line)
             self._add_line_value_to('patternobsoletes', match.group(1), key='Obsoletes')
             return
@@ -473,7 +518,11 @@ class RpmPreamble(Section):
             self._add_line_value_to('requires_ge', value)
             return
 
-        elif self.reg.re_define.match(line) or self.reg.re_global.match(line) or self.reg.re_onelinecond.match(line):
+        elif (
+            self.reg.re_define.match(line)
+            or self.reg.re_global.match(line)
+            or self.reg.re_onelinecond.match(line)
+        ):
             if line.endswith('\\'):
                 self.multiline = True
             # if we are kernel and not multiline we need to be at bottom, so
@@ -484,7 +533,9 @@ class RpmPreamble(Section):
                 self._add_line_to('define', line)
 
             # catch "modname" for use in pypi url rewriting
-            if (line.startswith('%define') or line.startswith('%global')) and line.find('modname') >= 0:
+            if (line.startswith('%define') or line.startswith('%global')) and line.find(
+                'modname'
+            ) >= 0:
                 define, name, value = line.split(None, 2)
                 self.modname = value
 
@@ -513,17 +564,23 @@ class RpmPreamble(Section):
                 value = 'shadow'
             else:
                 value = match.group(2)
-            self._add_line_value_to('requires_phase', value, key='Requires{0}'.format(match.group(1)))
+            self._add_line_value_to(
+                'requires_phase', value, key='Requires{0}'.format(match.group(1))
+            )
             return
 
         elif self.reg.re_provides.match(line):
             match = self.reg.re_provides.match(line)
-            self._add_line_value_to('provides_obsoletes', match.group(1), key='Provides')
+            self._add_line_value_to(
+                'provides_obsoletes', match.group(1), key='Provides'
+            )
             return
 
         elif self.reg.re_obsoletes.match(line):
             match = self.reg.re_obsoletes.match(line)
-            self._add_line_value_to('provides_obsoletes', match.group(1), key='Obsoletes')
+            self._add_line_value_to(
+                'provides_obsoletes', match.group(1), key='Obsoletes'
+            )
             return
 
         elif self.reg.re_license.match(line):
@@ -551,7 +608,9 @@ class RpmPreamble(Section):
             language = match.group(1)
             # and what value is there
             content = match.group(2)
-            self._add_line_value_to('summary_localized', content, key='Summary{0}'.format(language))
+            self._add_line_value_to(
+                'summary_localized', content, key='Summary{0}'.format(language)
+            )
             return
 
         elif self.reg.re_group.match(line):
@@ -563,11 +622,15 @@ class RpmPreamble(Section):
             match = self.reg.re_group.match(line)
             value = match.group(1)
             if not self.minimal and self.allowed_groups:
-                if self.previous_line and not self.previous_line.startswith(
-                        '# FIXME') and value not in self.allowed_groups:
+                if (
+                    self.previous_line
+                    and not self.previous_line.startswith('# FIXME')
+                    and value not in self.allowed_groups
+                ):
                     self.paragraph.current_group.append(
                         '# FIXME: use correct group or remove it,'
-                        ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"')
+                        ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"'
+                    )
             self._add_line_value_to('group', value)
             return
 

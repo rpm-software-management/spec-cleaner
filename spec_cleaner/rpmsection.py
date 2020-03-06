@@ -102,7 +102,9 @@ class Section(object):
         self.lines.append(line)
         self.previous_line = line
 
-    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = None) -> None:
+    def output(
+        self, fout: IO[str], newline: bool = True, new_class_name: str = None
+    ) -> None:
         """
         Manage printing of the section.
 
@@ -125,11 +127,16 @@ class Section(object):
                 and not self.lines[-1].endswith('\\')
             ):
                 self.lines.append('')
-            if new_class_name != 'RpmScriptlets' and (self.lines[-1].startswith('%pre') or self.lines[-1].startswith('%post')):
+            if new_class_name != 'RpmScriptlets' and (
+                self.lines[-1].startswith('%pre') or self.lines[-1].startswith('%post')
+            ):
                 self.lines.append('')
             # remove the newlines around ifs if they are not wanted
             if len(self.lines) >= 2:
-                if self.lines[-1] == '' and (self.lines[-2].startswith('%if') or self.lines[-2].startswith('%else')):
+                if self.lines[-1] == '' and (
+                    self.lines[-2].startswith('%if')
+                    or self.lines[-2].startswith('%else')
+                ):
                     self.lines.pop()
 
         for line in self.lines:
@@ -353,8 +360,20 @@ class Section(object):
         Returns:
             The line with formatted version conditions.
         """
-        for i in ['centos', 'debian', 'fedora', 'mandriva', 'meego', 'rhel', 'sles', 'suse', 'ubuntu']:
-            line = line.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace('00%{', '0%{')
+        for i in [
+            'centos',
+            'debian',
+            'fedora',
+            'mandriva',
+            'meego',
+            'rhel',
+            'sles',
+            'suse',
+            'ubuntu',
+        ]:
+            line = line.replace(
+                '%{' + i + '_version}', '0%{?' + i + '_version}'
+            ).replace('00%{', '0%{')
         return line
 
     def replace_preamble_macros(self, line: str) -> str:

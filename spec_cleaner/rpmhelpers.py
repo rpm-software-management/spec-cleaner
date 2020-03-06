@@ -105,7 +105,10 @@ def read_licenses_changes() -> Dict[str, str]:
     """
     with open_datafile(LICENSES_CHANGES) as f:
         next(f)  # strip newline
-        return {old: correct for correct, old in (line.rstrip('\n').split('\t') for line in f)}
+        return {
+            old: correct
+            for correct, old in (line.rstrip('\n').split('\t') for line in f)
+        }
 
 
 def read_group_changes():
@@ -136,7 +139,14 @@ def fix_license(value, conversions):
         licenses[index] = my_license
 
     # create back new string with replaced licenses
-    s = ' '.join(licenses).replace('( ', '(').replace(' )', ')').replace(' and ', ' AND ').replace(' or ', ' OR ').replace(' with ', ' WITH ')
+    s = (
+        ' '.join(licenses)
+        .replace('( ', '(')
+        .replace(' )', ')')
+        .replace(' and ', ' AND ')
+        .replace(' or ', ' OR ')
+        .replace(' with ', ' WITH ')
+    )
     return s
 
 

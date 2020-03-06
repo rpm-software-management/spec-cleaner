@@ -19,8 +19,13 @@ class RpmRequiresToken(object):
 
     comments: Optional[str] = None
 
-    def __init__(self, name: str, operator: Optional[str] = None, version: Optional[str] = None,
-                 prefix: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        operator: Optional[str] = None,
+        version: Optional[str] = None,
+        prefix: Optional[str] = None,
+    ) -> None:
         self.prefix = prefix
         self.name = name
         self.operator = operator
