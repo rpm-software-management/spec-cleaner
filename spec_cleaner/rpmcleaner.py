@@ -105,7 +105,10 @@ class RpmSpecCleaner(object):
         self.options['reg'] = Regexp(self.options['unbrace_keywords'])
 
         # If gvim is used for the diff then run it in foreground mode
-        if self.options['diff_prog'].startswith('gvim') and ' -f' not in self.options['diff_prog']:
+        if (
+            self.options['diff_prog'].startswith('gvim')
+            and ' -f' not in self.options['diff_prog']
+        ):
             self.options['diff_prog'] += ' -f'
 
         self.reg = self.options['reg']
@@ -148,7 +151,11 @@ class RpmSpecCleaner(object):
         elif self.options['inline']:
             self.fout = open(self.options['specfile'], 'w')
         elif self.options['diff']:
-            self.fout = tempfile.NamedTemporaryFile(mode='w+', prefix=os.path.split(self.options['specfile'])[-1] + '.', suffix='.spec')
+            self.fout = tempfile.NamedTemporaryFile(
+                mode='w+',
+                prefix=os.path.split(self.options['specfile'])[-1] + '.',
+                suffix='.spec',
+            )
         else:
             self.fout = sys.stdout
 
@@ -214,13 +221,15 @@ class RpmSpecCleaner(object):
         """
         # This is seriously ugly but can't think of cleaner way FIXME
         if not isinstance(self.current_section, (RpmPreamble, RpmPackage)):
-            if any(re.match(line) for re in [self.reg.re_bcond_with, self.reg.re_debugpkg]):
+            if any(
+                re.match(line) for re in [self.reg.re_bcond_with, self.reg.re_debugpkg]
+            ):
                 return True
 
             # We can have locally defined variables in phases
-            if not isinstance(self.current_section, (RpmInstall, RpmCheck, RpmBuild, RpmPrep)) and (
-                self.reg.re_define.match(line) or self.reg.re_global.match(line)
-            ):
+            if not isinstance(
+                self.current_section, (RpmInstall, RpmCheck, RpmBuild, RpmPrep)
+            ) and (self.reg.re_define.match(line) or self.reg.re_global.match(line)):
                 return True
         return False
 
@@ -236,7 +245,14 @@ class RpmSpecCleaner(object):
         Returns:
              True if a condition change was found, False otherwise.
         """
-        if any(re.match(line) for re in [self.reg.re_endif, self.reg.re_else_elif, self.reg.re_endcodeblock]):
+        if any(
+            re.match(line)
+            for re in [
+                self.reg.re_endif,
+                self.reg.re_else_elif,
+                self.reg.re_endcodeblock,
+            ]
+        ):
             return True
         return False
 
@@ -265,9 +281,13 @@ class RpmSpecCleaner(object):
         # we end up the condition section in preamble (if applicable) and
         # proceed to output
         if self._detect_condition_change(line) or (
-            type(self.current_section) is Section and (self.reg.re_if.match(line) or self.reg.re_codeblock.match(line))
+            type(self.current_section) is Section
+            and (self.reg.re_if.match(line) or self.reg.re_codeblock.match(line))
         ):
-            if not hasattr(self.current_section, 'condition') or (hasattr(self.current_section, 'condition') and not self.current_section.condition):
+            if not hasattr(self.current_section, 'condition') or (
+                hasattr(self.current_section, 'condition')
+                and not self.current_section.condition
+            ):
                 # If we have to break out we go ahead with small class
                 # which just print the one evil line
                 return Section
@@ -277,7 +297,10 @@ class RpmSpecCleaner(object):
             if regexp.match(line):
                 # check if we are in if conditional and act accordingly if we
                 # change sections
-                if hasattr(self.current_section, 'condition') and self.current_section.condition:
+                if (
+                    hasattr(self.current_section, 'condition')
+                    and self.current_section.condition
+                ):
                     self.current_section.condition = False
                     if hasattr(self.current_section, 'end_subparagraph'):
                         # mypy: we need to ignore type check here because mypy cannot detect that we are checking the
@@ -309,7 +332,9 @@ class RpmSpecCleaner(object):
         # we are staying in the section
         return None
 
-    def _check_for_newline(self, detected_class: Optional[Type[Section]], line: str) -> bool:
+    def _check_for_newline(
+        self, detected_class: Optional[Type[Section]], line: str
+    ) -> bool:
         """
         Check if we want newline or not after the end of section detected.
 
@@ -340,7 +365,11 @@ class RpmSpecCleaner(object):
         """
         # If we are skipping the specfile we should do nothing
         if self.skip_run:
-            sys.stderr.write(".spec file {0} is not being processed due to definiton of 'nospeccleaner'\n".format(self.options['specfile']))
+            sys.stderr.write(
+                ".spec file {0} is not being processed due to definiton of 'nospeccleaner'\n".format(
+                    self.options['specfile']
+                )
+            )
             for line in self.fin:
                 self.fout.write(line)
             self.fout.flush()
@@ -362,7 +391,11 @@ class RpmSpecCleaner(object):
             # USE: 'spec-cleaner file > /dev/null' to see the stderr output
             # sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
-                self.current_section.output(self.fout, self._check_for_newline(new_class, line), new_class.__name__)
+                self.current_section.output(
+                    self.fout,
+                    self._check_for_newline(new_class, line),
+                    new_class.__name__,
+                )
                 # start new class
                 self.current_section = new_class(self.options)
                 # skip empty line adding if we are switching sections
@@ -381,19 +414,29 @@ class RpmSpecCleaner(object):
         # no need to not output newline at the end even for minimal -> no condition
         self.current_section.output(self.fout)
         # add changelog at the end of the file
-        if not isinstance(self.current_section, RpmChangelog) and self._previous_nonempty_line != '%changelog':
+        if (
+            not isinstance(self.current_section, RpmChangelog)
+            and self._previous_nonempty_line != '%changelog'
+        ):
             self.fout.write('%changelog\n')
         self.fout.flush()
 
         # if the '--diff' option was used, run the diff program
         if self.options['diff']:
             cmd = shlex.split(
-                self.options['diff_prog'] + ' ' + self.options['specfile'].replace(' ', '\\ ') + ' ' + self.fout.name.replace(' ', '\\ ')
+                self.options['diff_prog']
+                + ' '
+                + self.options['specfile'].replace(' ', '\\ ')
+                + ' '
+                + self.fout.name.replace(' ', '\\ ')
             )
             try:
                 subprocess.call(cmd, shell=False)
             except OSError as error:
-                raise RpmException('Could not execute %s (%s)' % (self.options['diff_prog'].split()[0], error.strerror))
+                raise RpmException(
+                    'Could not execute %s (%s)'
+                    % (self.options['diff_prog'].split()[0], error.strerror)
+                )
 
     def __del__(self) -> None:
         """Close the input and output files."""
