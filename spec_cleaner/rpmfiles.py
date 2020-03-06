@@ -4,10 +4,8 @@ from .rpmsection import Section
 
 
 class RpmFiles(Section):
+    """A class providing methods for %files section cleaning."""
 
-    """
-    A class providing methods for %files section cleaning.
-    """
     def add(self, line: str) -> None:
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
@@ -46,8 +44,9 @@ class RpmFiles(Section):
 
     def _set_man_compression(self, line: str) -> str:
         """
-        Set proper compression suffix on man/info pages, instead of .gz/.* use
-        the proper macro variable.
+        Set proper compression suffix on man/info pages.
+
+        Instead of .gz/.* use the proper macro variable.
 
         Args:
            line: A string representing a line to process.

@@ -5,7 +5,6 @@ from .rpmsection import Section
 
 
 class RpmPackage(RpmPreamble):
-
     """
     A class providing methods for %package section cleaning.
 

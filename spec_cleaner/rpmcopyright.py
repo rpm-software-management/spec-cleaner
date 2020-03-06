@@ -7,7 +7,6 @@ from .rpmsection import Section
 
 
 class RpmCopyright(Section):
-
     """
     A class providing methods for copyright section cleaning.
 

@@ -5,7 +5,6 @@ from .rpmsection import Section
 
 
 class RpmDescription(Section):
-
     """
     A class providing methods for %description section cleaning.
 

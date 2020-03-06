@@ -14,7 +14,6 @@ from .rpmsection import Section
 
 
 class RpmPreamble(Section):
-
     """
     A class providing methods for preamble section cleaning.
 
@@ -128,9 +127,7 @@ class RpmPreamble(Section):
         self.paragraph = RpmPreambleElements(self.options)
 
     def _prune_ppc_condition(self):
-        """
-        Check if we have ppc64 obsolete and delete it
-        """
+        """Check if we have ppc64 obsolete and delete it."""
         if (
             not self.minimal
             and len(self.paragraph.items['conditions']) == 3
@@ -141,9 +138,7 @@ class RpmPreamble(Section):
             self.paragraph.items['conditions'] = []
 
     def _prune_empty_condition(self):
-        """
-        Remove empty conditions
-        """
+        """Remove empty conditions."""
         # check if we start with if
         if len(self.paragraph.items['conditions']) == 2 and (
             (isinstance(self.paragraph.items['conditions'][0], list) and self.paragraph.items['conditions'][0][-1].startswith('%if'))
@@ -155,8 +150,9 @@ class RpmPreamble(Section):
 
     def _fix_pypi_source(self, url):
         """
-        Check if the source is URL that points to PyPI and if it is, return
-        the canonical version.
+        Check if the source is URL that points to PyPI.
+
+        If it is, return the canonical version.
 
         This function is almost completely self-contained and only processes
         the URL structure itself. On PyPI, the structure is predictable.

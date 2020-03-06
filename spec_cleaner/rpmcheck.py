@@ -4,7 +4,6 @@ from .rpmsection import Section
 
 
 class RpmCheck(Section):
-
     """
     A class providing methods for %check section cleaning.
 
@@ -47,7 +46,6 @@ class RpmCheck(Section):
         Return:
             The processed line.
         """
-
         # if it is comment line then do nothing
         if line.lstrip().startswith('#'):
             return line

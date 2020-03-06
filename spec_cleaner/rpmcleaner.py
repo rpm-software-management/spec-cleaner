@@ -36,10 +36,11 @@ from .rpmsection import Section
 
 
 class RpmSpecCleaner(object):
-
     """
-    Class wrapping all section parsers responsible for ensuring
-    that all sections are checked and accounted for.
+    Class wrapping all sections parser is responsible for.
+
+    It ensures that all sections are checked and accounted for.
+
     If the section is required and not found it is created with
     blank values as fixme for the spec creator.
 
@@ -48,14 +49,20 @@ class RpmSpecCleaner(object):
         fin: An in-memory input stream with the input file data.
         fout: A file object representing output file.
         current_section: A Section object representing current section of spec file.
-        skip_run: A bool indicating whether the cleaning of the specfile should be skipped.
-        options: A dictionary holding both spec-cleaner commandline arguments and auxiliary options.
+        skip_run: A bool indicating whether the cleaning of the specfile should be
+                 skipped.
+        options: A dictionary holding both spec-cleaner commandline arguments and
+                 auxiliary options.
         reg: A Regexp object that holds all regexps that will be used in spec-cleaner.
-        section_starts: A list of tuples where the first item is regex object representing a start of the specfile
-                        section and the second is a corresponding class that should handle it.
-        _previous_line: A string holding the previous line of the currently processed specfile.
-        _previous_nonempty_line: A string holding a nonempty previous line of the currently processed specfile.
+        section_starts: A list of tuples where the first item is regex object
+                       representing a start of the specfile section and the second is
+                       a corresponding class that should handle it.
+        _previous_line: A string holding the previous line of the currently processed
+                        specfile.
+        _previous_nonempty_line: A string holding a nonempty previous line of the
+                                 currently processed specfile.
     """
+
     specfile: Optional[str] = None
     current_section: Section
     skip_run: bool = False
@@ -63,8 +70,7 @@ class RpmSpecCleaner(object):
     _previous_nonempty_line: Optional[str] = None
 
     def __init__(self, options: Dict[str, Any]) -> None:
-
-        """Initialize and load options into the RpmSpecCleaner object and runs prep methods.
+        """Initialize and load options into the RpmSpecCleaner obj and run prep methods.
 
         Args:
             options: A dictionary holding spec-cleaner command line options.
@@ -163,9 +169,10 @@ class RpmSpecCleaner(object):
 
     def _find_skip_parser(self) -> None:
         """
-        Search the specfile for the user defined '#nospeccleaner' tag (means that specfile shouldn't be cleaned).
+        Search the specfile for the user defined '#nospeccleaner' tag.
 
-        If the tag is found then skip_run member is set to True, else it's False.
+        This tag means that specfile shouldn't be cleaned. If the tag is found then
+        skip_run member is set to True, else it's False.
         """
         for line in self.fin:
             if self.reg.re_skipcleaner.match(line):
@@ -219,7 +226,9 @@ class RpmSpecCleaner(object):
 
     def _detect_condition_change(self, line: str) -> bool:
         """
-        Detect if the line contains a condition change (e.g. '%endif', '%else' or the end of the code block).
+        Detect if the line contains a condition change.
+
+        (e.g. '%endif', '%else' or the end of the code block)
 
         Args:
             line: A string representing a line to process.
@@ -323,7 +332,8 @@ class RpmSpecCleaner(object):
                 return True
 
     def run(self) -> None:
-        """ The main spec-cleaner method.
+        """
+        Run the main spec-cleaner method.
 
         Raises:
             RpmException if a diff program can't be executed.
@@ -386,10 +396,7 @@ class RpmSpecCleaner(object):
                 raise RpmException('Could not execute %s (%s)' % (self.options['diff_prog'].split()[0], error.strerror))
 
     def __del__(self) -> None:
-        """
-        Close the input and output files.
-        """
-
+        """Close the input and output files."""
         if self.fin:
             self.fin.close()
         if self.fout:

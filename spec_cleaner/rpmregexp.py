@@ -5,10 +5,10 @@ from typing import List
 
 
 class Regexp(object):
-
     """
-        Singleton containing all regular expressions compiled in one run.
-        So we can use them later everywhere without compiling them again,
+    Singleton containing all regular expressions compiled in one run.
+
+    So we can use them later everywhere without compiling them again.
     """
 
     # section macros

@@ -78,7 +78,6 @@ class RpmRequiresToken(object):
         Raises:
             RpmException if prefix or name is not defined or the version is defined but no operator is present.
         """
-
         self.name = self._format_name(self.name)
         if not self.prefix:
             raise RpmException(

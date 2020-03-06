@@ -5,7 +5,6 @@ from .rpmregexp import Regexp
 
 
 class Section(object):
-
     """
     Basic object for parsing each section of spec file.
 
@@ -40,9 +39,10 @@ class Section(object):
 
     def _complete_cleanup(self, line: str) -> str:
         """
-        Call all the cleanups in proper order so it
-        can be called beforehand if we override add phase and want to
-        do our replaces after cleanup.
+        Call all the cleanups in proper order.
+
+        Therefore it can be called beforehand if we override add phase and want to do
+        our replaces after cleanup.
 
         Args:
             line: A string representing a line to process.
@@ -153,8 +153,7 @@ class Section(object):
 
     def embrace_macros(self, line: str) -> str:
         """
-        Add {} around known macros that have no arguments and are not
-        on whitelist.
+        Add {} around known macros that have no arguments and are not on whitelist.
 
         Whitelist is passed from caller object.
 

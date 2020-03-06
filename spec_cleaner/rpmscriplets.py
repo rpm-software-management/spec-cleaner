@@ -5,7 +5,6 @@ from .rpmsection import Section
 
 
 class RpmScriptlets(Section):
-
     """
     A class providing methods for scriptlet section cleaning.
 
@@ -37,7 +36,9 @@ class RpmScriptlets(Section):
 
     def _collapse_multiline_ldconfig(self) -> None:
         """
-        Merge two lines ldconfig call to the one line and adjust lines member accordingly.
+        Merge two lines ldconfig call to the one line.
+
+        Adjust lines member accordingly.
         """
         # if we have 2 lines or rest of them are empty, pop those
         for i in reversed(self.lines):

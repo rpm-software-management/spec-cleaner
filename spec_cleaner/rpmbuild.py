@@ -5,10 +5,7 @@ from .rpmcheck import RpmCheck
 
 
 class RpmBuild(RpmCheck):
-
-    """
-    A class providing methods for %build section cleaning.
-    """
+    """A class providing methods for %build section cleaning."""
 
     def add(self, line: str) -> None:
         # we do not want to run suseupdateconfig, deprecated
@@ -23,7 +20,7 @@ class RpmBuild(RpmCheck):
 
     def _comment_macro_calls(self, line: str) -> None:
         """
-        Add a comment if the package uses direct call of certain build tools instead of macro.
+        Add a comment if the package uses direct call of build tools instead of macro.
 
         Args:
             line: A string representing a line to process.
