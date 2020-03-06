@@ -10,6 +10,7 @@ flake8-import-order
 flake8-quotes
 mypy
 pep8-naming
+pre-commit
 pytest
 pytest-cov
 pytest-xdist
