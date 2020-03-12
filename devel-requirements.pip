@@ -1,7 +1,7 @@
 # Pip Requirement file for development
 
 # pin as 1.11.x breaks up with the github action
-coveralls == 1.10.0
+coveralls ~= 1.9
 flake8
 flake8-bugbear
 flake8-builtins
