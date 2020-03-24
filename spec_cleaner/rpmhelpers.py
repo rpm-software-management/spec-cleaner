@@ -105,10 +105,7 @@ def read_licenses_changes() -> Dict[str, str]:
     """
     with open_datafile(LICENSES_CHANGES) as f:
         next(f)  # strip newline
-        return {
-            old: correct
-            for correct, old in (line.rstrip('\n').split('\t') for line in f)
-        }
+        return {old: correct for correct, old in (line.rstrip('\n').split('\t') for line in f)}
 
 
 def read_group_changes():

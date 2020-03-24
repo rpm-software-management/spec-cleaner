@@ -102,9 +102,7 @@ class Section(object):
         self.lines.append(line)
         self.previous_line = line
 
-    def output(
-        self, fout: IO[str], newline: bool = True, new_class_name: str = None
-    ) -> None:
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = None) -> None:
         """
         Manage printing of the section.
 
@@ -134,8 +132,7 @@ class Section(object):
             # remove the newlines around ifs if they are not wanted
             if len(self.lines) >= 2:
                 if self.lines[-1] == '' and (
-                    self.lines[-2].startswith('%if')
-                    or self.lines[-2].startswith('%else')
+                    self.lines[-2].startswith('%if') or self.lines[-2].startswith('%else')
                 ):
                     self.lines.pop()
 
@@ -371,9 +368,9 @@ class Section(object):
             'suse',
             'ubuntu',
         ]:
-            line = line.replace(
-                '%{' + i + '_version}', '0%{?' + i + '_version}'
-            ).replace('00%{', '0%{')
+            line = line.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace(
+                '00%{', '0%{'
+            )
         return line
 
     def replace_preamble_macros(self, line: str) -> str:

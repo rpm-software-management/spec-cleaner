@@ -41,9 +41,7 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
     # Make the -d, -i, and -o exclusive as we can do only one of those
     output_group = parser.add_mutually_exclusive_group()
 
-    parser.add_argument(
-        'specfile', metavar='SPEC', type=str, help='spec file to beautify'
-    )
+    parser.add_argument('specfile', metavar='SPEC', type=str, help='spec file to beautify')
     parser.add_argument(
         '-c',
         '--cmake',
@@ -57,15 +55,10 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         help='run the diff program to show differences between new and original specfile.',
     )
     parser.add_argument(
-        '--diff-prog',
-        default='vimdiff',
-        help='specify the diff binary to call with diff option.',
+        '--diff-prog', default='vimdiff', help='specify the diff binary to call with diff option.',
     )
     parser.add_argument(
-        '-f',
-        '--force',
-        action='store_true',
-        help='overwrite the output file if already exist.',
+        '-f', '--force', action='store_true', help='overwrite the output file if already exist.',
     )
     output_group.add_argument(
         '-i',
@@ -100,10 +93,7 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         help='year to insert into the copyright header when re-generating it',
     )
     output_group.add_argument(
-        '-o',
-        '--output',
-        default='',
-        help='specify the output file for the cleaned spec content.',
+        '-o', '--output', default='', help='specify the output file for the cleaned spec content.',
     )
     parser.add_argument(
         '-p',
@@ -130,10 +120,7 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         help='show package version and exit',
     )
     parser.add_argument(
-        '-k',
-        '--keep-space',
-        action='store_true',
-        help='keep empty lines in preamble intact.',
+        '-k', '--keep-space', action='store_true', help='keep empty lines in preamble intact.',
     )
 
     # print help if there is no argument

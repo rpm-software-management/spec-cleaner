@@ -10,31 +10,11 @@ state_types = ('start', 'name', 'operator', 'version')
 
 re_brackets = {}
 re_brackets['('] = re.compile(
-    r'('
-    + r'\('
-    + r'|'
-    + r'\)'
-    + r'|'
-    + r'\\('
-    + r'|'
-    + r'\\)'
-    + r'|'
-    + r'[^\()]+'
-    + r')'
+    r'(' + r'\(' + r'|' + r'\)' + r'|' + r'\\(' + r'|' + r'\\)' + r'|' + r'[^\()]+' + r')'
 )
 
 re_brackets['{'] = re.compile(
-    r'('
-    + r'\{'
-    + r'|'
-    + r'\}'
-    + r'|'
-    + r'\\{'
-    + r'|'
-    + r'\\}'
-    + r'|'
-    + r'[^\{}]+'
-    + r')'
+    r'(' + r'\{' + r'|' + r'\}' + r'|' + r'\\{' + r'|' + r'\\}' + r'|' + r'[^\{}]+' + r')'
 )
 
 re_name = re.compile(r'[-A-Za-z0-9_~(){}@:;.+/*\[\]]+')
@@ -81,8 +61,7 @@ def consume_chars(regex, string):
         return string[0:end], string[end:]
     else:
         raise NoMatchException(
-            'Expected match failed (string: "%s", regex: "%s" )'
-            % (string, regex.pattern)
+            'Expected match failed (string: "%s", regex: "%s" )' % (string, regex.pattern)
         )
 
 
@@ -96,8 +75,7 @@ def matching_bracket(bracket):
     elif bracket == '(':
         return ')'
     raise Exception(
-        'Undefined bracket matching - add defintion of "%s" to '
-        'matching_bracket()' % bracket
+        'Undefined bracket matching - add defintion of "%s" to ' 'matching_bracket()' % bracket
     )
 
 

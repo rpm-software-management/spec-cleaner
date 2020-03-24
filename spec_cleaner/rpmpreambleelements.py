@@ -127,9 +127,7 @@ class RpmPreambleElements(object):
         # dict of license replacement options
         self.license_conversions = options['license_conversions']
         # initialize list of groups that need to pass over conversion fixer
-        self.categories_with_package_tokens = self.categories_with_sorted_package_tokens[
-            :
-        ]
+        self.categories_with_package_tokens = self.categories_with_sorted_package_tokens[:]
         # these packages actually need fixing after we sent the values to
         # reorder them
         self.categories_with_package_tokens.append('provides_obsoletes')
@@ -188,9 +186,7 @@ class RpmPreambleElements(object):
             self.br_pkgconfig_required = True
         # only in case we are in main scope
         if not nested:
-            if self.br_pkgconfig_required and not find_pkgconfig_declaration(
-                buildrequires
-            ):
+            if self.br_pkgconfig_required and not find_pkgconfig_declaration(buildrequires):
                 self._insert_value('buildrequires', 'pkgconfig')
 
     @staticmethod
@@ -250,10 +246,7 @@ class RpmPreambleElements(object):
                 # names and prefix must always match
                 if item.name == element.name and item.prefix == element.prefix:
                     # do we have full match on everything
-                    if (
-                        item.version == element.version
-                        and item.operator == element.operator
-                    ):
+                    if item.version == element.version and item.operator == element.operator:
                         # append comment if needed only as we are 100% match
                         if element.comments:
                             tmp = results[index]

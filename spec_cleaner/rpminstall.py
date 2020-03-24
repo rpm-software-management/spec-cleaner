@@ -57,11 +57,8 @@ class RpmInstall(Section):
         Return:
             The processed line.
         """
-        if (
-            self.reg.re_rm.search(line) and len(self.reg.re_rm_double.split(line)) == 1
-        ) or (
-            self.reg.re_find.search(line)
-            and len(self.reg.re_find_double.split(line)) == 2
+        if (self.reg.re_rm.search(line) and len(self.reg.re_rm_double.split(line)) == 1) or (
+            self.reg.re_find.search(line) and len(self.reg.re_find_double.split(line)) == 2
         ):
             line = 'find %{buildroot} -type f -name "*.la" -delete -print'
         return line
