@@ -36,8 +36,8 @@ class RpmPrep(Section):
             line = self.strip_useless_spaces(line)
             line = line.replace('%setup', '%setup -q')
 
-        if 'dephell deps convert' in line:
-            line = '%{dephell_gensetup}'
+        if (self.reg.re_dephell_setup.match(line) is not None) and not self.minimal:
+            line = '%dephell_gensetup'
 
         return line
 

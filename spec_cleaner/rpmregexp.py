@@ -137,6 +137,7 @@ class Regexp(object):
     # rpmprep
     re_patch_prep = re.compile(r'^%patch\s*([^P]*)-P\s*(\d*)\s*([^P]*)$')
     re_setup = re.compile(r'\s*-n\s+"?%{name}-%{version}"?($|\s)')
+    re_dephell_setup = re.compile(r'\s*dephell[s]?.*convert')
 
     # rpmfiles
     re_man_compression = re.compile(r'(\d)(\.?\*|\.gz|%{?ext_man}?)$')
