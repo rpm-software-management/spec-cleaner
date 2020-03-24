@@ -35,6 +35,9 @@ class RpmPrep(Section):
             line = self.strip_useless_spaces(line)
             line = line.replace('%setup', '%setup -q')
 
+        if 'dephell deps convert' in line:
+            line = '%{dephell_gensetup}'
+
         return line
 
     def _prepare_patch(self, line: str) -> str:
