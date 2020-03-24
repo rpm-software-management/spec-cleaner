@@ -22,6 +22,7 @@ ctest
 defattr(\s*\([^)]*\))?
 define
 defined
+dephell_gensetup
 description
 desktop_database_post[^\s]*
 dev
