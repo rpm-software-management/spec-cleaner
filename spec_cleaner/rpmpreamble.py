@@ -204,10 +204,7 @@ class RpmPreamble(Section):
         else:
             nested = True
         lines = self.paragraph.flatten_output(False, nested)
-        if (
-            len(self.paragraph.items['define']) > 0
-            or len(self.paragraph.items['bconds']) > 0
-        ):
+        if len(self.paragraph.items['define']) > 0 or len(self.paragraph.items['bconds']) > 0:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph.items['conditions'] += lines
@@ -222,9 +219,7 @@ class RpmPreamble(Section):
                 # we need to put it bellow bcond definitions as otherwise
                 # the switches do not have any effect
                 if self._condition_bcond:
-                    self.paragraph.items['bcond_conditions'] += self.paragraph.items[
-                        'conditions'
-                    ]
+                    self.paragraph.items['bcond_conditions'] += self.paragraph.items['conditions']
                 elif len(self.paragraph.items['define']) == 0:
                     self.paragraph.items['bconds'] += self.paragraph.items['conditions']
                 else:
@@ -235,13 +230,9 @@ class RpmPreamble(Section):
                     self._condition_define = False
             else:
                 if self._pattern_condition:
-                    self.paragraph.items['patterncodeblock'] += self.paragraph.items[
-                        'conditions'
-                    ]
+                    self.paragraph.items['patterncodeblock'] += self.paragraph.items['conditions']
                 else:
-                    self.paragraph.items['build_conditions'] += self.paragraph.items[
-                        'conditions'
-                    ]
+                    self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
 
             # bcond must be reseted when on top and can be set even outside of the
             # define scope. So reset it here always
@@ -276,9 +267,7 @@ class RpmPreamble(Section):
                 and not self.previous_line.startswith('#')
                 and not self.minimal
             ):
-                self.paragraph.current_group.append(
-                    '# FIXME: Use %requires_eq macro instead'
-                )
+                self.paragraph.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
         tokens = DependencyParser(value).flat_out()
         # loop over all and do formatting as we can get more deps for one
@@ -302,17 +291,11 @@ class RpmPreamble(Section):
                 # checking if it is not list is simple avoidance of running
                 # over already converted values
                 if not isinstance(token, list) and self.perl:
-                    token = self._pkgname_to_brackety(
-                        token, 'perl', self.perl_conversions
-                    )
+                    token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
                 if not isinstance(token, list) and self.tex:
-                    token = self._pkgname_to_brackety(
-                        token, 'tex', self.tex_conversions
-                    )
+                    token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
                 if not isinstance(token, list) and self.cmake:
-                    token = self._pkgname_to_brackety(
-                        token, 'cmake', self.cmake_conversions
-                    )
+                    token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
             if isinstance(token, list):
                 expanded += token
             else:
@@ -407,9 +390,7 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_comment.match(line) and not self.reg.re_buildignores.match(
-            line
-        ):
+        elif self.reg.re_comment.match(line) and not self.reg.re_buildignores.match(line):
             if line or self.previous_line:
                 self.paragraph.current_group.append(line)
                 self.previous_line = line
@@ -459,9 +440,7 @@ class RpmPreamble(Section):
             else:
                 zero = ''
             self._add_line_value_to(
-                'patch',
-                match.group(3),
-                key='%sPatch%s%s' % (match.group(1), zero, match.group(2)),
+                'patch', match.group(3), key='%sPatch%s%s' % (match.group(1), zero, match.group(2)),
             )
             return
 
@@ -482,16 +461,12 @@ class RpmPreamble(Section):
             self._add_line_value_to('patternprovides', match.group(1), key='Provides')
             return
 
-        elif self.reg.re_provides.match(line) and self.reg.re_patternobsolete.search(
-            line
-        ):
+        elif self.reg.re_provides.match(line) and self.reg.re_patternobsolete.search(line):
             match = self.reg.re_provides.match(line)
             self._add_line_value_to('patternobsoletes', match.group(1), key='Provides')
             return
 
-        elif self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(
-            line
-        ):
+        elif self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(line):
             match = self.reg.re_obsoletes.match(line)
             self._add_line_value_to('patternobsoletes', match.group(1), key='Obsoletes')
             return
@@ -571,16 +546,12 @@ class RpmPreamble(Section):
 
         elif self.reg.re_provides.match(line):
             match = self.reg.re_provides.match(line)
-            self._add_line_value_to(
-                'provides_obsoletes', match.group(1), key='Provides'
-            )
+            self._add_line_value_to('provides_obsoletes', match.group(1), key='Provides')
             return
 
         elif self.reg.re_obsoletes.match(line):
             match = self.reg.re_obsoletes.match(line)
-            self._add_line_value_to(
-                'provides_obsoletes', match.group(1), key='Obsoletes'
-            )
+            self._add_line_value_to('provides_obsoletes', match.group(1), key='Obsoletes')
             return
 
         elif self.reg.re_license.match(line):
@@ -608,9 +579,7 @@ class RpmPreamble(Section):
             language = match.group(1)
             # and what value is there
             content = match.group(2)
-            self._add_line_value_to(
-                'summary_localized', content, key='Summary{0}'.format(language)
-            )
+            self._add_line_value_to('summary_localized', content, key='Summary{0}'.format(language))
             return
 
         elif self.reg.re_group.match(line):

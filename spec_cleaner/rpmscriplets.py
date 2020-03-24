@@ -29,9 +29,7 @@ class RpmScriptlets(Section):
         line = self.reg.re_ldconfig.sub('/sbin/ldconfig', line)
         return line
 
-    def output(
-        self, fout: IO[str], newline: bool = True, new_class_name: str = None
-    ) -> None:
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = None) -> None:
         if not self.minimal:
             self._collapse_multiline_ldconfig()
         Section.output(self, fout, newline, new_class_name)

@@ -80,7 +80,7 @@ Optional static type checker support was implemented for the most important part
 
 ### Black
 
-The code of spec-cleaner is formated with [Black](https://github.com/psf/black). We use default options, except for `--skip-string-normalization` option. Black runs automatically in the `pre-commit` hook.
+The code of spec-cleaner is formated with [Black](https://github.com/psf/black). We use `--skip-string-normalization` and `--line-length 100` options. Black runs automatically in the `pre-commit` hook.
 
 ### Adding new tests
 When a new feature is added to spec-cleaner then a test for this piece of code must be added. See [how to write tests for spec-cleaner](TESTSUITE.md).
