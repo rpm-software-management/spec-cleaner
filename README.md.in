@@ -34,21 +34,12 @@ Simply run `spec-cleaner -i <specfile>` to clean your specfile up.
 ## Tests
 
 ### Running the tests
-spec-cleaner provides quite an extensive testsuite. You can run these tests locally either directly via `pytest` or in a clean environment via`tox` where besides pytest also `flake8` or `mypy` is called.
+spec-cleaner provides quite an extensive testsuite. You can run these tests locally either directly via `pytest`.
 
 #### pytest
 Just install `python3-pytest`, `python3-pytest-cov` and `python3-pytest-sugar` (for a nice progress bar) and then run all tests via:
 
     pytest
-
-#### tox
-Install `tox` and run
-
-    tox
-for running tests for the test environments stated in `tox.ini` configuration file. Or you can run the tests for a specified environment (e.g. Python 3.7) by calling
-
-	tox -epy37
-
 
 ## Contributing
 You are more than welcome to contribute to this project. If you are not sure about your changes, feel free to create an issue where you can discuss it before the implementation.
@@ -62,7 +53,7 @@ When changing anything in the code, make sure that you don't forget to:
   * Add proper comments and docstrings (follow [pep257](https://www.python.org/dev/peps/pep-0257/) and [Google Python Style Guide for docstrings and comments](http://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings))
   * Add [tests](TESTSUITE.md) (mainly if you implement a new feature).
   * Add `mypy` support for the new code.
-  * Run and pass all tests, `flake8` and `mypy` checks (just run `tox` for all these checks).
+  * Run and pass all tests, `flake8` and `mypy` checks.
 
 See below for more details.
 
@@ -74,7 +65,7 @@ Please note that similar checks run in CI when you submit a PR and it won't pass
 
 ### mypy
 
-Optional static type checker support was implemented for the most important parts of the code. It runs automatically (using the recent mypy version) when you run `tox`. If you want to run it on your own, just install `python3-mypy` and run
+Optional static type checker support was implemented for the most important parts of the code. If you want to run it on your own, just install `python3-mypy` and run
 
      mypy spec_cleaner
 
@@ -93,6 +84,5 @@ If you have proper permissions you can find handy [how to do a new release](RELE
 
 ## Authors
 
-* **Tomas Chvatal** [scarabeusiv](https://github.com/scarabeusiv)  - *Initial work*
-* See also the list of [contributors](AUTHORS) who participated in this project
+* See the list of [contributors](AUTHORS) who participated in this project
 
