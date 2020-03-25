@@ -1,5 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+"""
+Acceptance tests module.
+
+In this module we run all the tests to ensure the spec-cleaner is acting sanely.
+"""
+
 
 from glob import glob
 import os
@@ -59,13 +63,12 @@ class TestCompare(object):
 
     @pytest.fixture(scope='function')
     def tmpfile(self, tmpdir_factory):
+        """Create empty temp folder for each function run to avoid clash in threaded execution."""
         tmpfile = tmpdir_factory.mktemp('run', numbered=True).join('testing.spec')
         return str(tmpfile)
 
     def _run_individual_test(self, test, compare_dir, infile=None, outfile=None, options=None):
-        """
-        Run the cleaner as specified and store the output for further comparison.
-        """
+        """Run the cleaner as specified and store the output for further comparison."""
         if not infile:
             infile = os.path.join('tests', 'in', test)
 
@@ -89,58 +92,50 @@ class TestCompare(object):
 
     @pytest.mark.parametrize('test', collect_tests('out'))
     def test_normal_outputs(self, tmpfile, test):
-        """
-        Run all tests in 'out' directory without any particular spec-cleaner option.
-        """
+        """Run all tests in 'out' directory without any particular spec-cleaner option."""
         self._compare_and_rerun(test, 'out', tmpfile, {'pkgconfig': True})
 
     @pytest.mark.parametrize('test', collect_tests('out-minimal'))
     def test_minimal_outputs(self, test, tmpfile):
-        """
-        Run tests in 'out-minimal' directory in a minimal mode.
-        """
+        """Run tests in 'out-minimal' directory in a minimal mode."""
         self._compare_and_rerun(test, 'out-minimal', tmpfile, {'pkgconfig': True, 'minimal': True})
 
     @pytest.mark.parametrize('test', collect_tests('keep-space'))
     def test_keep_space_output(self, tmpfile, test):
-        """
-        Run tests in 'keep-space' directory with '--keep-space' option.
-        """
+        """Run tests in 'keep-space' directory with '--keep-space' option."""
         self._compare_and_rerun(test, 'keep-space', tmpfile, options={'keep_space': True})
 
     @pytest.mark.webtest
     @pytest.mark.parametrize('test', collect_tests('web'))
     def test_web_output(self, tmpfile, test):
-        """
-        Run tests in 'web' directory (these tests need an internet connection).
-        """
+        """Run tests in 'web' directory (these tests need an internet connection)."""
         self._compare_and_rerun(test, 'web', tmpfile, {'pkgconfig': True})
 
     def test_inline_function(self, tmpfile):
-        """
-        Test an inline option.
-        """
+        """Test an inline option."""
         test = 'bconds.spec'
         infile = os.path.join('tests', 'in', test)
         copyfile(infile, tmpfile)
-        self._run_individual_test(test, None, infile=tmpfile, outfile='', options={'pkgconfig': True, 'inline': True})
+        self._run_individual_test(
+            test, None, infile=tmpfile, outfile='', options={'pkgconfig': True, 'inline': True}
+        )
 
     def test_diff_function(self, tmpfile):
-        """
-        Test passing an incorrect '--diff_prog' option.
-        """
+        """Test passing an incorrect '--diff_prog' option."""
         test = 'bconds.spec'
         with pytest.raises(RpmException):
-            self._run_individual_test(test, None, outfile='', options={'diff': True, 'diff_prog': 'error'})
+            self._run_individual_test(
+                test, None, outfile='', options={'diff': True, 'diff_prog': 'error'}
+            )
 
     def test_unicode(self, tmpfile):
-        """
-        Test encoding.
-        """
+        """Test encoding."""
         test = 'perl-Text-Unidecode.spec'
         testpath = os.path.join('tests', 'unicode', test)
         with pytest.raises(RpmException):
-            self._run_individual_test(test, None, infile=testpath, outfile='', options={'minimal': False})
+            self._run_individual_test(
+                test, None, infile=testpath, outfile='', options={'minimal': False}
+            )
 
     @pytest.mark.parametrize(
         'test, compare_dir, options',
@@ -154,7 +149,5 @@ class TestCompare(object):
         ],
     )
     def test_single_output(self, tmpfile, test, compare_dir, options):
-        """
-        Test various spec-cleaner options.
-        """
+        """Test various spec-cleaner options."""
         self._run_individual_test(test, compare_dir, outfile=tmpfile, options=options)

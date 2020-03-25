@@ -1,3 +1,4 @@
+"""Setup.py file describing default values and contact information."""
 from glob import glob
 
 from setuptools import setup
@@ -6,14 +7,16 @@ from spec_cleaner import __version__
 setup(
     name='spec_cleaner',
     description='RPM .spec files cleaner',
-    long_description=('Command-line tool for cleaning various formatting errors in RPM .spec files'),
+    long_description=(
+        'Command-line tool for cleaning various formatting errors in RPM .spec files'
+    ),
     url='https://github.com/rpm-software-management/spec-cleaner',
     download_url='https://github.com/rpm-software-management/spec-cleaner',
     version=__version__,
     author='Tomáš Chvátal',
     author_email='tchvatal@suse.com',
     maintainer='Tomáš Chvátal',
-    maintainer_email='tchvatal@suse.cz',
+    maintainer_email='tchvatal@suse.com',
     license='License :: OSI Approved :: BSD License',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
