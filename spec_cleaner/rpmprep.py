@@ -11,10 +11,12 @@ class RpmPrep(Section):
     """
 
     def add(self, line):
+        """Executes the format operations for the Prep phase."""
         line = self._complete_cleanup(line)
         line = self._cleanup_setup(line)
         if not self.minimal:
             line = self._prepare_patch(line)
+            line = self._remove_dephell_call(line)
         Section.add(self, line)
 
     def _cleanup_setup(self, line: str) -> str:
@@ -35,7 +37,19 @@ class RpmPrep(Section):
             line = self.strip_useless_spaces(line)
             line = line.replace('%setup', '%setup -q')
 
-        if (self.reg.re_dephell_setup.match(line) is not None) and not self.minimal:
+        return line
+
+    def _remove_dephell_call(self, line: str) -> str:
+        """
+        Replace direct dephell calls with macro call.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The processed line.
+        """
+        if self.reg.re_dephell_setup.match(line):
             line = '%dephell_gensetup'
 
         return line
