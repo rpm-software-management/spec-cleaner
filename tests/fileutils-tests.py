@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+
 from spec_cleaner import RpmException
 from spec_cleaner.fileutils import open_datafile, open_stringio_spec
 

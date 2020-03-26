@@ -5,7 +5,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
-from typing import Any, Dict, IO, List, Optional, Type
+from typing import IO, Any, Dict, List, Optional, Type
 
 from .fileutils import open_stringio_spec
 from .rpmbuild import RpmBuild

@@ -1,4 +1,11 @@
 repos:
+-   repo: https://github.com/timothycrosley/isort
+    rev: '4.3.21'
+    hooks:
+    - id: isort
+      # pytest is needed for correct sorting of pytest imports
+      additional_dependencies: [pytest]
+
 -   repo: https://github.com/psf/black
     rev: 19.10b0
     hooks:
@@ -13,6 +20,6 @@ repos:
       args: [--max-line-length=100]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev:  'v0.761'
+    rev:  v0.770
     hooks:
-    - id: mypy                                                           
+    - id: mypy
