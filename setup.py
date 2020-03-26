@@ -2,6 +2,7 @@
 from glob import glob
 
 from setuptools import setup
+
 from spec_cleaner import __version__
 
 setup(

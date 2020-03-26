@@ -5,14 +5,13 @@
 # See COPYING for details.
 
 import argparse
-from datetime import datetime
 import os
 import sys
+from datetime import datetime
 from typing import Any, Dict, List
 
 from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmException, RpmWrongArgs
-
 
 __version__ = '1.2.0'
 

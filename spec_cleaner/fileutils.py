@@ -1,9 +1,9 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-from io import StringIO
 import os
 import sys
 import sysconfig
+from io import StringIO
 from typing import IO
 
 from .rpmexception import RpmException

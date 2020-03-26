@@ -59,7 +59,7 @@ See below for more details.
 
 ### pre-commit
 
-spec-cleaner project adopted `pre-commit` framework for managing and maintaining pre-commit hooks. After you clone the spec-cleaner repository, please install [pre-commit](https://pre-commit.com/) framework (`pip install pre-commit`) and run `pre-commit install` to install `pre-commit` into your git hooks. Then `pre-commit` will run automatically on `git commit` and it will check your contribution with `black`, `flake8`, `flake8-docstrings` and `mypy`.
+spec-cleaner project adopted `pre-commit` framework for managing and maintaining pre-commit hooks. After you clone the spec-cleaner repository, please install [pre-commit](https://pre-commit.com/) framework (`pip install pre-commit`) and run `pre-commit install` to install `pre-commit` into your git hooks. Then `pre-commit` will run automatically on `git commit` and it will check your contribution with `isort`, `black`, `flake8`, `flake8-docstrings` and `mypy`.
 
 Please note that similar checks run in CI when you submit a PR and it won't pass code review without passing these checks.
 

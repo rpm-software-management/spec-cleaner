@@ -5,13 +5,13 @@ In this module we run all the tests to ensure the spec-cleaner is acting sanely.
 """
 
 
-from glob import glob
 import os
+from glob import glob
 from shutil import copyfile
 
 import pytest
-from spec_cleaner import RpmException
-from spec_cleaner import RpmSpecCleaner
+
+from spec_cleaner import RpmException, RpmSpecCleaner
 
 
 def collect_tests(directory):
