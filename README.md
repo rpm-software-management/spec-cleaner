@@ -37,7 +37,7 @@ Simply run `spec-cleaner -i <specfile>` to clean your specfile up.
 spec-cleaner provides quite an extensive testsuite. You can run these tests locally either directly via `pytest`.
 
 #### pytest
-Just install `python3-pytest`, `python3-pytest-cov` and `python3-pytest-sugar` (for a nice progress bar) and then run all tests via:
+Just install `python3-pytest`, `python3-pytest-cov`, `python3-pytest-isort` and `python3-pytest-sugar` (for a nice progress bar) and then run all tests via:
 
     pytest
 

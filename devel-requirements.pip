@@ -13,4 +13,5 @@ pep8-naming
 pre-commit
 pytest
 pytest-cov
+pytest-isort
 pytest-xdist
