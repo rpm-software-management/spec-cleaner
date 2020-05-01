@@ -38,11 +38,14 @@ class RpmPreamble(Section):
     """
 
     def __init__(self, options):
+        """Initialize all the global variables and known categories."""
         Section.__init__(self, options)
         # Old storage
         self._oldstore = []
         # Is the parsed variable multiline (ending with \)
+        # alternatively if the line contains %{expand while the ending } is on other line
         self.multiline = False
+        self.multiline_expand = False
         # Are we inside of conditional or not
         self.condition = False
         # Is the condition with define/global variables
@@ -122,7 +125,7 @@ class RpmPreamble(Section):
         }
 
     def start_subparagraph(self):
-        # Backup the list and start a new one
+        """Backup the paragraph and start a new one."""
         self._oldstore.append(self.paragraph)
         self.paragraph = RpmPreambleElements(self.options)
 
@@ -199,6 +202,12 @@ class RpmPreamble(Section):
         )
 
     def end_subparagraph(self, endif=False):
+        """
+        End the paragraph and flatten the output.
+
+        If we are at the end we need to flatten and sort everything and give it
+        in the layers to the paragraph above us.
+        """
         if not self._oldstore:
             nested = False
         else:
@@ -338,6 +347,7 @@ class RpmPreamble(Section):
         self.previous_line = str(line)
 
     def add(self, line):
+        """Run over options and add the determined line to proper location."""
         line = self._complete_cleanup(line)
 
         if self.condition and self.reg.re_patternmacro.search(line):
@@ -352,9 +362,15 @@ class RpmPreamble(Section):
         # know ahead
         elif self.multiline:
             self._add_line_to('define', line)
-            # if it is no longer trailed with backslash stop
-            if not line.endswith('\\'):
-                self.multiline = False
+            # if it is no longer trailed with backslash
+            # or if the line ends with } on expand then stop
+            if self.multiline_expand:
+                if line.endswith('}'):
+                    self.multiline_expand = False
+                    self.multiline = False
+            else:
+                if not line.endswith('\\'):
+                    self.multiline = False
             return
 
         # If we match the if else or endif we create subgroup
@@ -500,6 +516,9 @@ class RpmPreamble(Section):
         ):
             if line.endswith('\\'):
                 self.multiline = True
+            if '%{expand:' in line and '}' not in line:
+                self.multiline = True
+                self.multiline_expand = True
             # if we are kernel and not multiline we need to be at bottom, so
             # lets use misc section, otherwise go for define
             if not self.multiline and line.find('kernel_module') >= 0:
@@ -633,6 +652,7 @@ class RpmPreamble(Section):
             self._add_line_to('misc', line)
 
     def output(self, fout, newline=True, new_class=None):
+        """Dump the results to the output list."""
         lines = self.paragraph.flatten_output(self.subpkglicense)
         self.lines += lines
         Section.output(self, fout, newline, new_class)
