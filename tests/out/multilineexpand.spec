@@ -5,7 +5,7 @@ well as tools for plotting, history, debugging and workspace management.
 }
 Name:           rstudio
 
-%description %_description
+%description %{_description}
 This package provides common files for %{name}-desktop and %{name}-server.
 
 %changelog
