@@ -136,7 +136,6 @@ Borceux | Borceux license
 BSD-1-Clause | BSD 1-Clause License
 BSD-2-Clause | BSD 2-Clause "Simplified" License
 BSD-2-Clause-FreeBSD | BSD 2-Clause FreeBSD License
-BSD-2-Clause-NetBSD | BSD 2-Clause NetBSD License
 BSD-2-Clause-Patent | BSD-2-Clause Plus Patent License
 BSD-3-Clause | BSD 3-Clause "New" or "Revised" License
 BSD-3-Clause-Attribution | BSD with attribution
@@ -153,6 +152,8 @@ BSD-Source-Code | BSD Source Code Attribution
 BSL-1.0 | Boost Software License 1.0
 bzip2-1.0.5 | bzip2 and libbzip2 License v1.0.5
 bzip2-1.0.6 | bzip2 and libbzip2 License v1.0.6
+CAL-1.0 | Cryptographic Autonomy License 1.0
+CAL-1.0-Combined-Work-Exception | Cryptographic Autonomy License 1.0 (Combined Work Exception)
 Caldera | Caldera License
 CATOSL-1.1 | Computer Associates Trusted Open Source License 1.1
 CC-BY-1.0 | Creative Commons Attribution 1.0 Generic
@@ -199,6 +200,9 @@ CECILL-B | CeCILL-B Free Software License Agreement
 CECILL-C | CeCILL-C Free Software License Agreement
 CERN-OHL-1.1 | CERN Open Hardware Licence v1.1
 CERN-OHL-1.2 | CERN Open Hardware Licence v1.2
+CERN-OHL-P-2.0 | CERN Open Hardware Licence Version 2 - Permissive
+CERN-OHL-S-2.0 | CERN Open Hardware Licence Version 2 - Strongly Reciprocal
+CERN-OHL-W-2.0 | CERN Open Hardware Licence Version 2 - Weakly Reciprocal
 ClArtistic | Clarified Artistic License
 CNRI-Jython | CNRI Jython License
 CNRI-Python | CNRI Python License
@@ -261,6 +265,7 @@ GPL-3.0-only | GNU General Public License v3.0 only
 GPL-3.0-or-later | GNU General Public License v3.0 or later
 gSOAP-1.3b | gSOAP Public License v1.3b
 HaskellReport | Haskell Language Report License
+Hippocratic-2.1 | Hippocratic License 2.1
 HPND | Historical Permission Notice and Disclaimer
 HPND-sell-variant | Historical Permission Notice and Disclaimer - sell variant
 IBM-pibs | IBM PowerPC Initialization and Boot Software
@@ -324,11 +329,13 @@ MS-PL | Microsoft Public License
 MS-RL | Microsoft Reciprocal License
 MTLL | Matrix Template Library License
 MulanPSL-1.0 | Mulan Permissive Software License, Version 1
+MulanPSL-2.0 | Mulan Permissive Software License, Version 2
 Multics | Multics License
 Mup | Mup License
 NASA-1.3 | NASA Open Source Agreement 1.3
 Naumen | Naumen Public License
 NBPL-1.0 | Net Boolean Public License v1
+NCGL-UK-2.0 | Non-Commercial Government Licence
 NCSA | University of Illinois/NCSA Open Source License
 Net-SNMP | Net-SNMP License
 NetCDF | NetCDF license
@@ -345,6 +352,7 @@ NPOSL-3.0 | Non-Profit Open Software License 3.0
 NRL | NRL License
 NTP | NTP License
 NTP-0 | NTP No Attribution
+O-UDA-1.0 | Open Use of Data Agreement v1.0
 OCCT-PL | Open CASCADE Technology Public License
 OCLC-2.0 | OCLC Research Public License 2.0
 ODbL-1.0 | ODC Open Database License v1.0
@@ -355,6 +363,7 @@ OFL-1.0-RFN | SIL Open Font License 1.0 with Reserved Font Name
 OFL-1.1 | SIL Open Font License 1.1
 OFL-1.1-no-RFN | SIL Open Font License 1.1 with no Reserved Font Name
 OFL-1.1-RFN | SIL Open Font License 1.1 with Reserved Font Name
+OGC-1.0 | OGC Software License, Version 1.0
 OGL-Canada-2.0 | Open Government Licence - Canada
 OGL-UK-1.0 | Open Government Licence v1.0
 OGL-UK-2.0 | Open Government Licence v2.0
@@ -386,10 +395,13 @@ OSL-2.0 | Open Software License 2.0
 OSL-2.1 | Open Software License 2.1
 OSL-3.0 | Open Software License 3.0
 Parity-6.0.0 | The Parity Public License 6.0.0
+Parity-7.0.0 | The Parity Public License 7.0.0
 PDDL-1.0 | ODC Public Domain Dedication & License 1.0
 PHP-3.0 | PHP License v3.0
 PHP-3.01 | PHP License v3.01
 Plexus | Plexus Classworlds License
+PolyForm-Noncommercial-1.0.0 | PolyForm Noncommercial License 1.0.0
+PolyForm-Small-Business-1.0.0 | PolyForm Small Business License 1.0.0
 PostgreSQL | PostgreSQL License
 PSF-2.0 | Python Software Foundation License 2.0
 psfrag | psfrag License
@@ -493,6 +505,7 @@ GCC-exception-3.1
 GPL-3.0-linking-exception
 GPL-3.0-linking-source-exception
 GPL-CC-1.0
+LGPL-3.0-linking-exception
 LLVM-exception
 LZMA-exception
 Libtool-exception
@@ -504,6 +517,8 @@ PS-or-PDF-font-exception-20170817
 Qt-GPL-exception-1.0
 Qt-LGPL-exception-1.1
 Qwt-exception-1.0
+SHL-2.0
+SHL-2.1
 Swift-exception
 Universal-FOSS-exception-1.0
 WxWindows-exception-3.1
