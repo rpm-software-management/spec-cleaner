@@ -60,7 +60,7 @@ def find_macros_with_arg(spec: str) -> List[str]:
 
     re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
     with open_stringio_spec(spec) as f:
-        for line in (l.rstrip('\n') for l in f):
+        for line in (i.rstrip('\n') for i in f):
             found_macro = re_spec_macrofunc.sub(r'\1', line)
             if found_macro != line:
                 macrofuncs += [found_macro]
@@ -68,24 +68,37 @@ def find_macros_with_arg(spec: str) -> List[str]:
 
 
 def read_conversion_changes(conversion_file):
+    """
+    Read up the conversion file for the replacements.
+
+    Args:
+        conversion_file: File to load up the data
+
+    Returns:
+        A dictionary with old -> new values for conversion
+    """
     with open_datafile(conversion_file) as f:
         # the values are split by  ': '
         return {key: value for key, value in (line.split(': ') for line in f)}
 
 
 def read_tex_changes():
+    """Read up the tex conversion types."""
     return read_conversion_changes(TEX_CONVERSIONS)
 
 
 def read_pkgconfig_changes():
+    """Read up the pkgconfig conversion types."""
     return read_conversion_changes(PKGCONFIG_CONVERSIONS)
 
 
 def read_perl_changes():
+    """Read up the perl conversion types."""
     return read_conversion_changes(PERL_CONVERSIONS)
 
 
 def read_cmake_changes():
+    """Read up the cmake conversion types."""
     return read_conversion_changes(CMAKE_CONVERSIONS)
 
 
@@ -109,12 +122,28 @@ def read_licenses_changes() -> Dict[str, str]:
 
 
 def read_group_changes():
+    """
+    Read data for allowed groups.
+
+    Returns:
+        A list with allowed groups
+    """
     with open_datafile(GROUPS_LIST) as f:
         next(f)  # header starts with link where we find the groups
         return [line.rstrip('\n') for line in f]
 
 
 def fix_license(value, conversions):
+    """
+    Fix license string to match up current SPDX format.
+
+    Args:
+        value: the current license string
+        conversions: list of known license format replacements
+
+    Returns:
+        string with the new license
+    """
     # license ; should be replaced by ands so find it
     re_license_semicolon = re.compile(r'\s*;\s*')
     value = value.rstrip(';')
@@ -148,6 +177,16 @@ def fix_license(value, conversions):
 
 
 def sort_uniq(seq):
+    """
+    Sort sequence.
+
+    Args:
+        seq: the sequence of the data
+
+    Returns:
+        sequence with sorted order and no duplicates
+    """
+
     def _check_list(x):
         if isinstance(x, list):
             return True
