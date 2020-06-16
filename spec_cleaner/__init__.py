@@ -4,6 +4,8 @@
 # All rights reserved.
 # See COPYING for details.
 
+"""Spec-cleaner formatting module."""
+
 import argparse
 import os
 import sys
@@ -13,7 +15,7 @@ from typing import Any, Dict, List
 from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmException, RpmWrongArgs
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 
 
 def process_args(argv: List[str]) -> Dict[str, Any]:
