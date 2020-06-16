@@ -4,6 +4,7 @@ NoSource: 2
 Source200: ou
 NoSource: 300
 Source300: godknowswhat
+Source400:         https://files.pythonhosted.org/packages/py2.py3/i/ipyleaflet/ipyleaflet-%{version}-py2.py3-none-any.whl
 
 %prep
 %setup -q
