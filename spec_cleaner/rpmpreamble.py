@@ -176,8 +176,19 @@ class RpmPreamble(Section):
         if parsed.netloc not in self.PYPI_SOURCE_HOSTS:
             return url
 
+        if self.reg.re_pypi_type.match(parsed.path):
+            match = self.reg.re_pypi_type.match(parsed.path)
+            pkg_type = match.group('type')
+        else:
+            pkg_type = 'source'
+
         filename = os.path.basename(parsed.path)
-        modname = filename[: filename.rfind('-')]
+        if self.reg.re_pypi_modname.match(filename):
+            match = self.reg.re_pypi_modname.match(filename)
+            modname = match.group('pkgname')
+        else:
+            # no modname -> can't compile url
+            return url
 
         # TODO the following condition checks if the filename starts with a macro,
         # and expects that if it does, the macro is called "modname". This is not
@@ -189,12 +200,11 @@ class RpmPreamble(Section):
             else:
                 # don't know what to do
                 return url
-
         return parse.urlunparse(
             (
                 'https',
                 'files.pythonhosted.org',
-                '/packages/source/{}/{}/{}'.format(modname[0], modname, filename),
+                '/packages/{}/{}/{}/{}'.format(pkg_type, modname[0], modname, filename),
                 '',
                 '',
                 '',

@@ -103,6 +103,8 @@ class Regexp(object):
     re_packageand = re.compile(r'^packageand\(\s*(\S+)\s*:\s*(\S+)\s*\)\s*$')
     # otherproviders(foo)
     re_otherproviders = re.compile(r'^otherproviders\(\s*(\S+)\s*\)\s*$')
+    re_pypi_type = re.compile(r'^/packages/(?P<type>[\w|.]+)')
+    re_pypi_modname = re.compile(r'^(?P<pkgname>[\w\.\_\-+]+|%{?\w+}?)\-(%{?\w+}?|[\d\.]+)')
 
     # rpmdescription
     re_authors = re.compile(r'^\s*Author(s)?:\s*')
@@ -219,4 +221,5 @@ class Regexp(object):
     re_deprecated_fgrep_regex = re.compile(r'\bfgrep\b')
 
     def __init__(self, keywords: List[str]) -> None:
+        """Compile all the keywords that are to be unbraced."""
         self.re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords) + ')}')
