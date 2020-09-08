@@ -18,6 +18,7 @@ class RpmCheck(Section):
 
         if not self.minimal:
             line = self._replace_pytest(line)
+            line = self._replace_unittest(line)
             line = self._replace_make(line)
 
         Section.add(self, line)
@@ -34,6 +35,20 @@ class RpmCheck(Section):
         """
         line = self.reg.re_pytest.sub('%pytest', line)
         line = self.reg.re_pytest_arch.sub('%pytest_arch', line)
+        return line
+
+    def _replace_unittest(self, line: str) -> str:
+        """
+        Replace various pytest calls with %pyunittest or %pyunittest_arch macros.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The processed line.
+        """
+        line = self.reg.re_pyunittest.sub('%pyunittest', line)
+        line = self.reg.re_pyunittest_arch.sub('%pyunittest_arch', line)
         return line
 
     def _replace_make(self, line: str) -> str:

@@ -134,6 +134,8 @@ pypy(.?)_only
 pycache_only
 pytest
 pytest_arch
+pyunittest
+pyunittest_arch
 python(.?)_build
 python(.?)_install
 py(.?)_build

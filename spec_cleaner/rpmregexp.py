@@ -126,6 +126,12 @@ class Regexp(object):
     re_pytest_arch = re.compile(
         r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?'
     )
+    re_pyunittest = re.compile(
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?-m\s+unittest(\s+discover)?'
+    )
+    re_pyunittest_arch = re.compile(
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?-m\s+unittest(\s+discover)?'
+    )
     re_python_expand = re.compile(
         r'%{?(python_sitelib|python_sitearch|python_bin_suffix|python_version)}?'
     )
