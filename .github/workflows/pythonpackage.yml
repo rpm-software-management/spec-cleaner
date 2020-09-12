@@ -40,6 +40,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: |
         coveralls
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
       if: success()
