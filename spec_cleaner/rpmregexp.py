@@ -70,6 +70,7 @@ class Regexp(object):
     re_conflicts = re.compile(r'^Conflicts:\s*(.*)', re.IGNORECASE)
     re_provides = re.compile(r'^Provides:\s*(.*)', re.IGNORECASE)
     re_obsoletes = re.compile(r'^Obsoletes:\s*(.*)', re.IGNORECASE)
+    re_removepath = re.compile(r'^\s*RemovePathPostfixes:\s*(.*)', re.IGNORECASE)
     re_buildroot = re.compile(r'^\s*BuildRoot:', re.IGNORECASE)
     re_buildarch = re.compile(r'^\s*BuildArch(itectures)?:\s*(.*)', re.IGNORECASE)
     re_exclusivearch = re.compile(r'^\s*ExclusiveArch(itectures)?:\s*(.*)', re.IGNORECASE)

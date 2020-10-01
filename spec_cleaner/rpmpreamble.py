@@ -104,6 +104,7 @@ class RpmPreamble(Section):
             'supplements': self.reg.re_supplements,
             # for provides/obsoletes, we have a special case because we group them
             # for build root, we have a special match because we force its value
+            'removepath': self.reg.re_removepath,
             'buildarch': self.reg.re_buildarch,
             'excludearch': self.reg.re_excludearch,
             'exclusivearch': self.reg.re_exclusivearch,

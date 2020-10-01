@@ -47,6 +47,7 @@ class RpmPreambleElements(object):
         'buildarch': 'BuildArch',
         'exclusivearch': 'ExclusiveArch',
         'excludearch': 'ExcludeArch',
+        'removepath': 'RemovePathPostfixes',
     }
 
     categories_order = (
@@ -81,6 +82,7 @@ class RpmPreambleElements(object):
         'supplements',
         'conflicts',
         'provides_obsoletes',
+        'removepath',
         'buildarch',
         'exclusivearch',
         'excludearch',
@@ -112,6 +114,7 @@ class RpmPreambleElements(object):
     categories_with_sorted_keyword_tokens = ('source', 'patch')
 
     def __init__(self, options):
+        """Initialize the default variables as some are dynamic."""
         self.items = {}
         for i in self.categories_order:
             self.items[i] = []
