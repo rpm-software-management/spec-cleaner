@@ -135,8 +135,8 @@ BlueOak-1.0.0 | Blue Oak Model License 1.0.0
 Borceux | Borceux license
 BSD-1-Clause | BSD 1-Clause License
 BSD-2-Clause | BSD 2-Clause "Simplified" License
-BSD-2-Clause-FreeBSD | BSD 2-Clause FreeBSD License
 BSD-2-Clause-Patent | BSD-2-Clause Plus Patent License
+BSD-2-Clause-Views | BSD 2-Clause with views sentence
 BSD-3-Clause | BSD 3-Clause "New" or "Revised" License
 BSD-3-Clause-Attribution | BSD with attribution
 BSD-3-Clause-Clear | BSD 3-Clause Clear License
@@ -160,6 +160,7 @@ CC-BY-1.0 | Creative Commons Attribution 1.0 Generic
 CC-BY-2.0 | Creative Commons Attribution 2.0 Generic
 CC-BY-2.5 | Creative Commons Attribution 2.5 Generic
 CC-BY-3.0 | Creative Commons Attribution 3.0 Unported
+CC-BY-3.0-AT | Creative Commons Attribution 3.0 Austria
 CC-BY-4.0 | Creative Commons Attribution 4.0 International
 CC-BY-NC-1.0 | Creative Commons Attribution Non Commercial 1.0 Generic
 CC-BY-NC-2.0 | Creative Commons Attribution Non Commercial 2.0 Generic
@@ -170,6 +171,7 @@ CC-BY-NC-ND-1.0 | Creative Commons Attribution Non Commercial No Derivatives 1.0
 CC-BY-NC-ND-2.0 | Creative Commons Attribution Non Commercial No Derivatives 2.0 Generic
 CC-BY-NC-ND-2.5 | Creative Commons Attribution Non Commercial No Derivatives 2.5 Generic
 CC-BY-NC-ND-3.0 | Creative Commons Attribution Non Commercial No Derivatives 3.0 Unported
+CC-BY-NC-ND-3.0-IGO | Creative Commons Attribution Non Commercial No Derivatives 3.0 IGO
 CC-BY-NC-ND-4.0 | Creative Commons Attribution Non Commercial No Derivatives 4.0 International
 CC-BY-NC-SA-1.0 | Creative Commons Attribution Non Commercial Share Alike 1.0 Generic
 CC-BY-NC-SA-2.0 | Creative Commons Attribution Non Commercial Share Alike 2.0 Generic
@@ -185,6 +187,7 @@ CC-BY-SA-1.0 | Creative Commons Attribution Share Alike 1.0 Generic
 CC-BY-SA-2.0 | Creative Commons Attribution Share Alike 2.0 Generic
 CC-BY-SA-2.5 | Creative Commons Attribution Share Alike 2.5 Generic
 CC-BY-SA-3.0 | Creative Commons Attribution Share Alike 3.0 Unported
+CC-BY-SA-3.0-AT | Creative Commons Attribution-Share Alike 3.0 Austria
 CC-BY-SA-4.0 | Creative Commons Attribution Share Alike 4.0 International
 CC-PDDC | Creative Commons Public Domain Dedication and Certification
 CC0-1.0 | Creative Commons Zero v1.0 Universal
@@ -230,6 +233,7 @@ EFL-1.0 | Eiffel Forum License v1.0
 EFL-2.0 | Eiffel Forum License v2.0
 eGenix | eGenix.com Public License 1.1.0
 Entessa | Entessa Public License v1.0
+EPICS | EPICS Open License
 EPL-1.0 | Eclipse Public License 1.0
 EPL-2.0 | Eclipse Public License 2.0
 ErlPL-1.1 | Erlang Public License v1.1
@@ -246,16 +250,29 @@ FSFAP | FSF All Permissive License
 FSFUL | FSF Unlimited License
 FSFULLR | FSF Unlimited License (with License Retention)
 FTL | Freetype Project License
+GFDL-1.1-invariants-only | GNU Free Documentation License v1.1 only - invariants
+GFDL-1.1-invariants-or-later | GNU Free Documentation License v1.1 or later - invariants
+GFDL-1.1-no-invariants-only | GNU Free Documentation License v1.1 only - no invariants
+GFDL-1.1-no-invariants-or-later | GNU Free Documentation License v1.1 or later - no invariants
 GFDL-1.1-only | GNU Free Documentation License v1.1 only
 GFDL-1.1-or-later | GNU Free Documentation License v1.1 or later
+GFDL-1.2-invariants-only | GNU Free Documentation License v1.2 only - invariants
+GFDL-1.2-invariants-or-later | GNU Free Documentation License v1.2 or later - invariants
+GFDL-1.2-no-invariants-only | GNU Free Documentation License v1.2 only - no invariants
+GFDL-1.2-no-invariants-or-later | GNU Free Documentation License v1.2 or later - no invariants
 GFDL-1.2-only | GNU Free Documentation License v1.2 only
 GFDL-1.2-or-later | GNU Free Documentation License v1.2 or later
+GFDL-1.3-invariants-only | GNU Free Documentation License v1.3 only - invariants
+GFDL-1.3-invariants-or-later | GNU Free Documentation License v1.3 or later - invariants
+GFDL-1.3-no-invariants-only | GNU Free Documentation License v1.3 only - no invariants
+GFDL-1.3-no-invariants-or-later | GNU Free Documentation License v1.3 or later - no invariants
 GFDL-1.3-only | GNU Free Documentation License v1.3 only
 GFDL-1.3-or-later | GNU Free Documentation License v1.3 or later
 Giftware | Giftware License
 GL2PS | GL2PS License
 Glide | 3dfx Glide License
 Glulxe | Glulxe License
+GLWTPL | Good Luck With That Public License
 gnuplot | gnuplot License
 GPL-1.0-only | GNU General Public License v1.0 only
 GPL-1.0-or-later | GNU General Public License v1.0 or later
@@ -341,6 +358,8 @@ Net-SNMP | Net-SNMP License
 NetCDF | NetCDF license
 Newsletr | Newsletr License
 NGPL | Nethack General Public License
+NIST-PD | NIST Public Domain Notice
+NIST-PD-fallback | NIST Public Domain Notice with license fallback
 NLOD-1.0 | Norwegian Licence for Open Government Data
 NLPL | No Limit Public License
 Nokia | Nokia Open Source License
