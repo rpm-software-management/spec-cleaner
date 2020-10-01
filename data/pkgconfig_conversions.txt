@@ -1,7 +1,8 @@
-389-ds-devel: dirsrv libsds nunc-stans 
+389-ds-devel: dirsrv libsds svrcore 
 96BoardsGPIO-devel: 96BoardsGPIO 
 ASL-devel: ASL 
 AppStream-devel: appstream 
+Catch2-devel: catch2 
 Coin-devel: Coin 
 ColorFull-devel: ColorFull 
 DevIL-devel: IL ILU ILUT 
@@ -17,7 +18,7 @@ Mesa-libGLESv2-devel: glesv2
 Mesa-libd3d-devel: d3d 
 ModemManager-devel: ModemManager mm-glib 
 MyGUI-devel: MYGUI 
-NetworkManager-devel: NetworkManager libnm libnm-glib libnm-glib-vpn libnm-util 
+NetworkManager-devel: libnm 
 OpenColorIO-devel: OpenColorIO 
 OpenIPMI-devel: OpenIPMI OpenIPMIcmdlang OpenIPMIglib OpenIPMIposix OpenIPMIpthread OpenIPMItcl OpenIPMIui OpenIPMIutils 
 PackageKit-Qt-devel: packagekitqt5 
@@ -38,7 +39,7 @@ amtk-devel: amtk-5
 anjuta-devel: libanjuta-3.0 
 anthy-devel: anthy 
 appindicator-sharp-devel: appindicator-sharp-0.1 
-appstream-glib-devel: appstream-builder appstream-glib 
+appstream-glib-devel: appstream-glib 
 apr-devel: apr-1 
 apr-util-devel: apr-util-1 
 aqbanking-devel: aqbanking 
@@ -46,17 +47,17 @@ argon2-devel: libargon2
 aria2-devel: libaria2 
 armadillo-devel: armadillo 
 arpack-ng-devel: arpack 
-art-sharp2: art-sharp-2.0 
 assimp-devel: assimp 
 at-spi-sharp-devel: at-spi-sharp 
 at-spi2-atk-devel: atk-bridge-2.0 
 at-spi2-core-devel: atspi-2 
 atheme-devel: atheme-services 
 atk-devel: atk 
-atkmm-devel: atkmm-2.28 
+atkmm-devel: atkmm-2.30 
 atkmm1_6-devel: atkmm-1.6 
 atlascpp-devel: atlascpp-0.6 
 atril-devel: atril-document-1.5.0 atril-view-1.5.0 
+attica-qt5-devel: libKF5Attica 
 audacious-devel: audacious 
 audaspace-devel: audaspace 
 audiofile-devel: audiofile 
@@ -82,15 +83,17 @@ bcunit-devel: bcunit
 belcard-devel: belcard 
 belle-sip-devel: belle-sip 
 belr-devel: belr 
+bemenu-devel: bemenu 
 biblesync-devel: biblesync 
 bigreqsproto-devel: bigreqsproto 
 bitlbee-devel: bitlbee 
 bladeRF-devel: libbladeRF 
+blitz-devel: blitz 
 blosc-devel: blosc 
 bluez-devel: bluez 
+bodr: bodr 
 boo-devel: boo 
 brasero-devel: libbrasero-burn3 libbrasero-media3 
-budgie-desktop-devel: budgie-1.0 budgie-theme-1.0 
 bzrtp-devel: libbzrtp 
 c-ares-devel: libcares 
 c-dvar-devel: libcdvar 
@@ -110,6 +113,7 @@ carla-devel: carla-standalone carla-utils
 ccrtp-devel: libccrtp 
 celt051-devel: celt051 
 cfitsio-devel: cfitsio 
+chafa-devel: chafa 
 chck-devel: chck 
 check-devel: check 
 cheese-devel: cheese cheese-gtk 
@@ -152,6 +156,8 @@ czmq-devel: libczmq
 d0_blind_id-devel: d0_blind_id d0_rijndael 
 damageproto-devel: damageproto 
 dataquay-devel: dataquay 
+dav1d-devel: dav1d 
+davix-devel: davix 
 dbh-devel: dbh2 
 dbus-1-devel: dbus-1 
 dbus-1-glib-devel: dbus-glib-1 
@@ -171,7 +177,6 @@ dleyna-core-devel: dleyna-core-1.0
 dleyna-renderer-devel: dleyna-renderer-service-1.0 
 dleyna-server-devel: dleyna-server-service-1.0 
 dmxproto-devel: dmxproto 
-docky-devel: docky.cairohelper docky.items docky.services docky.widgets 
 dotconf-devel: dotconf 
 dpkg-devel: libdpkg 
 dracut: dracut 
@@ -182,14 +187,16 @@ dtkcore-devel: dtkcore
 dtkwidget-devel: dtkwidget 
 dtkwm-devel: dtkwm 
 duktape-devel: duktape 
+easyloggingpp-devel: easyloggingpp 
 ecryptfs-utils-devel: libecryptfs 
 eekboard-devel: eek-0.90 eek-gtk-0.90 eek-xkl-0.90 eekboard-0.90 
 efivar-devel: efiboot efivar 
-efl-devel: ecore ecore-audio ecore-audio-cxx ecore-avahi ecore-con ecore-cxx ecore-drm2 ecore-evas ecore-fb ecore-file ecore-imf ecore-imf-evas ecore-input ecore-input-evas ecore-ipc ecore-wl2 ecore-x ector edje edje-cxx eet eet-cxx eeze efl efl-cxx efl-wl efreet efreet-mime efreet-trash eina eina-cxx eio eio-cxx eldbus elementary elementary-cxx elocation elput elua embryo emile emotion eo eo-cxx eolian eolian-cxx ephysics ethumb ethumb_client evas evas-cxx evas-drm evas-fb evas-opengl-x11 evas-software-buffer evas-software-x11 evas-wayland-egl evas-wayland-shm 
+efl-devel: ecore ecore-audio ecore-avahi ecore-con ecore-cxx ecore-evas ecore-fb ecore-file ecore-imf ecore-imf-evas ecore-input ecore-input-evas ecore-ipc ecore-x ector edje edje-cxx eet eet-cxx eeze efl efl-core efl-cxx efl-net efl-ui efreet efreet-mime efreet-trash eina eina-cxx eio eio-cxx eldbus eldbus-cxx elementary elementary-cxx elocation elua embryo emile emotion eo eo-cxx eolian eolian-cxx ephysics ethumb ethumb-client ethumb_client evas evas-cxx 
 eigen3-devel: eigen3 
 ell-devel: ell 
 enca-devel: enca 
-enchant-devel: enchant 
+enchant-1-devel: enchant 
+enchant-devel: enchant-2 
 enet-devel: libenet 
 enlightenment-devel: enlightenment everything 
 eog-devel: eog 
@@ -200,7 +207,7 @@ etrophy-devel: etrophy
 evemu-devel: evemu 
 evieproto-devel: evieproto 
 evince-devel: evince-document-3.0 evince-view-3.0 
-evolution-data-server-devel: camel-1.2 evolution-data-server-1.2 libebackend-1.2 libebook-1.2 libebook-contacts-1.2 libecal-1.2 libedata-book-1.2 libedata-cal-1.2 libedataserver-1.2 libedataserverui-1.2 
+evolution-data-server-devel: camel-1.2 evolution-data-server-1.2 libebackend-1.2 libebook-1.2 libebook-contacts-1.2 libecal-2.0 libedata-book-1.2 libedata-cal-2.0 libedataserver-1.2 libedataserverui-1.2 
 evolution-devel: evolution-calendar-3.0 evolution-mail-3.0 evolution-shell-3.0 libemail-engine 
 exo-devel: exo-1 exo-2 
 farstream-devel: farstream-0.2 
@@ -227,10 +234,13 @@ ffmpeg-4-libswresample-devel: libswresample
 ffmpeg-4-libswscale-devel: libswscale 
 ffnvcodec-devel: ffnvcodec 
 fftw3-devel: fftw3 fftw3f fftw3l 
+filter_audio-devel: filteraudio 
 finch-devel: finch gnt 
 fish-devel: fish 
+fish3-devel: fish 
 fixesproto-devel: fixesproto 
 flac-devel: flac flac++ 
+flann-devel: flann 
 flatpak-devel: flatpak 
 flickrnet-devel: flickrnet 
 florence-devel: florence-1.0 
@@ -242,7 +252,6 @@ font-specimen-devel: font-specimen
 font-util: fontutil 
 fontcacheproto-devel: fontcacheproto 
 fontconfig-devel: fontconfig 
-fontforge-devel: libfontforge libfontforgeexe 
 fontsproto-devel: fontsproto 
 fox16-devel: fox 
 fparser-devel: fparser 
@@ -250,7 +259,7 @@ fplll-devel: fplll
 frame-devel: frame frame-x11 
 freealut-devel: freealut 
 freecell-solver-devel: libfreecell-solver 
-freeglut-devel: freeglut 
+freeglut-devel: glut 
 freeipmi-devel: libfreeipmi libipmiconsole libipmidetect libipmimonitoring 
 freerdp-devel: freerdp-client2 freerdp-server2 freerdp-shadow2 freerdp2 
 freetype2-devel: freetype2 
@@ -260,6 +269,7 @@ fribidi-devel: fribidi
 fstrm-devel: libfstrm 
 ftgl-devel: ftgl 
 fuse-devel: fuse 
+fuse3-devel: fuse3 
 fwupd-devel: fwupd 
 fwupdate-devel: fwup 
 gamin-devel: gamin 
@@ -267,8 +277,6 @@ gammu-devel: gammu gammu-smsd
 gasnet-devel: gasnet-ibv-par gasnet-ibv-parsync gasnet-ibv-seq gasnet-mpi-par gasnet-mpi-parsync gasnet-mpi-seq gasnet-ofi-par gasnet-ofi-parsync gasnet-ofi-seq gasnet-psm-par gasnet-psm-parsync gasnet-psm-seq gasnet-smp-par gasnet-smp-parsync gasnet-smp-seq gasnet-udp-par gasnet-udp-parsync gasnet-udp-seq gasnet_tools-par gasnet_tools-seq 
 gc-devel: bdw-gc 
 gcab-devel: libgcab-1.0 
-gconf-sharp-peditors2: gconf-sharp-peditors-2.0 
-gconf-sharp2: gconf-sharp-2.0 
 gconf2-devel: gconf-2.0 
 gconfmm-devel: gconfmm-2.6 
 gd-devel: gdlib 
@@ -280,7 +288,7 @@ gdlmm-devel: gdlmm-3.0
 gdm-devel: gdm gdm-pam-extensions 
 geany-devel: geany 
 gedit-devel: gedit 
-gegl-devel: gegl-0.3 gegl-sc-0.3 
+gegl-devel: gegl-0.4 gegl-sc-0.4 
 geis-devel: libgeis 
 geners-devel: geners 
 geoclue2-devel: geoclue-2.0 libgeoclue-2.0 
@@ -294,6 +302,7 @@ ghex-devel: gtkhex-3
 ghostscript-devel: ijs 
 giblib-devel: giblib 
 gimp-devel: gimp-2.0 gimpthumb-2.0 gimpui-2.0 
+ginac-devel: ginac 
 gio-sharp-devel: gio-sharp-2.0 
 gio-sharp3-devel: gio-sharp-3.0 
 girara-devel: girara-gtk3 
@@ -307,8 +316,9 @@ glfw2-devel: libglfw
 glib-sharp2: glib-sharp-2.0 
 glib2-devel-32bit: glib-2.0 
 glib2-devel: gio-2.0 gio-unix-2.0 glib-2.0 gmodule-2.0 gmodule-export-2.0 gmodule-no-export-2.0 gobject-2.0 gthread-2.0 
-glibmm2-devel: giomm-2.58 glibmm-2.58 
+glibmm2-devel: giomm-2.62 glibmm-2.62 
 glibmm2_4-devel: giomm-2.4 glibmm-2.4 
+glm-devel: glm 
 glog-devel: libglog 
 gloox-devel: gloox 
 glproto-devel: glproto 
@@ -318,11 +328,11 @@ glyr-devel: libglyr
 gmime-devel: gmime-3.0 
 gmime2_6-devel: gmime-2.6 
 gmime2_6-sharp: gmime-sharp-2.6 
-gnokii-devel: gnokii xgnokii 
+gmock: gmock gmock_main 
 gnome-autoar-devel: gnome-autoar-0 gnome-autoar-gtk-0 
 gnome-bluetooth-devel: gnome-bluetooth-1.0 
+gnome-calculator-devel: gcalc-1 
 gnome-control-center-devel: gnome-keybindings 
-gnome-desktop-sharp2-devel: gnome-desktop-sharp-2.0 gnome-print-sharp-2.18 gtksourceview2-sharp rsvg2-sharp-2.0 vte-sharp-0.16 wnck-sharp-1.0 
 gnome-doc-utils-devel: gnome-doc-utils 
 gnome-icon-theme-symbolic: gnome-icon-theme-symbolic 
 gnome-icon-theme: gnome-icon-theme 
@@ -330,15 +340,13 @@ gnome-keyring-sharp-devel: gnome-keyring-sharp-1.0
 gnome-menus-devel: libgnome-menu-3.0 
 gnome-online-accounts-devel: goa-1.0 goa-backend-1.0 
 gnome-settings-daemon-devel: gnome-settings-daemon 
-gnome-sharp2: gnome-sharp-2.0 
 gnome-software-devel: gnome-software 
 gnome-todo-devel: gnome-todo 
-gnome-vfs-sharp2: gnome-vfs-sharp-2.0 
 gnome-vfs2-devel: gnome-vfs-2.0 gnome-vfs-module-2.0 
 gnome-video-effects-devel: gnome-video-effects 
 gnuastro-devel: gnuastro 
 gnumeric-devel: libspreadsheet-1.12 
-gnuradio-devel: gnuradio-analog gnuradio-atsc gnuradio-audio gnuradio-blocks gnuradio-channels gnuradio-digital gnuradio-dtv gnuradio-fcd gnuradio-fec gnuradio-fft gnuradio-filter gnuradio-noaa gnuradio-pager gnuradio-runtime gnuradio-trellis gnuradio-uhd gnuradio-video-sdl gnuradio-vocoder gnuradio-wavelet gr-wxgui volk 
+gnuradio-devel: gnuradio-analog gnuradio-audio gnuradio-blocks gnuradio-channels gnuradio-digital gnuradio-dtv gnuradio-fec gnuradio-fft gnuradio-filter gnuradio-runtime gnuradio-trellis gnuradio-uhd gnuradio-video-sdl gnuradio-vocoder gnuradio-wavelet gnuradio-zeromq 
 gobject-introspection-devel: gobject-introspection-1.0 gobject-introspection-no-export-1.0 
 goffice-0_8-devel: libgoffice-0.8 
 goffice-devel: libgoffice-0.10 
@@ -352,8 +360,9 @@ granite-devel: granite
 graphite2-devel: graphite2 
 graphviz-devel: libcdt libcgraph libgvc libgvpr liblab_gamut libpathplan libxdot 
 grilo-devel: grilo-0.3 grilo-net-0.3 grilo-pls-0.3 
+grilo-plugins-devel: grilo-plugins-0.3 
 gromacs-devel: libgromacs 
-grpc-devel: grpc grpc++ grpc++_unsecure grpc_unsecure 
+grpc-devel: gpr grpc grpc++ grpc++_unsecure grpc_unsecure 
 gsequencer-devel: libags libags_audio libags_gui libgsequencer 
 gsettings-desktop-schemas-devel: gsettings-desktop-schemas 
 gsettings-qt-devel: gsettings-qt 
@@ -364,24 +373,23 @@ gsound-devel: gsound
 gspell-devel: gspell-1 
 gstreamer-devel: gstreamer-1.0 gstreamer-base-1.0 gstreamer-check-1.0 gstreamer-controller-1.0 gstreamer-net-1.0 
 gstreamer-editing-services-devel: gst-editing-services-1.0 
-gstreamer-plugins-bad-devel: gstreamer-bad-allocators-1.0 gstreamer-bad-audio-1.0 gstreamer-bad-base-1.0 gstreamer-bad-video-1.0 gstreamer-codecparsers-1.0 gstreamer-gl-1.0 gstreamer-insertbin-1.0 gstreamer-mpegts-1.0 gstreamer-player-1.0 gstreamer-plugins-bad-1.0 
-gstreamer-plugins-base-devel: gstreamer-allocators-1.0 gstreamer-app-1.0 gstreamer-audio-1.0 gstreamer-fft-1.0 gstreamer-pbutils-1.0 gstreamer-plugins-base-1.0 gstreamer-riff-1.0 gstreamer-rtp-1.0 gstreamer-rtsp-1.0 gstreamer-sdp-1.0 gstreamer-tag-1.0 gstreamer-video-1.0 
-gstreamer-plugins-qt-devel: QtGLib-2.0 QtGStreamer-1.0 QtGStreamerUi-1.0 QtGStreamerUtils-1.0 
-gstreamer-plugins-qt5-devel: Qt5GLib-2.0 Qt5GStreamer-1.0 Qt5GStreamerQuick-1.0 Qt5GStreamerUi-1.0 Qt5GStreamerUtils-1.0 
+gstreamer-plugins-bad-devel: gstreamer-bad-audio-1.0 gstreamer-codecparsers-1.0 gstreamer-insertbin-1.0 gstreamer-mpegts-1.0 gstreamer-player-1.0 gstreamer-plugins-bad-1.0 gstreamer-sctp-1.0 gstreamer-webrtc-1.0 
+gstreamer-plugins-base-devel: gstreamer-allocators-1.0 gstreamer-app-1.0 gstreamer-audio-1.0 gstreamer-fft-1.0 gstreamer-gl-1.0 gstreamer-pbutils-1.0 gstreamer-plugins-base-1.0 gstreamer-riff-1.0 gstreamer-rtp-1.0 gstreamer-rtsp-1.0 gstreamer-sdp-1.0 gstreamer-tag-1.0 gstreamer-video-1.0 
 gstreamer-rtsp-server-devel: gstreamer-rtsp-server-1.0 
 gstreamer-transcoder-devel: gst-transcoder-1.0 
 gstreamer-validate-devel: gst-validate-1.0 
 gstreamermm-devel: gstreamermm-1.0 
 gtef-devel: gtef-2 
+gtest: gtest gtest_main 
 gthumb-devel: gthumb-3.6 
 gtk-doc: gtk-doc 
+gtk-layer-shell-devel: gtk-layer-shell-0 
 gtk-sharp-beans-devel: gtk-sharp-beans-2.0 
 gtk-sharp2-gapi: gapi-2.0 
 gtk-sharp2: gtk-dotnet-2.0 gtk-sharp-2.0 
 gtk-sharp3-devel: gdk-sharp-3.0 glib-sharp-3.0 gtk-dotnet-3.0 gtk-sharp-3.0 
 gtk-sharp3-gapi-devel: gapi-3.0 
 gtk-vnc-devel: gtk-vnc-2.0 gvnc-1.0 gvncpulse-1.0 
-gtk-vnc2-devel: gtk-vnc-1.0 
 gtk2-devel: gail gdk-2.0 gdk-x11-2.0 gtk+-2.0 gtk+-unix-print-2.0 gtk+-x11-2.0 
 gtk2-engines-devel: gtk-engines-2 
 gtk3-devel: gail-3.0 gdk-3.0 gdk-broadway-3.0 gdk-wayland-3.0 gdk-x11-3.0 gtk+-3.0 gtk+-broadway-3.0 gtk+-unix-print-3.0 gtk+-wayland-3.0 gtk+-x11-3.0 
@@ -395,6 +403,7 @@ gtkpod-devel: libgtkpod-1.1.0
 gtksourceview-devel: gtksourceview-3.0 
 gtksourceview18-devel: gtksourceview-1.0 
 gtksourceview2-devel: gtksourceview-2.0 
+gtksourceview4-devel: gtksourceview-4 
 gtksourceviewmm-devel: gtksourceviewmm-3.0 
 gtkspell-devel: gtkspell-2.0 
 gtkspell3-devel: gtkspell3-3.0 
@@ -406,10 +415,10 @@ guile-cairo-devel: guile-cairo
 guile-devel: guile-2.0 
 gutenprint-devel: gutenprint gutenprintui2 
 guvcview-devel: libgviewaudio libgviewencoder libgviewrender libgviewv4l2core 
-gwenhywfar-devel: gwengui-fox16 gwengui-gtk2 gwengui-qt4 gwengui-qt5 gwenhywfar 
+gwenhywfar-devel: gwengui-fox16 gwengui-gtk2 gwengui-gtk3 gwengui-qt5 gwenhywfar 
 hackrf-devel: libhackrf 
 hamlib-devel: hamlib 
-harfbuzz-devel: harfbuzz harfbuzz-gobject harfbuzz-icu 
+harfbuzz-devel: harfbuzz harfbuzz-gobject harfbuzz-icu harfbuzz-subset 
 harminv-devel: harminv 
 hexchat-devel: hexchat-plugin 
 hfst-devel: hfst 
@@ -447,9 +456,10 @@ jthread-devel: jthread
 kactivities-stats-devel: libKActivitiesStats 
 kactivities5-devel: libKActivities 
 kbproto-devel: kbproto 
-kdb-devel: KDb3 
 keybinder-3.0-devel: keybinder-3.0 
 keybinder-devel: keybinder 
+kim-api-devel: libkim-api 
+kismet-devel: kismet 
 kopano-devel: kopano 
 kproperty-devel: KPropertyCore3 KPropertyWidgets3 
 krb5-devel: gssrpc kadm-client kadm-server kdb krb5 krb5-gssapi mit-krb5 mit-krb5-gssapi 
@@ -461,7 +471,7 @@ ldacBT-devel: ldacBT-abr ldacBT-enc
 lensfun-devel: lensfun 
 leptonica-devel: lept 
 lhasa-devel: liblhasa 
-lib3270-devel: lib3270 
+lib3270-devel: lib3270 lib3270++ lib3270++static lib3270-static 
 lib3ds-devel: lib3ds 
 lib4store-devel: 4store-0 
 libFS-devel: libfs 
@@ -483,8 +493,10 @@ libOgreProperty-devel: OGRE-Property
 libOgreRTShaderSystem-devel: OGRE-RTShaderSystem 
 libOgreTerrain-devel: OGRE-Terrain 
 libOgreVolume-devel: OGRE-Volume 
-libOpenSceneGraph-devel: openscenegraph openscenegraph-osg openscenegraph-osgAnimation openscenegraph-osgDB openscenegraph-osgFX openscenegraph-osgGA openscenegraph-osgManipulator openscenegraph-osgParticle openscenegraph-osgQt openscenegraph-osgShadow openscenegraph-osgSim openscenegraph-osgTerrain openscenegraph-osgText openscenegraph-osgUtil openscenegraph-osgViewer openscenegraph-osgVolume openscenegraph-osgWidget 
+libOpenSceneGraph-devel: openscenegraph openscenegraph-osg openscenegraph-osgAnimation openscenegraph-osgDB openscenegraph-osgFX openscenegraph-osgGA openscenegraph-osgManipulator openscenegraph-osgParticle openscenegraph-osgShadow openscenegraph-osgSim openscenegraph-osgTerrain openscenegraph-osgText openscenegraph-osgUtil openscenegraph-osgViewer openscenegraph-osgVolume openscenegraph-osgWidget 
+libOpenSceneGraph131-devel: openscenegraph openscenegraph-osg openscenegraph-osgAnimation openscenegraph-osgDB openscenegraph-osgFX openscenegraph-osgGA openscenegraph-osgManipulator openscenegraph-osgParticle openscenegraph-osgQt openscenegraph-osgShadow openscenegraph-osgSim openscenegraph-osgTerrain openscenegraph-osgText openscenegraph-osgUtil openscenegraph-osgViewer openscenegraph-osgVolume openscenegraph-osgWidget 
 libOpenThreads-devel: openthreads 
+libOpenThreads20-devel: openthreads 
 libQt53DAnimation-devel: Qt53DAnimation 
 libQt53DCore-devel: Qt53DCore 
 libQt53DExtras-devel: Qt53DExtras 
@@ -508,6 +520,7 @@ libQt5OpenGL-devel: Qt5OpenGL
 libQt5OpenGLExtensions-devel-static: Qt5OpenGLExtensions 
 libQt5PrintSupport-devel: Qt5PrintSupport 
 libQt5QuickControls2-devel: Qt5QuickControls2 
+libQt5QuickTemplates2-devel: Qt5QuickTemplates2 
 libQt5Sql-devel: Qt5Sql 
 libQt5Test-devel: Qt5Test 
 libQt5WebKit5-devel: Qt5WebKit 
@@ -553,6 +566,7 @@ libXinerama-devel: xinerama
 libXmu-devel: xmu xmuu 
 libXp-devel: xp 
 libXpm-devel: xpm 
+libXpresent-devel: xpresent 
 libXprintAppUtil-devel: xprintapputil 
 libXprintUtil-devel: xprintutil 
 libXrandr-devel: xrandr 
@@ -584,6 +598,8 @@ libaom-devel: aom
 libapparmor-devel: libapparmor 
 libappindicator-devel: appindicator-0.1 
 libappindicator3-devel: appindicator3-0.1 
+libappmenu-gtk2-parser-devel: appmenu-gtk2-parser 
+libappmenu-gtk3-parser-devel: appmenu-gtk3-parser 
 libarchive-devel: libarchive 
 libargtable2-devel: argtable2 
 libart_lgpl-devel: libart-2.0 
@@ -599,15 +615,19 @@ libavahi-glib-devel: avahi-glib avahi-ui avahi-ui-gtk3
 libavahi-gobject-devel: avahi-gobject 
 libavahi-qt4-devel: avahi-qt4 
 libavc1394-devel: libavc1394 
+libavtp-devel: avtp 
 libayatana-appindicator-devel: ayatana-appindicator-0.1 
 libayatana-appindicator3-devel: ayatana-appindicator3-0.1 
 libayatana-indicator-devel: ayatana-indicator-0.4 
 libayatana-indicator3-devel: ayatana-indicator3-0.4 
+libb2-devel: libb2 
 libbasicobjects-devel: basicobjects 
+libbd_utils-devel: blockdev-utils 
 libbde-devel: libbde 
 libbfio-devel: libbfio 
 libbitcoinconsensus-devel: libbitcoinconsensus 
 libblkid-devel: blkid 
+libblockdev-devel: blockdev 
 libbluray-devel: libbluray 
 libbml-devel: libbml 
 libbonobo-devel: bonobo-activation-2.0 libbonobo-2.0 
@@ -622,17 +642,19 @@ libburn-devel: libburn-1
 libbuzztrax-core-devel: libbuzztrax-core 
 libbuzztrax-gst-devel: libbuzztrax-gst 
 libbuzztrax-ic-devel: libbuzztrax-ic 
+libbytesize-devel: bytesize 
 libbz2-devel: bzip2 
 libcaca-devel: caca caca++ 
 libcacard-devel: libcacard 
 libcaes-devel: libcaes 
+libcamera-devel: camera 
 libcanberra-devel: libcanberra 
 libcanberra-gtk-devel: libcanberra-gtk 
 libcanberra-gtk3-devel: libcanberra-gtk3 
 libcangjie-devel: cangjie 
 libcap-devel: libcap 
 libcap-ng-devel: libcap-ng 
-libcapnp-devel: capnp capnp-rpc kj kj-async 
+libcapnp-devel: capnp capnp-json capnp-rpc kj kj-async kj-gzip kj-http kj-test kj-tls 
 libcbor-devel: libcbor 
 libcdata-devel: libcdata 
 libcdatetime-devel: libcdatetime 
@@ -647,6 +669,7 @@ libcelt-devel: celt
 libcerf-devel: libcerf 
 libcerror-devel: libcerror 
 libcfile-devel: libcfile 
+libcgroup-devel: libcgroup 
 libchamplain-devel: champlain-0.12 champlain-gtk-0.12 
 libchardet-devel: chardet 
 libchewing-devel: chewing 
@@ -670,8 +693,10 @@ libcolord-devel: colord colorhug
 libcolord-gtk-devel: colord-gtk 
 libcom_err-devel: com_err ss 
 libcompizconfig-devel: libcompizconfig 
+libcomps-devel: libcomps 
 libconfig++-devel: libconfig++ 
 libconfig-devel: libconfig 
+libconfini-devel: libconfini 
 libconfuse-devel: libconfuse 
 libcorosync-devel: corosync libcfg libcmap libcorosync_common libcpg libquorum libsam libtotem_pg libvotequorum 
 libcpath-devel: libcpath 
@@ -701,7 +726,7 @@ libdbi-devel: dbi
 libdbus-c++-devel: dbus-c++-1 dbus-c++-glib-1 
 libdbusextended-qt5-devel: dbusextended-qt5 
 libdbusmenu-glib-devel: dbusmenu-glib-0.4 
-libdbusmenu-gtk-devel: dbusmenu-gtk-0.4 
+libdbusmenu-gtk2-devel: dbusmenu-gtk-0.4 
 libdbusmenu-gtk3-devel: dbusmenu-gtk3-0.4 
 libdbusmenu-jsonloader-devel: dbusmenu-jsonloader-0.4 
 libdbusmenu-qt-devel: dbusmenu-qt 
@@ -715,12 +740,14 @@ libdhash-devel: dhash
 libdiscid-devel: libdiscid 
 libdjvulibre-devel: ddjvuapi 
 libdlm-devel: libdlm libdlm_lt 
-libdmapsharing-devel: libdmapsharing-3.0 
+libdmapsharing-devel: libdmapsharing-4.0 
+libdmapsharing3-devel: libdmapsharing-3.0 
 libdmmp-devel: libdmmp 
 libdmtx-devel: libdmtx 
 libdmx-devel: dmx 
 libdnf-devel: libdnf 
 libdrm-devel: libdrm libdrm_amdgpu libdrm_intel libdrm_nouveau libdrm_radeon 
+libdrpm-devel: drpm 
 libdrumstick-devel: drumstick-alsa drumstick-file drumstick-rt 
 libdtksettings-devel: dtksettings 
 libdtksettingsview-devel: dtksettingsview 
@@ -737,7 +764,9 @@ libebml-devel: libebml
 libebur128-devel: libebur128 
 libechonest-devel: libechonest 
 libechonest-qt5-devel: libechonest5 
+libeconf-devel: libeconf 
 libedit-devel: libedit 
+libeditorconfig-devel: editorconfig 
 libee-devel: libee 
 libeigen2-devel: eigen2 
 libelektra-devel: elektra 
@@ -795,6 +824,7 @@ libfontenc-devel: fontenc
 libfprint-devel: libfprint 
 libfreefare-devel: libfreefare 
 libfreehand-devel: libfreehand-0.1 
+libfsapfs-devel: libfsapfs 
 libfsntfs-devel: libfsntfs 
 libftdi0-devel: libftdi libftdipp 
 libftdi1-devel: libftdi1 libftdipp1 
@@ -805,6 +835,7 @@ libfwevt-devel: libfwevt
 libfwnt-devel: libfwnt 
 libfwsi-devel: libfwsi 
 libgadu-devel: libgadu 
+libgamemode-devel: gamemode gamemode-auto 
 libgames-support-devel: libgames-support-1.0 
 libgaminggear-devel: gaminggear-0 
 libgarcon-devel: garcon-1 garcon-gtk2-1 garcon-gtk3-1 
@@ -816,12 +847,12 @@ libgda-5_0-devel: libgda-5.0 libgda-bdb-5.0 libgda-firebird-5.0 libgda-jdbc-5.0 
 libgdata-devel: libgdata 
 libgdiplus-devel: libgdiplus 
 libgeda-devel: libgeda 
+libgedacairo-devel: libgedacairo 
 libgee-devel: gee-0.8 
 libgee06-devel: gee-1.0 
-libgepub-devel: libgepub 
+libgepub-devel: libgepub-0.6 
 libgexiv2-devel: gexiv2 
 libgig-devel: akai gig 
-libginac-devel: ginac 
 libgit2-devel: libgit2 
 libgit2-glib-devel: libgit2-glib-1.0 
 libgitg-devel: libgitg-1.0 libgitg-ext-1.0 
@@ -831,7 +862,7 @@ libglademm-devel: libglademm-2.4
 libgladeui-2-devel: gladeui-2.0 
 libglfw-devel: glfw3 
 libgltf-devel: libgltf-0.1 
-libglvnd-devel: libglvnd 
+libglvnd-devel: glx libglvnd opengl 
 libgme-devel: libgme 
 libgnome-desktop-2-devel: gnome-desktop-2.0 
 libgnome-desktop-3-devel: gnome-desktop-3.0 
@@ -845,22 +876,23 @@ libgnomeprint-devel: libgnomeprint-2.2
 libgnomeprintui-devel: libgnomeprintui-2.2 
 libgnomesu-devel: libgnomesu-1.0 
 libgnomeui-devel: libgnomeui-2.0 
+libgnuradio-fcdproplus-devel: gnuradio-fcdproplus 
+libgnuradio-iqbalance-devel: gnuradio-iqbalance 
 libgnutls-dane-devel: gnutls-dane 
 libgnutls-devel: gnutls 
 libgoocanvas3-devel: goocanvas 
 libgoocanvasmm-devel: goocanvasmm-2.0 
 libgooglepinyin-devel: googlepinyin 
 libgovirt-devel: govirt-1.0 
+libgpgme-devel: gpgme gpgme-glib 
 libgphoto2-devel: libgphoto2 libgphoto2_port 
 libgpiod-devel: libgpiod libgpiodcxx 
 libgpod-devel: libgpod-1.0 
-libgpod-sharp: libgpod-sharp 
 libgraphene-devel: graphene-1.0 graphene-gobject-1.0 
 libgrss-devel: libgrss 
 libgsasl-devel: libgsasl 
 libgsf-devel: libgsf-1 
-libgsignon-glib-devel: libgsignon-glib 
-libgssdp-devel: gssdp-1.0 
+libgssdp-devel: gssdp-1.2 
 libgssglue-devel: libgssglue 
 libgsystem-devel: libgsystem 
 libgtkdatabox-devel: gtkdatabox 
@@ -873,19 +905,23 @@ libguess-devel: libguess
 libguestfs-devel: libguestfs libguestfs-gobject-1.0 
 libguile1-devel: guile-1.8 
 libgupnp-av-devel: gupnp-av-1.0 
-libgupnp-devel: gupnp-1.0 
+libgupnp-devel: gupnp-1.2 
 libgupnp-dlna-devel: gupnp-dlna-2.0 gupnp-dlna-gst-2.0 gupnp-dlna-metadata-2.0 
 libgupnp-igd-devel: gupnp-igd-1.0 
-libgupnp-ui-devel: gupnp-ui-1.0 
 libgusb-devel: gusb 
 libgweather-devel: gweather-3.0 
 libgxps-devel: libgxps 
 libgypsy-devel: gypsy 
+libhandy-devel: libhandy-0.0 
 libhangul-devel: libhangul 
 libhidapi-devel: hidapi-hidraw hidapi-libusb 
+libhinawa-devel: libhinawa 
 libhmac-devel: libhmac 
+libhtp-devel: htp 
+libhts-devel: htslib 
 libhubbub-devel: libhubbub 
 libical-devel: libical 
+libical-glib-devel: libical-glib 
 libicecream-devel: icecc 
 libicns-devel: libicns 
 libicu-devel: icu-i18n icu-io icu-uc 
@@ -896,6 +932,7 @@ libidn2-devel: libidn2
 libiec16022-devel: libiec16022 
 libiec61883-devel: libiec61883 
 libigdgmm-devel: igdgmm 
+libigfxcmrt-devel: igfxcmrt 
 libimobiledevice-devel: libimobiledevice-1.0 
 libindi-devel: libindi 
 libindicator-devel: indicator-0.4 
@@ -915,7 +952,7 @@ libisds-devel: libisds
 libisoburn-devel: libisoburn-1 
 libisofs-devel: libisofs-1 
 libite-devel: libite 
-libixion-devel: libixion-0.13 
+libixion-devel: libixion-0.15 
 libjack-devel: jack 
 libjansson-devel: jansson 
 libjasper-devel: jasper 
@@ -923,7 +960,6 @@ libjaylink-devel: libjaylink
 libjpeg62-devel: libjpeg libturbojpeg 
 libjpeg8-devel: libjpeg libturbojpeg 
 libjpgalleg-devel: jpgalleg 
-libjreen-devel: libjreen 
 libjreen-qt5-devel: libjreen-qt5 
 libjson-c-devel: json json-c 
 libjte-devel: libjte-1 
@@ -933,11 +969,11 @@ libkdumpfile-devel: libkdumpfile
 libkkc-devel: kkc-1.0 
 libkmod-devel: libkmod 
 libkms-devel: libkms 
-libkqoauth-devel: kqoauth 
 libkscreen2-devel: kscreen2 
 libksi-devel: libksi 
 libkyotocabinet-devel: kyotocabinet 
 liblangtag-devel: liblangtag 
+liblasso-devel: lasso 
 liblazy-devel: lazy 
 liblbxutil-devel: lbxutil 
 liblcms2-devel: lcms2 
@@ -960,13 +996,14 @@ liblqr-devel: lqr-1
 liblrdf-devel: lrdf 
 liblscp-devel: lscp 
 libltc-devel: ltc 
+libluksde-devel: libluksde 
 liblxc-devel: lxc 
 liblxqt-devel: lxqt 
 liblz4-devel: liblz4 
 libm4ri-devel: m4ri 
 libmad-devel: mad 
 libmaia-devel: maia 
-libmanette-devel: libmanette-0.2 
+libmanette-devel: manette-0.2 
 libmapidb-devel: libmapidb 
 libmariadb-devel: libmariadb 
 libmarkdown-devel: libmarkdown 
@@ -985,6 +1022,7 @@ libmediainfo-devel: libmediainfo
 libmemcached-devel: libmemcached 
 libmesode-devel: libmesode 
 libmetalink-devel: libmetalink 
+libmfx-devel: libmfx libmfxhw64 mfx 
 libmicrohttpd-devel: libmicrohttpd 
 libmikmod-devel: libmikmod 
 libmirage-devel: libmirage 
@@ -998,7 +1036,6 @@ libmnl-devel: libmnl
 libmodman-devel: libmodman-2.0 
 libmodplug-devel: libmodplug 
 libmodulemd-devel: modulemd-2.0 
-libmodulemd1-devel: modulemd 
 libmono-2_0-devel: mono-2 
 libmonosgen-2_0-devel: monosgen-2 
 libmopac7-1-devel: libmopac7 
@@ -1018,6 +1055,8 @@ libmusicbrainz5-devel: libmusicbrainz5
 libmwaw-devel: libmwaw-0.3 
 libmygpo-qt-devel: libmygpo-qt 
 libmygpo-qt5-devel: libmygpo-qt5 
+libmypaint-devel: libmypaint 
+libmypaint-gegl-devel: libmypaint-gegl 
 libmysofa-devel: libmysofa 
 libndctl-devel: libdaxctl libndctl 
 libndp-devel: libndp 
@@ -1047,11 +1086,11 @@ libngspice-devel: ngspice
 libnice-devel: nice 
 libnjb-devel: libnjb 
 libnl3-devel: libnl-3.0 libnl-cli-3.0 libnl-genl-3.0 libnl-idiag-3.0 libnl-nf-3.0 libnl-route-3.0 libnl-xfrm-3.0 
-libnm-gtk-devel: libnm-gtk 
 libnma-devel: libnma 
 libnotify-devel: libnotify 
 libnsl-devel: libnsl 
 libntfs-3g-devel: libntfs-3g 
+libntirpc-devel: libntirpc 
 libntlm-devel: libntlm 
 libnumbertext-devel: libnumbertext 
 libnxml-devel: nxml 
@@ -1078,7 +1117,7 @@ liboping-devel: liboping
 libopts-devel: autoopts 
 libopus-devel: opus 
 libopusenc-devel: libopusenc 
-liborcus-devel: liborcus-0.13 liborcus-spreadsheet-model-0.13 
+liborcus-devel: liborcus-0.15 liborcus-spreadsheet-model-0.15 
 libosinfo-devel: libosinfo-1.0 
 libosip2-devel: libosip2 
 libosmgpsmap-devel: osmgpsmap-1.0 
@@ -1087,8 +1126,11 @@ libosmo-gsup-client-devel: libosmo-gsup-client
 libosmo-mgcp-client-devel: libosmo-mgcp-client 
 libosmo-mtp-devel: libosmo-mtp 
 libosmo-ranap-devel: libosmo-ranap 
+libosmo-rspro-devel: libosmo-rspro 
+libosmo-sabp-devel: libosmo-sabp 
 libosmo-sccp-devel: libosmo-sccp 
 libosmo-sigtran-devel: libosmo-sigtran 
+libosmo-simtrace2-devel: libosmo-simtrace2 
 libosmo-xua-devel: libosmo-xua 
 libosmoabis-devel: libosmoabis 
 libosmocodec-devel: libosmocodec 
@@ -1100,6 +1142,7 @@ libosmogsm-devel: libosmogsm
 libosmonetif-devel: libosmo-netif 
 libosmosim-devel: libosmosim 
 libosmotrau-devel: libosmotrau 
+libosmousb-devel: libosmousb 
 libosmovty-devel: libosmovty 
 libostree-devel: ostree-1 
 libotf-devel-32bit: libotf 
@@ -1112,8 +1155,6 @@ libpackagekit-glib2-devel: packagekit-glib2
 libpagemaker-devel: libpagemaker-0.0 
 libpamtest-devel: libpamtest 
 libpano-devel: libpano13 
-libpantheon-files-core-devel: pantheon-files-core 
-libpantheon-files-widgets-devel: pantheon-files-widgets 
 libparlatype-devel: parlatype 
 libparserutils-devel: libparserutils 
 libpath_utils-devel: path_utils 
@@ -1133,6 +1174,7 @@ libplist-devel: libplist
 libpmem-devel: libpmem 
 libpmemblk-devel: libpmemblk 
 libpmemlog-devel: libpmemlog 
+libpmemobj-cpp-devel: libpmemobj++ 
 libpmemobj-devel: libpmemobj 
 libpmempool-devel: libpmempool 
 libpng12-compat-devel: libpng 
@@ -1145,10 +1187,12 @@ libpolkit-qt5-1-devel: polkit-qt5-1 polkit-qt5-agent-1 polkit-qt5-core-1 polkit-
 libpoppler-devel: poppler poppler-cairo poppler-cpp poppler-splash 
 libpoppler-glib-devel: poppler-glib 
 libpoppler-qt5-devel: poppler-qt5 
+libportal-devel: libportal 
 libpqxx-devel: libpqxx 
 libprelude-devel: libprelude 
-libproj-devel: proj 
+libprimesieve-devel: primesieve 
 libprotobuf-c-devel: libprotobuf-c 
+libprotobuf-mutator-devel: libprotobuf-mutator 
 libproxy-devel: libproxy-1.0 
 libproxy-sharp: libproxy-sharp-1.0 
 libpskc-devel: libpskc 
@@ -1161,7 +1205,6 @@ libpwquality-devel: pwquality
 libqalculate-devel: libqalculate 
 libqb-devel: libqb 
 libqca-qt5-devel: qca2-qt5 
-libqca2-devel: qca2 
 libqcow-devel: libqcow 
 libqimageblitz-devel: qimageblitz 
 libqimageblitz5-devel: qimageblitz5 
@@ -1173,10 +1216,10 @@ libqt4-devel: Qt3Support QtCLucene QtCore QtDBus QtDeclarative QtDesigner QtDesi
 libqt5-qtconnectivity-devel: Qt5Bluetooth Qt5Nfc 
 libqt5-qtdeclarative-devel: Qt5Qml Qt5Quick Qt5QuickTest Qt5QuickWidgets 
 libqt5-qtgamepad-devel: Qt5Gamepad 
-libqt5-qtlocation-devel: Qt5Location Qt5Positioning 
+libqt5-qtlocation-devel: Qt5Location Qt5Positioning Qt5PositioningQuick 
 libqt5-qtmultimedia-devel: Qt5Multimedia Qt5MultimediaWidgets 
 libqt5-qtnetworkauth-devel: Qt5NetworkAuth 
-libqt5-qtremoteobjects-devel: Qt5RemoteObjects 
+libqt5-qtremoteobjects-devel: Qt5RemoteObjects Qt5RepParser 
 libqt5-qtscript-devel: Qt5Script Qt5ScriptTools 
 libqt5-qtscxml-devel: Qt5Scxml 
 libqt5-qtsensors-devel: Qt5Sensors 
@@ -1184,7 +1227,8 @@ libqt5-qtserialbus-devel: Qt5SerialBus
 libqt5-qtserialport-devel: Qt5SerialPort 
 libqt5-qtspeech-devel: Qt5TextToSpeech 
 libqt5-qtsvg-devel: Qt5Svg 
-libqt5-qttools-devel: Qt5Designer Qt5Help Qt5UiTools 
+libqt5-qttools-devel: Qt5Designer Qt5Help Qt5UiPlugin Qt5UiTools 
+libqt5-qtvirtualkeyboard-devel: Qt5VirtualKeyboard 
 libqt5-qtwayland-devel: Qt5WaylandClient Qt5WaylandCompositor 
 libqt5-qtwebchannel-devel: Qt5WebChannel 
 libqt5-qtwebengine-devel: Qt5WebEngine Qt5WebEngineCore Qt5WebEngineWidgets 
@@ -1198,9 +1242,9 @@ libquo-devel: libquo
 libquvi-devel: libquvi-0.9 
 libquvi-scripts-devel: libquvi-scripts-0.9 
 libqxmpp-devel: qxmpp 
-libqxmpp-qt5-devel: qxmpp-qt5 
 libqxp-devel: libqxp-0.0 
 libraptor-devel: raptor2 
+libraqm-devel: raqm 
 librasqal-devel: rasqal 
 libratbag-devel: liblur 
 libraw-devel: libraw libraw_r 
@@ -1223,12 +1267,12 @@ librevenge-devel: librevenge-0.0 librevenge-generators-0.0 librevenge-stream-0.0
 librime-devel: rime 
 librlog-devel: librlog 
 librpmem-devel: librpmem 
+librssguard-devel: rssguard 
 librsvg-devel: librsvg-2.0 
 librubberband-devel: rubberband 
 librvngabw-devel: librvngabw-0.0 
 libsamba-credentials-devel: samba-credentials 
 libsamba-hostconfig-devel: samba-hostconfig 
-libsamba-policy-python-devel: samba-policy 
 libsamba-policy-python3-devel: samba-policy.cpython-36m-x86_64-linux-gnu 
 libsamba-util-devel: samba-util 
 libsamdb-devel: samdb 
@@ -1253,9 +1297,11 @@ libsidplayfp-devel: libsidplayfp
 libsigc++12-devel: sigc++-1.2 
 libsigc++2-devel: sigc++-2.0 
 libsigc++3-devel: sigc++-3.0 
+libsignal-protocol-c-devel: libsignal-protocol-c 
 libsignon-glib-devel: libsignon-glib 
 libsignon-qt5-devel: libsignon-qt5 
 libsigrok-devel: libsigrok libsigrokcxx 
+libsigrok4DSL-devel: libsigrok4DSL 
 libsigrokdecode-devel: libsigrokdecode 
 libsigscan-devel: libsigscan 
 libskk-devel: libskk 
@@ -1279,6 +1325,7 @@ libspectre-devel: libspectre
 libspeechd-devel: speech-dispatcher 
 libspice-server-devel: spice-server 
 libspiro-devel: libspiro 
+libspirv-cross-c-shared-devel: spirv-cross-c-shared 
 libsrtp-devel: libsrtp 
 libsrtp2-devel: libsrtp2 
 libssh-devel: libssh 
@@ -1329,12 +1376,14 @@ libu2f-host-devel: u2f-host
 libu2f-server-devel: u2f-server 
 libuchardet-devel: uchardet 
 libudev-devel: libudev 
+libudisks2-0-devel: udisks2 
 libuev-devel: libuev 
 libuna-devel: libuna 
 libunibreak-devel: libunibreak 
 libunicap-devel: libunicap 
 libuninameslist-devel: libuninameslist 
 libunique1-devel: unique-1.0 
+libunity-devel: unity unity-extras unity-protocol-private 
 libunity-gtk-parser-devel: unity-gtk2-parser unity-gtk3-parser 
 libunwind-devel: libunwind libunwind-coredump libunwind-generic libunwind-ptrace libunwind-setjmp 
 libupnp-devel: libupnp 
@@ -1352,11 +1401,12 @@ libusrp-devel: usrp
 libustr-devel: ustr 
 libuuid-devel: uuid 
 libuv-devel: libuv 
+libv3270-devel: libv3270 
 libv4l-devel: libv4l1 libv4l2 libv4l2rds libv4lconvert 
 libva-devel: libva libva-drm libva-x11 
 libva-gl-devel: libva-glx libva-wayland 
-libvala-0_38-devel: libvala-0.38 
-libvaladoc-0_38-devel: valadoc-0.38 
+libvala-0_46-devel: libvala-0.46 
+libvaladoc-0_46-devel: valadoc-0.46 
 libvdehist-devel: vdehist 
 libvdemgmt-devel: vdemgmt 
 libvdeplug-devel: vdeplug 
@@ -1391,12 +1441,14 @@ libwapcaplet-devel: libwapcaplet
 libwbclient-devel: wbclient 
 libwbxml2-devel: libwbxml2 
 libwebcam-devel: libwebcam 
-libwebp-devel: libwebp libwebpdecoder libwebpdemux libwebpextras libwebpmux 
+libwebp-devel: libwebp libwebpdecoder libwebpdemux libwebpmux 
 libwebrtc_audio_processing-devel: webrtc-audio-processing 
 libwebsockets-devel: libwebsockets 
+libwget-devel: libwget 
 libwnck-devel: libwnck-3.0 
 libwnck2-devel: libwnck-1.0 
 libwpd-devel: libwpd-0.10 
+libwpe-devel: wpe-1.0 
 libwpg-devel: libwpg-0.3 
 libwps-devel: libwps-0.4 
 libwrc-devel: libwrc 
@@ -1405,6 +1457,7 @@ libwxsvg-devel: libwxsvg
 libxapian-devel: xapian-core 
 libxapp-devel: xapp 
 libxatracker-devel: xatracker 
+libxc-devel: libxc libxcf03 libxcf90 
 libxcam-devel: libxcam 
 libxcb-devel: xcb xcb-composite xcb-damage xcb-dpms xcb-dri2 xcb-dri3 xcb-glx xcb-present xcb-randr xcb-record xcb-render xcb-res xcb-screensaver xcb-shape xcb-shm xcb-sync xcb-xf86dri xcb-xfixes xcb-xinerama xcb-xinput xcb-xkb xcb-xtest xcb-xv xcb-xvmc 
 libxdg-basedir-devel: libxdg-basedir 
@@ -1418,12 +1471,13 @@ libxkbcommon-x11-devel: xkbcommon-x11
 libxkbfile-devel: xkbfile 
 libxkbui-devel: xkbui 
 libxklavier-devel: libxklavier 
+libxls-devel: libxls 
 libxml++-devel: libxml++-3.0 
 libxml++26-devel: libxml++-2.6 
 libxml2-devel: libxml-2.0 
+libxmlb-devel: xmlb 
 libxmltooling-devel: xmltooling 
 libxmp-devel: libxmp 
-libxnoise-devel: xnoise-1.0 
 libxshmfence-devel: xshmfence 
 libxslt-devel: libexslt libxslt 
 libxspf-devel: xspf 
@@ -1434,6 +1488,8 @@ libxtrxll-devel: libxtrxll
 libyajl-devel: yajl 
 libyami-devel: libyami 
 libyaml-devel: yaml-0.1 
+libyang-cpp-devel: libyang-cpp 
+libyang-devel: libyang 
 libyara-devel: yara 
 libyaz-devel: yaz 
 libykcs11-devel: ykcs11 
@@ -1442,9 +1498,12 @@ libykpiv-devel: ykpiv
 libyui-devel: libyui 
 libyui-ncurses-devel: libyui-ncurses 
 libyui-ncurses-pkg-devel: libyui-ncurses-pkg 
+libyui-ncurses-rest-api-devel: libyui-ncurses-rest-api 
 libyui-qt-devel: libyui-qt 
 libyui-qt-graph-devel: libyui-qt-graph 
 libyui-qt-pkg-devel: libyui-qt-pkg 
+libyui-qt-rest-api-devel: libyui-qt-rest-api 
+libyui-rest-api-devel: libyui-rest-api 
 libzapojit-devel: zapojit-0.0 
 libzbar-devel: zbar 
 libzbarqt-devel: zbar-qt 
@@ -1477,12 +1536,11 @@ loudmouth-devel: loudmouth-1.0
 lttng-tools-devel: lttng-ctl 
 lttng-ust-devel: lttng-ust 
 lua51-devel: lua lua5.1 
-lua51-luajit-devel: luajit 
 lua53-devel: lua lua5.3 
 luabind-devel: luabind 
 lucene++-devel: liblucene++ liblucene++-contrib 
+lunar-date-devel: lunar-date-3.0 
 lv2-devel: lv2 lv2core 
-lvm2-devel: lvm2app 
 lxappearance-devel: lxappearance 
 lxpanel-devel: lxpanel 
 lxqt-globalkeys-devel: lxqt-globalkeys lxqt-globalkeys-ui 
@@ -1498,10 +1556,11 @@ mate-menus-devel: libmate-menu
 mate-panel-devel: libmatepanelapplet-4.0 
 mate-screensaver-devel: mate-screensaver 
 mate-settings-daemon-devel: mate-settings-daemon 
-maya-calendar-devel: maya-calendar 
 mcabber-devel: mcabber 
 mdbtools-devel: libmdb libmdbsql 
 mdds-1_2-devel: mdds-1.2 
+mdds-1_4-devel: mdds-1.4 
+mdds-1_5-devel: mdds-1.5 
 meanwhile-devel: meanwhile 
 mediastreamer2-devel: mediastreamer 
 meep-devel: meep 
@@ -1514,19 +1573,17 @@ mm-common: mm-common-libstdc++ mm-common-util
 mobile-broadband-provider-info: mobile-broadband-provider-info 
 modglue-devel: modglue 
 mono-addins-devel: mono-addins mono-addins-gui mono-addins-msbuild mono-addins-setup 
-mono-debugger: mono-debugger mono-debugger-frontend 
 mono-devel: cecil dotnet dotnet35 mono mono-cairo mono-lineeditor mono-options xbuild12 
 mono-mvc: system.web.extensions.design_1.0 system.web.extensions_1.0 system.web.mvc system.web.mvc2 system.web.mvc3 
 mono-nat-devel: mono.nat 
 mono-nuget-devel: mono-nuget 
-mono-nunit: mono-nunit 
 mono-reactive: reactive 
 mono-uia-devel: mono-uia 
-mono-upnp-devel: mono.ssdp mono.upnp mono.upnp.dcp.mediaserver1 mono.upnp.dcp.mediaserver1.filesystem mono.upnp.dcp.mediaserver1.gtkclient mono.upnp.dcp.msmediareceiverregistrar1 
 mono-wcf: wcf 
 mono-web: aspnetwebstack 
 mono-zeroconf-devel: mono-zeroconf 
 monodoc-core: monodoc 
+moonjit-devel: luajit 
 mosquitto-devel: libmosquitto libmosquittopp 
 movit-devel: movit 
 mozilla-nspr-devel: nspr 
@@ -1543,11 +1600,14 @@ mraa-devel: mraa
 msgpack-devel: msgpack 
 msitools-devel: libmsi-1.0 
 mtdev-devel: mtdev 
-muffin-devel: libmuffin muffin-plugins 
+muffin-devel: libmuffin muffin-clutter-0 muffin-clutter-x11-0 muffin-cogl-0 muffin-cogl-pango-0 muffin-cogl-path-0 muffin-plugins 
 munge-devel: munge 
 muparser-devel: muparser 
-mutter-devel: libmutter-1 mutter-clutter-1 mutter-clutter-x11-1 mutter-cogl-1 mutter-cogl-pango-1 mutter-cogl-path-1 
+muparserx-devel: muparserx 
+mutter-devel: libmutter-5 mutter-clutter-5 mutter-clutter-x11-5 mutter-cogl-5 mutter-cogl-pango-5 mutter-cogl-path-5 
 mxml-devel: mxml 
+mypaint-brushes-devel: mypaint-brushes-2.0 
+mypaint-brushes1-devel: mypaint-brushes-1.0 
 mythes-devel: mythes 
 nanomsg-devel: nanomsg 
 nant-devel: nant 
@@ -1565,15 +1625,15 @@ newtonsoft-json-devel: newtonsoft-json
 nfsidmap-devel: libnfsidmap 
 nini: nini-1.1 
 nlopt-devel: nlopt 
-noise-devel: noise-core 
 non-ntk-devel: ntk ntk_gl ntk_images 
 noson-devel: noson 
 notify-sharp-devel: notify-sharp 
 notify-sharp3-devel: notify-sharp-3.0 
 nss-shared-helper-devel: nss-shared-helper 
 nss_wrapper: nss_wrapper 
-nunit-devel: nunit 
+nunit-devel: mono-nunit nunit 
 nut-devel: libnutclient libnutscan libupsclient 
+oaml-devel: oaml 
 obby-devel: obby-0.4 
 obexftp-devel: obexftp 
 ocfs2-tools-devel: o2cb o2dlm ocfs2 
@@ -1592,6 +1652,7 @@ openbox-devel: obrender-3.5 obt-3.5
 opencc-devel: opencc 
 openconnect-devel: openconnect 
 opencv-devel: opencv 
+opencv3-devel: opencv 
 opendkim-devel: opendkim rbl repute ut vbr 
 openexr-devel: OpenEXR 
 openhpi-devel: openhpi openhpiutils 
@@ -1610,16 +1671,16 @@ orc: orc-0.4
 orcania-devel: liborcania 
 ortp-devel: ortp 
 osmo-fl2k-devel: libosmo-fl2k 
-osmo-pcu: osmo-pcu 
 osmosdr-devel: libosmosdr 
 p11-kit-devel: p11-kit-1 
 p8-platform-devel: p8-platform 
+pacemaker-cli: pacemaker-schemas 
 pam_wrapper: pam_wrapper 
 pango-devel: pango pangocairo pangoft2 pangoxft 
-pangomm-devel: pangomm-2.42 
+pangomm-devel: pangomm-2.44 
 pangomm1_4-devel: pangomm-1.4 
 pangox-devel: pangox 
-papi-devel: papi papi-5 papi-5.6.0 papi-5.6.0.0 
+papi-devel: papi papi-5 papi-5.7.0 papi-5.7.0.0 
 parted-devel: libparted 
 pciutils-devel: libpci 
 pcp-devel: libpcp libpcp_import libpcp_pmda 
@@ -1628,16 +1689,17 @@ pcre2-devel: libpcre2-16 libpcre2-32 libpcre2-8 libpcre2-posix
 pcsc-acr38-devel: libacr38ucontrol 
 pcsc-lite-devel: libpcsclite 
 pfstools-devel: pfs 
+phodav-devel: libphodav-2.0 
 phonon-devel: phonon 
 phonon4qt5-devel: phonon4qt5 
 pidgin-devel: pidgin 
-pipewire-devel: libpipewire-0.2 libspa-0.2 
+pipewire-devel: libpipewire-0.3 libspa-0.2 
 pix-devel: pix-1.6 
 pkcs11-helper-devel: libpkcs11-helper-1 
 pkg-config: pkg-config 
 pkgconf: pkgconf 
 plank-devel: plank 
-playerctl-devel: playerctl-1.0 
+playerctl-devel: playerctl 
 plplot-devel: plplot 
 plplot-tcltk-devel: plplot-tcl plplot-tcl_Main 
 plplotada-devel: plplot-ada 
@@ -1647,20 +1709,24 @@ plplotqt-devel: plplot-qt
 plplotwxwidgets-devel: plplot-wxwidgets 
 pluma-devel: pluma 
 plymouth-devel: ply-boot-client ply-splash-core ply-splash-graphics 
+pocketsphinx-devel: pocketsphinx 
 polkit-devel: polkit-agent-1 polkit-gobject-1 
 poppler-data: poppler-data 
 popt-devel: popt 
 portaudio-devel: portaudio-2.0 portaudiocpp 
 postgresql-devel: libecpg libecpg_compat libpgtypes libpq 
 postgresql10-devel: libecpg libecpg_compat libpgtypes libpq 
+postgresql11-devel: libecpg libecpg_compat libpgtypes libpq 
+postgresql12-devel: libecpg libecpg_compat libpgtypes libpq 
 postgresql96-devel: libecpg libecpg_compat libpgtypes libpq 
 powerman-devel: libpowerman 
+pragha-plugins-devel: libpragha 
 presentproto-devel: presentproto 
 printproto-devel: printproto 
 procps-devel: libprocps 
 proftpd-devel: proftpd 
-projectM-devel: libprojectM libprojectM-qt 
-projectM-qt5-devel: libprojectM-qt-qt5 libprojectM-qt5 
+proj-devel: proj 
+projectM-devel: libprojectM 
 protobuf-devel: protobuf protobuf-lite 
 pstoedit-devel: pstoedit 
 pthread-stubs-devel: pthread-stubs 
@@ -1673,12 +1739,9 @@ python-gobject-common-devel: pygobject-3.0
 python-gobject2-devel: pygobject-2.0 
 python-gtk-devel: pygtk-2.0 
 python-gtksourceview-devel: pygtksourceview-2.0 
-python-ldb-devel: pyldb-util 
 python-nautilus-common-devel: nautilus-python 
 python-nemo: nemo-python 
 python-notify-devel: notify-python 
-python-pyside-devel: pyside 
-python-talloc-devel: pytalloc-util 
 python2-cairo-devel: pycairo 
 python2-dbus-python-devel: dbus-python-2.7 
 python2-goocanvas-devel: pygoocanvas 
@@ -1703,13 +1766,18 @@ qqwing-devel: qqwing
 qrencode-devel: libqrencode 
 qtermwidget-qt4-devel: qtermwidget4 
 qtermwidget-qt5-devel: qtermwidget5 
+quazip-devel: quazip 
 qwt6-devel: qwt 
 qwt6-qt5-devel: Qt5Qwt6 
 qxtglobalshortcut-devel: qxtglobalshortcut 
 radcli-devel: radcli 
+raft-devel: raft 
 randrproto-devel: randrproto 
+rang-devel: rang 
+rapidjson-devel: RapidJSON 
 rarian-devel: rarian 
-rdma-core-devel: libibumad libibverbs libmlx4 libmlx5 librdmacm 
+raylib-devel: raylib 
+rdma-core-devel: libefa libibmad libibnetdisc libibumad libibverbs libmlx4 libmlx5 librdmacm 
 re2-devel: re2 
 recordproto-devel: recordproto 
 remmina-devel: remmina 
@@ -1726,18 +1794,19 @@ rrdtool-devel: librrd
 rtaudio-devel: rtaudio 
 rtl-sdr-devel: librtlsdr 
 rtmidi-devel: rtmidi 
+rtrlib-devel: rtrlib 
 ruby2.5-devel: ruby-2.5 
-rygel-devel: rygel-core-2.6 rygel-renderer-2.6 rygel-renderer-gst-2.6 rygel-server-2.6 
+rygel-devel: rygel-core-2.6 rygel-renderer-2.6 rygel-renderer-gst-2.6 rygel-ruih-2.0 rygel-server-2.6 
 sane-backends-devel: sane-backends 
 sanlock-devel: libsanlock libsanlock_client 
 sawfish-devel: sawfish 
 sbc-devel: sbc 
 schroedinger-devel: schroedinger-1.0 
-scilab-devel: scilab 
-scratch-devel: scratchcore 
+scim-devel: scim scim-gtkutils scim-x11utils 
 scrnsaverproto-devel: scrnsaverproto 
 serd-devel: serd-0 
 sfml2-devel: sfml-all sfml-audio sfml-graphics sfml-network sfml-system sfml-window 
+shaderc-devel: shaderc shaderc_combined shaderc_static 
 shadowsocks-libev-devel: shadowsocks-libev 
 shared-desktop-ontologies-devel: shared-desktop-ontologies 
 shared-mime-info: shared-mime-info 
@@ -1762,8 +1831,10 @@ spdlog-devel: spdlog
 spdylay-devel: libspdylay 
 speex-devel: speex 
 speexdsp-devel: speexdsp 
+sphinxbase-devel: sphinxbase 
 spice-gtk-devel: spice-client-glib-2.0 spice-client-gtk-3.0 
 spice-protocol-devel: spice-protocol 
+spirv-tools-devel: SPIRV-Tools SPIRV-Tools-shared 
 spread-sheet-widget-devel: spread-sheet-widget 
 sqlcipher-devel: sqlcipher 
 sqlite3-devel: sqlite3 
@@ -1776,16 +1847,15 @@ stoken-devel: stoken
 subversion-devel: libsvn_auth_gnome_keyring libsvn_auth_kwallet libsvn_client libsvn_delta libsvn_diff libsvn_fs libsvn_fs_base libsvn_fs_fs libsvn_fs_util libsvn_fs_x libsvn_ra libsvn_ra_local libsvn_ra_serf libsvn_ra_svn libsvn_repos libsvn_subr libsvn_wc 
 suil-devel: suil-0 
 sunpinyin-devel: sunpinyin-2.0 
-svrcore-devel: svrcore 
 swipl: swipl 
 switchboard-devel: switchboard-2.0 
 sword-devel: sword 
-syslog-ng-devel: syslog-ng syslog-ng-native-connector 
-sysprof-devel: sysprof-2 sysprof-ui-2 
+syslog-ng-devel: syslog-ng 
+sysprof-capture-devel-static: sysprof-capture-3 
+sysprof-devel: sysprof-3 sysprof-ui-3 
 systemd-devel: libsystemd 
 systemd: systemd 
 taglib-extras-devel: taglib-extras 
-taglib-sharp-devel: taglib-sharp 
 tcl-devel: tcl 
 tclap: tclap 
 telepathy-farstream-devel: telepathy-farstream 
@@ -1802,6 +1872,7 @@ texlive-synctex-devel: synctex
 texlive-texlua-devel: texlua52 
 texlive-texluajit-devel: texluajit 
 thunar-devel: thunarx-3 
+timezonemap-devel: timezonemap 
 tinyb-devel: tinyb 
 tinygettext-devel: tinygettext 
 tinyobjloader-devel: tinyobjloader 
@@ -1811,7 +1882,7 @@ tomoe-devel: tomoe
 tomoe-gtk-devel: tomoe-gtk 
 totem-devel: totem 
 totem-pl-parser-devel: totem-plparser totem-plparser-mini 
-tpm2-0-tss-devel: tss2-esys tss2-mu tss2-sys tss2-tcti-device tss2-tcti-mssim 
+tpm2-0-tss-devel: tss2-esys tss2-mu tss2-rc tss2-sys tss2-tcti-device tss2-tcti-mssim tss2-tctildr 
 tpm2.0-abrmd-devel: tss2-tcti-tabrmd 
 tracker-devel: tracker-control-2.0 tracker-miner-2.0 tracker-sparql-2.0 
 trapproto-devel: trapproto 
@@ -1821,10 +1892,10 @@ tumbler-devel: tumbler-1
 ucommon-devel: commoncpp ucommon 
 ucpp-devel: libucpp 
 udev: udev 
-udisks2-devel: udisks2 
 uhd-devel: uhd 
 uhttpmock-devel: libuhttpmock-0.0 
 uid_wrapper: uid_wrapper 
+uim-devel: uim 
 ulfius-devel: libulfius 
 unibilium-devel: unibilium 
 unittest-cpp-devel: UnitTest++ 
@@ -1840,7 +1911,7 @@ util-macros-devel: xorg-macros
 uuid-devel: ossp-uuid 
 uwac0-0-devel: uwac0 
 vala-panel-devel: vala-panel 
-vala: vapigen vapigen-0.38 
+vala: vapigen vapigen-0.46 
 valgrind-devel: valgrind 
 vamp-plugin-sdk-devel: vamp vamp-hostsdk vamp-sdk 
 vapoursynth-devel: vapoursynth vapoursynth-script 
@@ -1849,7 +1920,9 @@ vcdimager-devel: libvcdinfo
 vdr-devel: vdr 
 videoproto-devel: videoproto 
 virglrenderer-devel: virglrenderer 
+vkd3d-devel: libvkd3d libvkd3d-utils 
 vlc-devel: libvlc vlc-plugin 
+volk-devel: volk 
 votca-csg-devel: libvotca_csg 
 votca-tools-devel: libvotca_tools 
 vte-devel: vte-2.91 
@@ -1865,12 +1938,17 @@ webkit2gtk3-devel: javascriptcoregtk-4.0 webkit2gtk-4.0 webkit2gtk-web-extension
 websocketpp-devel: websocketpp 
 weechat-devel: weechat 
 weston-devel: libweston-3 libweston-desktop-3 weston 
+wimlib-devel: wimlib 
 winpr2-devel: winpr-tools2 winpr2 
 wireshark-devel: wireshark 
 wlc-devel: wlc 
+wlroots-devel: wlroots 
+woff2-devel: libwoff2common libwoff2dec libwoff2enc 
 wordcut-devel: wordcut 
+wpebackend-fdo-devel: wpebackend-fdo-1.0 
 wslay-devel: libwslay 
 wv-devel: wv-1.0 
+wxsqlite3-devel: wxsqlite3 
 xbitmaps-devel: xbitmaps 
 xcb-proto-devel: xcb-proto 
 xcb-util-cursor-devel: xcb-cursor 
@@ -1899,9 +1977,9 @@ xf86miscproto-devel: xf86miscproto
 xf86rushproto-devel: xf86rushproto 
 xf86vidmodeproto-devel: xf86vidmodeproto 
 xfce4-panel-devel: libxfce4panel-1.0 libxfce4panel-2.0 
-xfce4-panel-plugin-sensors-devel: libxfce4sensors-1.0 
-xfce4-session-devel: xfce4-session-2.0 
+xfce4-sensors-plugin-devel: libxfce4sensors-1.0 
 xfce4-vala: xfce4-vala 
+xfdashboard-devel: libxfdashboard 
 xineramaproto-devel: xineramaproto 
 xkbcomp-devel: xkbcomp 
 xkeyboard-config: xkeyboard-config 
