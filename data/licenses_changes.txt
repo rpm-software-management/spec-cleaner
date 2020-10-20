@@ -1,4 +1,3 @@
-First line
 0BSD	0BSD
 0BSD+	0BSD+
 AAL	AAL
