@@ -78,7 +78,6 @@ unset IFS
 rm licenses_changes.raw
 ) > README.md
 
-cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o licenses_changes.stxt
-( echo "First line" ; cat licenses_changes.stxt ) > data/licenses_changes.txt
-rm licenses_changes.ntxt licenses_changes.stxt licenses_changes.ptxt
+cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o data/licenses_changes.txt
+rm licenses_changes.ntxt licenses_changes.ptxt
 
