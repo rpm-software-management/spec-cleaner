@@ -161,6 +161,8 @@ suse_update_desktop_file
 systemd_ordering
 systemd_preun
 systemd_requires
+systemd_user_post
+systemd_user_prerun
 sysusers_create
 sysusers_requires
 sysusers_generate_pre
