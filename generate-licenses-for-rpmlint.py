@@ -20,9 +20,12 @@ with open(args.output, 'w') as wfile:
     wfile.write('# Generated with %s script from spec-cleaner:\n' % script_name)
     wfile.write('# URL: https://github.com/rpm-software-management/spec-cleaner\n\n')
     wfile.write('ValidLicenses = [\n')
+    added = set()
     for line in open('data/licenses_changes.txt').readlines():
         name = line.strip().split('\t')[0]
-        wfile.write(f'    "{name}",\n')
+        if name not in added:
+            wfile.write(f'    "{name}",\n')
+            added.add(name)
     if args.suse:
         wfile.write('    # SUSE EXCEPTIONS\n')
         for name in SUSE_EXCEPTIONS.strip().split(' '):
