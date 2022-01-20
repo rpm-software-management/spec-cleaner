@@ -94,6 +94,7 @@ mysql_testserver[^\s]*
 nagios_command_user_group_add
 nagios_user_group_add
 nodejs_install
+obsolete_legacy_pattern
 __os_install_post
 package
 patch[0-9]*
