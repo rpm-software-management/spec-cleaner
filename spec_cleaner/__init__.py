@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from .rpmcleaner import RpmSpecCleaner
-from .rpmexception import RpmException, RpmWrongArgs
+from .rpmexception import RpmExceptionError, RpmWrongArgsError
 
 __version__ = '1.2.2'
 
@@ -29,7 +29,7 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         A dict mapping arguments to the corresponding values.
 
     Raises:
-        RpmWrongArgs: If the specfile doesn't exist or
+        RpmWrongArgsError: If the specfile doesn't exist or
                       if the output file already exists but '--force' option (overwrite the output) wasn't used.
     """
     parser = argparse.ArgumentParser(
@@ -133,14 +133,14 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
 
     # the spec must exist for us to do anything
     if not os.path.exists(options.specfile):
-        raise RpmWrongArgs('{0} does not exist.'.format(options.specfile))
+        raise RpmWrongArgsError('{0} does not exist.'.format(options.specfile))
 
     # the path for output must exist and the file must not be there unless
     # force is specified
     if options.output:
         options.output = os.path.expanduser(options.output)
         if not options.force and os.path.exists(options.output):
-            raise RpmWrongArgs('{0} already exists.'.format(options.output))
+            raise RpmWrongArgsError('{0} already exists.'.format(options.output))
 
     # convert options to dict
     options_dict = vars(options)
@@ -156,14 +156,14 @@ def main() -> int:
     """
     try:
         options = process_args(sys.argv[1:])
-    except RpmWrongArgs as exception:
+    except RpmWrongArgsError as exception:
         sys.stderr.write('ERROR: {0}\n'.format(exception))
         return 1
 
     try:
         cleaner = RpmSpecCleaner(options)
         cleaner.run()
-    except RpmException as exception:
+    except RpmExceptionError as exception:
         sys.stderr.write('ERROR: {0}\n'.format(exception))
         return 1
 

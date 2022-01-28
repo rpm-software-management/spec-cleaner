@@ -1,6 +1,6 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-from .rpmexception import RpmException
+from .rpmexception import RpmExceptionError
 from .rpmhelpers import (
     add_group,
     find_pkgconfig_declaration,
@@ -148,7 +148,7 @@ class RpmPreambleElements(object):
             # if this is a list then all items except last are comment or whitespace
             key = str(a[-1])
         else:
-            raise RpmException('Unknown type during sort: %s' % a)
+            raise RpmExceptionError('Unknown type during sort: %s' % a)
 
         # Special case is the category grouping where we have to get the number in
         # after the value
@@ -313,7 +313,7 @@ class RpmPreambleElements(object):
         elif category in self.category_to_key:
             key = self.category_to_key[category]
         else:
-            raise RpmException('Unhandled category in preamble: %s' % category)
+            raise RpmExceptionError('Unhandled category in preamble: %s' % category)
 
         # append : only if the thing is not known macro
         if not key.startswith('%'):
