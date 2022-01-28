@@ -66,6 +66,9 @@ class RpmPreambleElements(object):
         'nosource',
         'patch',
         'patternprovides',  # fake provides with special function for patterns
+        'patternrequires',  # fake requires with special function for patterns
+        'patternrecommends',  # fake recommends with special function for patterns
+        'patternsuggests',  # fake suggests with special function for patterns
         'patternobsoletes',  # fake provide/obsoletes with old pattern symbols
         'patterncodeblock',  # fake condition placement for patterns to stay on top
         'buildrequires',
@@ -95,6 +98,9 @@ class RpmPreambleElements(object):
     # categories that are sorted based on value in them
     categories_with_sorted_package_tokens = [
         'patternprovides',
+        'patternrequires',
+        'patternrecommends',
+        'patternsuggests',
         'buildrequires',
         'buildconflicts',
         'buildignores',
