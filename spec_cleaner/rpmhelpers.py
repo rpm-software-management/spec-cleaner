@@ -5,7 +5,7 @@ from subprocess import check_output
 from typing import Dict, List
 
 from .fileutils import open_datafile, open_stringio_spec
-from .rpmexception import RpmException
+from .rpmexception import RpmExceptionError
 from .rpmrequirestoken import RpmRequiresToken
 
 LICENSES_CHANGES = 'licenses_changes.txt'
@@ -248,7 +248,7 @@ def add_group(group):
             items += add_group(subgroup)
         return items
     else:
-        raise RpmException('Unknown type of group in preamble: %s' % type(group))
+        raise RpmExceptionError('Unknown type of group in preamble: %s' % type(group))
 
 
 def find_pkgconfig_statement(elements):

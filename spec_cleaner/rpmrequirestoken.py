@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .rpmexception import RpmException
+from .rpmexception import RpmExceptionError
 from .rpmregexp import Regexp
 
 
@@ -26,6 +26,7 @@ class RpmRequiresToken(object):
         version: Optional[str] = None,
         prefix: Optional[str] = None,
     ) -> None:
+        """Initialize class."""
         self.prefix = prefix
         self.name = name
         self.operator = operator
@@ -81,24 +82,24 @@ class RpmRequiresToken(object):
             A string with a formatted output.
 
         Raises:
-            RpmException if prefix or name is not defined or the version is defined but no operator is present.
+            RpmExceptionError if prefix or name is not defined or the version is defined but no operator is present.
         """
         self.name = self._format_name(self.name)
         if not self.prefix:
-            raise RpmException(
+            raise RpmExceptionError(
                 'No defined prefix in RequiresToken: prefix "{0}" name "{1}" operator "{2}" version "{3}"'.format(
                     self.prefix, self.name, self.operator, self.version
                 )
             )
         if not self.name:
-            raise RpmException(
+            raise RpmExceptionError(
                 'No defined name in RequiresToken: prefix "{0}" name "{1}" operator "{2}" version "{3}"'.format(
                     self.prefix, self.name, self.operator, self.version
                 )
             )
         string = self.prefix + self.name
         if (self.version and not self.operator) or (not self.version and self.operator):
-            raise RpmException('Have defined version and no operator or vice versa')
+            raise RpmExceptionError('Have defined version and no operator or vice versa')
         if self.version and self.operator:
             self.operator = self._format_operator(self.operator)
             string += ' ' + self.operator + ' ' + self.version

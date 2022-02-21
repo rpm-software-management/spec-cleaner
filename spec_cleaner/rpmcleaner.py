@@ -12,7 +12,7 @@ from .rpmbuild import RpmBuild
 from .rpmcheck import RpmCheck
 from .rpmcopyright import RpmCopyright
 from .rpmdescription import RpmDescription
-from .rpmexception import RpmException
+from .rpmexception import RpmExceptionError
 from .rpmfiles import RpmFiles
 from .rpmhelpers import (
     find_macros_with_arg,
@@ -344,7 +344,7 @@ class RpmSpecCleaner(object):
         Run the main spec-cleaner method.
 
         Raises:
-            RpmException if a diff program can't be executed.
+            RpmExceptionError if a diff program can't be executed.
         """
         # If we are skipping the specfile we should do nothing
         if self.skip_run:
@@ -414,7 +414,7 @@ class RpmSpecCleaner(object):
             try:
                 subprocess.call(cmd, shell=False)
             except OSError as error:
-                raise RpmException(
+                raise RpmExceptionError(
                     'Could not execute %s (%s)'
                     % (self.options['diff_prog'].split()[0], error.strerror)
                 )

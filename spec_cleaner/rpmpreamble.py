@@ -493,6 +493,21 @@ class RpmPreamble(Section):
             self._add_line_value_to('patternobsoletes', match.group(1), key='Provides')
             return
 
+        elif self.reg.re_requires.match(line) and self.reg.re_patternmacro.search(line):
+            match = self.reg.re_requires.match(line)
+            self._add_line_value_to('patternrequires', match.group(1), key='Requires')
+            return
+
+        elif self.reg.re_recommends.match(line) and self.reg.re_patternmacro.search(line):
+            match = self.reg.re_recommends.match(line)
+            self._add_line_value_to('patternrecommends', match.group(1), key='Recommends')
+            return
+
+        elif self.reg.re_suggests.match(line) and self.reg.re_patternmacro.search(line):
+            match = self.reg.re_suggests.match(line)
+            self._add_line_value_to('patternsuggests', match.group(1), key='Suggests')
+            return
+
         elif self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(line):
             match = self.reg.re_obsoletes.match(line)
             self._add_line_value_to('patternobsoletes', match.group(1), key='Obsoletes')

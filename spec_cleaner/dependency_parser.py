@@ -1,7 +1,7 @@
 import logging
 import re
 
-from .rpmexception import NoMatchException
+from .rpmexception import NoMatchExceptionError
 from .rpmrequirestoken import RpmRequiresToken
 
 chunk_types = ('text', 'space', 'macro', 'operator', 'version')
@@ -29,6 +29,7 @@ logger.setLevel(logging.ERROR)
 
 
 def find_end_of_bracketed_macro(string, regex, opening, closing):
+    """Find the end of bracketed macros."""
     # ommit the initial bracket, or %bracket
     if string.startswith('%'):
         macro = string[0:2]
@@ -40,7 +41,7 @@ def find_end_of_bracketed_macro(string, regex, opening, closing):
     while opened and string:
         try:
             bite, string = consume_chars(regex, string)
-        except NoMatchException:
+        except NoMatchExceptionError:
             raise Exception('unexpected parser error when looking for end of macro')
 
         if bite == opening:
@@ -55,21 +56,24 @@ def find_end_of_bracketed_macro(string, regex, opening, closing):
 
 
 def consume_chars(regex, string):
+    """Consume regex matches of all characters of a string."""
     match = regex.match(string)
     if match:
         end = match.end()
         return string[0:end], string[end:]
     else:
-        raise NoMatchException(
+        raise NoMatchExceptionError(
             'Expected match failed (string: "%s", regex: "%s" )' % (string, regex.pattern)
         )
 
 
 def read_boolean(string):
+    """Read boolean macros."""
     return find_end_of_bracketed_macro(string, re_brackets['('], '(', ')')
 
 
 def matching_bracket(bracket):
+    """Find the appropriate matching brackets."""
     if bracket == '{':
         return '}'
     elif bracket == '(':
@@ -80,12 +84,14 @@ def matching_bracket(bracket):
 
 
 def read_macro(string):
+    """Read macro in brackets."""
     opening = string[1]
     closing = matching_bracket(opening)
     return find_end_of_bracketed_macro(string, re_brackets[opening], opening, closing)
 
 
 def read_next_chunk(string):
+    """Read string chunks after operators."""
     chunk = ''
     chunk_type = ''
 
@@ -132,11 +138,16 @@ def read_next_chunk(string):
 
 
 class DepParserError(Exception):
+    """Exception definition for dependency parsing."""
+
     pass
 
 
 class DependencyParser:
+    """Dependency parsing class."""
+
     def __init__(self, line):
+        """Initialize class."""
         # adding comma will cause flush in the end of line
         self.string = line + ', '
         self.parsed = []
@@ -165,12 +176,14 @@ class DependencyParser:
             self.state_change()
 
     def flat_out(self):
+        """Flatten versioned definition to a single string."""
         result = []
         for name, operator, ver in self.parsed:
             result.append(RpmRequiresToken(name, operator, ver))
         return result
 
     def flush(self):
+        """Clean token variables of the class."""
         self.parsed.append((self.token_name, self.token_operator, self.token_version))
         # cleanup state
         self.token = []
@@ -181,12 +194,14 @@ class DependencyParser:
             self.go_on = False
 
     def reconstitute_token(self):
+        """Erase token."""
         r = ''.join(self.token)
         logger.debug("reconstituting '%s'", r)
         self.token = []
         return r
 
     def name_state_change(self):
+        """Check name of next token."""
         if self.next_type in ['text', 'macro']:
             if self.space:
                 logger.debug('text after space --> flush')
@@ -203,6 +218,7 @@ class DependencyParser:
         self.token.append(self.next)
 
     def operator_state_change(self):
+        """Check next operator token."""
         if self.next_type in ['text', 'macro']:
             self.state = 'version'
             self.token_operator = self.reconstitute_token()
@@ -216,6 +232,7 @@ class DependencyParser:
         self.token.append(self.next)
 
     def version_state_change(self):
+        """Check valid token after version."""
         if self.next_type == 'text':
             pass
         elif self.next_type == 'space':
@@ -231,6 +248,7 @@ class DependencyParser:
         self.token.append(self.next)
 
     def start_state_change(self):
+        """Check next token valid for starting definition."""
         if self.next_type == 'text':
             self.state = 'name'
         elif self.next_type == 'space':
@@ -243,6 +261,7 @@ class DependencyParser:
         self.token.append(self.next)
 
     def state_change(self):
+        """Select which state change to check."""
         if self.state == 'name':
             self.name_state_change()
         elif self.state == 'operator':

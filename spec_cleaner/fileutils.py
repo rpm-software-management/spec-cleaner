@@ -6,7 +6,7 @@ import sysconfig
 from io import StringIO
 from typing import IO
 
-from .rpmexception import RpmException
+from .rpmexception import RpmExceptionError
 
 
 def open_datafile(name: str) -> IO[str]:
@@ -19,7 +19,7 @@ def open_datafile(name: str) -> IO[str]:
         name: A string representing the name of the datafile to open.
 
     Raises:
-        RpmException if the file is not found in predefined datadirs.
+        RpmExceptionError if the file is not found in predefined datadirs.
     """
     homedir = os.getenv('HOME', '~') + '/.local/'
 
@@ -38,7 +38,7 @@ def open_datafile(name: str) -> IO[str]:
         else:
             return _file
     # file not found
-    raise RpmException("File '{}' not found in datadirs".format(name))
+    raise RpmExceptionError("File '{}' not found in datadirs".format(name))
 
 
 def open_stringio_spec(name: str) -> IO[str]:
@@ -52,7 +52,7 @@ def open_stringio_spec(name: str) -> IO[str]:
         A file object.
 
     Raises:
-        RpmException if the file is not readable.
+        RpmExceptionError if the file is not readable.
     """
     data = StringIO()
     try:
@@ -60,5 +60,5 @@ def open_stringio_spec(name: str) -> IO[str]:
             data.write(f.read())
             data.seek(0, 0)
     except (IOError, UnicodeDecodeError) as error:
-        raise RpmException(str(error))
+        raise RpmExceptionError(str(error))
     return data

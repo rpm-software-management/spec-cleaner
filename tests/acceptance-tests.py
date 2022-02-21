@@ -11,7 +11,7 @@ from shutil import copyfile
 
 import pytest
 
-from spec_cleaner import RpmException, RpmSpecCleaner
+from spec_cleaner import RpmExceptionError, RpmSpecCleaner
 
 
 def collect_tests(directory):
@@ -123,7 +123,7 @@ class TestCompare(object):
     def test_diff_function(self, tmpfile):
         """Test passing an incorrect '--diff_prog' option."""
         test = 'bconds.spec'
-        with pytest.raises(RpmException):
+        with pytest.raises(RpmExceptionError):
             self._run_individual_test(
                 test, None, outfile='', options={'diff': True, 'diff_prog': 'error'}
             )
@@ -132,7 +132,7 @@ class TestCompare(object):
         """Test encoding."""
         test = 'perl-Text-Unidecode.spec'
         testpath = os.path.join('tests', 'unicode', test)
-        with pytest.raises(RpmException):
+        with pytest.raises(RpmExceptionError):
             self._run_individual_test(
                 test, None, infile=testpath, outfile='', options={'minimal': False}
             )
