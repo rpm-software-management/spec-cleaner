@@ -1,8 +1,10 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+import logging
 import os.path
 import re
 from ssl import CertificateError, SSLError
+from subprocess import Popen, PIPE
 from urllib import error, parse
 from urllib.request import urlopen
 
@@ -11,6 +13,10 @@ from .rpmhelpers import fix_license
 from .rpmpreambleelements import RpmPreambleElements
 from .rpmrequirestoken import RpmRequiresToken
 from .rpmsection import Section
+
+logger = logging.getLogger('RpmPreamble')
+# Switch to logging.DEBUG if needed. FIXME: Add debug flag to the command line options
+logger.setLevel(logging.ERROR)
 
 
 class RpmPreamble(Section):
@@ -357,6 +363,35 @@ class RpmPreamble(Section):
 
         self.previous_line = str(line)
 
+    def _make_secure_url(self, orig_url, skip_availabilty_check=False, force_https=False):
+        retval = None
+        secure_url = None
+        if parse.urlparse(orig_url).scheme == '' and force_https:
+            secure_url = 'https://' + orig_url
+        elif orig_url.startswith('http://'):
+            secure_url = orig_url.replace('http', 'https', 1)
+        elif orig_url.startswith('ftp://'):
+            # Try to convert it to https, some sites support this
+            secure_url = orig_url.replace('ftp', 'https', 1)
+        if skip_availabilty_check:
+            return secure_url if secure_url else orig_url
+
+        response = None
+        try:
+            if secure_url and not self.minimal:
+                response = urlopen(secure_url, timeout=1)
+                if response.getcode() == 200:
+                    retval = secure_url
+            else:
+                retval = orig_url
+        # ssl.CertificateError is a subclass of SSLError in Python 3.7. In Python 3.6 it's not.
+        except (error.URLError, SSLError, CertificateError):
+            retval = orig_url
+        finally:
+            if response:
+                response.close()
+        return retval
+
     def add(self, line):
         """Run over options and add the determined line to proper location."""
         line = self._complete_cleanup(line)
@@ -426,36 +461,33 @@ class RpmPreamble(Section):
         # replace 'http' with 'https' in URL if https is reachable (#246)
         elif self.reg.re_url.match(line):
             match = self.reg.re_url.match(line)
-            orig_url = match.group(1)
-            value = orig_url
-
-            if orig_url.startswith('http://'):
-                https_url = orig_url.replace('http', 'https', 1)
-            elif parse.urlparse(orig_url).scheme == '':
-                https_url = 'https://' + orig_url
-            else:
-                https_url = None
-
-            response = None
-            try:
-                if https_url and not self.minimal:
-                    response = urlopen(https_url, timeout=1)
-                    if response.getcode() == 200:
-                        value = https_url
-            # ssl.CertificateError is a subclass of SSLError in Python 3.7. In Python 3.6 it's not.
-            except (error.URLError, SSLError, CertificateError):
-                pass
-            finally:
-                self._add_line_value_to('url', value, key='URL')
-                if response:
-                    response.close()
+            secure_url = self._make_secure_url(match.group(1), force_https=True)
+            self._add_line_value_to('url', secure_url, key='URL')
             return
 
         elif self.reg.re_source.match(line):
             match = self.reg.re_source.match(line)
             source = match.group(2)
+            secure_source_available = False
+            # expand the spec file to get URLs that can be checked
+            try:
+                with Popen(['rpmspec', '-P', self.options['specfile']], stdout=PIPE, universal_newlines=True) as process:
+                    for line in process.stdout:
+                        match2 = self.reg.re_source.match(line)
+                        if match2:
+                            expanded_source_url = match2.group(2)
+                            # we can't use this value as it is the expanded URL, so
+                            # just set it to indicate that we need to transform the
+                            # original source
+                            if self._make_secure_url(expanded_source_url):
+                                secure_source_available = True
+            except (FileNotFoundError):
+                # rpmspec is not available. Fail silently for now unless running in debug mode
+                logger.debug("rpmspec not available, can't check URIs for insecure protocols")
             if not self.minimal:
                 source = self._fix_pypi_source(source)
+                if secure_source_available:
+                    source = self._make_secure_url(source, skip_availabilty_check=True)
             self._add_line_value_to('source', source, key='Source%s' % match.group(1))
             return
 
