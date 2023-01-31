@@ -14,7 +14,7 @@ grep ^SUSE- licenses_changes.ntxt | cut -d'	' -f1 | while read -r l; do
   fi
 done
 
-for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *License Text.*, LT,; s,Y\s*LT$,LT,; s,Y\s*LT$,LT,;  s,\s*LT$,,; s,.* ,,;'); do
+for i in $(curl -s https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json | jq -r '.licenses | .[] | select(.isDeprecatedLicenseId|not) | .licenseId'); do
   echo "$i	$i" >> licenses_changes.ntxt ;
   echo "$i+	$i+" >> licenses_changes.ntxt ;
   # For these that can be "or later" generate also replacement of + SPDX-2.0
@@ -35,7 +35,7 @@ fi
 
 : > licenses_changes.raw
 
-for i in $(w3m -dump -cols 1000 http://spdx.org/licenses/exceptions-index.html | grep "License Exception Text" | sed -e 's, *Y *License Exception Text,,; s, *License Exception Text,,; s,\s* \([^ ]*\)$,:\1,' | cut -d: -f2); do
+for i in $(curl -s https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json | jq -r '.licenses | .[] | select(.isDeprecatedLicenseId|not) | .licenseId'); do
     echo "$i" >> license_exceptions.ntxt ;
 done
 
