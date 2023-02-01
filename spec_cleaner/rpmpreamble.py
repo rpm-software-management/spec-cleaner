@@ -380,7 +380,7 @@ class RpmPreamble(Section):
         try:
             if secure_url and not self.minimal:
                 req = Request(url=secure_url, headers={'User-Agent': 'Mozilla/5.0'})
-                response = urlopen(req, timeout=1)
+                response = urlopen(req, timeout=5)
                 if response.getcode() == 200:
                     retval = secure_url
             else:
