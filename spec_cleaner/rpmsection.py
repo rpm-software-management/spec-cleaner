@@ -103,7 +103,7 @@ class Section(object):
         self.lines.append(line)
         self.previous_line = line
 
-    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = "") -> None:
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = '') -> None:
         """
         Manage printing of the section.
 

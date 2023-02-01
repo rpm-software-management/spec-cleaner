@@ -102,7 +102,7 @@ class RpmCopyright(Section):
             # anything not in our rules gets tossed out
             return
 
-    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = ""):
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = ''):
         """Manage printing of the Copyright section."""
         if not self.no_copyright:
             self._add_modelines()

@@ -9,7 +9,7 @@ from .rpmsection import Section
 class RpmClean(Section):
     """Remove clean section."""
 
-    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = "") -> None:
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = '') -> None:
         """Do not output anything here."""
         pass
 
