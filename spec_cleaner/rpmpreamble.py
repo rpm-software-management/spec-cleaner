@@ -4,9 +4,9 @@ import logging
 import os.path
 import re
 from ssl import CertificateError, SSLError
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 from urllib import error, parse
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from .dependency_parser import DependencyParser
 from .rpmhelpers import fix_license
@@ -379,7 +379,8 @@ class RpmPreamble(Section):
         response = None
         try:
             if secure_url and not self.minimal:
-                response = urlopen(secure_url, timeout=1)
+                req = Request(url=secure_url, headers={'User-Agent': 'Mozilla/5.0'})
+                response = urlopen(req, timeout=5)
                 if response.getcode() == 200:
                     retval = secure_url
             else:
@@ -471,7 +472,11 @@ class RpmPreamble(Section):
             secure_source_available = False
             # expand the spec file to get URLs that can be checked
             try:
-                with Popen(['rpmspec', '-P', self.options['specfile']], stdout=PIPE, universal_newlines=True) as process:
+                with Popen(
+                    ['rpmspec', '-P', self.options['specfile']],
+                    stdout=PIPE,
+                    universal_newlines=True,
+                ) as process:
                     for line in process.stdout:
                         match2 = self.reg.re_source.match(line)
                         if match2:

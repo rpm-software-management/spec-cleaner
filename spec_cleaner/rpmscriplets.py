@@ -12,6 +12,7 @@ class RpmScriptlets(Section):
     """
 
     def add(self, line: str) -> None:
+        """Run the cleanup of the line."""
         line = self._complete_cleanup(line)
         line = self._remove_deprecated_ldconfig(line)
         Section.add(self, line)
@@ -29,7 +30,8 @@ class RpmScriptlets(Section):
         line = self.reg.re_ldconfig.sub('/sbin/ldconfig', line)
         return line
 
-    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = None) -> None:
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = '') -> None:
+        """Manage to print the section."""
         if not self.minimal:
             self._collapse_multiline_ldconfig()
         Section.output(self, fout, newline, new_class_name)
