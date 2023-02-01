@@ -16,6 +16,7 @@ class RpmCopyright(Section):
     """
 
     def __init__(self, options):
+        """Initialize default variables."""
         Section.__init__(self, options)
         self.no_copyright = options['no_copyright']
         self.year = options['copyright_year']
@@ -25,6 +26,7 @@ class RpmCopyright(Section):
         self.vimmodeline = ''
 
     def _add_pkg_header(self):
+        """Add specfile name to the Copyright section."""
         specname = os.path.splitext(os.path.basename(self.spec))[0]
         self.lines.append(
             """#
@@ -35,12 +37,14 @@ class RpmCopyright(Section):
         )
 
     def _add_copyright(self):
+        """Add SUSE copyright information to the Copyright section."""
         self.lines.append(self.distro_copyright)
 
         for i in self.copyrights:
             self.lines.append(i)
 
     def _add_default_license(self):
+        """Add default license text to the Copyright section."""
         self.lines.append(
             """#
 # All modifications and additions to the file contributed by third parties
@@ -57,17 +61,21 @@ class RpmCopyright(Section):
         )
 
     def _add_buildrules(self) -> None:
+        """Add buildrules."""
         for i in sorted(self.buildrules):
             self.lines.append(i)
 
     def _add_modelines(self) -> None:
-        # add vim modeline if found
+        """Add vim modeline if found."""
         if self.vimmodeline:
             self.lines.append(self.vimmodeline)
 
     def add(self, line: str) -> None:
-        # if we have no copyright header we actually should not touch it not
-        # wipe out, thus just add everything to known lines
+        """Run the cleanup of the line.
+
+        If we have no copyright header we actually should not touch it not
+        wipe out, thus just add everything to known lines
+        """
         if self.no_copyright:
             self.lines.append(line)
             return
@@ -94,7 +102,8 @@ class RpmCopyright(Section):
             # anything not in our rules gets tossed out
             return
 
-    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = None):
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = ""):
+        """Manage printing of the Copyright section."""
         if not self.no_copyright:
             self._add_modelines()
             self._add_pkg_header()

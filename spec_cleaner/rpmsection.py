@@ -27,6 +27,7 @@ class Section(object):
     """
 
     def __init__(self, options: Dict[str, Any]) -> None:
+        """Initialize variables."""
         self.lines: List[str] = []
         self.previous_line: Optional[str] = None
         self.spec: str = options['specfile']
@@ -102,7 +103,7 @@ class Section(object):
         self.lines.append(line)
         self.previous_line = line
 
-    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = None) -> None:
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = "") -> None:
         """
         Manage printing of the section.
 
