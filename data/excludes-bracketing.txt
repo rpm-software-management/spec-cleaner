@@ -129,6 +129,7 @@ py3_compile
 py_req_cleanup
 python_alternative
 python_install_alternative
+python_libalternatives_reset_alternative
 python_uninstall_alternative
 python(.?)_only
 pypy(.?)_only
