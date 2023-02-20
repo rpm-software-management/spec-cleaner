@@ -9,7 +9,6 @@
 import argparse
 import os
 import sys
-from datetime import datetime
 from typing import Any, Dict, List
 
 from .rpmcleaner import RpmSpecCleaner
@@ -90,7 +89,7 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         '--copyright-year',
         metavar='YYYY',
         type=int,
-        default=datetime.now().year,
+        default=None,
         help='year to insert into the copyright header when re-generating it',
     )
     output_group.add_argument(

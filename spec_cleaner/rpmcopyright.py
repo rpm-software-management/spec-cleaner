@@ -22,7 +22,7 @@ class RpmCopyright(Section):
         self.year = options['copyright_year']
         self.copyrights = []
         self.buildrules = []
-        self.distro_copyright = '# Copyright (c) {0} SUSE LLC'.format(self.year)
+        self.distro_copyright = '# Copyright (c) SUSE LLC' if not self.year else f'# Copyright (c) {self.year} SUSE LLC'
         self.vimmodeline = ''
 
     def _add_pkg_header(self):

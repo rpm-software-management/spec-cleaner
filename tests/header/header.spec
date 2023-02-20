@@ -2,7 +2,7 @@
 #
 # spec file for package header
 #
-# Copyright (c) 2013 SUSE LLC
+# Copyright (c) SUSE LLC
 # Copyright (c) 2012 Dominique Leuenberger, Amsterdam, The Netherlands
 #
 # All modifications and additions to the file contributed by third parties

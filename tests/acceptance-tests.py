@@ -53,7 +53,7 @@ class TestCompare(object):
         'minimal': False,
         'no_curlification': False,
         'no_copyright': True,
-        'copyright_year': 2013,
+        'copyright_year': None,
         'remove_groups': False,
         'tex': False,
         'perl': False,
