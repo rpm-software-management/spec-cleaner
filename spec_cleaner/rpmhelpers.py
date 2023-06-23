@@ -79,7 +79,7 @@ def read_conversion_changes(conversion_file):
     """
     with open_datafile(conversion_file) as f:
         # the values are split by  ': '
-        return {key: value for key, value in (line.split(': ') for line in f)}
+        return dict(line.split(': ') for line in f)
 
 
 def read_tex_changes():
