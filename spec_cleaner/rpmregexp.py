@@ -90,6 +90,7 @@ class Regexp(object):
     re_patternmacro = re.compile(r'pattern(-\S+)?\(\)', re.IGNORECASE)
     re_patternobsolete = re.compile(r'patterns-openSUSE-\S+', re.IGNORECASE)
     re_tail_macros = re.compile(r'^%{?python_subpackages}?')
+    re_head_macros = re.compile(r'^%{?\??(sle15_python_module_pythons|sle15allpythons)}?')
     re_preamble_prefix = re.compile(r'^Prefix:\s*(.*)', re.IGNORECASE)
     # grab all macros with rpm call that query for version, this still might
     # be bit too greedy but it is good enough now

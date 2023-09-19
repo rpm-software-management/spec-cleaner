@@ -115,6 +115,7 @@ class RpmPreamble(Section):
             'excludearch': self.reg.re_excludearch,
             'exclusivearch': self.reg.re_exclusivearch,
             'tail': self.reg.re_tail_macros,
+            'head': self.reg.re_head_macros,
         }
 
         # deprecated definitions that we no longer want to see
@@ -692,6 +693,9 @@ class RpmPreamble(Section):
                 self._add_line_value_to('buildarch', value)
             else:
                 self._add_line_value_to('exclusivearch', value)
+
+        elif self.reg.re_head_macros.match(line):
+            self._add_line_value_to('head', line)
 
         # loop for all other matching categories which
         # do not require special attention
