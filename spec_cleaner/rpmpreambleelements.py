@@ -54,6 +54,7 @@ class RpmPreambleElements(object):
         'define',
         'bconds',
         'bcond_conditions',
+        'head',
         'name',
         'version',
         'release',
@@ -307,6 +308,8 @@ class RpmPreambleElements(object):
         keylen = len('BuildRequires:  ')
 
         if category == 'tail':
+            return ''
+        if category == 'head':
             return ''
         elif key:
             pass
