@@ -176,6 +176,9 @@ class Regexp(object):
     re_info_compression = re.compile(r'\.info(\.?\*|\.gz|%{?ext_info}?)$')
     re_defattr = re.compile(r'^\s*%defattr\s*\(\s*-\s*,\s*root\s*,\s*root\s*(,\s*-\s*)?\)\s*')
     re_doclicense = re.compile(r'(\S+)?(LICEN(S|C)E|COPYING)(\*|\.(\*|\S+))?($|\s)', re.IGNORECASE)
+    # python sitelib
+    re_python_sitelib_glob = re.compile(r'^(?P<macro>%{(python\d*)_(sitelib|sitearch)})/\*$')
+    re_python_package_name = re.compile(r'^python\d*-(.*)')
 
     # rpmscriptlets
     re_ldconfig = re.compile(r'(^|(.*\s)?)%{?run_ldconfig}?(\s.*|)$', re.IGNORECASE)
