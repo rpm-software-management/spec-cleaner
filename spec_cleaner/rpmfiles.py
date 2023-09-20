@@ -1,5 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+from pathlib import Path
+
 from .rpmsection import Section
 
 
@@ -11,6 +13,7 @@ class RpmFiles(Section):
         line = self.strip_useless_spaces(line)
         line = self._remove_doc_on_man(line)
         line = self._move_license_from_doc(line)
+        line = self._expand_python_sitelib(line)
         # we only get empty %doc left over
         if line == '%doc ':
             return
@@ -78,4 +81,36 @@ class RpmFiles(Section):
                 line = self.reg.re_doclicense.sub('', line, 1)
                 match = self.reg.re_doclicense.search(line)
             Section.add(self, '%license {}'.format(licences))
+        return line
+
+    def _expand_python_sitelib(self, line: str) -> str:
+        """
+        Replaces the usage of "%{python_sitelib}/*" with a more
+        specific line that includes the package name:
+
+            %{python_sitelib}/packagename
+            %{python_sitelib}/packagename-%{version}*-info
+
+        This function uses the package name and removes the "python-"
+        prefix if it exists, so the name is the python module name.
+        """
+
+        name = '%{name}'
+        match = self.reg.re_python_sitelib_glob.match(line)
+        if match:
+            # try to use the python module name for the python sitelib
+            # line, calculating the name from the spec file str.
+            if self.spec:
+                # remove full path
+                name = Path(self.spec).name
+                # remove .spec
+                name = name[0:-len('.spec')]
+                # remove python prefix if exists
+                if name.startswith('python-'):
+                    name = name[len('python-'):]
+
+            macro = match.group('macro')
+            line = (f'{macro}/{name}\n'
+                    f'{macro}/{name}-%{{version}}*-info')
+
         return line
