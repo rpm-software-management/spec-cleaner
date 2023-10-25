@@ -15,7 +15,7 @@ from typing import Any, Dict, List
 from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmExceptionError, RpmWrongArgsError
 
-__version__ = '1.2.2'
+__version__ = '1.2.3'
 
 
 def process_args(argv: List[str]) -> Dict[str, Any]:
