@@ -29,8 +29,12 @@ Amusements/Toys/Other
 Amusements/Toys/Screensavers
 Development/Languages/C and C++
 Development/Languages/Fortran
+Development/Languages/Go
 Development/Languages/Haskell
 Development/Languages/Java
+Development/Languages/Lua
+Development/Languages/NodeJS
+Development/Languages/OCaml
 Development/Languages/Other
 Development/Languages/Perl
 Development/Languages/PHP
