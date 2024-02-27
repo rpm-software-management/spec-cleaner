@@ -21,7 +21,7 @@ Patch10:        test2
 %setup -q -a1
 %setup -q -b2
 %setup -q -n %{name}-%{version}-src
-%patch10 -p4
-%patch0 -p1
+%patch -P 10 -p4
+%patch -P 0 -p1
 
 %changelog

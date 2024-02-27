@@ -92,8 +92,8 @@ files for development.
 %prep
 %setup -q -n clutter-%{version}
 
-%patch0 -p1 -b .windows
-%patch1 -p1 -b .ldl
+%patch -P 0 -p1 -b .windows
+%patch -P 1 -p1 -b .ldl
 
 %build
 libtoolize --force --copy --install

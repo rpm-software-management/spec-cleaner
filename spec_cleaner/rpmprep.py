@@ -58,7 +58,7 @@ class RpmPrep(Section):
         """
         Convert patchlines to something pretty.
 
-        E.g. it converts "%patch -P 50 -p10" to "%patch50 -p10" and so on.
+        E.g. it converts "%patch50 -p10" to "%patch -P 50 -p10" and so on.
 
         Args:
             line: A string representing a line to process.
@@ -69,16 +69,15 @@ class RpmPrep(Section):
         # -p0 is default
         if line.startswith('%patch'):
             line = line.replace('-p0', '')
-        # %patch0 is desired
+        # %patch without -P was %patch0 before, convert to %patch0 for the reges
         if (line.startswith('%patch ') or line == '%patch') and '-P' not in line:
             line = line.replace('%patch', '%patch0')
 
-        # convert the %patch -P 50 -p10 to %patch50 -p10
-        # this apply only if there is ONE -P on the line, not multiple ones
+        # convert the %patch50 -p10 to %patch -P 50 -p10
         match = self.reg.re_patch_prep.match(line)
         if match:
             line = self.strip_useless_spaces(
-                '%%patch%s %s %s' % (match.group(2), match.group(1), match.group(3))
+                '%%patch -P %s %s' % (match.group(1), match.group(2))
             )
 
         return line
