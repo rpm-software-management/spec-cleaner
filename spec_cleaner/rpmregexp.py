@@ -167,7 +167,7 @@ class Regexp(object):
     re_rm_double = re.compile(r'(\.|{)a')
 
     # rpmprep
-    re_patch_prep = re.compile(r'^%patch\s*([^P]*)-P\s*(\d*)\s*([^P]*)$')
+    re_patch_prep = re.compile(r'^%patch(\d+)\s*(.*)$')
     re_setup = re.compile(r'\s*-n\s+"?%{name}-%{version}"?($|\s)')
     re_dephell_setup = re.compile(r'\s*dephell[s]?.*convert')
 

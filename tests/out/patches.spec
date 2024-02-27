@@ -10,16 +10,16 @@ Patch12:        i
 Patch99:        f
 
 %prep
-%patch3 -p1
-%patch2
-%patch99 -p1
-%patch0 -p1
-%patch1
-%patch0 -p1
-%patch10
-%patch11 -p1
-%patch12
-%patch11 -p3
+%patch -P 3 -p1
+%patch -P 2
+%patch -P 99 -p1
+%patch -P 0 -p1
+%patch -P 1
+%patch -P 0 -p1
+%patch -P 10
+%patch -p1  -P 	11
+%patch  -P12
+%patch -P11 -p3
 %patch -P20 -P30
 
 %changelog

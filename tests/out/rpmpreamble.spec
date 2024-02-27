@@ -90,8 +90,8 @@ Headers, pkg-config files, so link and other development files for %{name}
 
 %prep
 %setup -q
-%patch1
-%patch2
+%patch -P 1
+%patch -P 2
 
 %build
 %configure \
