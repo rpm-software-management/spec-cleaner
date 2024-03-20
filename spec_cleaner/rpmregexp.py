@@ -138,6 +138,7 @@ class Regexp(object):
         r'%{?(python_sitelib|python_sitearch|python_bin_suffix|python_version)}?'
     )
     re_python_interp_expand = re.compile(r'\s+(python)\s+')
+    re_python_module = re.compile(r'.*\s%{python_module\s.*}')
 
     # rpmcopyright
     re_copyright_string = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
