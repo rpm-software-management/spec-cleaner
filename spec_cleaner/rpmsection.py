@@ -56,7 +56,12 @@ class Section(object):
         line = line.replace(u'\xa0', ' ')
 
         if not line.startswith('#'):
-            if not self.minimal and not self.no_curlification:
+            is_python_module = self.reg.re_python_module.match(line)
+            if (not self.minimal
+                    and not self.no_curlification
+                    # Do not embrace macros inside python_module
+                    # gh#rpm-software-management/spec-cleaner#321
+                    and not is_python_module):
                 line = self.embrace_macros(line)
             line = self.replace_buildroot(line)
             line = self.replace_optflags(line)
