@@ -33,6 +33,7 @@ setup(
     platforms=['Linux'],
     keywords=['SUSE', 'RPM', '.spec', 'cleaner'],
     tests_require=['pytest', 'pytest-cov', 'pytest-xdist'],
+    install_requires=['python-rpm-spec'],
     packages=['spec_cleaner'],
     data_files=[('lib/obs/service/', glob('obs/*')), ('share/spec-cleaner', glob('data/*'))],
     entry_points={'console_scripts': ['spec-cleaner = spec_cleaner:main']},

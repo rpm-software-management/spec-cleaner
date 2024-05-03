@@ -4,9 +4,10 @@ import logging
 import os.path
 import re
 from ssl import CertificateError, SSLError
-from subprocess import PIPE, Popen
 from urllib import error, parse
 from urllib.request import Request, urlopen
+
+import pyrpm.spec
 
 from .dependency_parser import DependencyParser
 from .rpmhelpers import fix_license
@@ -471,25 +472,15 @@ class RpmPreamble(Section):
             match = self.reg.re_source.match(line)
             source = match.group(2)
             secure_source_available = False
+
             # expand the spec file to get URLs that can be checked
-            try:
-                with Popen(
-                    ['rpmspec', '-P', self.options['specfile']],
-                    stdout=PIPE,
-                    universal_newlines=True,
-                ) as process:
-                    for line in process.stdout:
-                        match2 = self.reg.re_source.match(line)
-                        if match2:
-                            expanded_source_url = match2.group(2)
-                            # we can't use this value as it is the expanded URL, so
-                            # just set it to indicate that we need to transform the
-                            # original source
-                            if self._make_secure_url(expanded_source_url):
-                                secure_source_available = True
-            except (FileNotFoundError):
-                # rpmspec is not available. Fail silently for now unless running in debug mode
-                logger.debug("rpmspec not available, can't check URIs for insecure protocols")
+            spec = pyrpm.spec.Spec.from_file(self.options['specfile'])
+            for s in spec.sources:
+                if s == source:
+                    expanded_source_url = pyrpm.spec.replace_macros(s, spec)
+                    if self._make_secure_url(expanded_source_url) != expanded_source_url:
+                        secure_source_available = True
+
             if not self.minimal:
                 source = self._fix_pypi_source(source)
                 if secure_source_available:
