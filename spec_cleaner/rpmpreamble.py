@@ -7,7 +7,7 @@ from ssl import CertificateError, SSLError
 from urllib import error, parse
 from urllib.request import Request, urlopen
 
-import pyrpm.spec
+import pyrpm.spec  # type: ignore
 
 from .dependency_parser import DependencyParser
 from .rpmhelpers import fix_license
