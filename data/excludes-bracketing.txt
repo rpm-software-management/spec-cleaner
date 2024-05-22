@@ -28,6 +28,7 @@ description
 desktop_database_post[^\s]*
 dev
 dir
+dnl
 doc
 docdir
 else
