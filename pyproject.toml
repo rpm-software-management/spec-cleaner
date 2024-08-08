@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spec_cleaner"
+dynamic = ["version"]
+
+authors = [
+    {name = "Daniel García Moreno", email = "daniel.garcia@suse.com"},
+    {name = "Kristyna Streitova", email = "kstreitova@suse.com"},
+    {name = "Tomáš Chvátal", email="tchvatal@suse.com"},
+]
+description = "RPM .spec files cleaner"
+readme = "README.md"
+keywords = ["SUSE", "RPM", ".spec", "cleaner"]
+license = {text = "BSD-3-Clause"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: Unix",
+    "Operating System :: POSIX",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Utilities",
+    "Topic :: Text Processing"
+]
+
+dependencies = [
+    "python-rpm-spec"
+]
+
+[tool.setuptools]
+packages = ["spec_cleaner"]
+platforms = ["Linux"]
+
+[tool.setuptools.data-files]
+"lib/obs/service/" = ["obs/*"]
+"share/spec-cleaner" = ["data/*"]
+
+[project.scripts]
+spec-cleaner = "spec_cleaner:main"
+
+[project.urls]
+Homepage = "https://github.com/rpm-software-management/spec-cleaner"
+Repository = "https://github.com/rpm-software-management/spec-cleaner.git"
+Issues = "https://github.com/rpm-software-management/spec-cleaner/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "spec_cleaner.__version__"}
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist"
+]
+
