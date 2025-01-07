@@ -18,7 +18,7 @@ class RpmCopyright(Section):
     def __init__(self, options):
         """Initialize default variables."""
         Section.__init__(self, options)
-        self.no_copyright = options['no_copyright']
+        self.suse_copyright = options['suse_copyright']
         self.year = options['copyright_year']
         self.copyrights = []
         self.buildrules = []
@@ -76,7 +76,7 @@ class RpmCopyright(Section):
         If we have no copyright header we actually should not touch it not
         wipe out, thus just add everything to known lines
         """
-        if self.no_copyright:
+        if not self.suse_copyright:
             self.lines.append(line)
             return
         if not self.lines and not line:
@@ -104,7 +104,7 @@ class RpmCopyright(Section):
 
     def output(self, fout: IO[str], newline: bool = True, new_class_name: str = ''):
         """Manage printing of the Copyright section."""
-        if not self.no_copyright:
+        if self.suse_copyright:
             self._add_modelines()
             self._add_pkg_header()
             self._add_copyright()

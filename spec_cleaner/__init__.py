@@ -81,7 +81,12 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
     parser.add_argument(
         '--no-copyright',
         action='store_true',
-        help='do not include official SUSE copyright hear and just keep what is present',
+        help='does nothing, existing option to keep compatibility with older versions, use --suse-copyright to modify the copyright header.',
+    )
+    parser.add_argument(
+        '--suse-copyright',
+        action='store_true',
+        help='Include official SUSE copyright',
     )
     parser.add_argument(
         '--remove-groups', action='store_true', help='remove groups from the specfile.'
