@@ -52,7 +52,7 @@ class TestCompare(object):
         'diff_prog': 'vimdiff',
         'minimal': False,
         'no_curlification': False,
-        'no_copyright': True,
+        'suse_copyright': False,
         'copyright_year': 2013,
         'remove_groups': False,
         'tex': False,
@@ -140,7 +140,7 @@ class TestCompare(object):
     @pytest.mark.parametrize(
         'test, compare_dir, options',
         [
-            ('header.spec', 'header', {'minimal': True, 'no_copyright': False}),
+            ('header.spec', 'header', {'minimal': True, 'suse_copyright': True}),
             ('pkgconfrequires.spec', 'out', {'pkgconfig': False}),
             ('tex.spec', 'tex', {'tex': True}),
             ('perl.spec', 'perl', {'perl': True}),
