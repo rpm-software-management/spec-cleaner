@@ -130,6 +130,7 @@ py2_compile
 py3_compile
 py_req_cleanup
 python_alternative
+python_group_libalternatives
 python_install_alternative
 python_libalternatives_reset_alternative
 python_uninstall_alternative
