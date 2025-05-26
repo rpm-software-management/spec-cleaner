@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        build-type: ['normal']
+        container:
+          - 'registry.fedoraproject.org/fedora:latest'
+          - 'registry.fedoraproject.org/fedora:rawhide'
+          - 'registry.opensuse.org/opensuse/tumbleweed:latest'
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
