@@ -25,8 +25,8 @@ Summary:        Small Embeddable HTTP Server Library
 License:        LGPL-2.1-or-later
 Group:          Productivity/Networking/Web/Servers
 URL:            https://www.gnu.org/software/libmicrohttpd/
-Source0:        https://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz
-Source1:        https://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz.sig
+Source0:        http://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz
+Source1:        http://ftp.gnu.org/gnu/libmicrohttpd/%{name}-%{version}.tar.gz.sig
 Source2:        libmicrohttpd.keyring
 # PATCH-WORKAROUND-OPENSUSE: the threads have a problem deadlocking (in OBS)
 Patch1:         disable-stalling-test.patch

@@ -129,7 +129,11 @@ py_compile
 py2_compile
 py3_compile
 py_req_cleanup
+pyproject_install
+pyproject_wheel
 python_alternative
+python_clone
+python_group_libalternatives
 python_install_alternative
 python_libalternatives_reset_alternative
 python_uninstall_alternative

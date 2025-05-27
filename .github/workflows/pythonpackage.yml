@@ -35,9 +35,9 @@ jobs:
       run: |
         mypy spec_cleaner
     - name: Collect the coveralls report
-      env:
-        COVERALLS_SERVICE_NAME: github
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coveralls --service=github
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        flag-name: python-${{ matrix.python-version }}
+        parallel: true
       if: success()
