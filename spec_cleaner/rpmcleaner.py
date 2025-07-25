@@ -421,7 +421,7 @@ class RpmSpecCleaner(object):
 
     def __del__(self) -> None:
         """Close the input and output files."""
-        if self.fin:
+        if hasattr(self, 'fin'):
             self.fin.close()
-        if self.fout:
+        if hasattr(self, 'fout'):
             self.fout.close()
