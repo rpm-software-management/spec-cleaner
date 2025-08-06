@@ -54,6 +54,7 @@ version = {attr = "spec_cleaner.__version__"}
 tests = [
     "pytest",
     "pytest-cov",
+    "pytest-isort",
     "pytest-xdist"
 ]
 
