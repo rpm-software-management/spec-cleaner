@@ -99,6 +99,8 @@ class RpmPreamble(Section):
             'nosource': self.reg.re_nosource,
             # for source, we have a special match to keep the source number
             # for patch, we have a special match to keep the patch number
+            'buildsystem': self.reg.re_buildsystem,
+            'buildoption': self.reg.re_buildoption,
             'buildrequires': self.reg.re_buildrequires,
             'buildconflicts': self.reg.re_buildconflicts,
             'buildignores': self.reg.re_buildignores,
@@ -497,6 +499,14 @@ class RpmPreamble(Section):
                 zero = ''
             self._add_line_value_to(
                 'patch', match.group(3), key='%sPatch%s%s' % (match.group(1), zero, match.group(2)),
+            )
+            return
+
+        elif self.reg.re_buildoption_phase.match(line):
+            match = self.reg.re_buildoption_phase.match(line)
+            value = match.group(2)
+            self._add_line_value_to(
+                'buildoption_phase', value, key='BuildOption{0}'.format(match.group(1))
             )
             return
 

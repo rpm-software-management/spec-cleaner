@@ -30,6 +30,8 @@ class RpmPreambleElements(object):
         'source': 'Source',
         'nosource': 'NoSource',
         'patch': 'Patch',
+        'buildsystem': 'BuildSystem',
+        'buildoption': 'BuildOption',
         'buildrequires': 'BuildRequires',
         'buildconflicts': 'BuildConflicts',
         'buildignores': '#!BuildIgnore',
@@ -66,6 +68,9 @@ class RpmPreambleElements(object):
         'source',
         'nosource',
         'patch',
+        'buildsystem',
+        'buildoption',
+        'buildoption_phase',
         'patternprovides',  # fake provides with special function for patterns
         'patternrequires',  # fake requires with special function for patterns
         'patternrecommends',  # fake recommends with special function for patterns
