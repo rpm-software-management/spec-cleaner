@@ -6,7 +6,7 @@ class RpmBaseExceptionError(Exception):
 
     def __init__(self, args=()) -> None:
         """Initialise class."""
-        Exception.__init__(self)
+        super().__init__(*args)
         self.args = args
 
     def __str__(self) -> str:
