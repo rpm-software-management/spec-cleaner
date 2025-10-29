@@ -16,6 +16,7 @@ changelog
 check
 cmake
 cmake_[^\s]*
+conf
 config(\s*\([^)]*\))?
 configure
 create_exclude_filelist
