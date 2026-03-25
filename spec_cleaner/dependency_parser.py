@@ -63,7 +63,7 @@ def consume_chars(regex, string):
         return string[0:end], string[end:]
     else:
         raise NoMatchExceptionError(
-            'Expected match failed (string: "%s", regex: "%s" )' % (string, regex.pattern)
+            f'Expected match failed (string: "{string}", regex: "{regex.pattern}" )'
         )
 
 
@@ -79,7 +79,7 @@ def matching_bracket(bracket):
     elif bracket == '(':
         return ')'
     raise Exception(
-        'Undefined bracket matching - add defintion of "%s" to ' 'matching_bracket()' % bracket
+        f'Undefined bracket matching - add defintion of "{bracket}" to matching_bracket()'
     )
 
 

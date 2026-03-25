@@ -22,18 +22,16 @@ class RpmCopyright(Section):
         self.year = options['copyright_year']
         self.copyrights = []
         self.buildrules = []
-        self.distro_copyright = '# Copyright (c) {0} SUSE LLC and contributors'.format(self.year)
+        self.distro_copyright = f'# Copyright (c) {self.year} SUSE LLC and contributors'
         self.vimmodeline = ''
 
     def _add_pkg_header(self):
         """Add specfile name to the Copyright section."""
         specname = os.path.splitext(os.path.basename(self.spec))[0]
         self.lines.append(
-            """#
-# spec file for package {0}
-#""".format(
-                specname
-            )
+            f"""#
+# spec file for package {specname}
+#"""
         )
 
     def _add_copyright(self):
@@ -84,7 +82,7 @@ class RpmCopyright(Section):
         copyright_match = self.reg.re_copyright_string.match(line)
         if copyright_match and not self.reg.re_suse_copyright.search(line):
             # always replace whitespace garbage on copyright line
-            line = '# Copyright (c) {0}'.format(copyright_match.group(1))
+            line = f'# Copyright (c) {copyright_match.group(1)}'
             self.copyrights.append(line)
         elif self.reg.re_rootforbuild.match(line):
             self.buildrules.append('# needsrootforbuild')

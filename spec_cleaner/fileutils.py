@@ -24,10 +24,10 @@ def open_datafile(name: str) -> IO[str]:
     homedir = os.getenv('HOME', '~') + '/.local/'
 
     possible_paths = (
-        '{0}/../data/{1}'.format(os.path.dirname(os.path.realpath(__file__)), name),
-        '{0}/share/spec-cleaner/{1}'.format(homedir, name),
-        '{0}/share/spec-cleaner/{1}'.format(sysconfig.get_path('data'), name),
-        '{0}/share/spec-cleaner/{1}'.format(sys.prefix, name),
+        f'{os.path.dirname(os.path.realpath(__file__))}/../data/{name}',
+        f'{homedir}/share/spec-cleaner/{name}',
+        f"{sysconfig.get_path('data')}/share/spec-cleaner/{name}",
+        f'{sys.prefix}/share/spec-cleaner/{name}',
     )
 
     for path in possible_paths:
@@ -38,7 +38,7 @@ def open_datafile(name: str) -> IO[str]:
         else:
             return _file
     # file not found
-    raise RpmExceptionError("File '{}' not found in datadirs".format(name))
+    raise RpmExceptionError(f"File '{name}' not found in datadirs")
 
 
 def open_stringio_spec(name: str) -> IO[str]:

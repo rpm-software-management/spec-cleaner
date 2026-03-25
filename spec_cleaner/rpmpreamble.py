@@ -215,7 +215,7 @@ class RpmPreamble(Section):
             (
                 'https',
                 'files.pythonhosted.org',
-                '/packages/{}/{}/{}/{}'.format(pkg_type, modname[0], modname, filename),
+                f'/packages/{pkg_type}/{modname[0]}/{modname}/{filename}',
                 '',
                 '',
                 '',
@@ -284,7 +284,7 @@ class RpmPreamble(Section):
             # then add each pkgconfig to the list
             # print pkgconf_list
             for j in convers_list:
-                name = '{0}({1})'.format(brackety, j)
+                name = f'{brackety}({j})'
                 converted.append(RpmRequiresToken(name, token.operator, token.version))
         return converted
 
@@ -487,7 +487,7 @@ class RpmPreamble(Section):
                 source = self._fix_pypi_source(source)
                 if secure_source_available:
                     source = self._make_secure_url(source, skip_availabilty_check=True)
-            self._add_line_value_to('source', source, key='Source%s' % match.group(1))
+            self._add_line_value_to('source', source, key=f'Source{match.group(1)}')
             return
 
         elif self.reg.re_patch.match(line):
@@ -498,7 +498,7 @@ class RpmPreamble(Section):
             else:
                 zero = ''
             self._add_line_value_to(
-                'patch', match.group(3), key='%sPatch%s%s' % (match.group(1), zero, match.group(2)),
+                'patch', match.group(3), key=f'{match.group(1)}Patch{zero}{match.group(2)}',
             )
             return
 
@@ -506,7 +506,7 @@ class RpmPreamble(Section):
             match = self.reg.re_buildoption_phase.match(line)
             value = match.group(2)
             self._add_line_value_to(
-                'buildoption_phase', value, key='BuildOption{0}'.format(match.group(1))
+                'buildoption_phase', value, key=f'BuildOption{match.group(1)}'
             )
             return
 
@@ -624,7 +624,7 @@ class RpmPreamble(Section):
             else:
                 value = match.group(2)
             self._add_line_value_to(
-                'requires_phase', value, key='Requires{0}'.format(match.group(1))
+                'requires_phase', value, key=f'Requires{match.group(1)}'
             )
             return
 
@@ -663,7 +663,7 @@ class RpmPreamble(Section):
             language = match.group(1)
             # and what value is there
             content = match.group(2)
-            self._add_line_value_to('summary_localized', content, key='Summary{0}'.format(language))
+            self._add_line_value_to('summary_localized', content, key=f'Summary{language}')
             return
 
         elif self.reg.re_group.match(line):

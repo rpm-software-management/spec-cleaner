@@ -248,7 +248,7 @@ def add_group(group):
             items += add_group(subgroup)
         return items
     else:
-        raise RpmExceptionError('Unknown type of group in preamble: %s' % type(group))
+        raise RpmExceptionError(f'Unknown type of group in preamble: {type(group)}')
 
 
 def find_pkgconfig_statement(elements):
