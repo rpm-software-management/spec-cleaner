@@ -154,7 +154,7 @@ class RpmPreambleElements(object):
             # if this is a list then all items except last are comment or whitespace
             key = str(a[-1])
         else:
-            raise RpmExceptionError('Unknown type during sort: %s' % a)
+            raise RpmExceptionError(f'Unknown type during sort: {a}')
 
         # Special case is the category grouping where we have to get the number in
         # after the value
@@ -321,7 +321,7 @@ class RpmPreambleElements(object):
         elif category in self.category_to_key:
             key = self.category_to_key[category]
         else:
-            raise RpmExceptionError('Unhandled category in preamble: %s' % category)
+            raise RpmExceptionError(f'Unhandled category in preamble: {category}')
 
         # append : only if the thing is not known macro
         if not key.startswith('%'):

@@ -80,7 +80,7 @@ class RpmFiles(Section):
                 licences += match.group()
                 line = self.reg.re_doclicense.sub('', line, 1)
                 match = self.reg.re_doclicense.search(line)
-            Section.add(self, '%license {}'.format(licences))
+            Section.add(self, f'%license {licences}')
         return line
 
     def _expand_python_sitelib(self, line: str) -> str:

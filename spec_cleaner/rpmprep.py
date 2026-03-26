@@ -77,7 +77,7 @@ class RpmPrep(Section):
         match = self.reg.re_patch_prep.match(line)
         if match:
             line = self.strip_useless_spaces(
-                '%%patch -P %s %s' % (match.group(1), match.group(2))
+                f'%patch -P {match.group(1)} {match.group(2)}'
             )
 
         return line

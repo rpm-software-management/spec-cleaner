@@ -138,14 +138,14 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
 
     # the spec must exist for us to do anything
     if not os.path.exists(options.specfile):
-        raise RpmWrongArgsError('{0} does not exist.'.format(options.specfile))
+        raise RpmWrongArgsError(f'{options.specfile} does not exist.')
 
     # the path for output must exist and the file must not be there unless
     # force is specified
     if options.output:
         options.output = os.path.expanduser(options.output)
         if not options.force and os.path.exists(options.output):
-            raise RpmWrongArgsError('{0} already exists.'.format(options.output))
+            raise RpmWrongArgsError(f'{options.output} already exists.')
 
     # convert options to dict
     options_dict = vars(options)
@@ -162,14 +162,14 @@ def main() -> int:
     try:
         options = process_args(sys.argv[1:])
     except RpmWrongArgsError as exception:
-        sys.stderr.write('ERROR: {0}\n'.format(exception))
+        sys.stderr.write(f'ERROR: {exception}\n')
         return 1
 
     try:
         cleaner = RpmSpecCleaner(options)
         cleaner.run()
     except RpmExceptionError as exception:
-        sys.stderr.write('ERROR: {0}\n'.format(exception))
+        sys.stderr.write(f'ERROR: {exception}\n')
         return 1
 
     return 0

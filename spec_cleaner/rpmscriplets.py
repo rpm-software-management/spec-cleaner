@@ -52,4 +52,4 @@ class RpmScriptlets(Section):
             if self.lines[1] == '/sbin/ldconfig':
                 pkg = self.lines[0]
                 self.lines = []
-                self.lines.append('{0} -p /sbin/ldconfig'.format(pkg))
+                self.lines.append(f'{pkg} -p /sbin/ldconfig')
