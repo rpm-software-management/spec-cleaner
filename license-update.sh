@@ -1,4 +1,10 @@
-#!/bin/bash
+#! /bin/sh
+
+# this script is maintained here: https://github.com/openSUSE/obs-service-format_spec_file
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+set -e
+
 export LC_ALL=C
 curl -s -L 'https://docs.google.com/spreadsheets/d/14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs/export?format=tsv&id=14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs&gid=0' | grep -v "New format" \
   | sed -e 's,\s*$,,' > licenses_changes.ntxt
@@ -34,34 +40,19 @@ if test -n "$dups"; then
 fi
 
 : > licenses_changes.raw
-
-for i in $(curl -s https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json | jq -r '.licenses | .[] | select(.isDeprecatedLicenseId|not) | .licenseId'); do
-    echo "$i" >> license_exceptions.ntxt ;
-done
-
-sort -u -o data/licenses_exceptions.txt license_exceptions.ntxt
-rm license_exceptions.ntxt
-
 (
-cat README.md.in 
+cat README.md.in
 echo ""
 echo "# [SPDX Licenses](http://spdx.org/licenses)"
 echo ""
 echo "License Tag | Description"
 echo "----------- | -----------"
 IFS=:
-w3m -dump -cols 1000 http://spdx.org/licenses/ | grep "License Text" | sed -e 's, *License Text.*, LT,; s,Y\s*LT$,LT,; s,Y\s*LT$,LT,;  s,\s*LT$,,;; s,\s* \([^ ]*\)$,:\1,' | while read text license; do
+curl -s https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json | jq -r '.licenses | .[] | select(.isDeprecatedLicenseId|not) | [.licenseId, ":", .name] | add' | sort | while read license text; do
   echo "$license | $text"
   echo "$license" >> licenses_changes.raw
 done
 unset IFS
-
-echo ""
-echo "# SPDX Exceptions"
-echo ""
-echo "|Exception name|"
-echo "|--------------|"
-cat data/licenses_exceptions.txt
 
 echo ""
 echo "# SUSE Additions"
@@ -70,7 +61,7 @@ echo "|License Tag|"
 echo "|-----------|"
 
 IFS=:
-grep ^SUSE- licenses_changes.ntxt | cut -d'	' -f1 | sort -u | while read -r nl; do 
+grep -E "^(LicenseRef-SUSE-|SUSE-)" licenses_changes.ntxt | cut -d'	' -f1 | sort -u | while read nl; do
   echo "|$nl|"
 done
 unset IFS
