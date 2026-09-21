@@ -3,6 +3,7 @@
 import logging
 import os.path
 import re
+from http.client import HTTPException
 from ssl import CertificateError, SSLError
 from urllib import error, parse
 from urllib.request import Request, urlopen
@@ -390,7 +391,11 @@ class RpmPreamble(Section):
             else:
                 retval = orig_url
         # ssl.CertificateError is a subclass of SSLError in Python 3.7. In Python 3.6 it's not.
-        except (error.URLError, SSLError, CertificateError):
+        # the availability probe is best-effort: any network failure
+        # (including http.client errors that escape urlopen unwrapped,
+        # e.g. RemoteDisconnected) must fall back to the original url
+        except (error.URLError, SSLError, CertificateError, HTTPException,
+                TimeoutError):
             retval = orig_url
         finally:
             if response:
