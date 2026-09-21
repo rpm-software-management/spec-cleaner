@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "spec_cleaner"
 dynamic = ["version"]
+requires-python = ">=3.11"
 
 authors = [
     {name = "Daniel García Moreno", email = "daniel.garcia@suse.com"},
