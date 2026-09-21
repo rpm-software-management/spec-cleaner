@@ -237,4 +237,7 @@ class Regexp(object):
 
     def __init__(self, keywords: List[str]) -> None:
         """Compile all the keywords that are to be unbraced."""
-        self.re_unbrace_keywords = re.compile('%{(' + '|'.join(keywords) + ')}')
+        # the negative lookbehind keeps us from touching '%%{macro}'
+        # where '%%' is the rpm escape for a literal percent sign
+        # and thus not a macro invocation at all (gh#315)
+        self.re_unbrace_keywords = re.compile(r'(?<!%)%{(' + '|'.join(keywords) + ')}')
