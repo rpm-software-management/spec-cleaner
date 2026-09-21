@@ -23,8 +23,11 @@ def open_datafile(name: str) -> IO[str]:
     """
     homedir = os.getenv('HOME', '~') + '/.local/'
 
+    # the data files are shipped inside the package itself so that pip
+    # installs work on every install scheme (venv, --user, --target,
+    # macOS, ...) instead of relying on sysconfig data paths (gh#292)
     possible_paths = (
-        f'{os.path.dirname(os.path.realpath(__file__))}/../data/{name}',
+        f'{os.path.dirname(os.path.realpath(__file__))}/data/{name}',
         f'{homedir}/share/spec-cleaner/{name}',
         f"{sysconfig.get_path('data')}/share/spec-cleaner/{name}",
         f'{sys.prefix}/share/spec-cleaner/{name}',
