@@ -23,7 +23,7 @@ Summary:        The clutter library
 License:        LGPL-2.1+
 Group:          Development/Libraries
 Url:            https://clutter-project.org/
-Source:         http://www.clutter-project.org/sources/clutter/1.5/clutter-%{version}.tar.bz2
+Source:         https://www.clutter-project.org/sources/clutter/1.5/clutter-%{version}.tar.bz2
 Patch0:         clutter-1.6.14-windows.patch
 Patch1:         clutter-1.6.20-ldl.patch
 # Native version for glib-genmarshal
