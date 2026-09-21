@@ -82,6 +82,7 @@ kf5_makeinstall
 lang_package
 lang(\s*\([^)]*\))
 langpack
+ldconfig_scriptlets
 license
 limit_build
 make_build
