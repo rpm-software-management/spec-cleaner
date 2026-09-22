@@ -17,7 +17,7 @@ with open(args.output, 'w') as wfile:
     wfile.write('# URL: https://github.com/rpm-software-management/spec-cleaner\n\n')
     wfile.write('ValidLicenses = [\n')
     suse_exceptions = []
-    for line in open('data/licenses_changes.txt').readlines():
+    for line in open('spec_cleaner/data/licenses_changes.txt').readlines():
         if line.startswith('First line'):
             continue
         old_name, new_name = line.strip().split('\t')

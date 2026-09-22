@@ -69,6 +69,6 @@ unset IFS
 rm licenses_changes.raw
 ) > README.md
 
-cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o data/licenses_changes.txt
+cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o spec_cleaner/data/licenses_changes.txt
 rm licenses_changes.ntxt licenses_changes.ptxt
 

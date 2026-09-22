@@ -35,9 +35,12 @@ dependencies = [
 packages = ["spec_cleaner"]
 platforms = ["Linux"]
 
+[tool.setuptools.package-data]
+spec_cleaner = ["data/*"]
+
 [tool.setuptools.data-files]
 "lib/obs/service/" = ["obs/*"]
-"share/spec-cleaner" = ["data/*"]
+"share/spec-cleaner" = ["spec_cleaner/data/*"]
 
 [project.scripts]
 spec-cleaner = "spec_cleaner:main"
