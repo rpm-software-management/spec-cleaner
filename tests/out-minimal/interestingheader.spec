@@ -15,6 +15,7 @@ Source1:        %{name}.png
 BuildRequires:  Mesa
 BuildRequires:  autoconf
 BuildRequires:  gcc-c++
+BuildRequires:  libSDL-devel
 BuildRequires:  libircclient-devel
 BuildRequires:  pkgconfig
 BuildRequires:  update-desktop-files
@@ -23,7 +24,6 @@ BuildRequires:  pkgconfig(fftw3f)
 BuildRequires:  pkgconfig(fftw3l)
 BuildRequires:  pkgconfig(jack)
 BuildRequires:  pkgconfig(liblo)
-BuildRequires:  pkgconfig(sdl)
 BuildRequires:  pkgconfig(tcl) >= 8.5
 Requires:       Mesa
 Requires:       fftw3

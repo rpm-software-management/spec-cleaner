@@ -1,82 +1,167 @@
-ASL-devel: ASL 
+Catch2-2-devel: Catch2 
 Catch2-devel: Catch2 
+CharLS-devel: charls 
+Clipper2-devel: Clipper2 
+Coin4-devel: coin 
 FAudio-devel: FAudio 
+Imath-devel: Imath 
+LibVNCServer-devel: LibVNCServer 
+OpenColorIO-devel: OpenColorIO 
 OpenImageDenoise-devel: OpenImageDenoise 
-PackageKit-Qt-devel: packagekitqt5 
+OpenImageIO-devel: OpenImageIO 
+OpenShadingLanguage-devel: OSL 
+OpenSubdiv-devel: OpenSubdiv 
+PDAL-devel: PDAL 
+QR-Code-generator-devel: qrcodegen qrcodegencpp 
+SDL2-devel: sdl2 
+SDL2_sound-devel: SDL2_sound 
+SDL3-devel: SDL3 
+SDL3_image-devel: SDL3_image 
+SDL3_ttf-devel: SDL3_ttf 
 SimGear-devel: SimGear 
 SoQt-devel: soqt 
 Vc-devel: Vc 
-akonadi-calendar-devel: KF5AkonadiCalendar 
-akonadi-contact-devel: KF5AkonadiContact KF5ContactEditor 
-akonadi-import-wizard-devel: KPimImportWizard 
-akonadi-mime-devel: KF5AkonadiMime 
-akonadi-notes-devel: KF5AkonadiNotes 
-akonadi-search-devel: KF5AkonadiSearch 
-akonadi-server-devel: KF5Akonadi 
-analitza-devel: Analitza5 
+VecCore-devel: VecCore 
+abseil-cpp-devel: absl 
+adios2-devel: FindPkg adios2 
+akonadi-calendar-devel: KPim6AkonadiCalendar 
+akonadi-contacts-devel: KPim6AkonadiContactCore KPim6AkonadiContactWidgets 
+akonadi-devel: KPim6Akonadi 
+akonadi-import-wizard-devel: KPim6ImportWizard 
+akonadi-mime-devel: KPim6AkonadiMime 
+akonadi-search-devel: KPim6AkonadiSearch 
+alembic-devel: Alembic 
+alkimia-devel: LibAlkimia6 
+analitza-devel: Analitza6 
+appstream-qt5-devel: AppStreamQt5 
+appstream-qt6-devel: AppStreamQt 
 aqbanking-devel: aqbanking 
+argparse-devel: argparse 
+arpack-ng-devel: arpackng 
 assimp-devel: assimp 
 attica-qt5-devel: KF5Attica 
-avogadro-devel: libmsym 
+aurorae6-devel: Aurorae 
 avogadrolibs-devel: AvogadroLibs 
-baloo5-devel: KF5Baloo 
-baloo5-widgets-devel: KF5BalooWidgets 
+aws-c-auth-devel: aws-c-auth 
+aws-c-cal-devel: aws-c-cal 
+aws-c-common-devel: aws-c-common 
+aws-c-compression-devel: aws-c-compression 
+aws-c-event-stream-devel: aws-c-event-stream 
+aws-c-http-devel: aws-c-http 
+aws-c-io-devel: aws-c-io 
+aws-c-mqtt-devel: aws-c-mqtt 
+aws-c-s3-devel: aws-c-s3 
+aws-c-sdkutils-devel: aws-c-sdkutils 
+aws-crt-cpp-devel: aws-crt-cpp 
+baloo-widgets-devel: KF6BalooWidgets 
+belle-sip-devel: BelleSIP 
+belr-devel: Belr 
 benchmark-devel: benchmark 
+blaspp-devel: blaspp 
 bluez-qt-devel: KF5BluezQt 
-breeze5-style: Breeze 
+breeze6-devel: Breeze 
 c-ares-devel: c-ares 
-calendarsupport-devel: KF5CalendarSupport 
+cJSON-devel: cJSON 
+calendarsupport-devel: KPim6CalendarSupport 
 cantor-devel: Cantor 
-cgal-devel: CGAL CGALLib CGAL_CoreLib CGAL_ImageIOLib CGAL_Qt5Lib 
+cblas-devel: cblas 
+cereal-devel: cereal 
+cgal-devel: CGAL 
+civetweb-devel: civetweb 
+clBLAS-devel: clBLAS 
 clFFT-devel: clFFT 
-clang7-devel: Clang 
-clang9-devel: Clang 
+clang15-devel: Clang 
+clang17-devel: Clang 
+clang19-devel: Clang 
+cli11-devel: CLI11 
+clingo-devel: Clingo 
+cmake-extras: CopyrightTest CoverageReport DoxygenBuilder FormatCode GDbus GMock GObjectIntrospection GSettings GdbusCodegen IncludeChecker Intltool Lcov QmlPlugins Vala gcovr 
+cmake: aarch-64 
+cmake: ppc-64 
+cmake: s390-64 
 cmake: x86-64 
+cmark-devel: cmark 
 codec2-devel: codec2 
+collada-dom-devel: collada_dom 
+corrosion: Corrosion 
+cpp-httplib-devel: httplib 
+cpuinfo-devel: cpuinfo 
+ctre-devel: ctre 
+cxxopts-devel: cxxopts 
+dbus-1-devel: DBus1 
 dcmtk-devel: DCMTK 
-digikam-devel: DigikamCore DigikamDatabase DigikamGui 
+digikam-devel: DigikamCore DigikamDatabase DigikamGui DigikamPlugin 
+dlib-devel: dlib 
+dlpack-devel: dlpack 
+doctest-devel: doctest 
 dolphin-devel: DolphinVcs 
 double-conversion-devel: double-conversion 
-dtkcore-devel: Dtk DtkCMake DtkCore 
-dtkwidget-devel: DtkWidget 
-dtkwm-devel: DtkWm 
-embree-devel-static: embree 
-eventviews-devel: KF5EventViews 
-fcitx-qt5-devel: FcitxQt5DBusAddons FcitxQt5WidgetsAddons 
-flatbuffers-devel: Flatbuffers 
+draco-devel: draco 
+dragonbox-devel: dragonbox 
+efl-devel: Ecore EcoreCxx Edje Eet EetCxx Eeze Efl Efreet Eina EinaCxx Eio Eldbus Elementary Elua Emile Emotion Eo EoCxx Eolian EolianCxx Ethumb EthumbClient Evas EvasCxx 
+embree-devel: embree 
+eventviews-devel: KPim6EventViews 
+expected-lite-devel: expected-lite 
+fast_float-devel: FastFloat 
+fcitx5-chinese-addons-devel: Fcitx5ModuleCloudPinyin Fcitx5ModulePinyinHelper Fcitx5ModulePunctuation 
+fcitx5-devel: Fcitx5Config Fcitx5Core Fcitx5Module Fcitx5ModuleClipboard Fcitx5ModuleDBus Fcitx5ModuleEmoji Fcitx5ModuleNotificationItem Fcitx5ModuleNotifications Fcitx5ModuleQuickPhrase Fcitx5ModuleSpell Fcitx5ModuleTestFrontend Fcitx5ModuleTestIM Fcitx5ModuleUnicode Fcitx5ModuleWayland Fcitx5ModuleXCB Fcitx5Utils 
+fcitx5-lua-devel: Fcitx5ModuleLuaAddonLoader 
+fcitx5-qt-devel: Fcitx5Qt5DBusAddons Fcitx5Qt5WidgetsAddons Fcitx5Qt6DBusAddons Fcitx5Qt6WidgetsAddons 
+flann-devel: flann 
+flatbuffers-devel: flatbuffers 
+fluidsynth-devel: FluidSynth 
+fmt-10-devel: fmt 
+fmt-9-devel: fmt 
 fmt-devel: fmt 
 frameworkintegration-devel: KF5FrameworkIntegration 
 freeglut-devel: FreeGLUT 
-freerdp-devel: FreeRDP FreeRDP-Client FreeRDP-Server FreeRDP-Shadow 
+freerdp-devel: FreeRDP FreeRDP-Client FreeRDP-Proxy FreeRDP-Server FreeRDP-Shadow WinPR-tools 
+freerdp2-devel: FreeRDP FreeRDP-Client FreeRDP-Server FreeRDP-Shadow 
+frozen-devel: frozen 
+ftxui-devel: ftxui 
+futuresql-qt5-devel: FutureSQL5 
+futuresql-qt6-devel: FutureSQL6 
 gammaray-devel: GammaRay 
+gammaray-qt6-devel: GammaRay 
+gdal-devel: GDAL 
 gdcm-devel: GDCM 
+geos-devel: geos 
+gflags-devel-static: gflags 
 gflags-devel: gflags 
+ginac-devel: ginac 
 gli-devel: gli 
 glm-devel: glm 
+glog-devel: glog 
+glslang-devel: glslang 
 gmock: GTest 
-gnuradio-devel: Gnuradio gnuradio-analog gnuradio-audio gnuradio-blocks gnuradio-channels gnuradio-digital gnuradio-dtv gnuradio-fec gnuradio-fft gnuradio-filter gnuradio-pmt gnuradio-qtgui gnuradio-runtime gnuradio-trellis gnuradio-uhd gnuradio-video-sdl gnuradio-vocoder gnuradio-wavelet gnuradio-zeromq 
-gpgmepp5-devel: KF5Gpgmepp 
 grantlee5-devel: Grantlee5 
-grantleetheme-devel: KF5GrantleeTheme 
+grantleetheme-devel: KPim6GrantleeTheme 
+grpc-devel: gRPC 
 gwenhywfar-devel: gwengui-cpp gwengui-qt5 gwenhywfar 
+gwenhywfar-qt6-devel: gwengui-qt6 
+hdf5-devel: hdf5 
+heatshrink-devel: heatshrink 
+highway-devel: hwy 
 hpx-devel: HPX 
-incidenceeditor-devel: KF5IncidenceEditor 
+hyprwayland-scanner: hyprwayland-scanner 
+igsc-devel: igsc 
+immer-devel: Immer 
+incidenceeditor-devel: KPim6IncidenceEditor 
 insighttoolkit-devel: ITK 
-jrtplib-devel: JRTPLIB 
-jsoncpp-devel: jsoncpp 
-jthread-devel: JThread 
-kColorPicker-devel: kColorPicker 
-kImageAnnotator-devel: kImageAnnotator 
-kaccounts-integration-devel: KAccounts 
+ispc-devel: ispcrt 
+kColorPicker-Qt5-devel: kColorPicker-Qt5 
+kColorPicker-Qt6-devel: kColorPicker-Qt6 
+kImageAnnotator-Qt5-devel: kImageAnnotator-Qt5 
+kImageAnnotator-Qt6-devel: kImageAnnotator-Qt6 
+kaccounts-integration-devel: KAccounts6 
+kaccounts-integration-kf5-devel: KAccounts 
 kactivities-stats-devel: KF5ActivitiesStats 
 kactivities5-devel: KF5Activities 
-kalarmcal-devel: KF5AlarmCalendar 
 karchive-devel: KF5Archive 
 kauth-devel: KF5Auth 
-kblog-devel: KF5Blog 
 kbookmarks-devel: KF5Bookmarks 
 kcalendarcore-devel: KF5CalendarCore 
-kcalutils-devel: KF5CalendarUtils 
+kcalutils-devel: KPim6CalendarUtils 
 kcmutils-devel: KF5KCMUtils 
 kcodecs-devel: KF5Codecs 
 kcompletion-devel: KF5Completion 
@@ -85,98 +170,185 @@ kconfigwidgets-devel: KF5ConfigWidgets
 kcontacts-devel: KF5Contacts 
 kcoreaddons-devel: KF5CoreAddons 
 kcrash-devel: KF5Crash 
-kdav-devel: KF5DAV 
 kdb-devel: KDb 
 kdbusaddons-devel: KF5DBusAddons 
-kdebase4-workspace-devel: KDE4Workspace 
+kddockwidgets-devel: KDDockWidgets 
+kddockwidgets-qt6-devel: KDDockWidgets-qt6 
 kdeclarative-devel: KF5Declarative 
+kdecoration6-devel: KDecoration3 
 kded-devel: KDED 
+kdegraphics-mobipocket-devel: QMobipocket6 
 kdelibs4support-devel: KF5KDE4Support KF5KDELibs4Support 
-kdepim-apps-libs-devel: KF5FollowupReminder KF5KaddressbookGrantlee KF5KaddressbookImportExport KF5KdepimDBusInterfaces KF5SendLater 
+kdeplasma6-addons-devel: PlasmaPotdProvider 
 kdesignerplugin-devel: KF5DesignerPlugin 
 kdesu-devel: KF5Su 
-kdevelop5-pg-qt: KDevelop-PG-Qt 
-kdevelop5-plugin-php-devel: KDevPHP 
-kdevelop5: KDevelop 
+kdevelop-pg-qt: KDevelop-PG-Qt KDevelopPGQt 
+kdevelop-plugin-php-devel: KDevPHP 
+kdevelop: KDevelop 
 kdevplatform-devel: KDevPlatform 
-kdewebkit-devel: KF5WebKit 
-kdgantt2-devel: KF5KDGantt2 
 kdiagram-devel: KChart KGantt 
+kdiagram6-devel: KChart6 KGantt6 
 kdnssd-framework-devel: KF5DNSSD 
 kdoctools-devel: KF5DocTools 
+kdsingleapplication-devel: KDSingleApplication 
+kdsingleapplication-qt6-devel: KDSingleApplication-qt6 
 kdsoap-devel: KDSoap 
+kdsoap-qt6-devel: KDSoap-qt6 
+kdsoap-ws-discovery-client-devel: KDSoapWSDiscoveryClient 
 kdstatemachineeditor-devel: KDSME 
+kdstatemachineeditor-qt6-devel: KDSME-qt6 
 kemoticons-devel: KF5Emoticons 
-kfilemetadata5-devel: KF5FileMetaData 
+kf6-attica-devel: KF6Attica 
+kf6-baloo-devel: KF6Baloo 
+kf6-bluez-qt-devel: KF6BluezQt 
+kf6-breeze-icons-devel: KF6BreezeIcons 
+kf6-frameworkintegration-devel: KF6FrameworkIntegration 
+kf6-karchive-devel: KF6Archive 
+kf6-kauth-devel: KF6Auth 
+kf6-kbookmarks-devel: KF6Bookmarks 
+kf6-kcalendarcore-devel: KF6CalendarCore 
+kf6-kcmutils-devel: KF6KCMUtils 
+kf6-kcodecs-devel: KF6Codecs 
+kf6-kcolorscheme-devel: KF6ColorScheme 
+kf6-kcompletion-devel: KF6Completion 
+kf6-kconfig-devel: KF6Config 
+kf6-kconfigwidgets-devel: KF6ConfigWidgets 
+kf6-kcontacts-devel: KF6Contacts 
+kf6-kcoreaddons-devel: KF6CoreAddons 
+kf6-kcrash-devel: KF6Crash 
+kf6-kdav-devel: KF6DAV 
+kf6-kdbusaddons-devel: KF6DBusAddons 
+kf6-kdeclarative-devel: KF6Declarative 
+kf6-kded-devel: KF6KDED 
+kf6-kdesu-devel: KF6Su 
+kf6-kdnssd-devel: KF6DNSSD 
+kf6-kdoctools-devel: KF6DocTools 
+kf6-kfilemetadata-devel: KF6FileMetaData 
+kf6-kglobalaccel-devel: KF6GlobalAccel 
+kf6-kguiaddons-devel: KF6GuiAddons 
+kf6-kholidays-devel: KF6Holidays 
+kf6-ki18n-devel: KF6I18n 
+kf6-kiconthemes-devel: KF6IconThemes 
+kf6-kidletime-devel: KF6IdleTime 
+kf6-kimageformats-devel: KF6ImageFormats 
+kf6-kio-devel: KF6KIO 
+kf6-kirigami-devel: KF6Kirigami KF6Kirigami2 KF6KirigamiPlatform 
+kf6-kitemmodels-devel: KF6ItemModels 
+kf6-kitemviews-devel: KF6ItemViews 
+kf6-kjobwidgets-devel: KF6JobWidgets 
+kf6-knewstuff-devel: KF6NewStuff KF6NewStuffCore 
+kf6-knotifications-devel: KF6Notifications 
+kf6-knotifyconfig-devel: KF6NotifyConfig 
+kf6-kpackage-devel: KF6Package 
+kf6-kparts-devel: KF6Parts 
+kf6-kpeople-devel: KF6People 
+kf6-kplotting-devel: KF6Plotting 
+kf6-kpty-devel: KF6Pty 
+kf6-kquickcharts-devel: KF6QuickCharts 
+kf6-krunner-devel: KF6Runner 
+kf6-kservice-devel: KF6Service 
+kf6-kstatusnotifieritem-devel: KF6StatusNotifierItem 
+kf6-ksvg-devel: KF6Svg 
+kf6-ktexteditor-devel: KF6TextEditor 
+kf6-ktexttemplate-devel: KF6TextTemplate 
+kf6-ktextwidgets-devel: KF6TextWidgets 
+kf6-kunitconversion-devel: KF6UnitConversion 
+kf6-kuserfeedback-devel: KF6UserFeedback 
+kf6-kwallet-devel: KF6Wallet 
+kf6-kwidgetsaddons-devel: KF6WidgetsAddons 
+kf6-kwindowsystem-devel: KF6WindowSystem 
+kf6-kxmlgui-devel: KF6XmlGui 
+kf6-modemmanager-qt-devel: KF6ModemManagerQt 
+kf6-networkmanager-qt-devel: KF6NetworkManagerQt 
+kf6-prison-devel: KF6Prison 
+kf6-purpose-devel: KF6Purpose 
+kf6-qqc2-desktop-style-devel: KF6QQC2DesktopStyle 
+kf6-solid-devel: KF6Solid 
+kf6-sonnet-devel: KF6Sonnet 
+kf6-syndication-devel: KF6Syndication 
+kf6-syntax-highlighting-devel: KF6SyntaxHighlighting 
+kf6-threadweaver-devel: KF6ThreadWeaver 
 kglobalaccel-devel: KF5GlobalAccel 
+kglobalacceld6-devel: KGlobalAccelD 
+kgraphviewer-devel: KGraphViewerPart 
 kguiaddons-devel: KF5GuiAddons 
+khealthcertificate-devel: KHealthCertificate 
 kholidays-devel: KF5Holidays 
-khotkeys5-devel: KHotKeysDBusInterface 
-khtml-devel: KF5KHtml 
 ki18n-devel: KF5I18n 
 kiconthemes-devel: KF5IconThemes 
-kidentitymanagement-devel: KF5IdentityManagement 
+kidentitymanagement-devel: KPim6IdentityManagementCore KPim6IdentityManagementQuick KPim6IdentityManagementWidgets 
 kidletime-devel: KF5IdleTime 
-kimap-devel: KF5IMAP 
+kim-api-devel: kim-api kim-api-items 
+kimap-devel: KPim6IMAP 
 kinit-devel: KF5Init 
 kio-devel: KF5KIO 
-kirigami-devel: KF5Kirigami 
+kirigami-addons6-devel: KF6KirigamiAddons 
 kirigami2-devel: KF5Kirigami2 
+kissfft-devel: kissfft 
 kitemmodels-devel: KF5ItemModels 
 kitemviews-devel: KF5ItemViews 
-kitinerary-devel: KPimItinerary 
+kitinerary-devel: KPim6Itinerary 
 kjobwidgets-devel: KF5JobWidgets 
-kjs-devel: KF5JS 
-kjsembed-devel: KF5JsEmbed 
-kldap-devel: KF5Ldap 
-kmailtransport-devel: KF5MailTransport KF5MailTransportAkonadi 
-kmbox-devel: KF5Mbox 
-kmediaplayer-devel: KF5MediaPlayer 
-kmime-devel: KF5Mime 
+kldap-devel: KPim6LdapCore KPim6LdapWidgets 
+kmailtransport-devel: KPim6MailTransport 
+kmbox-devel: KPim6Mbox 
+kmime-devel: KPim6Mime 
 knewstuff-core-devel: KF5NewStuffCore 
 knewstuff-devel: KF5NewStuff 
 knewstuff-quick-devel: KF5NewStuffQuick 
 knotifications-devel: KF5Notifications 
 knotifyconfig-devel: KF5NotifyConfig 
-konqueror-devel: KF5Konq 
-kontactinterface-devel: KF5KontactInterface 
+kokkos-devel: Kokkos 
+konqueror-devel: KF6Konq KF6KonqSettings 
+kontactinterface-devel: KPim6KontactInterface 
+kopeninghours-devel: KOpeningHours 
+kosmindoormap-devel: KOSMIndoorMap 
 kpackage-devel: KF5Package 
 kparts-devel: KF5Parts 
-kpeople5-devel: KF5People 
-kpeoplevcard-devel: KF5PeopleVCard 
-kpimtextedit-devel: KF5PimTextEdit 
-kpkpass-devel: KPimPkPass 
+kpimtextedit-devel: KPim6TextEdit 
+kpipewire6-devel: KPipeWire 
+kpkpass-devel: KPim6PkPass 
 kplotting-devel: KF5Plotting 
 kpmcore-devel: KPMcore 
-kproperty-devel: KPropertyCore KPropertyWidgets 
 kpty-devel: KF5Pty 
-kquickcharts-devel: KF5QuickCharts 
-kreport-devel: KReport 
+kpublictransport-devel: KPublicTransport 
+kqtquickcharts: KQtQuickCharts 
+kquickimageeditor6-devel: KQuickImageEditor 
 kross-devel: KF5Kross 
-krunner-devel: KF5Runner 
-kscreenlocker-devel: KScreenLocker ScreenSaverDBusInterface 
+ksanecore-devel: KSaneCore6 
+kscreenlocker6-devel: KScreenLocker ScreenSaverDBusInterface 
+kseexpr-devel: kseexpr 
 kservice-devel: KF5Service 
-ksmtp-devel: KPimSMTP 
+ksmtp-devel: KPim6SMTP 
+ktextaddons-devel: KF6TextAddonsWidgets KF6TextAutoCorrectionCore KF6TextAutoCorrectionWidgets KF6TextAutoGenerateText KF6TextCustomEditor KF6TextEditTextToSpeech KF6TextEmoticonsCore KF6TextEmoticonsWidgets KF6TextGrammarCheck KF6TextSpeechToText KF6TextTranslator KF6TextUtils 
 ktexteditor-devel: KF5TextEditor 
 ktextwidgets-devel: KF5TextWidgets 
-ktnef-devel: KF5Tnef 
-ktp-common-internals-devel: KTp 
+ktnef-devel: KPim6Tnef 
+ktoblzcheck-devel: KtoBlzCheck 
+kunifiedpush-devel: KUnifiedPush 
 kunitconversion-devel: KF5UnitConversion 
-kuserfeedback-devel: KUserFeedback 
 kwallet-devel: KF5Wallet 
 kwayland-devel: KF5Wayland 
+kwayland6-devel: KWayland 
+kweathercore-devel: KWeatherCore 
 kwidgetsaddons-devel: KF5WidgetsAddons 
-kwin5-devel: KWinDBusInterface 
+kwin6-devel: KWin KWinDBusInterface 
+kwin6-x11-devel: KWinX11 KWinX11DBusInterface 
 kwindowsystem-devel: KF5WindowSystem 
 kxmlgui-devel: KF5XmlGui 
-kxmlrpcclient5-devel: KF5XmlRpcClient 
-libAppStreamQt-devel: AppStreamQt 
+lager-devel: Lager 
+lammps-devel: LAMMPS 
+lapack-devel: lapack 
+lapacke-devel: lapacke 
+lapackpp-devel: lapackpp 
+layer-shell-qt6-devel: LayerShellQt 
+leveldb-devel: leveldb 
+lib2geom-devel: 2Geom 
 libArcus-devel: Arcus 
-libArcus-lulzbot-devel: Arcus 
-libBox2D-devel: Box2D 
-libKF5ModemManagerQt-devel: KF5ModemManagerQt 
-libKF5NetworkManagerQt-devel: KF5NetworkManagerQt 
-libOyranosSynnefo-devel: Synnefo 
+libFcitx5GClient-devel: Fcitx5GClient 
+libKPim6AddressbookImportExport6-devel: KPim6AddressbookImportExport 
+libQXmppQt5-devel: QXmppOmemoQt5 QXmppQt5 
+libQXmppQt6-devel: QXmppOmemoQt6 QXmppQt6 
 libQt53DAnimation-devel: Qt53DAnimation 
 libQt53DCore-devel: Qt53DCore 
 libQt53DExtras-devel: Qt53DExtras 
@@ -194,201 +366,604 @@ libQt5Concurrent-devel: Qt5Concurrent
 libQt5Core-devel: Qt5 Qt5Core 
 libQt5DBus-devel: Qt5DBus 
 libQt5DataVisualization5-devel: Qt5DataVisualization 
-libQt5Gui-devel: Qt5Gui 
+libQt5Gui-devel: Qt5EglFSDeviceIntegration Qt5EglFsKmsSupport Qt5Gui Qt5XcbQpa 
+libQt5HunspellInputMethod-private-headers-devel: Qt5HunspellInputMethod 
+libQt5KmsSupport-devel-static: Qt5KmsSupport 
 libQt5Network-devel: Qt5Network 
 libQt5OpenGL-devel: Qt5OpenGL 
 libQt5OpenGLExtensions-devel-static: Qt5OpenGLExtensions 
+libQt5PlatformSupport-devel-static: Qt5AccessibilitySupport Qt5DeviceDiscoverySupport Qt5EdidSupport Qt5EglSupport Qt5EventDispatcherSupport Qt5FbSupport Qt5FontDatabaseSupport Qt5GlxSupport Qt5InputSupport Qt5LinuxAccessibilitySupport Qt5PlatformCompositorSupport Qt5ServiceSupport Qt5ThemeSupport Qt5VulkanSupport Qt5XkbCommonSupport 
+libQt5PlatformSupport-devel-static: Qt5AccessibilitySupport Qt5DeviceDiscoverySupport Qt5EdidSupport Qt5EglSupport Qt5EventDispatcherSupport Qt5FbSupport Qt5FontDatabaseSupport Qt5InputSupport Qt5LinuxAccessibilitySupport Qt5PlatformCompositorSupport Qt5ServiceSupport Qt5ThemeSupport Qt5VulkanSupport Qt5XkbCommonSupport 
 libQt5PrintSupport-devel: Qt5PrintSupport 
 libQt5QuickControls2-devel: Qt5QuickControls2 
 libQt5QuickTemplates2-devel: Qt5QuickTemplates2 
 libQt5Sql-devel: Qt5Sql 
 libQt5Test-devel: Qt5Test 
-libQt5WebKit5-devel: Qt5WebKit 
-libQt5WebKitWidgets-devel: Qt5WebKitWidgets 
 libQt5Widgets-devel: Qt5Widgets 
+libQt5XdgIconLoader-devel: qt5xdgiconloader 
 libQt5Xml-devel: Qt5Xml 
-libSDL2-devel: sdl2 
+libQt6XdgIconLoader-devel: qt6xdgiconloader 
+libQuotient-qt6-devel: QuotientQt6 
 libSavitar-devel: Savitar 
 libaccounts-qt5-devel: AccountsQt5 
-libakonadiprotocolinternals-devel: Akonadi 
-libalkimia5-devel: LibAlkimia5 
+libaccounts-qt6-devel: AccountsQt6 
+libaec-devel: libaec 
+libalternatives-devel: libalternatives 
+libavif-devel: libavif 
+libaws-checksums-devel: aws-checksums 
+libbgcode-devel: LibBGCode 
+libbox2d-devel: box2d 
 libbullet-devel: Bullet 
 libcapnp-devel: CapnProto 
-libceres-devel: Ceres 
+libcbor-devel: libcbor 
+libcerf-devel: cerf 
+libchewing-devel: Chewing 
+libcmocka-devel-32bit: cmocka 
 libcmocka-devel: cmocka 
-libdbusmenu-qt-devel: dbusmenu-qt 
+libcrc32c-devel: Crc32c 
+libcuckoo-devel: libcuckoo 
+libdbusmenu-lxqt-devel: dbusmenu-lxqt 
 libdbusmenu-qt5-devel: dbusmenu-qt5 
-libdframeworkdbus-devel: DFrameworkdbus 
+libdeflate-devel: libdeflate 
+libdrumstick-devel: drumstick drumstick-alsa drumstick-file drumstick-rt drumstick-widgets 
 libebml-devel: EBML 
 libeditorconfig-devel: EditorConfig 
-libelektra-devel: Elektra 
+libetebase-devel: Etebase 
+libexiv2-devel: exiv2 
+libfm-qt5-devel: fm-qt 
+libfm-qt6-devel: fm-qt6 
 libftdi1-devel: LibFTDI1 
+libgit2-devel: libgit2 
+libgit2-experimental-devel: libgit2 
 libglfw-devel: glfw3 
-libgmic-devel: Gmic 
-libgnuradio-fcdproplus-devel: gnuradio-fcdproplus 
-libgravatar-devel: KF5Gravatar 
+libgpgmepp-devel: Gpgmepp 
+libgravatar-devel: KPim6Gravatar 
+libheif-devel: libheif 
 libical-devel: LibIcal 
-libkactivities-devel: KActivities 
+libid3tag-devel: id3tag 
+libime-devel: LibIMECore LibIMEPinyin LibIMETable 
+libiniparser-devel: iniparser unity 
+libjpeg8-devel: libjpeg-turbo 
+libjson-c-devel: json-c 
 libkcddb-devel: KF5Cddb 
-libkcddb4-devel: Libkcddb 
-libkcompactdisc-devel: KF5CompactDisc 
-libkcompactdisc4-devel: Libkcompactdisc 
+libkcddb-qt6-devel: KCddb6 
+libkcompactdisc-qt6-devel: KCompactDisc6 
 libkdcraw-devel: KF5KDcraw 
-libkde4-devel: KDeclarative 
+libkdcraw-qt6-devel: KDcrawQt6 
 libkdecoration2-devel: KDecoration2 
-libkdegames-devel: KF5KDEGames 
-libkdepim-devel: KF5Libkdepim KF5LibkdepimAkonadi MailTransportDBusService 
-libkdepimlibs4-devel: KdepimLibs 
+libkdegames-devel: KDEGames6 
+libkdepim-devel: KPim6Libkdepim KPim6MailTransportDBusService 
 libkeduvocdocument-devel: LibKEduVocDocument 
 libkexiv2-devel: KF5KExiv2 
-libkface-devel: KF5KFace 
-libkgapi-devel: KPimGAPI 
-libkgeomap-devel: KF5KGeoMap 
+libkexiv2-qt6-devel: KExiv2Qt6 
+libkgapi6-devel: KPim6GAPI 
 libkioarchive-devel: KioArchive 
-libkipi-devel: KF5Kipi 
-libkleo-devel: KF5Libkleo 
-libkmahjongg-devel: KF5KMahjongglib 
-libkolabxml-devel: Libkolabxml 
-libkomparediff2-devel: LibKompareDiff2 
-libksane-devel: KF5Sane 
-libkscreen2-devel: KF5Screen 
-libksieve-devel: KF5LibKSieve 
-libksysguard5-devel: KF5SysGuard 
-libktorrent-devel: KF5Torrent 
-libkvkontakte-devel: KF5Vkontakte 
+libkioarchive6-devel: KioArchive6 
+libkleo-devel: KPim6Libkleo 
+libkmahjongg-devel: KMahjongglib6 
+libkomparediff2-devel: KompareDiff2 
+libksane-devel: KSaneWidgets6 
+libkscreen6-devel: KF6Screen 
+libksieve-devel: KPim6KManageSieve KPim6KSieve KPim6KSieveCore KPim6KSieveUi 
+libksysguard6-devel: KSysGuard 
+libktorrent-devel: KTorrent6 
+liblastfm-qt6-devel: lastfm6 lastfm_fingerprint6 
+liblog4cxx-devel: log4cxx 
+liblxqt-devel: lxqt 
+liblz4-devel: lz4 
+libmaliit-devel: MaliitGLib MaliitPlugins 
 libmatroska-devel: Matroska 
-libmediawiki-devel: KF5MediaWiki 
-libmygpo-qt-devel: Mygpo-qt 
+libmbd-devel: Mbd 
+libmed-devel: MEDFile 
+libmemcached-devel: libmemcached 
+libminizinc-devel: libminizinc 
+libmlt-devel: Mlt7 
+libmsym-devel: libmsym 
 libmygpo-qt5-devel: Mygpo-qt5 
-libopentracing-cpp1: OpenTracing 
-liboyranos-devel: Oyranos 
-libpamtest-devel: libpamtest 
-libpolkit-qt-1-devel: PolkitQt-1 
+libmygpo-qt6-devel: Mygpo-qt6 
+libmysofa-devel: mysofa 
+liboqs-devel: liboqs 
+libosg2vsg-devel: osg2vsg 
+libowncloudsync-devel: ownCloud 
+libpamtest-devel: pamtest 
+libphonenumber-devel: libphonenumber 
+libphysfs-devel: PhysFS 
+libplasma6-devel: Plasma PlasmaQuick 
 libpolkit-qt5-1-devel: PolkitQt5-1 
+libpolkit-qt6-1-devel: PolkitQt6-1 
 libprimesieve-devel: primesieve 
-libprison-devel: Prison 
-libqca-qt5-devel: Qca-qt5 
+libqaccessibilityclient-qt5-devel: QAccessibilityClient 
+libqaccessibilityclient-qt6-devel: QAccessibilityClient6 
 libqgpgme-devel: QGpgme 
-libqjson-devel: QJSON 
+libqgpgmeqt6-devel: QGpgmeQt6 
 libqt5-linguist-devel: Qt5LinguistTools 
 libqt5-qtconnectivity-devel: Qt5Bluetooth Qt5Nfc 
-libqt5-qtdeclarative-devel: Qt5Qml Qt5Quick Qt5QuickCompiler Qt5QuickTest Qt5QuickWidgets 
-libqt5-qtgamepad-devel: Qt5Gamepad 
+libqt5-qtdeclarative-devel: Qt5PacketProtocol Qt5Qml Qt5QmlDebug Qt5QmlDevTools Qt5QmlImportScanner Qt5QmlModels Qt5QmlWorkerScript Qt5Quick Qt5QuickCompiler Qt5QuickParticles Qt5QuickShapes Qt5QuickTest Qt5QuickWidgets 
 libqt5-qtlocation-devel: Qt5Location Qt5Positioning Qt5PositioningQuick 
-libqt5-qtmultimedia-devel: Qt5Multimedia Qt5MultimediaWidgets 
+libqt5-qtmultimedia-devel: Qt5Multimedia Qt5MultimediaGstTools Qt5MultimediaQuick Qt5MultimediaWidgets 
 libqt5-qtnetworkauth-devel: Qt5NetworkAuth 
+libqt5-qtpdf-devel: Qt5Pdf Qt5PdfWidgets 
+libqt5-qtquick3d-devel: Qt5Quick3D Qt5Quick3DAssetImport Qt5Quick3DRender Qt5Quick3DRuntimeRender Qt5Quick3DUtils 
 libqt5-qtremoteobjects-devel: Qt5RemoteObjects Qt5RepParser 
 libqt5-qtscript-devel: Qt5Script Qt5ScriptTools 
 libqt5-qtscxml-devel: Qt5Scxml 
 libqt5-qtsensors-devel: Qt5Sensors 
-libqt5-qtserialbus-devel: Qt5SerialBus 
 libqt5-qtserialport-devel: Qt5SerialPort 
 libqt5-qtspeech-devel: Qt5TextToSpeech 
 libqt5-qtsvg-devel: Qt5Svg 
-libqt5-qttools-devel: Qt5Designer Qt5Help Qt5UiPlugin Qt5UiTools 
+libqt5-qttools-devel: Qt5Designer Qt5DesignerComponents Qt5Help Qt5UiPlugin Qt5UiTools 
+libqt5-qttools-doc: Qt5DocTools 
+libqt5-qttools: Qt5AttributionsScannerTools 
 libqt5-qtvirtualkeyboard-devel: Qt5VirtualKeyboard 
 libqt5-qtwayland-devel: Qt5WaylandClient Qt5WaylandCompositor 
 libqt5-qtwebchannel-devel: Qt5WebChannel 
 libqt5-qtwebengine-devel: Qt5WebEngine Qt5WebEngineCore Qt5WebEngineWidgets 
 libqt5-qtwebsockets-devel: Qt5WebSockets 
-libqt5-qtwebview-devel: Qt5WebView 
 libqt5-qtx11extras-devel: Qt5X11Extras 
 libqt5-qtxmlpatterns-devel: Qt5XmlPatterns 
+libqt5xdg-devel: qt5xdg 
+libqt6xdg-devel: qt6xdg 
 libqxmpp-devel: QXmpp 
-libshiboken-devel: Shiboken 
-libshiboken-python3-devel: Shiboken 
+librabbitmq-devel: rabbitmq-c 
+librealsense-devel: realsense2 realsense2-gl 
+libregraphapi-devel: LibreGraphAPI 
+librime-devel: Rime 
+librtprocess-devel: rtprocess 
 libsignon-qt5-devel: SignOnQt5 
+libsignon-qt6-devel: SignOnQt6 
+libsndfile-devel: SndFile 
+libsocket_wrapper_noop-devel: socket_wrapper socket_wrapper_noop 
 libssh-devel: libssh 
+libsysstat-devel: sysstat-qt6 
+libtag-devel: taglib 
+libtiff-devel: Tiff 
+libtiff-devel: tiff 
 libtins-devel: libtins 
-libwebsockets-devel: Libwebsockets 
-libyui-devel: Libyui 
-libyui-ncurses-devel: Libyui-ncurses 
-libyui-ncurses-pkg-devel: Libyui-ncurses-pkg 
-libyui-ncurses-rest-api-devel: Libyui-ncurses-rest-api 
-libyui-qt-devel: Libyui-qt 
-libyui-qt-graph-devel: Libyui-qt-graph 
-libyui-qt-pkg-devel: Libyui-qt-pkg 
-libyui-qt-rest-api-devel: Libyui-qt-rest-api 
-libyui-rest-api-devel: Libyui-rest-api 
-limesuite-devel: LimeSuite 
-llvm7-devel: LLVM LLVM- 
-llvm7-polly-devel: Polly 
-llvm9-devel: LLVM LLVM- 
-llvm9-polly-devel: Polly 
-mailcommon-devel: KF5MailCommon 
-mailimporter-devel: KF5MailImporter KF5MailImporterAkonadi 
+libtorrent-rasterbar-devel: LibtorrentRasterbar 
+libtsm-devel: libtsm 
+libuchardet-devel: uchardet 
+libunicode-devel: libunicode 
+libversion-devel: libversion 
+libvpl-devel: VPL 
+libvsg-devel: vsg 
+libvsgImGui-devel: vsgImGui 
+libvsgXchange-devel: vsgXchange 
+libwebsockets-devel: libwebsockets 
+libxalan-c-devel: XalanC 
+libzip-devel: libzip 
+libzopfli-devel: Zopfli 
+libzypp-devel: Zypp 
+llvm15-devel: LLVM LLVM- 
+llvm15-polly-devel: Polly 
+llvm17-devel: LLVM LLVM- 
+llvm17-polly-devel: Polly 
+llvm19-devel: LLVM LLVM- 
+llvm19-polly-devel: Polly 
+lucene++-devel: liblucene++ liblucene++-contrib 
+lxqt-build-tools-qt5-devel: lxqt-build-tools 
+lxqt-globalkeys-devel: lxqt-globalkeys lxqt-globalkeys-ui 
+lxqt-menu-data-devel: lxqt-menu-data 
+lxqt2-build-tools-devel: lxqt2-build-tools 
+mailcommon-devel: KPim6MailCommon 
+mailimporter-devel: KPim6MailImporter KPim6MailImporterAkonadi 
+manifold-devel: manifold 
 marble-devel: Astro Marble 
 mathgl-devel: MathGL2 mathgl2 
-messagelib-devel: KF5MessageComposer KF5MessageCore KF5MessageList KF5MessageViewer KF5MimeTreeParser KF5TemplateParser KF5WebEngineViewer 
-mkl-dnn-devel: dnnl 
-mobipocket-devel: QMobipocket 
-msgpack-devel: msgpack 
+mbedtls-devel: MbedTLS 
+md4c-devel: md4c 
+messagelib-devel: KPim6MessageComposer KPim6MessageCore KPim6MessageList KPim6MessageViewer KPim6MimeTreeParser KPim6TemplateParser KPim6WebEngineViewer 
+mimalloc-devel: mimalloc 
+mimetreeparser-devel: KPim6MimeTreeParserCore KPim6MimeTreeParserWidgets 
+minisat-devel: minisat 
+minizip-ng-devel: minizip-ng 
+molequeue-devel: MoleQueue 
+mpark-variant-devel: mpark_variant 
+mpvqt-devel: MpvQt 
+ms-gsl-devel: Microsoft.GSL 
+msgpack-c-devel: msgpack-c 
+msgpack-cxx-devel: msgpack-cxx 
+mtxclient-devel: MatrixClient 
+muparser-devel: muparser 
 muparserx-devel: muparserx 
 nanomsg-devel: nanomsg 
 nanopb-devel: nanopb 
+nanosvg-devel: NanoSVG 
 neko-devel: Neko 
 netgen-devel: Netgen 
 nlohmann_json-devel: nlohmann_json 
 nlopt-devel: NLopt 
-noson-devel: noson 
+nng-devel: nng 
 nss_wrapper: nss_wrapper 
+nuspell-devel: Nuspell 
 occt-devel: OpenCASCADE 
 okteta-devel: KastenControllers KastenCore KastenGui OktetaCore OktetaGui OktetaKastenControllers OktetaKastenCore OktetaKastenGui 
-okular-devel: Okular5 
-openbabel-devel: OpenBabel2 
+okular-devel: Okular6 
+olm-devel: Olm 
+onednn-devel: dnnl 
+openal-soft-devel: OpenAL 
+openbabel-devel: OpenBabel3 
+opencc-devel: OpenCC 
+opencl-cpp-headers: OpenCLHeadersCpp 
+opencl-headers: OpenCLHeaders 
+opencv-devel: OpenCV 
+openexr-devel: OpenEXR 
+openjpeg2-devel: OpenJPEG 
 openobex-devel: openobex 
+openpgl-devel: openpgl 
+opentimelineio-devel: OpenTime OpenTimelineIO 
+openvino-devel: OpenVINO 
+optional-lite-devel: optional-lite 
+orcania-devel: Orcania 
+owncloud-extensions-resources: ownCloudShellResources 
+packagekitqt5-devel: packagekitqt5 
+packagekitqt6-devel: packagekitqt6 
+palapeli-devel: Pala 
 pam_wrapper: pam_wrapper 
 paraview-devel: paraview 
-phonon-devel: Phonon PhononExperimental 
-phonon4qt5-devel: Phonon4Qt5 Phonon4Qt5Experimental 
-pimcommon-devel: KF5PimCommon KF5PimCommonAkonadi 
+phonon-qt5-devel: Phonon4Qt5 Phonon4Qt5Experimental 
+phonon-qt6-devel: Phonon4Qt6 Phonon4Qt6Experimental 
+picotool: picotool 
+pimcommon-devel: KPim6PimCommon KPim6PimCommonActivities KPim6PimCommonAkonadi 
 plasma-framework-devel: KF5Plasma KF5PlasmaQuick 
-plasma5-addons-devel: PlasmaPotdProvider 
-plasma5-workspace-devel: KRunnerAppDBusInterface KSMServerDBusInterface LibColorCorrect LibKWorkspace LibNotificationManager LibTaskManager 
-plplot-devel: plplot 
-poco-devel: Poco PocoCppParser PocoCrypto PocoData PocoDataMySQL PocoDataODBC PocoDataSQLite PocoEncodings PocoFoundation PocoJSON PocoJWT PocoMongoDB PocoNet PocoNetSSL PocoPDF PocoRedis PocoUtil PocoXML PocoZip 
+plasma-wayland-protocols: PlasmaWaylandProtocols 
+plasma5support6-devel: Plasma5Support 
+plasma6-activities-devel: PlasmaActivities 
+plasma6-activities-stats-devel: PlasmaActivitiesStats 
+plasma6-workspace-devel: KRunnerAppDBusInterface KSMServerDBusInterface LibColorCorrect LibKWorkspace LibNotificationManager LibTaskManager 
+plog-devel: plog 
+poco-devel: Poco PocoActiveRecord PocoCppParser PocoCrypto PocoData PocoDataMySQL PocoDataODBC PocoDataPostgreSQL PocoDataSQLite PocoEncodings PocoFoundation PocoJSON PocoJWT PocoMongoDB PocoNet PocoNetSSL PocoPDF PocoPrometheus PocoRedis PocoUtil PocoXML PocoZip 
+portmidi-devel: PortMidi 
+powercap-devel: Powercap 
 prison-qt5-devel: KF5Prison 
+priv_wrapper: priv_wrapper 
+proj-devel: proj proj4 
 prometheus-cpp-devel: prometheus-cpp 
+protobuf-devel: protobuf utf8_range 
+ptl-devel: PTL 
 pugixml-devel: pugixml 
-pulseaudio-qt-devel: KF5PulseAudioQt 
+pulseaudio-qt6-devel: KF6PulseAudioQt 
 purpose-devel: KDEExperimentalPurpose KF5Purpose 
-python3-pyside-devel: PySide 
-python3-pyside2-devel: PySide2 Shiboken2 
-qpid-cpp-client-devel: Qpid 
+python-pybind11-common-devel: pybind11 
+python3-vigranumpy: Vigranumpy 
+python313-pyside6-devel: PySide6 PySide6Qml 
+python313-shiboken6-devel: Shiboken6 Shiboken6Tools 
+qca-qt5-devel: Qca-qt5 
+qca-qt6-devel: Qca-qt6 
+qcoro-qt5-devel: QCoro5 QCoro5Core QCoro5Coro QCoro5DBus QCoro5Network QCoro5Qml QCoro5Quick QCoro5Test QCoro5WebSockets 
+qcoro-qt6-devel: QCoro6 QCoro6Core QCoro6Coro QCoro6DBus QCoro6Network QCoro6Qml QCoro6Quick QCoro6Test QCoro6WebSockets 
+qhull_r-devel: Qhull 
+qpdf-devel: qpdf 
 qpid-proton-devel: Proton ProtonCpp 
+qqc2-breeze-style6-devel: QQC2BreezeStyle 
 qqc2-desktop-style-devel: KF5QQC2DeskopStyle KF5QQC2DesktopStyle 
-qtermwidget-qt5-devel: qtermwidget5 
+qt6-3danimation-devel: Qt63DAnimation 
+qt6-3danimation-private-devel: Qt63DAnimationPrivate 
+qt6-3dcore-devel: Qt63DCore 
+qt6-3dcore-private-devel: Qt63DCorePrivate 
+qt6-3dextras-devel: Qt63DExtras 
+qt6-3dextras-private-devel: Qt63DExtrasPrivate 
+qt6-3dinput-devel: Qt63DInput 
+qt6-3dinput-private-devel: Qt63DInputPrivate 
+qt6-3dlogic-devel: Qt63DLogic 
+qt6-3dlogic-private-devel: Qt63DLogicPrivate 
+qt6-3dquick-devel: Qt63DQuick 
+qt6-3dquick-private-devel: Qt63DQuickPrivate 
+qt6-3dquickanimation-devel: Qt63DQuickAnimation 
+qt6-3dquickanimation-private-devel: Qt63DQuickAnimationPrivate 
+qt6-3dquickextras-devel: Qt63DQuickExtras 
+qt6-3dquickextras-private-devel: Qt63DQuickExtrasPrivate 
+qt6-3dquickinput-devel: Qt63DQuickInput 
+qt6-3dquickinput-private-devel: Qt63DQuickInputPrivate 
+qt6-3dquicklogic-private-devel: Qt63DQuickLogic Qt63DQuickLogicPrivate 
+qt6-3dquickrender-devel: Qt63DQuickRender 
+qt6-3dquickrender-private-devel: Qt63DQuickRenderPrivate 
+qt6-3dquickscene2d-devel: Qt63DQuickScene2D 
+qt6-3dquickscene2d-private-devel: Qt63DQuickScene2DPrivate 
+qt6-3dquickscene3d-devel: Qt63DQuickScene3D 
+qt6-3dquickscene3d-private-devel: Qt63DQuickScene3DPrivate 
+qt6-3drender-devel: Qt63DRender 
+qt6-3drender-private-devel: Qt63DRenderPrivate 
+qt6-base-common-devel: Qt6 Qt6BuildInternals Qt6HostInfo Qt6TestInternalsPrivate 
+qt6-bundledembree-devel-static: Qt6BundledEmbree 
+qt6-bundledresonanceaudio-devel-static: Qt6BundledResonanceAudio 
+qt6-charts-devel: Qt6Charts 
+qt6-charts-private-devel: Qt6ChartsPrivate 
+qt6-chartsqml-devel: Qt6ChartsQml 
+qt6-chartsqml-private-devel: Qt6ChartsQmlPrivate 
+qt6-coap-devel: Qt6Coap 
+qt6-coap-private-devel: Qt6CoapPrivate 
+qt6-concurrent-devel: Qt6Concurrent Qt6ConcurrentPrivate 
+qt6-connectivity-devel: Qt6Bluetooth Qt6Nfc 
+qt6-connectivity-private-devel: Qt6BluetoothPrivate Qt6Connectivity Qt6NfcPrivate 
+qt6-core-devel: Qt6Core Qt6CoreTools 
+qt6-core-private-devel: Qt6CorePrivate 
+qt6-creator-plugin-devel: QtCreator 
+qt6-datavisualization-devel: Qt6DataVisualization 
+qt6-datavisualization-private-devel: Qt6DataVisualizationPrivate 
+qt6-datavisualizationqml-devel: Qt6DataVisualizationQml 
+qt6-datavisualizationqml-private-devel: Qt6DataVisualizationQmlPrivate 
+qt6-dbus-devel: Qt6DBus Qt6DBusTools 
+qt6-dbus-private-devel: Qt6DBusPrivate 
+qt6-declarativeopcua-private-devel: Qt6DeclarativeOpcua Qt6DeclarativeOpcuaPrivate 
+qt6-designer-devel: Qt6Designer Qt6UiPlugin 
+qt6-designer-private-devel: Qt6DesignerPrivate 
+qt6-designercomponents-private-devel: Qt6DesignerComponentsPrivate 
+qt6-exampleicons-devel-static: Qt6ExampleIconsPrivate 
+qt6-graphs-devel: Qt6Graphs Qt6GraphsWidgets 
+qt6-graphs-private-devel: Qt6GraphsPrivate Qt6GraphsWidgetsPrivate 
+qt6-gui-devel: Qt6Gui Qt6GuiTools 
+qt6-gui-private-devel: Qt6EglFSDeviceIntegrationPrivate Qt6EglFsKmsGbmSupportPrivate Qt6EglFsKmsSupportPrivate Qt6GuiPrivate Qt6XcbQpaPrivate 
+qt6-help-devel: Qt6Help 
+qt6-help-private-devel: Qt6HelpPrivate 
+qt6-httpserver-devel: Qt6HttpServer 
+qt6-httpserver-private-devel: Qt6HttpServerPrivate 
+qt6-hunspellinputmethod-private-devel: Qt6HunspellInputMethod Qt6HunspellInputMethodPrivate 
+qt6-imageformats-devel: Qt6QICNSPlugin Qt6QJp2Plugin Qt6QMngPlugin Qt6QTgaPlugin Qt6QTiffPlugin Qt6QWbmpPlugin Qt6QWebpPlugin 
+qt6-jsonrpc-devel-static: Qt6JsonRpcPrivate 
+qt6-kmssupport-devel-static: Qt6KmsSupportPrivate 
+qt6-labsanimation-private-devel: Qt6LabsAnimation Qt6LabsAnimationPrivate 
+qt6-labsfolderlistmodel-private-devel: Qt6LabsFolderListModel Qt6LabsFolderListModelPrivate 
+qt6-labsplatform-private-devel: Qt6LabsPlatform Qt6LabsPlatformPrivate 
+qt6-labsqmlmodels-private-devel: Qt6LabsQmlModels Qt6LabsQmlModelsPrivate 
+qt6-labssettings-private-devel: Qt6LabsSettings Qt6LabsSettingsPrivate 
+qt6-labssharedimage-private-devel: Qt6LabsSharedImage Qt6LabsSharedImagePrivate 
+qt6-labswavefrontmesh-private-devel: Qt6LabsWavefrontMesh Qt6LabsWavefrontMeshPrivate 
+qt6-languageserver-devel-static: Qt6LanguageServerPrivate 
+qt6-linguist-devel: Qt6Linguist Qt6LinguistTools 
+qt6-location-devel: Qt6Location 
+qt6-location-private-devel: Qt6LocationPrivate 
+qt6-mqtt-devel: Qt6Mqtt 
+qt6-mqtt-private-devel: Qt6MqttPrivate 
+qt6-multimedia-devel: Qt6Multimedia 
+qt6-multimedia-private-devel: Qt6MultimediaPrivate 
+qt6-multimediaquick-private-devel: Qt6MultimediaQuickPrivate 
+qt6-multimediawidgets-devel: Qt6MultimediaWidgets 
+qt6-multimediawidgets-private-devel: Qt6MultimediaWidgetsPrivate 
+qt6-network-devel: Qt6Network 
+qt6-network-private-devel: Qt6NetworkPrivate 
+qt6-networkauth-devel: Qt6NetworkAuth 
+qt6-networkauth-private-devel: Qt6NetworkAuthPrivate 
+qt6-opcua-devel: Qt6OpcUa Qt6OpcUaTools Qt6QOpen62541Plugin 
+qt6-opcua-private-devel: Qt6OpcUaPrivate 
+qt6-opengl-devel: Qt6OpenGL 
+qt6-opengl-private-devel: Qt6OpenGLPrivate 
+qt6-openglwidgets-devel: Qt6OpenGLWidgets Qt6OpenGLWidgetsPrivate 
+qt6-packetprotocol-devel-static: Qt6PacketProtocolPrivate 
+qt6-pdf-devel: Qt6Pdf 
+qt6-pdf-private-devel: Qt6PdfPrivate 
+qt6-pdfquick-devel: Qt6PdfQuick 
+qt6-pdfquick-private-devel: Qt6PdfQuickPrivate 
+qt6-pdfwidgets-devel: Qt6PdfWidgets 
+qt6-pdfwidgets-private-devel: Qt6PdfWidgetsPrivate 
+qt6-platformsupport-devel-static: Qt6DeviceDiscoverySupportPrivate Qt6FbSupportPrivate Qt6InputSupportPrivate 
+qt6-positioning-devel: Qt6Positioning 
+qt6-positioning-private-devel: Qt6PositioningPrivate 
+qt6-positioningquick-devel: Qt6PositioningQuick 
+qt6-positioningquick-private-devel: Qt6PositioningQuickPrivate 
+qt6-printsupport-devel: Qt6PrintSupport 
+qt6-printsupport-private-devel: Qt6PrintSupportPrivate 
+qt6-qml-devel: Qt6Qml Qt6QmlImportScanner Qt6QmlIntegration Qt6QmlTools 
+qt6-qml-private-devel: Qt6QmlIntegrationPrivate Qt6QmlPrivate 
+qt6-qmlcompiler-devel: Qt6QmlCompiler 
+qt6-qmlcompiler-private-devel: Qt6QmlCompilerPrivate 
+qt6-qmlcore-private-devel: Qt6QmlCore Qt6QmlCorePrivate 
+qt6-qmldebug-devel-static: Qt6QmlDebugPrivate 
+qt6-qmldom-devel-static: Qt6QmlDomPrivate 
+qt6-qmlformat-devel-static: Qt6QmlFormatPrivate 
+qt6-qmllocalstorage-private-devel: Qt6QmlLocalStorage Qt6QmlLocalStoragePrivate 
+qt6-qmlls-devel-static: Qt6QmlLSPrivate 
+qt6-qmlmeta-private-devel: Qt6QmlMeta Qt6QmlMetaPrivate 
+qt6-qmlmodels-private-devel: Qt6QmlModels Qt6QmlModelsPrivate 
+qt6-qmlnetwork-private-devel: Qt6QmlNetwork Qt6QmlNetworkPrivate 
+qt6-qmltoolingsettings-devel-static: Qt6QmlToolingSettingsPrivate 
+qt6-qmltyperegistrar-devel-static: Qt6QmlTypeRegistrarPrivate 
+qt6-qmlworkerscript-private-devel: Qt6QmlWorkerScript Qt6QmlWorkerScriptPrivate 
+qt6-qmlxmllistmodel-private-devel: Qt6QmlXmlListModel Qt6QmlXmlListModelPrivate 
+qt6-qt5compat-devel: Qt6Core5Compat 
+qt6-qt5compat-private-devel: Qt6Core5CompatPrivate 
+qt6-quick-devel: Qt6Quick Qt6QuickTools 
+qt6-quick-private-devel: Qt6QuickPrivate 
+qt6-quick3d-devel: Qt6Quick3D Qt6Quick3DTools 
+qt6-quick3d-private-devel: Qt6Quick3DPrivate 
+qt6-quick3dassetimport-devel: Qt6Quick3DAssetImport 
+qt6-quick3dassetimport-private-devel: Qt6Quick3DAssetImportPrivate 
+qt6-quick3dassetutils-devel: Qt6Quick3DAssetUtils 
+qt6-quick3dassetutils-private-devel: Qt6Quick3DAssetUtilsPrivate 
+qt6-quick3deffects-devel: Qt6Quick3DEffects 
+qt6-quick3dglslparser-private-devel: Qt6Quick3DGlslParserPrivate 
+qt6-quick3dhelpers-devel: Qt6Quick3DHelpers 
+qt6-quick3dhelpers-private-devel: Qt6Quick3DHelpersPrivate 
+qt6-quick3dhelpersimpl-devel: Qt6Quick3DHelpersImpl 
+qt6-quick3dhelpersimpl-private-devel: Qt6Quick3DHelpersImplPrivate 
+qt6-quick3diblbaker-devel: Qt6Quick3DIblBaker 
+qt6-quick3diblbaker-private-devel: Qt6Quick3DIblBakerPrivate 
+qt6-quick3dparticleeffects-devel: Qt6Quick3DParticleEffects 
+qt6-quick3dparticles-devel: Qt6Quick3DParticles 
+qt6-quick3dparticles-private-devel: Qt6Quick3DParticlesPrivate 
+qt6-quick3druntimerender-devel: Qt6Quick3DRuntimeRender 
+qt6-quick3druntimerender-private-devel: Qt6Quick3DRuntimeRenderPrivate 
+qt6-quick3dspatialaudio-private-devel: Qt6Quick3DSpatialAudioPrivate 
+qt6-quick3dutils-devel: Qt6Quick3DUtils 
+qt6-quick3dutils-private-devel: Qt6Quick3DUtilsPrivate 
+qt6-quick3dxr-private-devel: Qt6Quick3DXr Qt6Quick3DXrPrivate 
+qt6-quickcontrols2-devel: Qt6QuickControls2 
+qt6-quickcontrols2-private-devel: Qt6QuickControls2Basic Qt6QuickControls2BasicPrivate Qt6QuickControls2Fusion Qt6QuickControls2FusionPrivate Qt6QuickControls2Imagine Qt6QuickControls2ImaginePrivate Qt6QuickControls2Material Qt6QuickControls2MaterialPrivate Qt6QuickControls2Private Qt6QuickControls2Universal Qt6QuickControls2UniversalPrivate 
+qt6-quickcontrols2impl-devel: Qt6QuickControls2BasicStyleImpl Qt6QuickControls2FluentWinUI3StyleImpl Qt6QuickControls2FusionStyleImpl Qt6QuickControls2ImagineStyleImpl Qt6QuickControls2Impl Qt6QuickControls2MaterialStyleImpl Qt6QuickControls2UniversalStyleImpl 
+qt6-quickcontrols2impl-private-devel: Qt6QuickControls2BasicStyleImplPrivate Qt6QuickControls2FluentWinUI3StyleImplPrivate Qt6QuickControls2FusionStyleImplPrivate Qt6QuickControls2ImagineStyleImplPrivate Qt6QuickControls2ImplPrivate Qt6QuickControls2MaterialStyleImplPrivate Qt6QuickControls2UniversalStyleImplPrivate 
+qt6-quickcontrolstestutils-devel-static: Qt6QuickControlsTestUtilsPrivate 
+qt6-quickdialogs2-devel: Qt6QuickDialogs2 
+qt6-quickdialogs2-private-devel: Qt6QuickDialogs2Private 
+qt6-quickdialogs2quickimpl-devel: Qt6QuickDialogs2QuickImpl 
+qt6-quickdialogs2quickimpl-private-devel: Qt6QuickDialogs2QuickImplPrivate 
+qt6-quickdialogs2utils-private-devel: Qt6QuickDialogs2Utils Qt6QuickDialogs2UtilsPrivate 
+qt6-quickeffects-private-devel: Qt6QuickEffects Qt6QuickEffectsPrivate 
+qt6-quicklayouts-private-devel: Qt6QuickLayouts Qt6QuickLayoutsPrivate 
+qt6-quickparticles-private-devel: Qt6QuickParticlesPrivate 
+qt6-quickshapes-private-devel: Qt6QuickShapesPrivate 
+qt6-quicktemplates2-private-devel: Qt6QuickTemplates2 Qt6QuickTemplates2Private 
+qt6-quicktest-devel: Qt6QuickTest 
+qt6-quicktest-private-devel: Qt6QuickTestPrivate 
+qt6-quicktestutils-devel-static: Qt6QuickTestUtilsPrivate 
+qt6-quicktimeline-devel: Qt6QuickTimeline Qt6QuickTimelineBlendTrees 
+qt6-quicktimeline-private-devel: Qt6QuickTimelineBlendTreesPrivate Qt6QuickTimelinePrivate 
+qt6-quickvectorimage-private-devel: Qt6QuickVectorImage Qt6QuickVectorImageGeneratorPrivate Qt6QuickVectorImagePrivate 
+qt6-quickwidgets-devel: Qt6QuickWidgets 
+qt6-quickwidgets-private-devel: Qt6QuickWidgetsPrivate 
+qt6-remoteobjects-devel: Qt6RemoteObjects Qt6RemoteObjectsTools Qt6RepParser 
+qt6-remoteobjects-private-devel: Qt6RemoteObjectsPrivate 
+qt6-remoteobjectsqml-devel: Qt6RemoteObjectsQml 
+qt6-remoteobjectsqml-private-devel: Qt6RemoteObjectsQmlPrivate 
+qt6-scxml-devel: Qt6Scxml Qt6ScxmlGlobalPrivate Qt6ScxmlTools 
+qt6-scxml-private-devel: Qt6ScxmlPrivate 
+qt6-scxmlqml-devel: Qt6ScxmlQml 
+qt6-scxmlqml-private-devel: Qt6ScxmlQmlPrivate 
+qt6-sensors-devel: Qt6Sensors 
+qt6-sensors-private-devel: Qt6SensorsPrivate 
+qt6-sensorsquick-devel: Qt6SensorsQuick 
+qt6-sensorsquick-private-devel: Qt6SensorsQuickPrivate 
+qt6-serialbus-devel: Qt6SerialBus 
+qt6-serialbus-private-devel: Qt6SerialBusPrivate 
+qt6-serialport-devel: Qt6SerialPort 
+qt6-serialport-private-devel: Qt6SerialPortPrivate 
+qt6-shadertools-devel: Qt6ShaderTools Qt6ShaderToolsTools 
+qt6-shadertools-private-devel: Qt6ShaderToolsPrivate 
+qt6-spatialaudio-devel: Qt6SpatialAudio 
+qt6-spatialaudio-private-devel: Qt6SpatialAudioPrivate 
+qt6-sql-devel: Qt6Sql 
+qt6-sql-private-devel: Qt6SqlPrivate 
+qt6-statemachine-devel: Qt6StateMachine 
+qt6-statemachine-private-devel: Qt6StateMachinePrivate 
+qt6-statemachineqml-devel: Qt6StateMachineQml 
+qt6-statemachineqml-private-devel: Qt6StateMachineQmlPrivate 
+qt6-svg-devel: Qt6QSvgIconPlugin Qt6QSvgPlugin Qt6Svg Qt6SvgWidgets 
+qt6-svg-private-devel: Qt6SvgPrivate Qt6SvgWidgetsPrivate 
+qt6-test-devel: Qt6Test 
+qt6-test-private-devel: Qt6TestPrivate 
+qt6-texttospeech-devel: Qt6QTextToSpeechFlitePlugin Qt6QTextToSpeechMockPlugin Qt6QTextToSpeechSpeechdPlugin Qt6TextToSpeech 
+qt6-texttospeech-private-devel: Qt6TextToSpeechPrivate 
+qt6-tools-devel: Qt6Tools Qt6ToolsTools 
+qt6-uitools-devel: Qt6UiTools 
+qt6-uitools-private-devel: Qt6UiToolsPrivate 
+qt6-virtualkeyboard-devel: Qt6VirtualKeyboard 
+qt6-virtualkeyboard-private-devel: Qt6VirtualKeyboardPrivate Qt6VirtualKeyboardSettings Qt6VirtualKeyboardSettingsPrivate 
+qt6-virtualkeyboardqml-private-devel: Qt6VirtualKeyboardQml Qt6VirtualKeyboardQmlPrivate 
+qt6-waylandclient-devel: Qt6WaylandClient Qt6WaylandScannerTools 
+qt6-waylandclient-private-devel: Qt6WaylandClientPrivate 
+qt6-waylandcompositor-devel: Qt6WaylandCompositor Qt6WaylandCompositorIviapplication Qt6WaylandCompositorPresentationTime Qt6WaylandCompositorWLShell Qt6WaylandCompositorXdgShell 
+qt6-waylandcompositor-private-devel: Qt6WaylandCompositorIviapplicationPrivate Qt6WaylandCompositorPresentationTimePrivate Qt6WaylandCompositorPrivate Qt6WaylandCompositorWLShellPrivate Qt6WaylandCompositorXdgShellPrivate 
+qt6-waylandeglclienthwintegration-private-devel: Qt6WaylandEglClientHwIntegrationPrivate 
+qt6-waylandeglcompositorhwintegration-private-devel: Qt6WaylandEglCompositorHwIntegrationPrivate 
+qt6-waylandglobal-private-devel: Qt6WaylandGlobalPrivate 
+qt6-webchannel-devel: Qt6WebChannel 
+qt6-webchannel-private-devel: Qt6WebChannelPrivate 
+qt6-webchannelquick-devel: Qt6WebChannelQuick 
+qt6-webchannelquick-private-devel: Qt6WebChannelQuickPrivate 
+qt6-webenginecore-devel: Qt6WebEngineCore Qt6WebEngineCoreTools 
+qt6-webenginecore-private-devel: Qt6WebEngineCorePrivate 
+qt6-webenginequick-devel: Qt6WebEngineQuick Qt6WebEngineQuickDelegatesQml 
+qt6-webenginequick-private-devel: Qt6WebEngineQuickDelegatesQmlPrivate Qt6WebEngineQuickPrivate 
+qt6-webenginewidgets-devel: Qt6WebEngineWidgets 
+qt6-webenginewidgets-private-devel: Qt6WebEngineWidgetsPrivate 
+qt6-websockets-devel: Qt6WebSockets 
+qt6-websockets-private-devel: Qt6WebSocketsPrivate 
+qt6-webview-devel: Qt6WebView 
+qt6-webview-private-devel: Qt6WebViewPrivate 
+qt6-webviewquick-devel: Qt6WebViewQuick 
+qt6-webviewquick-private-devel: Qt6WebViewQuickPrivate 
+qt6-widgets-devel: Qt6Widgets Qt6WidgetsTools 
+qt6-widgets-private-devel: Qt6WidgetsPrivate 
+qt6-wlshellintegration-private-devel: Qt6WlShellIntegrationPrivate 
+qt6-xml-devel: Qt6Xml 
+qt6-xml-private-devel: Qt6XmlPrivate 
+qtermwidget-devel: qtermwidget6 
+qtilitools: Qtilitools 
 qtkeychain-qt5-devel: Qt5Keychain 
-quazip-devel: QuaZip5 
+qtkeychain-qt6-devel: Qt6Keychain 
+qtxdg-tools: qtxdg-tools 
+quazip-qt5-devel: QuaZip-Qt5 
+quazip-qt6-devel: QuaZip-Qt6 
 qxtglobalshortcut-devel: qxtglobalshortcut 
+range-v3-devel: range-v3 
+rapidjson-devel: RapidJSON 
+rapidyaml-devel: c4core ryml 
 raylib-devel: raylib 
+rdtk0-devel: rdtk 
+re-devel: libre re 
+re2-devel: re2 
+recastnavigation-devel: recastnavigation 
+redis++-devel: redis++ 
 resolv_wrapper: resolv_wrapper 
+rinutils-devel: Rinutils 
+rnp-devel: rnp 
+robin-map-devel: tsl-robin-map 
+rocksdb-devel: RocksDB 
+rpm-devel: rpm 
+rtl-sdr-devel: rtlsdr 
+rtmidi-devel: rtmidi 
 rttr-devel: rttr 
+s2n-devel: s2n 
+sdbus-cpp-devel: sdbus-c++ sdbus-c++-tools 
 sfml2-devel: SFML 
+snappy-devel: Snappy 
 snorenotify-qt5-devel: LibsnoreQt5 LibsnoreSettingsQt5 
-socket_wrapper: socket_wrapper 
+soci-devel: SOCI 
+socket_wrapper: socket_wrapper socket_wrapper_noop 
 solid-devel: KF5Solid 
+sonivox-devel: sonivox 
 sonnet-devel: KF5Sonnet 
 spdlog-devel: spdlog 
-spirv-tools-devel: SPIRV-Tools SPIRV-Tools-link SPIRV-Tools-opt SPIRV-Tools-reduce 
+spglib-devel: Spglib 
+spirv-headers: SPIRV-Headers 
+spirv-tools-devel: SPIRV-Tools SPIRV-Tools-diff SPIRV-Tools-link SPIRV-Tools-lint SPIRV-Tools-opt SPIRV-Tools-reduce SPIRV-Tools-tools 
+squirrel-devel: squirrel 
+stellarsolver-devel: StellarSolver 
 stp-devel: STP 
+suitesparse-devel: AMD BTF CAMD CCOLAMD CHOLMOD COLAMD CXSparse GraphBLAS KLU KLU_CHOLMOD LAGraph LDL ParU RBio SPEX SPQR SuiteSparse_Mongoose SuiteSparse_config UMFPACK 
+sundials-devel: SUNDIALS 
+superlu-devel: superlu 
 syndication-devel: KF5Syndication 
 syntax-highlighting-devel: KF5SyntaxHighlighting 
 tbb-devel: TBB 
-telepathy-logger-qt5-devel: TelepathyLoggerQt 
-telepathy-qt5-devel: TelepathyQt5 TelepathyQt5Farstream TelepathyQt5Service 
+testsweeper-devel: testsweeper 
 threadweaver-devel: KF5ThreadWeaver 
-trilinos-devel: Amesos2 Anasazi Belos Galeri Ifpack2 Intrepid Intrepid2 Kokkos KokkosAlgorithms KokkosContainers KokkosCore KokkosKernels ML MueLu NOX Pamgen Phalanx RTOp Sacado Shards ShyLU_Node ShyLU_NodeHTS ShyLU_NodeTacho Stokhos Stratimikos Teuchos TeuchosComm TeuchosCore TeuchosKokkosComm TeuchosKokkosCompat TeuchosNumerics TeuchosParameterList TeuchosParser TeuchosRemainder Thyra ThyraCore ThyraTpetraAdapters Tpetra TpetraClassic TpetraCore TpetraTSQR TriBITS Trilinos TrilinosCouplings TrilinosSS Xpetra Zoltan Zoltan2 
+tinyxml2-devel: tinyxml2 
+toml11-devel: toml11 
+tomlplusplus-devel: tomlplusplus 
+trng-devel: trng4 
+turbo-devel: turbo 
+tvision-devel-static: tvision 
 uhd-devel: UHD 
 uid_wrapper: uid_wrapper 
-unittest-cpp-devel: UnitTest++ 
-uwac0-0-devel: uwac 
+ulfius-devel: Ulfius 
+uriparser-devel: uriparser 
+utfcpp-devel: utf8cpp 
+uwac0-devel: uwac 
+verdict-devel: Verdict 
+vigra-devel: Vigra 
 volk-devel: Volk 
-vtk-devel: VTK 
-waffle-devel: Waffle 
+vtk-devel: FindFont vtk 
+vtk-m-devel: VTKm 
+vulkan-devel: VulkanLoader 
+vulkan-headers: VulkanHeaders 
+vulkan-utility-libraries-devel: VulkanUtilityLibraries 
+vulkan-volk-devel: volk 
 websocketpp-devel: websocketpp 
+wildmidi-devel: WildMidi 
+winpr-devel: WinPR 
 winpr2-devel: WinPR 
-wt-devel: wt 
+wireshark-devel: Wireshark 
+wmime-devel: wmime 
+xcb-imdkit-devel: XCBImdkit 
+xdg-utils-cxx-devel: XdgUtils 
+xsimd-devel: xsimd 
+xtensor-devel: xtensor 
+xtl-devel: xtl 
 yaml-cpp-devel: yaml-cpp 
+yder-devel: Yder 
 z3-devel: Z3 
+zfp-devel: zfp 
+zlib-ng-compat-devel: zlib 
+zlib-ng-devel: zlib-ng 
+zmusic-devel: ZMusic 
+zug-devel: Zug 
 zxing-cpp-devel: ZXing 

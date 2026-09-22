@@ -1,3 +1,3 @@
-BuildRequires:  perl(Apache2::AuthCookieDBI)
+BuildRequires:  perl-Apache2-AuthCookieDBI
 
 %changelog
