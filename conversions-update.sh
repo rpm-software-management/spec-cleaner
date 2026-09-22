@@ -20,6 +20,17 @@ if [ -z "$2" ]; then
 fi
 
 BASEURL="http://download.opensuse.org/distribution/$2/repo/oss/"
-fetch "${BASEURL}$(fetch "${BASEURL}repodata/repomd.xml" \
-    | perl -ne 'print $1 if /"(.*?primary.xml.gz)"/')" \
-    | zcat | perl "$(cd "$(dirname $0)" && pwd)/conversions-update.pl" $1
+# Newer distributions (Leap 16 and later) compress repodata with zstd
+# instead of gzip, so match either and decompress accordingly.
+ARCHIVE="$(fetch "${BASEURL}repodata/repomd.xml" \
+    | perl -ne 'print $1 if /"(.*?primary\.xml\.(gz|zst))"/')"
+if [ -z "$ARCHIVE" ]; then
+    echo >&2 "Unable to find primary.xml in the repodata of \"$BASEURL\""
+    exit 1
+fi
+case "$ARCHIVE" in
+    *.zst) DECOMPRESS="zstd -dc" ;;
+    *)     DECOMPRESS="zcat" ;;
+esac
+fetch "${BASEURL}${ARCHIVE}" \
+    | $DECOMPRESS | perl "$(cd "$(dirname $0)" && pwd)/conversions-update.pl" $1

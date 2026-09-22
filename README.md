@@ -145,6 +145,7 @@ BSD-2-Clause-Patent | BSD-2-Clause Plus Patent License
 BSD-2-Clause-Views | BSD 2-Clause with views sentence
 BSD-2-Clause-first-lines | BSD 2-Clause - first lines requirement
 BSD-2-Clause-pkgconf-disclaimer | BSD 2-Clause pkgconf disclaimer variant
+BSD-2-Clause-pos-unchanged | BSD 2-Clause - position unchanged variant
 BSD-2-Clause | BSD 2-Clause "Simplified" License
 BSD-3-Clause-Attribution | BSD with attribution
 BSD-3-Clause-Clear | BSD 3-Clause Clear License
@@ -156,6 +157,7 @@ BSD-3-Clause-No-Nuclear-License-2014 | BSD 3-Clause No Nuclear License 2014
 BSD-3-Clause-No-Nuclear-License | BSD 3-Clause No Nuclear License
 BSD-3-Clause-No-Nuclear-Warranty | BSD 3-Clause No Nuclear Warranty
 BSD-3-Clause-Open-MPI | BSD 3-Clause Open MPI variant
+BSD-3-Clause-OpenWebUI | BSD 3-Clause - OpenWebUI variant
 BSD-3-Clause-Sun | BSD 3-Clause Sun Microsystems
 BSD-3-Clause-Tso | BSD 3-Clause Tso variant
 BSD-3-Clause-acpica | BSD 3-Clause acpica variant
@@ -171,10 +173,13 @@ BSD-Attribution-HPND-disclaimer | BSD with Attribution and HPND disclaimer
 BSD-Inferno-Nettverk | BSD-Inferno-Nettverk
 BSD-Mark-Modifications | BSD Mark Modifications License
 BSD-Protection | BSD Protection License
+BSD-Source-Code-no-disclaimer | BSD Source Code Attribution - no disclaimer
 BSD-Source-Code | BSD Source Code Attribution
+BSD-Source-alt-GPL | BSD Source Code Attribution - GPL alternative
 BSD-Source-beginning-file | BSD Source Code Attribution - beginning of file variant
 BSD-Systemics-W3Works | Systemics W3Works BSD variant license
 BSD-Systemics | Systemics BSD variant license
+BSD-ask-to-endorse | BSD - ask to endorse
 BSL-1.0 | Boost Software License 1.0
 BUSL-1.1 | Business Source License 1.1
 Baekmuk | Baekmuk License
@@ -190,8 +195,10 @@ Boehm-GC-without-fee | Boehm-Demers-Weiser GC License (without fee)
 Boehm-GC | Boehm-Demers-Weiser GC License
 Borceux | Borceux license
 Brian-Gladman-2-Clause | Brian Gladman 2-Clause License
+Brian-Gladman-3-Clause-no-conversion | Brian Gladman 3-Clause License (no conversion clause)
 Brian-Gladman-3-Clause | Brian Gladman 3-Clause License
 Buddy | Buddy License
+Bugroff | Bugroff License
 C-UDA-1.0 | Computational Use of Data Agreement v1.0
 CAL-1.0-Combined-Work-Exception | Cryptographic Autonomy License 1.0 (Combined Work Exception)
 CAL-1.0 | Cryptographic Autonomy License 1.0
@@ -213,6 +220,7 @@ CC-BY-NC-1.0 | Creative Commons Attribution Non Commercial 1.0 Generic
 CC-BY-NC-2.0 | Creative Commons Attribution Non Commercial 2.0 Generic
 CC-BY-NC-2.5 | Creative Commons Attribution Non Commercial 2.5 Generic
 CC-BY-NC-3.0-DE | Creative Commons Attribution Non Commercial 3.0 Germany
+CC-BY-NC-3.0-IGO | Creative Commons Attribution Non Commercial 3.0 IGO
 CC-BY-NC-3.0 | Creative Commons Attribution Non Commercial 3.0 Unported
 CC-BY-NC-4.0 | Creative Commons Attribution Non Commercial 4.0 International
 CC-BY-NC-ND-1.0 | Creative Commons Attribution Non Commercial No Derivatives 1.0 Generic
@@ -326,6 +334,7 @@ ErlPL-1.1 | Erlang Public License v1.1
 Eurosym | Eurosym License
 FBM | Fuzzy Bitmap License
 FDK-AAC | Fraunhofer FDK AAC Codec Library
+FDK-MPEG-H | Fraunhofer FDK MPEG-H Software
 FSFAP-no-warranty-disclaimer | FSF All Permissive License (without Warranty)
 FSFAP | FSF All Permissive License
 FSFUL | FSF Unlimited License
@@ -408,6 +417,7 @@ HPND | Historical Permission Notice and Disclaimer
 HTMLTIDY | HTML Tidy License
 HaskellReport | Haskell Language Report License
 Hippocratic-2.1 | Hippocratic License 2.1
+Hippocratic-3.0-core | Hippocratic License 3.0
 IBM-pibs | IBM PowerPC Initialization and Boot Software
 ICU | ICU License
 IEC-Code-Components-EULA | IEC    Code Components End-user licence agreement
@@ -421,6 +431,7 @@ ISO-permission | ISO permission notice
 ImageMagick | ImageMagick License
 Imlib2 | Imlib2 License
 Info-ZIP | Info-ZIP License
+Informatica | Informatica License
 Inner-Net-2.0 | Inner Net License v2.0
 InnoSetup | Inno Setup License
 Intel-ACPI | Intel ACPI Software License Agreement
@@ -494,6 +505,7 @@ MS-LPL | Microsoft Limited Public License
 MS-PL | Microsoft Public License
 MS-RL | Microsoft Reciprocal License
 MTLL | Matrix Template Library License
+MVT-1.1 | MVT License 1.1
 Mackerras-3-Clause-acknowledgment | Mackerras 3-Clause - acknowledgment variant
 Mackerras-3-Clause | Mackerras 3-Clause License
 MakeIndex | MakeIndex License
@@ -727,6 +739,7 @@ Zimbra-1.4 | Zimbra Public License v1.4
 Zlib | zlib License
 any-OSI-perl-modules | Any OSI License - Perl Modules
 any-OSI | Any OSI License
+atc-game | atc Game License
 bcrypt-Solar-Designer | bcrypt Solar Designer License
 blessing | SQLite Blessing
 bzip2-1.0.6 | bzip2 and libbzip2 License v1.0.6

@@ -158,6 +158,8 @@ BSD-2-Clause-first-lines	BSD-2-Clause-first-lines
 BSD-2-Clause-first-lines+	BSD-2-Clause-first-lines+
 BSD-2-Clause-pkgconf-disclaimer	BSD-2-Clause-pkgconf-disclaimer
 BSD-2-Clause-pkgconf-disclaimer+	BSD-2-Clause-pkgconf-disclaimer+
+BSD-2-Clause-pos-unchanged	BSD-2-Clause-pos-unchanged
+BSD-2-Clause-pos-unchanged+	BSD-2-Clause-pos-unchanged+
 BSD-3-Clause	BSD (3-Clause)
 BSD-3-Clause	BSD 3-Clause
 BSD-3-Clause	BSD 3-clause (or similar)
@@ -190,6 +192,8 @@ BSD-3-Clause-No-Nuclear-Warranty	BSD-3-Clause-No-Nuclear-Warranty
 BSD-3-Clause-No-Nuclear-Warranty+	BSD-3-Clause-No-Nuclear-Warranty+
 BSD-3-Clause-Open-MPI	BSD-3-Clause-Open-MPI
 BSD-3-Clause-Open-MPI+	BSD-3-Clause-Open-MPI+
+BSD-3-Clause-OpenWebUI	BSD-3-Clause-OpenWebUI
+BSD-3-Clause-OpenWebUI+	BSD-3-Clause-OpenWebUI+
 BSD-3-Clause-Sun	BSD-3-Clause-Sun
 BSD-3-Clause-Sun+	BSD-3-Clause-Sun+
 BSD-3-Clause-Tso	BSD-3-Clause-Tso
@@ -222,12 +226,18 @@ BSD-Protection	BSD-Protection
 BSD-Protection+	BSD-Protection+
 BSD-Source-Code	BSD-Source-Code
 BSD-Source-Code+	BSD-Source-Code+
+BSD-Source-Code-no-disclaimer	BSD-Source-Code-no-disclaimer
+BSD-Source-Code-no-disclaimer+	BSD-Source-Code-no-disclaimer+
+BSD-Source-alt-GPL	BSD-Source-alt-GPL
+BSD-Source-alt-GPL+	BSD-Source-alt-GPL+
 BSD-Source-beginning-file	BSD-Source-beginning-file
 BSD-Source-beginning-file+	BSD-Source-beginning-file+
 BSD-Systemics	BSD-Systemics
 BSD-Systemics+	BSD-Systemics+
 BSD-Systemics-W3Works	BSD-Systemics-W3Works
 BSD-Systemics-W3Works+	BSD-Systemics-W3Works+
+BSD-ask-to-endorse	BSD-ask-to-endorse
+BSD-ask-to-endorse+	BSD-ask-to-endorse+
 BSL-1.0	BSL-1.0
 BSL-1.0+	BSL-1.0+
 BUSL-1.1	BUSL-1.1
@@ -262,8 +272,12 @@ Brian-Gladman-2-Clause	Brian-Gladman-2-Clause
 Brian-Gladman-2-Clause+	Brian-Gladman-2-Clause+
 Brian-Gladman-3-Clause	Brian-Gladman-3-Clause
 Brian-Gladman-3-Clause+	Brian-Gladman-3-Clause+
+Brian-Gladman-3-Clause-no-conversion	Brian-Gladman-3-Clause-no-conversion
+Brian-Gladman-3-Clause-no-conversion+	Brian-Gladman-3-Clause-no-conversion+
 Buddy	Buddy
 Buddy+	Buddy+
+Bugroff	Bugroff
+Bugroff+	Bugroff+
 C-UDA-1.0	C-UDA-1.0
 C-UDA-1.0+	C-UDA-1.0+
 CAL-1.0	CAL-1.0
@@ -308,6 +322,8 @@ CC-BY-NC-3.0	CC-BY-NC-3.0
 CC-BY-NC-3.0+	CC-BY-NC-3.0+
 CC-BY-NC-3.0-DE	CC-BY-NC-3.0-DE
 CC-BY-NC-3.0-DE+	CC-BY-NC-3.0-DE+
+CC-BY-NC-3.0-IGO	CC-BY-NC-3.0-IGO
+CC-BY-NC-3.0-IGO+	CC-BY-NC-3.0-IGO+
 CC-BY-NC-4.0	CC-BY-NC-4.0
 CC-BY-NC-4.0+	CC-BY-NC-4.0+
 CC-BY-NC-ND-1.0	CC-BY-NC-ND-1.0
@@ -556,6 +572,8 @@ FBM	FBM
 FBM+	FBM+
 FDK-AAC	FDK-AAC
 FDK-AAC+	FDK-AAC+
+FDK-MPEG-H	FDK-MPEG-H
+FDK-MPEG-H+	FDK-MPEG-H+
 FSFAP	FSFAP
 FSFAP+	FSFAP+
 FSFAP-no-warranty-disclaimer	FSFAP-no-warranty-disclaimer
@@ -802,6 +820,8 @@ HaskellReport	HaskellReport
 HaskellReport+	HaskellReport+
 Hippocratic-2.1	Hippocratic-2.1
 Hippocratic-2.1+	Hippocratic-2.1+
+Hippocratic-3.0-core	Hippocratic-3.0-core
+Hippocratic-3.0-core+	Hippocratic-3.0-core+
 IBM-pibs	IBM-pibs
 IBM-pibs+	IBM-pibs+
 ICU	ICU
@@ -834,6 +854,8 @@ Imlib2	Imlib2
 Imlib2+	Imlib2+
 Info-ZIP	Info-ZIP
 Info-ZIP+	Info-ZIP+
+Informatica	Informatica
+Informatica+	Informatica+
 Inner-Net-2.0	Inner-Net-2.0
 Inner-Net-2.0	SUSE-Innernet-2.0
 Inner-Net-2.0+	Inner-Net-2.0+
@@ -1048,6 +1070,8 @@ MS-RL	MS-RL
 MS-RL+	MS-RL+
 MTLL	MTLL
 MTLL+	MTLL+
+MVT-1.1	MVT-1.1
+MVT-1.1+	MVT-1.1+
 Mackerras-3-Clause	Mackerras-3-Clause
 Mackerras-3-Clause+	Mackerras-3-Clause+
 Mackerras-3-Clause-acknowledgment	Mackerras-3-Clause-acknowledgment
@@ -1755,6 +1779,8 @@ any-OSI	any-OSI
 any-OSI+	any-OSI+
 any-OSI-perl-modules	any-OSI-perl-modules
 any-OSI-perl-modules+	any-OSI-perl-modules+
+atc-game	atc-game
+atc-game+	atc-game+
 bcrypt-Solar-Designer	bcrypt-Solar-Designer
 bcrypt-Solar-Designer+	bcrypt-Solar-Designer+
 blessing	blessing

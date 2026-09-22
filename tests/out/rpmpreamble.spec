@@ -32,8 +32,6 @@ Source2:        libmicrohttpd.keyring
 Patch1:         disable-stalling-test.patch
 Patch2:         libmicrohttpd_test_data.patch
 BuildRequires:  curl
-BuildRequires:  file-devel
-BuildRequires:  libgcrypt-devel >= 1.2.4
 BuildRequires:  libtool
 BuildRequires:  makeinfo
 BuildRequires:  openssl-devel
@@ -41,6 +39,8 @@ BuildRequires:  pkgconfig
 BuildRequires:  socat
 BuildRequires:  pkgconfig(gnutls)
 BuildRequires:  pkgconfig(libcurl)
+BuildRequires:  pkgconfig(libgcrypt) >= 1.2.4
+BuildRequires:  pkgconfig(libmagic)
 BuildRequires:  pkgconfig(libtasn1)
 
 %description

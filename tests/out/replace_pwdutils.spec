@@ -8,8 +8,11 @@ URL:            https://ftp.debian.org/debian/pool/main/a/at
 Source:         https://ftp.debian.org/debian/pool/main/a/at/%{name}_%{version}.orig.tar.gz
 BuildRequires:  autoconf >= 2.69
 BuildRequires:  automake
-BuildRequires:  pam-devel
+BuildRequires:  pkgconfig
 BuildRequires:  pwdutils
+BuildRequires:  pkgconfig(pam)
+BuildRequires:  pkgconfig(pam_misc)
+BuildRequires:  pkgconfig(pamc)
 Requires:       libmariadb
 Requires:       pwdutils-util
 Requires:       shadow
