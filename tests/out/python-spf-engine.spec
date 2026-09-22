@@ -124,7 +124,7 @@ ln -s %{_sbindir}/service %{buildroot}%{_sbindir}/rcpyspf-milter
 %dir %{_sysconfdir}/pyspf-milter
 %config(noreplace) %{_sysconfdir}/pyspf-milter/pyspf-milter.conf
 
-%{_prefix}/lib/systemd/system/pyspf-milter.service
+%{_unitdir}/pyspf-milter.service
 %{_sbindir}/rcpyspf-milter
 
 %changelog
