@@ -1,3 +1,4 @@
+BuildRequires:  %{prefixed_python_module foo >= 1.2.2 if %python-base < 3.11}
 BuildRequires:  %{python_module tomli >= 1.2.2 if %python-base < 3.11}
 Requires:       %{oldpython}-base
 
