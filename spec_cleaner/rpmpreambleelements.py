@@ -135,6 +135,9 @@ class RpmPreambleElements:
         self.minimal = options['minimal']
         # regexp object
         self.reg = options['reg']
+        # whether the %lang_package macro is used in the specfile; it
+        # generates Supplements for the -lang subpackage (#273)
+        self.lang_package = options.get('lang_package', False)
         # pkgconfig requirement detection
         self.br_pkgconfig_required = False
         # license string
@@ -334,6 +337,50 @@ class RpmPreambleElements:
             key += ' '
         return key
 
+    def _is_own_lang_package(self, dep_name, package_name):
+        """
+        Check if a dependency name references this spec's -lang subpackage.
+        """
+        # macro form: %{name}-lang, %name-lang, %{_name}-lang, ...
+        if self.reg.re_lang_package_dep.match(dep_name):
+            return True
+        # literal form, e.g. Recommends: foo-lang in foo.spec
+        return bool(package_name) and dep_name == f'{package_name}-lang'
+
+    def _prune_lang_recommends(self):
+        """
+        Drop Recommends on the -lang subpackage when %lang_package is used.
+
+        The macro generates Supplements for the lang subpackage, so a manual
+        Recommends on it is redundant (#273). Without the macro (e.g. vlc)
+        nothing else pulls the lang package in, so the line must stay.
+        """
+        if not self.lang_package:
+            return
+        package_name = None
+        for group in self.items['name']:
+            match = self.reg.re_name.match(add_group(group)[-1])
+            if match and match.group(1):
+                package_name = match.group(1)
+                break
+        kept = []
+        for group in self.items['recommends']:
+            redundant = False
+            for item in add_group(group):
+                dep_name = None
+                if isinstance(item, RpmRequiresToken):
+                    dep_name = item.name
+                elif isinstance(item, str) and not item.startswith('#'):
+                    match = self.reg.re_recommends.match(item)
+                    if match and match.group(1).split():
+                        dep_name = match.group(1).split()[0]
+                if dep_name and self._is_own_lang_package(dep_name, package_name):
+                    redundant = True
+                    break
+            if not redundant:
+                kept.append(group)
+        self.items['recommends'] = kept
+
     def flatten_output(self, needs_license=False, nested=False):
         """Do the finalized output for the itemlist."""
         lines = []
@@ -348,6 +395,9 @@ class RpmPreambleElements:
         # remove duplicates
         for i in self.categories_with_package_tokens:
             self.items[i] = self._remove_duplicates(self.items[i])
+        # drop Recommends on the -lang subpackage, the %lang_package macro
+        # already generates Supplements for it (#273)
+        self._prune_lang_recommends()
         for i in self.categories_order:
             sorted_list = []
             if i in self.categories_with_sorted_package_tokens:

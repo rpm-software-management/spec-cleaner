@@ -20,7 +20,7 @@ class RpmPackage(RpmPreamble):
             return
 
         # If the package is lang package we add here comment about the lang
-        # package
+        # package, unless the %lang_package macro is already used (#273)
         if (
             len(self.lines) == 1
             and (
@@ -28,6 +28,7 @@ class RpmPackage(RpmPreamble):
                 and (self.previous_line.endswith(' lang') or self.previous_line.endswith('-lang'))
             )
             and not line.startswith('#')
+            and not self.options.get('lang_package', False)
         ):
             if not self.minimal:
                 Section.add(self, '# FIXME: consider using %%lang_package macro')
