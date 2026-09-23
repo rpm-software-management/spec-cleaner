@@ -29,13 +29,13 @@ def open_datafile(name: str) -> IO[str]:
     possible_paths = (
         f'{os.path.dirname(os.path.realpath(__file__))}/data/{name}',
         f'{homedir}/share/spec-cleaner/{name}',
-        f"{sysconfig.get_path('data')}/share/spec-cleaner/{name}",
+        f'{sysconfig.get_path("data")}/share/spec-cleaner/{name}',
         f'{sys.prefix}/share/spec-cleaner/{name}',
     )
 
     for path in possible_paths:
         try:
-            _file = open(path, mode='r')
+            _file = open(path)
         except OSError:
             pass
         else:
@@ -59,9 +59,9 @@ def open_stringio_spec(name: str) -> IO[str]:
     """
     data = StringIO()
     try:
-        with open(name, mode='r') as f:
+        with open(name) as f:
             data.write(f.read())
             data.seek(0, 0)
-    except (IOError, UnicodeDecodeError) as error:
+    except (OSError, UnicodeDecodeError) as error:
         raise RpmExceptionError(str(error))
     return data

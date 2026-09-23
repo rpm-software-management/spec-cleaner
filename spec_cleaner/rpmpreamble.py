@@ -394,8 +394,7 @@ class RpmPreamble(Section):
         # the availability probe is best-effort: any network failure
         # (including http.client errors that escape urlopen unwrapped,
         # e.g. RemoteDisconnected) must fall back to the original url
-        except (error.URLError, SSLError, CertificateError, HTTPException,
-                TimeoutError):
+        except (error.URLError, SSLError, CertificateError, HTTPException, TimeoutError):
             retval = orig_url
         finally:
             if response:
@@ -503,16 +502,16 @@ class RpmPreamble(Section):
             else:
                 zero = ''
             self._add_line_value_to(
-                'patch', match.group(3), key=f'{match.group(1)}Patch{zero}{match.group(2)}',
+                'patch',
+                match.group(3),
+                key=f'{match.group(1)}Patch{zero}{match.group(2)}',
             )
             return
 
         elif self.reg.re_buildoption_phase.match(line):
             match = self.reg.re_buildoption_phase.match(line)
             value = match.group(2)
-            self._add_line_value_to(
-                'buildoption_phase', value, key=f'BuildOption{match.group(1)}'
-            )
+            self._add_line_value_to('buildoption_phase', value, key=f'BuildOption{match.group(1)}')
             return
 
         elif self.reg.re_bcond_with.match(line):
@@ -628,9 +627,7 @@ class RpmPreamble(Section):
                 value = 'shadow'
             else:
                 value = match.group(2)
-            self._add_line_value_to(
-                'requires_phase', value, key=f'Requires{match.group(1)}'
-            )
+            self._add_line_value_to('requires_phase', value, key=f'Requires{match.group(1)}')
             return
 
         elif self.reg.re_provides.match(line):
@@ -707,13 +704,13 @@ class RpmPreamble(Section):
         # do not require special attention
         else:
             # cleanup
-            for (_category, regexp) in self.category_to_clean.items():
+            for _category, regexp in self.category_to_clean.items():
                 match = regexp.match(line)
                 if match:
                     return
 
             # simple matching
-            for (category, regexp) in self.category_to_re.items():
+            for category, regexp in self.category_to_re.items():
                 match = regexp.match(line)
                 if match:
                     # instead of matching first group as there is only one,

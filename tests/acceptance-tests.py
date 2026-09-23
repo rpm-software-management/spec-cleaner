@@ -4,7 +4,6 @@ Acceptance tests module.
 In this module we run all the tests to ensure the spec-cleaner is acting sanely.
 """
 
-
 import os
 from glob import glob
 from shutil import copyfile
@@ -28,7 +27,7 @@ def collect_tests(directory):
     return [os.path.basename(f) for f in glob(testglob)]
 
 
-class TestCompare(object):
+class TestCompare:
     """
     We run individual tests to verify the content compared to expected results.
 

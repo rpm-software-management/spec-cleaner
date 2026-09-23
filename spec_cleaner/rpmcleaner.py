@@ -5,7 +5,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
-from typing import IO, Any, Dict, List, Optional, Type
+from typing import IO, Any
 
 from .fileutils import open_stringio_spec
 from .rpmbuild import RpmBuild
@@ -35,7 +35,7 @@ from .rpmscriplets import RpmScriptlets
 from .rpmsection import Section
 
 
-class RpmSpecCleaner(object):
+class RpmSpecCleaner:
     """
     Class wrapping all sections parser is responsible for.
 
@@ -63,14 +63,15 @@ class RpmSpecCleaner(object):
                                  currently processed specfile.
     """
 
-    specfile: Optional[str] = None
+    specfile: str | None = None
     current_section: Section
     skip_run: bool = False
-    _previous_line: Optional[str] = None
-    _previous_nonempty_line: Optional[str] = None
+    _previous_line: str | None = None
+    _previous_nonempty_line: str | None = None
 
-    def __init__(self, options: Dict[str, Any]) -> None:
-        """Initialize and load options into the RpmSpecCleaner obj and run prep methods.
+    def __init__(self, options: dict[str, Any]) -> None:
+        """
+        Initialize and load options into the RpmSpecCleaner obj and run prep methods.
 
         Args:
             options: A dictionary holding spec-cleaner command line options.
@@ -149,12 +150,14 @@ class RpmSpecCleaner(object):
             self.fout = open(self.options['specfile'], 'w')
         elif self.options['diff']:
             self.fout = tempfile.NamedTemporaryFile(
-                mode='w+', prefix=os.path.split(self.options['specfile'])[-1] + '.', suffix='.spec',
+                mode='w+',
+                prefix=os.path.split(self.options['specfile'])[-1] + '.',
+                suffix='.spec',
             )
         else:
             self.fout = sys.stdout
 
-    def _unbrace_keywords(self) -> List[str]:
+    def _unbrace_keywords(self) -> list[str]:
         """
         Create a list of keywords that shouldn't be in the curly brackets.
 
@@ -188,7 +191,7 @@ class RpmSpecCleaner(object):
 
         If we have more than one then put license to the each subpkg.
         """
-        licenses: List[str] = []
+        licenses: list[str] = []
         for line in self.fin:
             if self.reg.re_license.match(line):
                 line = line.rstrip('\n')
@@ -245,7 +248,7 @@ class RpmSpecCleaner(object):
             return True
         return False
 
-    def _detect_new_section(self, line: str) -> Optional[Type[Section]]:
+    def _detect_new_section(self, line: str) -> type[Section] | None:
         """
         Detect if the line contains a new section (and which) or not.
 
@@ -281,7 +284,7 @@ class RpmSpecCleaner(object):
                 return Section
 
         # try to verify if we start some specific section
-        for (regexp, newclass) in self.section_starts:
+        for regexp, newclass in self.section_starts:
             if regexp.match(line):
                 # check if we are in if conditional and act accordingly if we
                 # change sections
@@ -317,7 +320,7 @@ class RpmSpecCleaner(object):
         # we are staying in the section
         return None
 
-    def _check_for_newline(self, detected_class: Optional[Type[Section]], line: str) -> bool:
+    def _check_for_newline(self, detected_class: type[Section] | None, line: str) -> bool:
         """
         Check if we want newline or not after the end of section detected.
 
@@ -375,7 +378,9 @@ class RpmSpecCleaner(object):
             # sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
                 self.current_section.output(
-                    self.fout, self._check_for_newline(new_class, line), new_class.__name__,
+                    self.fout,
+                    self._check_for_newline(new_class, line),
+                    new_class.__name__,
                 )
                 # start new class
                 self.current_section = new_class(self.options)

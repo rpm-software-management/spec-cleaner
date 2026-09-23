@@ -11,7 +11,7 @@ from .rpmhelpers import (
 from .rpmrequirestoken import RpmRequiresToken
 
 
-class RpmPreambleElements(object):
+class RpmPreambleElements:
     """
     Class containing structure used in rpmpreamble.
 

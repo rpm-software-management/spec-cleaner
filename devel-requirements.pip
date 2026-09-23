@@ -1,7 +1,6 @@
 # Pip Requirement file for development
 
 coveralls
-flake8
 mypy
 pre-commit
 pytest
