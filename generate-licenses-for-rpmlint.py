@@ -13,7 +13,7 @@ args = parser.parse_args()
 
 with open(args.output, 'w') as wfile:
     script_name = os.path.basename(__file__)
-    wfile.write('# Generated with %s script from spec-cleaner:\n' % script_name)
+    wfile.write(f'# Generated with {script_name} script from spec-cleaner:\n')
     wfile.write('# URL: https://github.com/rpm-software-management/spec-cleaner\n\n')
     wfile.write('ValidLicenses = [\n')
     suse_exceptions = []

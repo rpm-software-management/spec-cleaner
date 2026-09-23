@@ -42,7 +42,7 @@ def find_end_of_bracketed_macro(string, regex, opening, closing):
         try:
             bite, string = consume_chars(regex, string)
         except NoMatchExceptionError:
-            raise Exception('unexpected parser error when looking for end of macro')
+            raise Exception('unexpected parser error when looking for end of macro') from None
 
         if bite == opening:
             opened += 1

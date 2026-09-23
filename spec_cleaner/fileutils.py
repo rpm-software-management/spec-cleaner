@@ -63,5 +63,5 @@ def open_stringio_spec(name: str) -> IO[str]:
             data.write(f.read())
             data.seek(0, 0)
     except (OSError, UnicodeDecodeError) as error:
-        raise RpmExceptionError(str(error))
+        raise RpmExceptionError(str(error)) from error
     return data

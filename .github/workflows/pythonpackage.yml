@@ -28,8 +28,9 @@ jobs:
     - name: Test the package
       run: |
         python3 -m pytest
-    - name: Validate formatting
+    - name: Validate ruff
       run: |
+        ruff check .
         ruff format --check .
     - name: Validate statical typing
       run: |

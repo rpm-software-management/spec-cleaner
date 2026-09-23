@@ -10,7 +10,7 @@ import argparse
 import os
 import sys
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmExceptionError, RpmWrongArgsError

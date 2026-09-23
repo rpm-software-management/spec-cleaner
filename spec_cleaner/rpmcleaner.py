@@ -352,7 +352,7 @@ class RpmSpecCleaner:
         # If we are skipping the specfile we should do nothing
         if self.skip_run:
             sys.stderr.write(
-                ".spec file {0} is not being processed due to definiton of 'nospeccleaner'\n".format(
+                ".spec file {} is not being processed due to definiton of 'nospeccleaner'\n".format(
                     self.options['specfile']
                 )
             )
@@ -419,10 +419,8 @@ class RpmSpecCleaner:
             try:
                 subprocess.call(cmd, shell=False)
             except OSError as error:
-                raise RpmExceptionError(
-                    'Could not execute %s (%s)'
-                    % (self.options['diff_prog'].split()[0], error.strerror)
-                )
+                prog = self.options['diff_prog'].split()[0]
+                raise RpmExceptionError(f'Could not execute {prog} ({error.strerror})') from error
 
     def __del__(self) -> None:
         """Close the input and output files."""

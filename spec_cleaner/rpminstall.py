@@ -12,6 +12,7 @@ class RpmInstall(Section):
     """
 
     def add(self, line: str) -> None:
+        """Process one line of the %install section."""
         line = self._complete_cleanup(line)
 
         # we do not want to cleanup buildroot, it is already clean

@@ -11,6 +11,7 @@ class RpmCheck(Section):
     """
 
     def add(self, line: str) -> None:
+        """Process one line of the %check section."""
         line = self._complete_cleanup(line)
 
         # smp_mflags for jobs macro replacement

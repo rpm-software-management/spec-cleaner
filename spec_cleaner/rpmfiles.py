@@ -9,6 +9,7 @@ class RpmFiles(Section):
     """A class providing methods for %files section cleaning."""
 
     def add(self, line: str) -> None:
+        """Process one line of the %files section."""
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
         line = self._remove_doc_on_man(line)
@@ -85,6 +86,8 @@ class RpmFiles(Section):
 
     def _expand_python_sitelib(self, line: str) -> str:
         """
+        Replace the usage of "%{python_sitelib}/*" with package-specific lines.
+
         Replaces the usage of "%{python_sitelib}/*" with a more
         specific line that includes the package name:
 

@@ -13,6 +13,7 @@ class RpmDescription(Section):
     """
 
     def __init__(self, options: dict[str, Any]) -> None:
+        """Initialize the %description section cleaner."""
         Section.__init__(self, options)
         self.removing_authors = False
         # Tracks the use of a macro. When this happens and we're still in a
@@ -21,6 +22,7 @@ class RpmDescription(Section):
         self.unknown_line = False
 
     def add(self, line: str) -> None:
+        """Process one line of the %description section."""
         if self.previous_line and len(line) > 0 and line[0] == '%':
             self.unknown_line = True
 
