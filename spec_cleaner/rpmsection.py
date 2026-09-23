@@ -264,7 +264,18 @@ class Section(object):
         line = self.reg.re_initdir.sub(r'%{_initddir}\1', line)
         line = self.reg.re_sysconfdir.sub(r'%{_sysconfdir}\1', line)
         line = self.reg.re_localstatedir.sub(r'%{_localstatedir}\1', line)
+        line = self.reg.re_ocamlstdlib.sub(r'%{ocaml_standard_library}\1', line)
         line = self.reg.re_libdir.sub(r'%{_libdir}\2', line)
+        line = self.reg.re_unitdir.sub(r'%{_unitdir}\1', line)
+        line = self.reg.re_tmpfilesdir.sub(r'%{_tmpfilesdir}\1', line)
+        line = self.reg.re_sysusersdir.sub(r'%{_sysusersdir}\1', line)
+        line = self.reg.re_udevrulesdir.sub(r'%{_udevrulesdir}\1', line)
+        line = self.reg.re_sysctldir.sub(r'%{_sysctldir}\1', line)
+        line = self.reg.re_perlvendorlib.sub(r'%{perl_vendorlib}\1', line)
+        line = self.reg.re_fontsdir.sub(r'%{_fontsdir}\1', line)
+        line = self.reg.re_emacssitelispdir.sub(r'%{_emacs_sitelispdir}\1', line)
+        line = self.reg.re_apparmorprofilesdir.sub(r'%{apparmor_profilesdir}\1', line)
+        line = self.reg.re_nodejssitelib.sub(r'%{nodejs_sitelib}\1', line)
         line = self.reg.re_initddir.sub(r'%{_initddir}\1', line)
 
         return line
