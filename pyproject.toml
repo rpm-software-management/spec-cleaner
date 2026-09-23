@@ -15,11 +15,10 @@ authors = [
 description = "RPM .spec files cleaner"
 readme = "README.md"
 keywords = ["SUSE", "RPM", ".spec", "cleaner"]
-license = {text = "BSD-3-Clause"}
+license = "BSD-3-Clause"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: Unix",
     "Operating System :: POSIX",
     "Programming Language :: Python",
