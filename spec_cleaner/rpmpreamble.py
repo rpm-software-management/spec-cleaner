@@ -62,6 +62,9 @@ class RpmPreamble(Section):
         self._condition_bcond = False
         # Is the condition based on the pattern
         self._pattern_condition = False
+        # How many multi-line %{?cond: ... } blocks are currently open, so we
+        # know a lone } closes such a block instead of being misc content
+        self._multilinecond_depth = 0
         self.options = options
         # do we want pkgconfig and others?
         self.pkgconfig = options['pkgconfig']
@@ -452,7 +455,27 @@ class RpmPreamble(Section):
             self.previous_line = line
             return
 
-        elif self.reg.re_endif.match(line) or self.reg.re_endcodeblock.match(line):
+        elif self.reg.re_multilinecond.match(line):
+            # Multi-line %{?cond: block is an abbreviated %if cond block,
+            # parse it as a condition so the dependencies inside keep it.
+            self._add_line_to('conditions', line)
+            self.condition = True
+            self._multilinecond_depth += 1
+            self.start_subparagraph()
+            self.previous_line = line
+            return
+
+        elif (
+            self.reg.re_endif.match(line)
+            or self.reg.re_endcodeblock.match(line)
+            or (
+                self._multilinecond_depth > 0
+                and self.reg.re_endmultilinecond.match(line)
+            )
+        ):
+            # A lone } closes a multi-line %{?cond: block.
+            if self.reg.re_endmultilinecond.match(line):
+                self._multilinecond_depth -= 1
             self._add_line_to('conditions', line)
             # Set conditions to false only if we are
             # closing last of the nested ones
@@ -577,6 +600,13 @@ class RpmPreamble(Section):
             else:
                 value = match.group(2)
             self._add_line_value_to('requires_ge', value)
+            return
+
+        elif self.reg.re_onelinecond_dep.match(line):
+            # One-line conditional dependency (%{?cond:BuildRequires: ...}) is
+            # an abbreviated %if cond ... %endif block, keep it with the
+            # other conditions instead of the defines at the top.
+            self._add_line_to('build_conditions', line)
             return
 
         elif (

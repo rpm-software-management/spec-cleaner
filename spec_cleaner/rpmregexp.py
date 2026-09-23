@@ -101,6 +101,19 @@ class Regexp(object):
     re_requires_eq = re.compile(r'^\s*(%{\?requires_eq:\s*)?%requires_eq\s*(.*)')
     re_requires_ge = re.compile(r'^\s*(%{\?requires_ge:\s*)?%requires_ge\s*(.*)')
     re_onelinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:[^}]+}')
+    # one-line conditional wrapping a dependency tag, eg.
+    # %{?with_foo:BuildRequires: bar}; an abbreviated %if with_foo block
+    re_onelinecond_dep = re.compile(
+        r'^\s*%{!?[^?]*\?[^:]+:\s*'
+        r'(?:BuildRequires|BuildConflicts|Requires|PreReq|Recommends|Suggests|Enhances|Supplements|Conflicts|Provides|Obsoletes)'
+        r'(?:\([^)]*\))?\s*:',
+        re.IGNORECASE,
+    )
+    # opener of a multi-line conditional block, eg. %{?with_foo:
+    # (no closing } on the line); an abbreviated %if with_foo block
+    re_multilinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:\s*$')
+    # closing brace of a multi-line conditional block
+    re_endmultilinecond = re.compile(r'^\s*}\s*$')
     # Special bracketed deps dection
     re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')
     re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')
