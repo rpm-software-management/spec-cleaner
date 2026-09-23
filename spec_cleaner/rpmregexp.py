@@ -84,6 +84,12 @@ class Regexp(object):
     re_packager = re.compile(r'^\s*Packager:\s*(.*)', re.IGNORECASE)
     re_define = re.compile(r'^\s*%define\s*(.*)', re.IGNORECASE)
     re_global = re.compile(r'^\s*%global\s*(.*)', re.IGNORECASE)
+    # %lang_package macro invocation; generates Supplements for the -lang
+    # subpackage, making a manual Recommends on it redundant (#273)
+    re_lang_package = re.compile(r'^\s*%lang_package(\s|$)', re.IGNORECASE)
+    # a dependency name referencing a lang package through a macro,
+    # e.g. %{name}-lang, %name-lang or %{_name}-lang
+    re_lang_package_dep = re.compile(r'^%\{?[_a-zA-Z][\w]*\}?-lang$', re.IGNORECASE)
     re_bcond_with = re.compile(r'^\s*%bcond_with(out)?\s*(.*)', re.IGNORECASE)
     re_autoreqprov = re.compile(r'^\s*AutoReqProv:.*$', re.IGNORECASE)
     re_debugpkg = re.compile(r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE)

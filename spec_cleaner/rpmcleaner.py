@@ -132,6 +132,9 @@ class RpmSpecCleaner(object):
         # Determine if we need to skip the spec ('#nospeccleaner' tag)
         self._find_skip_parser()
 
+        # Detect %lang_package macro usage for redundant Recommends pruning (#273)
+        self._find_lang_package()
+
         # Set what will be the output of the cleaning
         self._select_mode()
 
@@ -179,6 +182,20 @@ class RpmSpecCleaner(object):
         for line in self.fin:
             if self.reg.re_skipcleaner.match(line):
                 self.skip_run = True
+                break
+        self.fin.seek(0)
+
+    def _find_lang_package(self) -> None:
+        """
+        Detect if the %lang_package macro is used in the specfile.
+
+        The macro generates Supplements for the -lang subpackage, making a
+        manual Recommends on it redundant (#273).
+        """
+        self.options['lang_package'] = False
+        for line in self.fin:
+            if self.reg.re_lang_package.match(line):
+                self.options['lang_package'] = True
                 break
         self.fin.seek(0)
 
