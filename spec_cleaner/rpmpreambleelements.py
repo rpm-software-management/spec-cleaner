@@ -338,9 +338,7 @@ class RpmPreambleElements:
         return key
 
     def _is_own_lang_package(self, dep_name, package_name):
-        """
-        Check if a dependency name references this spec's -lang subpackage.
-        """
+        """Check if a dependency name references this spec's -lang subpackage."""
         # macro form: %{name}-lang, %name-lang, %{_name}-lang, ...
         if self.reg.re_lang_package_dep.match(dep_name):
             return True
