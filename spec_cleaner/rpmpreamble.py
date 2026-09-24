@@ -467,10 +467,7 @@ class RpmPreamble(Section):
         elif (
             self.reg.re_endif.match(line)
             or self.reg.re_endcodeblock.match(line)
-            or (
-                self._multilinecond_depth > 0
-                and self.reg.re_endmultilinecond.match(line)
-            )
+            or (self._multilinecond_depth > 0 and self.reg.re_endmultilinecond.match(line))
         ):
             # A lone } closes a multi-line %{?cond: block.
             if self.reg.re_endmultilinecond.match(line):
