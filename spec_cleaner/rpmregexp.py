@@ -119,6 +119,14 @@ class Regexp:
     re_multilinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:\s*$')
     # closing brace of a multi-line conditional block
     re_endmultilinecond = re.compile(r'^\s*}\s*$')
+
+    # %global expands its value immediately, so a global referencing macros
+    # that rpm only defines while parsing the preamble tags (Name, Version,
+    # Release, Epoch) must not be hoisted above those tags (#239)
+    re_global_order_sensitive = re.compile(
+        r'%(?:\{(name|version|release|epoch)\}|(name|version|release|epoch)(?![\w]))',
+        re.IGNORECASE,
+    )
     # Special bracketed deps dection
     re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')
     re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')

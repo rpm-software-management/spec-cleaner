@@ -60,6 +60,10 @@ class RpmPreambleElements:
         'name',
         'version',
         'release',
+        # %global lines that reference macros defined by the preamble tags
+        # above; they cannot be hoisted to the top as %global expands
+        # immediately (#239)
+        'global_late',
         'summary',
         'summary_localized',
         'license',
@@ -379,6 +383,34 @@ class RpmPreambleElements:
                 kept.append(group)
         self.items['recommends'] = kept
 
+    def _split_late_globals(self):
+        """
+        Move %global lines below the Version/Release tags when needed.
+
+        %global expands its value immediately, so a global referencing macros
+        that rpm defines while parsing the preamble tags (%name, %version,
+        %release, %epoch) breaks when hoisted above those tags (#239).
+        %define is lazy and stays hoisted at the top.
+
+        When at least one such global is present, move all globals as one
+        block to keep their relative order: a plain global can reference
+        another global that references %version.
+        """
+        flagged = []
+        sensitive_found = False
+        for group in self.items['define']:
+            code_line = add_group(group)[-1]
+            is_global = bool(self.reg.re_global.match(code_line)) or (
+                bool(self.reg.re_onelinecond.match(code_line)) and '%global' in code_line
+            )
+            if is_global and self.reg.re_global_order_sensitive.search(code_line):
+                sensitive_found = True
+            flagged.append((group, is_global))
+        if not sensitive_found:
+            return
+        self.items['define'] = [group for group, is_global in flagged if not is_global]
+        self.items['global_late'] = [group for group, is_global in flagged if is_global]
+
     def flatten_output(self, needs_license=False, nested=False):
         """Do the finalized output for the itemlist."""
         lines = []
@@ -396,6 +428,8 @@ class RpmPreambleElements:
         # drop Recommends on the -lang subpackage, the %lang_package macro
         # already generates Supplements for it (#273)
         self._prune_lang_recommends()
+        # keep version-dependent globals below the preamble tags (#239)
+        self._split_late_globals()
         for i in self.categories_order:
             sorted_list = []
             if i in self.categories_with_sorted_package_tokens:
