@@ -1,10 +1,9 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import re
-from typing import List
 
 
-class Regexp(object):
+class Regexp:
     """
     Singleton containing all regular expressions compiled in one run.
 
@@ -246,7 +245,7 @@ class Regexp(object):
     re_deprecated_egrep_regex = re.compile(r'\begrep\b')
     re_deprecated_fgrep_regex = re.compile(r'\bfgrep\b')
 
-    def __init__(self, keywords: List[str]) -> None:
+    def __init__(self, keywords: list[str]) -> None:
         """Compile all the keywords that are to be unbraced."""
         # the negative lookbehind keeps us from touching '%%{macro}'
         # where '%%' is the rpm escape for a literal percent sign

@@ -28,9 +28,10 @@ jobs:
     - name: Test the package
       run: |
         python3 -m pytest
-    - name: Validate flake8
+    - name: Validate ruff
       run: |
-        flake8
+        ruff check .
+        ruff format --check .
     - name: Validate statical typing
       run: |
         mypy spec_cleaner
@@ -41,3 +42,17 @@ jobs:
         flag-name: python-${{ matrix.python-version }}
         parallel: true
       if: success()
+  # Tell Coveralls the parallel uploads are done so it aggregates them;
+  # without this the branch coverage never updates.
+  finish:
+    needs: test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls finished
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parallel-finished: true
+        # Keep in sync with the python-version matrix above.
+        carryforward: "python-3.11,python-3.12,python-3.13"

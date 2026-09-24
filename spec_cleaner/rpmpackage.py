@@ -12,6 +12,7 @@ class RpmPackage(RpmPreamble):
     """
 
     def add(self, line: str) -> None:
+        """Process one line of the %package section."""
         # The first line (%package) should always be added and is different
         # from the lines we handle in RpmPreamble.
         if not self.previous_line:

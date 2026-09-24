@@ -57,7 +57,44 @@ version = {attr = "spec_cleaner.__version__"}
 tests = [
     "pytest",
     "pytest-cov",
-    "pytest-isort",
     "pytest-xdist"
 ]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "D",   # pydocstyle
+    "N",   # pep8-naming
+    "A",   # flake8-builtins
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "Q",   # flake8-quotes
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E402",  # module-import-not-at-top
+    "E501",  # line-too-long (handled by the formatter)
+    "E502",  # backslash-redundant
+    "D100",  # missing-docstring-in-public-module
+    "D203",  # blank-line-before-class (incompatible with D211; D211 wins)
+    "D212",  # multi-line-summary-first-line (the codebase puts the summary on the second line)
+    "D401",  # non-imperative-mood
+    "D413",  # blank-line-after-last-section
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["N999"]  # test modules are deliberately named *-tests.py
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+
+[tool.ruff.format]
+quote-style = "single"
 

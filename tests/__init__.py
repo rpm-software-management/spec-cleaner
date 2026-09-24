@@ -1,0 +1,1 @@
+"""spec-cleaner test suite."""

@@ -9,6 +9,7 @@ class RpmFiles(Section):
     """A class providing methods for %files section cleaning."""
 
     def add(self, line: str) -> None:
+        """Process one line of the %files section."""
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
         line = self._remove_doc_on_man(line)
@@ -85,6 +86,8 @@ class RpmFiles(Section):
 
     def _expand_python_sitelib(self, line: str) -> str:
         """
+        Replace the usage of "%{python_sitelib}/*" with package-specific lines.
+
         Replaces the usage of "%{python_sitelib}/*" with a more
         specific line that includes the package name:
 
@@ -94,7 +97,6 @@ class RpmFiles(Section):
         This function uses the package name and removes the "python-"
         prefix if it exists, so the name is the python module name.
         """
-
         name = '%{name}'
         match = self.reg.re_python_sitelib_glob.match(line)
         if match:
@@ -104,13 +106,12 @@ class RpmFiles(Section):
                 # remove full path
                 name = Path(self.spec).name
                 # remove .spec
-                name = name[0:-len('.spec')]
+                name = name[0 : -len('.spec')]
                 # remove python prefix if exists
                 if name.startswith('python-'):
-                    name = name[len('python-'):]
+                    name = name[len('python-') :]
 
             macro = match.group('macro')
-            line = (f'{macro}/{name}\n'
-                    f'{macro}/{name}-%{{version}}*-info')
+            line = f'{macro}/{name}\n{macro}/{name}-%{{version}}*-info'
 
         return line

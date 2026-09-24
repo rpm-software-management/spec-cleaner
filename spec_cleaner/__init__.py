@@ -10,7 +10,7 @@ import argparse
 import os
 import sys
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from .rpmcleaner import RpmSpecCleaner
 from .rpmexception import RpmExceptionError, RpmWrongArgsError
@@ -18,7 +18,7 @@ from .rpmexception import RpmExceptionError, RpmWrongArgsError
 __version__ = '1.2.5'
 
 
-def process_args(argv: List[str]) -> Dict[str, Any]:
+def process_args(argv: list[str]) -> dict[str, Any]:
     """
     Parse and process commandline arguments.
 
@@ -56,10 +56,15 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         help='run the diff program to show differences between new and original specfile.',
     )
     parser.add_argument(
-        '--diff-prog', default='vimdiff', help='specify the diff binary to call with diff option.',
+        '--diff-prog',
+        default='vimdiff',
+        help='specify the diff binary to call with diff option.',
     )
     parser.add_argument(
-        '-f', '--force', action='store_true', help='overwrite the output file if already exist.',
+        '-f',
+        '--force',
+        action='store_true',
+        help='overwrite the output file if already exist.',
     )
     output_group.add_argument(
         '-i',
@@ -99,7 +104,10 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         help='year to insert into the copyright header when re-generating it',
     )
     output_group.add_argument(
-        '-o', '--output', default='', help='specify the output file for the cleaned spec content.',
+        '-o',
+        '--output',
+        default='',
+        help='specify the output file for the cleaned spec content.',
     )
     parser.add_argument(
         '-p',
@@ -126,7 +134,10 @@ def process_args(argv: List[str]) -> Dict[str, Any]:
         help='show package version and exit',
     )
     parser.add_argument(
-        '-k', '--keep-space', action='store_true', help='keep empty lines in preamble intact.',
+        '-k',
+        '--keep-space',
+        action='store_true',
+        help='keep empty lines in preamble intact.',
     )
 
     # print help if there is no argument

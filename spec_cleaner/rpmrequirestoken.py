@@ -1,10 +1,8 @@
-from typing import Optional
-
 from .rpmexception import RpmExceptionError
 from .rpmregexp import Regexp
 
 
-class RpmRequiresToken(object):
+class RpmRequiresToken:
     """
     Class containing information about the dependency token.
 
@@ -17,14 +15,14 @@ class RpmRequiresToken(object):
     BuildRequires:    boringpackage >=         5.2.8
     """
 
-    comments: Optional[str] = None
+    comments: str | None = None
 
     def __init__(
         self,
         name: str,
-        operator: Optional[str] = None,
-        version: Optional[str] = None,
-        prefix: Optional[str] = None,
+        operator: str | None = None,
+        version: str | None = None,
+        prefix: str | None = None,
     ) -> None:
         """Initialize class."""
         self.prefix = prefix
@@ -87,15 +85,11 @@ class RpmRequiresToken(object):
         self.name = self._format_name(self.name)
         if not self.prefix:
             raise RpmExceptionError(
-                'No defined prefix in RequiresToken: prefix "{0}" name "{1}" operator "{2}" version "{3}"'.format(
-                    self.prefix, self.name, self.operator, self.version
-                )
+                f'No defined prefix in RequiresToken: prefix "{self.prefix}" name "{self.name}" operator "{self.operator}" version "{self.version}"'
             )
         if not self.name:
             raise RpmExceptionError(
-                'No defined name in RequiresToken: prefix "{0}" name "{1}" operator "{2}" version "{3}"'.format(
-                    self.prefix, self.name, self.operator, self.version
-                )
+                f'No defined name in RequiresToken: prefix "{self.prefix}" name "{self.name}" operator "{self.operator}" version "{self.version}"'
             )
         string = self.prefix + self.name
         if (self.version and not self.operator) or (not self.version and self.operator):

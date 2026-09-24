@@ -8,6 +8,7 @@ class RpmBuild(RpmCheck):
     """A class providing methods for %build section cleaning."""
 
     def add(self, line: str) -> None:
+        """Process one line of the %build section."""
         # we do not want to run suseupdateconfig, deprecated
         if self.reg.re_suseupdateconfig.search(line):
             return

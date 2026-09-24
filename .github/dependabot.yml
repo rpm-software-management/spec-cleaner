@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Keep the pre-commit hook pins (ruff, mypy) up to date; each bump
+  # goes through CI before it can merge.
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  # Keep the GitHub Actions pins (checkout, setup-python, coveralls)
+  # up to date.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

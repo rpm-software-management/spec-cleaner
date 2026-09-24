@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import pytest
 
@@ -7,7 +6,7 @@ from spec_cleaner import RpmExceptionError
 from spec_cleaner.fileutils import open_datafile, open_stringio_spec
 
 
-class TestFileutils(object):
+class TestFileutils:
     """We run few tests to ensure fileutils class works fine."""
 
     def test_open_assertion(self):

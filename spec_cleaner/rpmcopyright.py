@@ -69,7 +69,8 @@ class RpmCopyright(Section):
             self.lines.append(self.vimmodeline)
 
     def add(self, line: str) -> None:
-        """Run the cleanup of the line.
+        """
+        Run the cleanup of the line.
 
         If we have no copyright header we actually should not touch it not
         wipe out, thus just add everything to known lines

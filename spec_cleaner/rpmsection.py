@@ -1,10 +1,10 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
-from typing import IO, Any, Dict, List, Optional
+from typing import IO, Any
 
 from .rpmregexp import Regexp
 
 
-class Section(object):
+class Section:
     """
     Basic object for parsing each section of spec file.
 
@@ -26,10 +26,10 @@ class Section(object):
         _condition_counter: An int for counting in how many (nested) condition we currently are.
     """
 
-    def __init__(self, options: Dict[str, Any]) -> None:
+    def __init__(self, options: dict[str, Any]) -> None:
         """Initialize variables."""
-        self.lines: List[str] = []
-        self.previous_line: Optional[str] = None
+        self.lines: list[str] = []
+        self.previous_line: str | None = None
         self.spec: str = options['specfile']
         self.minimal: bool = options['minimal']
         self.no_curlification: bool = options['no_curlification']
@@ -53,15 +53,17 @@ class Section(object):
         """
         line = line.rstrip()
         # remove nbsp for normal spaces
-        line = line.replace(u'\xa0', ' ')
+        line = line.replace('\xa0', ' ')
 
         if not line.startswith('#'):
             is_python_module = self.reg.re_python_module.match(line)
-            if (not self.minimal
-                    and not self.no_curlification
-                    # Do not embrace macros inside python_module
-                    # gh#rpm-software-management/spec-cleaner#321
-                    and not is_python_module):
+            if (
+                not self.minimal
+                and not self.no_curlification
+                # Do not embrace macros inside python_module
+                # gh#rpm-software-management/spec-cleaner#321
+                and not is_python_module
+            ):
                 line = self.embrace_macros(line)
             line = self.replace_buildroot(line)
             line = self.replace_optflags(line)

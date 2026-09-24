@@ -76,8 +76,6 @@ class RpmPrep(Section):
         # convert the %patch50 -p10 to %patch -P 50 -p10
         match = self.reg.re_patch_prep.match(line)
         if match:
-            line = self.strip_useless_spaces(
-                f'%patch -P {match.group(1)} {match.group(2)}'
-            )
+            line = self.strip_useless_spaces(f'%patch -P {match.group(1)} {match.group(2)}')
 
         return line
