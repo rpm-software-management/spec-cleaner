@@ -21,10 +21,10 @@ help you to achieve the easiest workflow:
 ```bash
 $ vi tests/in/myfeaturebug.spec
 *hackyhacky*
-$ spec-cleaner --no-header tests/in/myfeaturebug.spec > tests/out/myfeaturebug.spec
+$ spec-cleaner --pkgconfig --copyright-year 2013 tests/in/myfeaturebug.spec > tests/out/myfeaturebug.spec
 $ vi tests/out/myfeaturebug.spec
 *change any problematic part to what it should look like correctly*
-$ spec-cleaner --no-header -m tests/in/myfeaturebug.spec > tests/out-minimal/myfeaturebug.spec
+$ spec-cleaner --pkgconfig --copyright-year 2013 -m tests/in/myfeaturebug.spec > tests/out-minimal/myfeaturebug.spec
 $ vi tests/out-minimal/myfeaturebug.spec
 *change any problematic part to what it shoudl look like correctly*
 ```
