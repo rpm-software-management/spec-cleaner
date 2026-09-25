@@ -289,6 +289,13 @@ class RpmPreambleElements:
                         results[index] = element
                         match = True
                         break
+                    # existing one specifies version, the new one is subsumed
+                    # by it no matter in which order they were written
+                    if item.version and not element.version:
+                        if element.comments:
+                            item.comments = (item.comments or '') + element.comments
+                        match = True
+                        break
                     # for version determination which could be ommited one
                     # must use rpm versionCompare to get same results
                     # unfortunately it uses too many resources so we simply
