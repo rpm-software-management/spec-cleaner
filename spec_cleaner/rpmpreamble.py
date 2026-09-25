@@ -60,6 +60,9 @@ class RpmPreamble(Section):
         self._condition_define = False
         # Is the condition based probably on bcond evaluation
         self._condition_bcond = False
+        # Stack for _condition_bcond to prevent nested blocks from
+        # contaminating outer blocks.
+        self._bcond_stack = []
         # Is the condition based on the pattern
         self._pattern_condition = False
         # How many multi-line %{?cond: ... } blocks are currently open, so we
@@ -143,6 +146,9 @@ class RpmPreamble(Section):
         """Backup the paragraph and start a new one."""
         self._oldstore.append(self.paragraph)
         self.paragraph = RpmPreambleElements(self.options)
+        # Save the bcond flag for the outer block; the new block's flag
+        # was already set when its %if line was parsed.
+        self._bcond_stack.append(self._condition_bcond)
 
     def _prune_ppc_condition(self):
         """Check if we have ppc64 obsolete and delete it."""
@@ -238,7 +244,11 @@ class RpmPreamble(Section):
         else:
             nested = True
         lines = self.paragraph.flatten_output(False, nested)
-        if len(self.paragraph.items['define']) > 0 or len(self.paragraph.items['bconds']) > 0:
+        # Track whether the sub block defines bconds (for placement).
+        # This is based on the sub's content, not the parent's state.
+        sub_has_bconds = len(self.paragraph.items['bconds']) > 0
+        sub_has_defines = len(self.paragraph.items['define']) > 0
+        if sub_has_defines or sub_has_bconds:
             self._condition_define = True
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph.items['conditions'] += lines
@@ -254,6 +264,10 @@ class RpmPreamble(Section):
                 # the switches do not have any effect
                 if self._condition_bcond:
                     self.paragraph.items['bcond_conditions'] += self.paragraph.items['conditions']
+                elif sub_has_bconds and not sub_has_defines:
+                    # Block defining only bconds (no defines) goes with bcond
+                    # definitions, regardless of parent's define content.
+                    self.paragraph.items['bconds'] += self.paragraph.items['conditions']
                 elif len(self.paragraph.items['define']) == 0:
                     self.paragraph.items['bconds'] += self.paragraph.items['conditions']
                 else:
@@ -268,10 +282,15 @@ class RpmPreamble(Section):
                 else:
                     self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
 
-            # bcond must be reseted when on top and can be set even outside of the
-            # define scope. So reset it here always
-            if len(self._oldstore) == 0:
+            # Restore the outer block's bcond flag from the stack.
+            # This prevents nested bcond conditionals from contaminating
+            # the placement of outer blocks.
+            if self._bcond_stack:
+                self._condition_bcond = self._bcond_stack.pop()
+            elif len(self._oldstore) == 0:
                 self._condition_bcond = False
+            # pattern condition reset (only at top level, as before)
+            if len(self._oldstore) == 0:
                 self._pattern_condition = False
             self.paragraph.items['conditions'] = []
 
@@ -389,6 +408,12 @@ class RpmPreamble(Section):
             self._add_line_to(category, line)
 
     def _add_line_to(self, category, line):
+        # Head/tail macros (e.g. %python_subpackages) inside a conditional
+        # must stay with their %if/%endif wrapper. Routing them to
+        # 'conditions' keeps the block atomic; otherwise the macro escapes
+        # to the top-level tail and the output is not idempotent.
+        if category in ('head', 'tail') and self.condition:
+            category = 'conditions'
         if self.paragraph.current_group:
             if isinstance(line, RpmRequiresToken):
                 line.comments = self.paragraph.current_group
