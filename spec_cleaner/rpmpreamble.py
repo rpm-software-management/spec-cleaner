@@ -531,12 +531,21 @@ class RpmPreamble(Section):
             secure_source_available = False
 
             # expand the spec file to get URLs that can be checked
-            spec = pyrpm.spec.Spec.from_file(self.options['specfile'])
-            for s in spec.sources:
-                if s == source:
-                    expanded_source_url = pyrpm.spec.replace_macros(s, spec)
-                    if self._make_secure_url(expanded_source_url) != expanded_source_url:
-                        secure_source_available = True
+            # (best-effort: pyrpm chokes on some valid spec files)
+            try:
+                spec = pyrpm.spec.Spec.from_file(self.options['specfile'])
+
+                # source was already embraced during cleanup; embrace pyrpm's
+                # raw value for comparison so %name and %{name} match.
+                for s in spec.sources:
+                    if self.embrace_macros(s) == source:
+                        expanded_source_url = pyrpm.spec.replace_macros(s, spec)
+                        if self._make_secure_url(expanded_source_url) != expanded_source_url:
+                            secure_source_available = True
+            except Exception:
+                # On pyrpm failure, continue with normal Source handling;
+                # only the HTTPS availability enhancement is skipped.
+                pass
 
             if not self.minimal:
                 source = self._fix_pypi_source(source)
