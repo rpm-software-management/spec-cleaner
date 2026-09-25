@@ -11,11 +11,17 @@ class RpmScriptlets(Section):
     Do %post -p /sbin/ldconfig when only scriplet command is /sbin/ldconfig.
     """
 
+    shell_section = True
+
     def add(self, line: str) -> None:
         """Run the cleanup of the line."""
         line = self._complete_cleanup(line)
         line = self._remove_deprecated_ldconfig(line)
         Section.add(self, line)
+
+    def replace_buildroot(self, line: str) -> str:
+        """Keep $RPM_BUILD_ROOT, it is empty at install time while %{buildroot} is the build path."""
+        return line
 
     def _remove_deprecated_ldconfig(self, line: str) -> str:
         """
@@ -27,7 +33,7 @@ class RpmScriptlets(Section):
         Returns:
             The processed line.
         """
-        line = self.reg.re_ldconfig.sub('/sbin/ldconfig', line)
+        line = self.reg.re_ldconfig.sub(r'\1/sbin/ldconfig\3', line)
         return line
 
     def output(self, fout: IO[str], newline: bool = True, new_class_name: str = '') -> None:
@@ -51,5 +57,8 @@ class RpmScriptlets(Section):
         if len(self.lines) == 2:
             if self.lines[1] == '/sbin/ldconfig':
                 pkg = self.lines[0]
+                # -p after '--' would be read as a trigger condition; keep an existing -p
+                if '--' in pkg.split() or '-p' in pkg.split():
+                    return
                 self.lines = []
                 self.lines.append(f'{pkg} -p /sbin/ldconfig')

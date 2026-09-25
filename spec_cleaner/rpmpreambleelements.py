@@ -22,6 +22,7 @@ class RpmPreambleElements:
         'name': 'Name',
         'version': 'Version',
         'release': 'Release',
+        'epoch': 'Epoch',
         'license': 'License',
         'summary': 'Summary',
         # The localized summary can contain various values, so it can't be here
@@ -60,6 +61,8 @@ class RpmPreambleElements:
         'name',
         'version',
         'release',
+        'epoch',
+        'nvr_conditions',
         # %global lines that reference macros defined by the preamble tags
         # above; they cannot be hoisted to the top as %global expands
         # immediately (#239)
@@ -103,6 +106,8 @@ class RpmPreambleElements:
         'build_conditions',
         'conditions',
         'tail',
+        # a block whose %endif follows the next section header
+        'open_conditions',
     )
 
     # categories that are sorted based on value in them
@@ -139,9 +144,8 @@ class RpmPreambleElements:
         self.minimal = options['minimal']
         # regexp object
         self.reg = options['reg']
-        # whether the %lang_package macro is used in the specfile; it
-        # generates Supplements for the -lang subpackage (#273)
-        self.lang_package = options.get('lang_package', False)
+        # the main package's own -lang subpackage if the %lang_package macro generates it
+        self.lang_package = options.get('lang_package', set()) & {'%{name}-lang'}
         # pkgconfig requirement detection
         self.br_pkgconfig_required = False
         # license string
@@ -165,10 +169,7 @@ class RpmPreambleElements:
 
         # Special case is the category grouping where we have to get the number in
         # after the value
-        if self.reg.re_patch.match(key):
-            match = self.reg.re_patch.match(key)
-            key = int(match.group(2))
-        elif self.reg.re_source.match(key):
+        if self.reg.re_source.match(key):
             match = self.reg.re_source.match(key)
             value = match.group(1)
             if not value:
@@ -182,6 +183,18 @@ class RpmPreambleElements:
         else:
             key = '1' + key
         return key
+
+    def _sort_patches(self, patches):
+        """Sort patches by number, an unnumbered Patch keeps the number rpm assigns it."""
+        numbered = []
+        last = -1
+        for patch in patches:
+            match = self.reg.re_patch.match(str(patch[-1] if isinstance(patch, list) else patch))
+            # rpm numbers it after the highest patch number above it
+            number = int(match.group(2)) if match.group(2) else last + 1
+            last = max(last, number)
+            numbered.append((number, patch))
+        return [patch for _, patch in sorted(numbered, key=lambda pair: pair[0])]
 
     def _insert_value(self, category, value, key=None):
         """Add value to specified keystore."""
@@ -291,9 +304,14 @@ class RpmPreambleElements:
                         break
                     # existing one specifies version, the new one is subsumed
                     # by it no matter in which order they were written
-                    if item.version and not element.version:
+                    # (not for Provides/Obsoletes, where unversioned means every version)
+                    if (
+                        item.version
+                        and not element.version
+                        and not item.prefix.startswith(('Provides', 'Obsoletes'))
+                    ):
                         if element.comments:
-                            item.comments = (item.comments or '') + element.comments
+                            item.comments = (item.comments or []) + element.comments
                         match = True
                         break
                     # for version determination which could be ommited one
@@ -349,12 +367,15 @@ class RpmPreambleElements:
         return key
 
     def _is_own_lang_package(self, dep_name, package_name):
-        """Check if a dependency name references this spec's -lang subpackage."""
-        # macro form: %{name}-lang, %name-lang, %{_name}-lang, ...
-        if self.reg.re_lang_package_dep.match(dep_name):
+        """Check if a dependency name references a -lang subpackage of %lang_package."""
+        if self.reg.re_macro_spelling.sub(r'%{\1}', dep_name) in self.lang_package:
             return True
         # literal form, e.g. Recommends: foo-lang in foo.spec
-        return bool(package_name) and dep_name == f'{package_name}-lang'
+        return (
+            '%{name}-lang' in self.lang_package
+            and bool(package_name)
+            and dep_name == f'{package_name}-lang'
+        )
 
     def _prune_lang_recommends(self):
         """
@@ -364,7 +385,7 @@ class RpmPreambleElements:
         Recommends on it is redundant (#273). Without the macro (e.g. vlc)
         nothing else pulls the lang package in, so the line must stay.
         """
-        if not self.lang_package:
+        if self.minimal or not self.lang_package:
             return
         package_name = None
         for group in self.items['name']:
@@ -390,56 +411,191 @@ class RpmPreambleElements:
                 kept.append(group)
         self.items['recommends'] = kept
 
-    def _split_late_globals(self):
+    def _macro_references(self, line):
+        """List the macros the line references, the with_ switch for %{with ...} included."""
+        return self.reg.re_macro_reference.findall(line) + [
+            'with_' + name for name in self.reg.re_bcond_reference.findall(line)
+        ]
+
+    def _bcond_switch(self, line):
+        """List the with_ switch the %bcond line defines."""
+        match = self.reg.re_bcond_with.match(line)
+        if match and match.group(3).split():
+            return ['with_' + match.group(3).split()[0]]
+        return []
+
+    def _macro_definitions(self, line):
+        """List the macros the line defines, the with_ switch for a %bcond included."""
+        return self.reg.re_macro_definition.findall(line) + self._bcond_switch(line)
+
+    def _late_global_units(self, groups, bcond_macros=()):
         """
-        Move %global lines below the Version/Release tags when needed.
+        Group the define lines into units, flagging the ones to keep below the tags.
+
+        A unit is a single line, a multiline macro or a whole %if block, so
+        that moving it never breaks it apart. A unit is late when one of its
+        globals references %name, %version, %release or %epoch, when one of
+        its globals or conditions references a late macro, or when it
+        redefines one. The macros a unit defines are late when it is late or
+        references those tags or late macros, as a lazy %define that stays
+        hoisted passes the dependency on to the globals using it.
+        Likewise a unit must follow the bconds when one of its globals or
+        conditions reads a bcond or a macro depending on one, or when it
+        redefines a macro moved below the bconds.
+        """
+        units = []
+        depth = 0
+        cond_braces = 0
+        continuing = expand = run_global = cond_continuing = False
+        expand_depth = 0
+        for group in groups:
+            line = add_group(group)[-1]
+            if not (depth or continuing):
+                units.append([])
+            is_global = is_cond = is_eager = False
+            # follows the multiline and condition parsing of RpmPreamble.add
+            if cond_continuing:
+                is_cond = is_eager = True
+            elif continuing:
+                is_global = is_eager = run_global
+                if expand:
+                    expand_depth += line.count('{') - line.count('}')
+                    continuing = expand_depth > 0
+                else:
+                    continuing = line.endswith('\\')
+            elif self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
+                depth += 1
+                is_cond = is_eager = True
+            elif self.reg.re_multilinecond.match(line):
+                depth += 1
+                cond_braces += 1
+                is_cond = is_eager = True
+            elif depth and (self.reg.re_endif.match(line) or self.reg.re_endcodeblock.match(line)):
+                depth -= 1
+            elif cond_braces and self.reg.re_endmultilinecond.match(line):
+                depth -= 1
+                cond_braces -= 1
+            elif self.reg.re_else_elif.match(line):
+                is_cond = is_eager = True
+            elif (
+                self.reg.re_define.match(line)
+                or self.reg.re_global.match(line)
+                or self.reg.re_onelinecond.match(line)
+            ):
+                is_global = bool(self.reg.re_global.match(line)) or (
+                    bool(self.reg.re_onelinecond.match(line)) and '%global' in line
+                )
+                run_global = is_global
+                # a one-line condition is evaluated when parsed, even around %define
+                is_eager = is_global or bool(self.reg.re_onelinecond.match(line))
+                expand_depth = line.count('{') - line.count('}')
+                expand = '%{expand:' in line and expand_depth > 0
+                continuing = line.endswith('\\') or expand
+            cond_continuing = is_cond and line.endswith('\\')
+            units[-1].append((group, line, is_global, is_cond, is_eager))
+
+        late_names = set()
+        bcond_names = set(bcond_macros)
+        moved_names = set()
+        flagged = []
+        for unit in units:
+            definitions = [
+                name for _, line, _, _, _ in unit for name in self._macro_definitions(line)
+            ]
+            # a redefinition must stay below the definition it overrides
+            late = bool(late_names.intersection(definitions))
+            after_bconds = bool(moved_names.intersection(definitions))
+            tainted = bcond_tainted = False
+            for _, line, is_global, is_cond, is_eager in unit:
+                references = self._macro_references(line)
+                sensitive = bool(self.reg.re_global_order_sensitive.search(line))
+                reads_late = bool(late_names.intersection(references))
+                if (is_global and sensitive) or ((is_global or is_cond) and reads_late):
+                    late = True
+                if sensitive or reads_late:
+                    tainted = True
+                if '%{with' in line or bcond_names.intersection(references):
+                    bcond_tainted = True
+                    if is_eager:
+                        after_bconds = True
+            if tainted or late:
+                late_names.update(definitions)
+            if bcond_tainted or after_bconds:
+                bcond_names.update(definitions)
+            if after_bconds:
+                moved_names.update(definitions)
+            flagged.append(([group for group, _, _, _, _ in unit], late, after_bconds))
+        return flagged
+
+    def has_late_globals(self, groups):
+        """Check if any of the define groups must stay below the preamble tags."""
+        return any(late for _, late, _ in self._late_global_units(groups))
+
+    def reads_late_macros(self, block):
+        """Check if the block after the defines reads a macro kept below the tags."""
+        return bool(block) and self._late_global_units(self.items['define'] + block)[-1][1]
+
+    def reads_moved_macros(self, block):
+        """Check if the block after the defines reads a macro kept below the tags or bconds."""
+        _, late, after_bconds = self._late_global_units(
+            self.items['define'] + block, self._bcond_macros()
+        )[-1]
+        return late or after_bconds
+
+    def _bcond_macros(self):
+        """Collect the with_ switches of the bconds and the macros defined below them."""
+        names = set()
+        for category in ('define', 'bconds', 'bcond_conditions'):
+            for group in self.items[category]:
+                for line in add_group(group):
+                    names.update(self._bcond_switch(line))
+                    # the define blocks placed with the bconds precede all the other defines
+                    if category != 'define':
+                        names.update(self.reg.re_macro_definition.findall(line))
+        return names
+
+    def _split_late_globals(self, nested):
+        """
+        Move the define units below the Version/Release tags or the bconds when needed.
 
         %global expands its value immediately, so a global referencing macros
         that rpm defines while parsing the preamble tags (%name, %version,
-        %release, %epoch) breaks when hoisted above those tags (#239).
-        %define is lazy and stays hoisted at the top.
-
-        When at least one such global is present, move all globals as one
-        block to keep their relative order: a plain global can reference
-        another global that references %version.
-
-        Globals inside conditional blocks are left alone: moving them would
-        separate them from their %if/%endif wrappers and corrupt the
-        conditional.
+        %release, %epoch) breaks when hoisted above those tags (#239), and one
+        reading a bcond breaks when hoisted above the %bcond lines. Such a
+        global moves with its whole unit (see _late_global_units), any %define
+        in it included. Everything else stays hoisted at the top, and so do
+        the units defining macros the tags use, with the units those depend on.
+        Nested %if blocks move whole, so only a level holding the tags or the
+        bconds splits.
         """
-        flagged = []
-        sensitive_found = False
-        cond_depth = 0
-        for group in self.items['define']:
-            lines = add_group(group)
-            code_line = lines[-1]
-            # Track conditional nesting to avoid moving conditional globals.
-            # A group may contain multiple lines (e.g. a flattened block).
-            for line in lines:
-                stripped = line.strip() if isinstance(line, str) else str(line).strip()
-                if stripped.startswith('%if') and not stripped.startswith('%endif'):
-                    # %if, %ifarch, %ifnarch, etc. (but not %endif)
-                    # Note: %else does not change depth
-                    if stripped.split()[0] in ('%if', '%ifarch', '%ifnarch', '%ifos', '%ifnarch'):
-                        cond_depth += 1
-                elif stripped.startswith('%endif'):
-                    cond_depth = max(0, cond_depth - 1)
-            is_global = bool(self.reg.re_global.match(code_line)) or (
-                bool(self.reg.re_onelinecond.match(code_line)) and '%global' in code_line
-            )
-            # Only consider top-level globals for moving; conditional globals
-            # stay with their wrappers.
-            if (
-                is_global
-                and cond_depth == 0
-                and self.reg.re_global_order_sensitive.search(code_line)
-            ):
-                sensitive_found = True
-            flagged.append((group, is_global and cond_depth == 0))
-        if not sensitive_found:
-            return
-        self.items['define'] = [group for group, is_global in flagged if not is_global]
-        self.items['global_late'] = [group for group, is_global in flagged if is_global]
+        flagged = self._late_global_units(self.items['define'], self._bcond_macros())
+        needed = {
+            name
+            for category in ('head', 'name', 'version', 'release', 'epoch', 'nvr_conditions')
+            for group in self.items[category]
+            for line in add_group(group)
+            for name in self._macro_references(str(line))
+        }
+        # dependencies precede their users, so one backward pass collects them all
+        for index in reversed(range(len(flagged))):
+            unit, _, after_bconds = flagged[index]
+            lines = [add_group(group)[-1] for group in unit]
+            definitions = [name for line in lines for name in self._macro_definitions(line)]
+            if needed.intersection(definitions):
+                flagged[index] = (unit, False, after_bconds)
+                needed.update(name for line in lines for name in self._macro_references(line))
+        has_tags = any(
+            self.items[i] for i in ('name', 'version', 'release', 'epoch', 'nvr_conditions')
+        )
+        has_bconds = any(self.items[i] for i in ('bconds', 'bcond_conditions'))
+        self.items['define'] = []
+        for unit, late, after_bconds in flagged:
+            if late and (has_tags or not nested):
+                self.items['global_late'] += unit
+            elif after_bconds and (has_bconds or not nested):
+                self.items['bcond_conditions'] += unit
+            else:
+                self.items['define'] += unit
 
     def flatten_output(self, needs_license=False, nested=False):
         """Do the finalized output for the itemlist."""
@@ -447,7 +603,7 @@ class RpmPreambleElements:
         elements = []
 
         # add license to the package if missing and needed
-        if needs_license and not self.items['license']:
+        if needs_license and self.license and not self.items['license']:
             self.license = fix_license(self.license, self.license_conversions)
             self._insert_value('license', self.license)
         # add pkgconfig dep
@@ -458,18 +614,18 @@ class RpmPreambleElements:
         # drop Recommends on the -lang subpackage, the %lang_package macro
         # already generates Supplements for it (#273)
         self._prune_lang_recommends()
-        # keep version-dependent globals below the preamble tags (#239)
-        # Skip for nested blocks: globals inside conditionals must stay with
-        # their wrappers, otherwise the conditional is corrupted.
-        if not nested:
-            self._split_late_globals()
+        # keep version-dependent globals below the tags (#239) and bcond readers below the bconds
+        self._split_late_globals(nested)
         for i in self.categories_order:
             sorted_list = []
             if i in self.categories_with_sorted_package_tokens:
                 self.items[i].sort(key=self._sort_helper_key)
             # sort-out within the ordered groups based on the key
             if i in self.categories_with_sorted_keyword_tokens:
-                self.items[i].sort(key=self._sort_helper_key)
+                if i == 'patch':
+                    self.items[i] = self._sort_patches(self.items[i])
+                else:
+                    self.items[i].sort(key=self._sort_helper_key)
                 self.items[i] = sort_uniq(self.items[i])
             # flatten the list from list of lists as no reordering is planned
             for group in self.items[i]:

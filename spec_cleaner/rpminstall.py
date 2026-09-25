@@ -11,6 +11,8 @@ class RpmInstall(Section):
     Replace %makeinstall (suse-ism).
     """
 
+    shell_section = True
+
     def add(self, line: str) -> None:
         """Process one line of the %install section."""
         line = self._complete_cleanup(line)
@@ -58,8 +60,18 @@ class RpmInstall(Section):
         Return:
             The processed line.
         """
-        if (self.reg.re_rm.search(line) and len(self.reg.re_rm_double.split(line)) == 1) or (
-            self.reg.re_find.search(line) and len(self.reg.re_find_double.split(line)) == 2
+        if line.lstrip().startswith('#'):
+            return line
+        # rewriting an rm line would drop any operand that is not a .la glob
+        operands = [t for t in line.split()[1:] if not t.startswith('-')]
+        la_only = all(t.endswith(('*.la', '*.la;')) for t in operands)
+        if (
+            self.reg.re_rm.search(line) and len(self.reg.re_rm_double.split(line)) == 1 and la_only
+        ) or (
+            self.reg.re_find.search(line)
+            and len(self.reg.re_find_double.split(line)) == 2
+            and self.reg.re_find_delete.search(line)
+            and not self.reg.re_find_branch.search(line)
         ):
             line = 'find %{buildroot} -type f -name "*.la" -delete -print'
         return line

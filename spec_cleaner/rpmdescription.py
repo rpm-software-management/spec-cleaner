@@ -23,17 +23,23 @@ class RpmDescription(Section):
 
     def add(self, line: str) -> None:
         """Process one line of the %description section."""
-        if self.previous_line and len(line) > 0 and line[0] == '%':
+        line = line.rstrip()
+        if self.previous_line is not None and len(line) > 0 and line[0] == '%':
             self.unknown_line = True
 
         if self.removing_authors and not self.unknown_line:
-            return
+            if line:
+                return
+            # a blank line ends the Authors block, drop it if nothing was kept before the block
+            self.removing_authors = False
+            if self.previous_line and self.reg.re_spec_description.match(self.previous_line):
+                return
 
         if len(line) == 0:
             if not self.previous_line or len(self.previous_line) == 0:
                 return
 
-        if self.reg.re_authors.match(line) and not self.minimal:
+        if not self.unknown_line and self.reg.re_authors.match(line) and not self.minimal:
             self.removing_authors = True
             return
 

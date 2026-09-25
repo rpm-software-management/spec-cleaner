@@ -13,17 +13,23 @@ class Regexp:
     # section macros
     re_spec_package = re.compile(r'^%package(\s+|$)', re.IGNORECASE)
     re_spec_description = re.compile(r'^%description(\s+|$)', re.IGNORECASE)
-    re_spec_prep = re.compile(r'^%prep\s*$', re.IGNORECASE)
-    re_spec_build = re.compile(r'^%build\s*$', re.IGNORECASE)
-    re_spec_install = re.compile(r'^%install\s*$', re.IGNORECASE)
-    re_spec_clean = re.compile(r'^%clean\s*$', re.IGNORECASE)
-    re_spec_check = re.compile(r'^%check\s*$', re.IGNORECASE)
+    re_spec_prep = re.compile(r'^%prep(\s+-[ap])?\s*$', re.IGNORECASE)
+    re_spec_build = re.compile(r'^%build(\s+-[ap])?\s*$', re.IGNORECASE)
+    re_spec_install = re.compile(r'^%install(\s+-[ap])?\s*$', re.IGNORECASE)
+    re_spec_clean = re.compile(r'^%clean(\s+-[ap])?\s*$', re.IGNORECASE)
+    re_spec_check = re.compile(r'^%check(\s+-[ap])?\s*$', re.IGNORECASE)
+    re_spec_conf = re.compile(r'^%conf(\s+-[ap])?\s*$', re.IGNORECASE)
+    re_spec_generate_buildrequires = re.compile(
+        r'^%generate_buildrequires(\s+-[ap])?\s*$', re.IGNORECASE
+    )
+    re_spec_sourcelist = re.compile(r'^%sourcelist\s*$', re.IGNORECASE)
+    re_spec_patchlist = re.compile(r'^%patchlist\s*$', re.IGNORECASE)
     re_spec_scriptlets = re.compile(
-        r'(?:^%pretrans(\s+|$))|(?:^%pre(\s+|$))|(?:^%post(\s+|$))|(?:^%verifyscript(\s+|$))|(?:^%preun(\s+|$))|(?:^%postun(\s+|$))|(?:^%posttrans(\s+|$))',
+        r'(?:^%pretrans(\s+|$))|(?:^%pre(\s+|$))|(?:^%post(\s+|$))|(?:^%verifyscript(\s+|$))|(?:^%preun(\s+|$))|(?:^%postun(\s+|$))|(?:^%posttrans(\s+|$))|(?:^%preuntrans(\s+|$))|(?:^%postuntrans(\s+|$))',
         re.IGNORECASE,
     )
     re_spec_triggers = re.compile(
-        r'(?:^%filetriggerin(\s+|$))|(?:^%filetriggerun(\s+|$))|(?:^%filetriggerpostun(\s+|$))|(?:^%transfiletriggerin(\s+|$))|(?:^%transfiletriggerun(\s+|$))|(?:^%transfiletriggerpostun(\s+|$))',
+        r'(?:^%trigger(?:in|un|postun|prein)(\s+|$))|(?:^%filetriggerin(\s+|$))|(?:^%filetriggerun(\s+|$))|(?:^%filetriggerpostun(\s+|$))|(?:^%transfiletriggerin(\s+|$))|(?:^%transfiletriggerun(\s+|$))|(?:^%transfiletriggerpostun(\s+|$))',
         re.IGNORECASE,
     )
     re_spec_files = re.compile(r'^%files(\s+|$)', re.IGNORECASE)
@@ -35,14 +41,12 @@ class Regexp:
         r'^\s*(?:%{?if\s|%{?ifarch\s|%{?ifnarch\s|%{?if\S*}?(\s.*|)$)', re.IGNORECASE
     )
     re_codeblock = re.compile(
-        r'^\s*((### COMMON-([a-zA-Z0-9]+)-BEGIN ###|# MANUAL BEGIN|# SECTION)(\s.*|)|# MANUAL)$',
-        re.IGNORECASE,
+        r'^\s*((### COMMON-([a-zA-Z0-9]+)-BEGIN ###|# MANUAL BEGIN|# SECTION)(\s.*|)|# MANUAL)$'
     )
-    re_else_elif = re.compile(r'^\s*%(else|elif)(\s.*|)$', re.IGNORECASE)
+    re_else_elif = re.compile(r'^\s*%(else|elif(arch|os)?)(\s.*|)$', re.IGNORECASE)
     re_endif = re.compile(r'^\s*%endif(\s.*|)$', re.IGNORECASE)
     re_endcodeblock = re.compile(
-        r'^\s*(### COMMON-([a-zA-Z0-9]+)-END ###|# MANUAL END|# /MANUAL|# (END|/)SECTION)(\s.*|)$',
-        re.IGNORECASE,
+        r'^\s*(### COMMON-([a-zA-Z0-9]+)-END ###|# MANUAL END|# /MANUAL|# (END|/)SECTION)(\s.*|)$'
     )
     re_name = re.compile(r'^Name:\s*(\S*)', re.IGNORECASE)
     re_version = re.compile(r'^Version:\s*(.*)', re.IGNORECASE)
@@ -85,12 +89,14 @@ class Regexp:
     re_global = re.compile(r'^\s*%global\s*(.*)', re.IGNORECASE)
     # %lang_package macro invocation; generates Supplements for the -lang
     # subpackage, making a manual Recommends on it redundant (#273)
-    re_lang_package = re.compile(r'^\s*%lang_package(\s|$)', re.IGNORECASE)
-    # a dependency name referencing a lang package through a macro,
-    # e.g. %{name}-lang, %name-lang or %{_name}-lang
-    re_lang_package_dep = re.compile(r'^%\{?[_a-zA-Z][\w]*\}?-lang$', re.IGNORECASE)
-    re_bcond_with = re.compile(r'^\s*%bcond_with(out)?\s*(.*)', re.IGNORECASE)
-    re_autoreqprov = re.compile(r'^\s*AutoReqProv:.*$', re.IGNORECASE)
+    re_lang_package = re.compile(r'^\s*%(?:lang_package(\s|$)|\{\??lang_package\})', re.IGNORECASE)
+    # the -n argument of %lang_package, which names the lang subpackage <arg>-lang
+    re_lang_package_name = re.compile(r'\s-n\s*(\S+)')
+    # a macro spelled %x, %{x} or %{?x}, to be compared as %{x}
+    re_macro_spelling = re.compile(r'%\{?\??(\w+)\}?')
+    re_bcond_with = re.compile(r'^\s*%bcond(_with(out)?)?\b\s*(.*)', re.IGNORECASE)
+    # only the default value is redundant, AutoReqProv: no changes the dependencies
+    re_autoreqprov = re.compile(r'^\s*AutoReqProv:\s*(on|yes|true|1)\s*$', re.IGNORECASE)
     re_debugpkg = re.compile(r'^%{?(debug_package|___debug_install_post)}?\s*$', re.IGNORECASE)
     re_py_requires = re.compile(r'^%{?\??py_requires}?\s*$', re.IGNORECASE)
     re_mingw = re.compile(r'^\s*%{?_mingw.*$', re.IGNORECASE)
@@ -127,15 +133,23 @@ class Regexp:
         r'%(?:\{(name|version|release|epoch)\}|(name|version|release|epoch)(?![\w]))',
         re.IGNORECASE,
     )
+    # names of the macros a line references and of the ones it defines
+    re_macro_reference = re.compile(r'%\{?[!?]*(\w+)')
+    re_macro_definition = re.compile(r'%(?:global|define)\s+(\w+)', re.IGNORECASE)
+    # %{with foo} and %{without foo} read the with_foo switch of a bcond
+    re_bcond_reference = re.compile(r'%\{with(?:out)?\s+(\w+)\}')
     # Special bracketed deps dection
     re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')
     re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')
-    # packageand(pkg1:pkg2)
-    re_packageand = re.compile(r'^packageand\(\s*(\S+)\s*:\s*(\S+)\s*\)\s*$')
+    # packageand(pkg1:pkg2) only; a ':' inside an operand makes longer forms ambiguous to split
+    re_packageand = re.compile(r'^packageand\(\s*([^:\s]+)\s*:\s*([^:\s]+)\s*\)\s*$')
     # otherproviders(foo)
     re_otherproviders = re.compile(r'^otherproviders\(\s*(\S+)\s*\)\s*$')
     re_pypi_type = re.compile(r'^/packages/(?P<type>[\w|.]+)')
-    re_pypi_modname = re.compile(r'^(?P<pkgname>[\w\.\_\-+]+|%{?\w+}?)\-(%{?\w+}?|[\d\.]+)')
+    re_pypi_hashed = re.compile(r'^/packages/[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{60}/')
+    # '%' is a plain name character and a brace must close, so a name splits only one way
+    re_pypi_modname = re.compile(r'^(?P<pkgname>(?:[\w.\-+%]|\{\w+\})+)\-(%{?\w+}?|[\d\.]+)')
+    re_modname_define = re.compile(r'^%(?:define|global)\s+modname\s+(\S+)\s*$')
 
     # rpmdescription
     re_authors = re.compile(r'^\s*Author(s)?:\s*')
@@ -144,29 +158,38 @@ class Regexp:
     re_jobs = re.compile(r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?')
     re_make = re.compile(r'(^\s*)make(\s.*|)$')
     re_make_build = re.compile(r'(^\s*)%make_build(\s.*|)$')
-    re_optflags_quotes = re.compile(r'=\s*\${?RPM_OPT_FLAGS}?\s*$')
-    re_optflags = re.compile(r'\${?RPM_OPT_FLAGS}?')
+    # mid-line only as a shell assignment; 'VAR = $RPM_OPT_FLAGS ...' is Makefile or heredoc text
+    re_optflags_quotes = re.compile(
+        r'=\s*\$(?:RPM_OPT_FLAGS\b|\{RPM_OPT_FLAGS\})$'
+        r'|(?<=[\w+])=\$(?:RPM_OPT_FLAGS\b|\{RPM_OPT_FLAGS\})(?=[\s;&|)])'
+    )
+    re_optflags = re.compile(r'\$(?:RPM_OPT_FLAGS\b|\{RPM_OPT_FLAGS\})')
     re_suseupdateconfig = re.compile(r'%{?\??suse_update_config')
     re_configure = re.compile(r'(^|(.*\s)?)./configure(\s.*|)$')
     re_cmake = re.compile(r'(^|(.*\s)?)cmake(\s.*|)$')
     re_qmake5 = re.compile(r'(^|(.*\s)?)qmake-qt5(\s.*|)$')
     re_meson = re.compile(r'(^|(.*\s)?)meson(\s.*|)$')
     re_pytest = re.compile(
-        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?'
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(?:-v|-o addopts=-v)(?=\s|$))?'
     )
     re_pytest_arch = re.compile(
-        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(-v|-o addopts=-v))?'
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(?:-v|-o addopts=-v)(?=\s|$))?'
     )
+    # 'discover' is dropped only when plain 'python -m unittest' would discover the same way
     re_pyunittest = re.compile(
-        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?-m\s+unittest(\s+discover)?'
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?-m\s+unittest(\s+discover(?=(?:\s+-v)?\s*$))?'
     )
     re_pyunittest_arch = re.compile(
-        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?-m\s+unittest(\s+discover)?'
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?-m\s+unittest(\s+discover(?=(?:\s+-v)?\s*$))?'
     )
     re_python_expand = re.compile(
-        r'%{?(python_sitelib|python_sitearch|python_bin_suffix|python_version)}?'
+        r'%(\{)?(python_sitelib|python_sitearch|python_bin_suffix|python_version)(?(1)\}|(?!\w))'
     )
-    re_python_interp_expand = re.compile(r'\s+(python)\s+')
+    # the interpreter, not a 'python' argument such as a directory name
+    re_python_interp_expand = re.compile(
+        r'(^%\{?python_expand\s+(?:\w+=\S*\s+)*|[;&|(]\s*)python(?=\s)'
+        r'|(?<=\s)python(?=\s+(?:-|\S*\.py\b))'
+    )
     re_python_module = re.compile(r'.*\s%{(prefixed_)?python_module\s.*}')
 
     # rpmcopyright
@@ -200,17 +223,19 @@ class Regexp:
     re_skipcleaner = re.compile(r'^#\s*nospeccleaner\s*$', re.IGNORECASE)
 
     # rpminstall
-    re_clean = re.compile(r'rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?$')
+    re_clean = re.compile(r'(^|[\s;&|(])rm\s+[-\w ]*"?(%{buildroot}|\$b)"?$')
     re_install = re.compile(
         r'{0}*(%{{makeinstall}}|make{0}+install){0}*$'.format(
             r'(DESTDIR=%{buildroot}|%{\?_smp_mflags}|\s|V=1|VERBOSE=1|-j\d+)'
         )
     )
-    re_rm = re.compile(r'rm\s+(-?\w?\ ?)*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.*\*\.la;?$')
+    re_rm = re.compile(r'rm\s+[-\w ]*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.*\*\.la;?$')
     re_find = re.compile(
-        r'find\s+"?(%{buildroot}|\$b)\S*\s*.*\s+-i?name\s+["\'\\]?\*\.la($|.*[^\\]$)'
+        r'find\s+"?(%{buildroot}|\$b)\S*\s*.*\s+-i?name\s+["\'\\]?\*\.la(?![\w.*])($|.*[^\\]$)'
     )
     re_find_double = re.compile(r'-i?name')
+    re_find_delete = re.compile(r'-delete\b|-exec\s+rm\b|\|\s*xargs\b.*\brm\b')
+    re_find_branch = re.compile(r'\s-(o|or|a|and)(?=\s|$)')
     re_rm_double = re.compile(r'(\.|{)a')
 
     # rpmprep
@@ -219,10 +244,13 @@ class Regexp:
     re_dephell_setup = re.compile(r'\s*dephell[s]?.*convert')
 
     # rpmfiles
-    re_man_compression = re.compile(r'(\d)(\.?\*|\.gz|%{?ext_man}?)$')
-    re_info_compression = re.compile(r'\.info(\.?\*|\.gz|%{?ext_info}?)$')
+    re_man_compression = re.compile(r'(\.\d)(\.?\*|\.gz|%{?ext_man}?)$')
+    re_info_compression = re.compile(r'\.info(\.\*|\.gz|%{?ext_info}?)$')
     re_defattr = re.compile(r'^\s*%defattr\s*\(\s*-\s*,\s*root\s*,\s*root\s*(,\s*-\s*)?\)\s*')
     re_doclicense = re.compile(r'(\S+)?(LICEN(S|C)E|COPYING)(\*|\.(\*|\S+))?($|\s)', re.IGNORECASE)
+    re_file_qualifier = re.compile(
+        r'%(attr|caps|config|dir|ghost|lang|missingok|verify)(\s*\(|\s|$)'
+    )
     # python sitelib
     re_python_sitelib_glob = re.compile(r'^(?P<macro>%{(python\d*)_(sitelib|sitearch)})/\*$')
     re_python_package_name = re.compile(r'^python\d*-(.*)')
@@ -244,12 +272,17 @@ class Regexp:
         r'(^|([^%:]))'
         +
         # macro itself:
-        # '%' followed by either number not starting with '0'
+        # '%' followed by either a single digit (%20 is rather an url escape)
+        r'%([1-9](?!\w)|'
+        +
+        # or a file directive with its possibly space separated argument
+        r'(?:attr|caps|config|defattr|lang|verify)\s*\([^)]*\)|'
+        +
         # or by chars where first is a-z or A-Z or underscore
-        r'%([1-9]\d*|[a-zA-Z_]\w*'
+        r'[a-zA-Z_]\w*'
         +
         # possibly followed by parens
-        r'(\s*\([^)]*\))?'
+        r'(\([^)]*\))?'
         +
         # beyond the end of the macro
         r')(|(\W))'
@@ -267,27 +300,38 @@ class Regexp:
     re_mandir = re.compile(r'%{?_datadir}?/man' + endmacro)
     re_infodir = re.compile(r'%{?_datadir}?/info' + endmacro)
     re_docdir = re.compile(r'%{?_datadir}?/doc/packages' + endmacro)
-    re_initdir = re.compile(r'/etc/init.d' + endmacro)
-    re_sysconfdir = re.compile(r'/etc' + endmacro)
-    re_localstatedir = re.compile(r'/var' + endmacro)
+    # not inside other paths or URLs such as %{name}/etc or https://host/var
+    pathstart = r'(?:^|(?<=[\s"\'=:,({])|(?<=%\{buildroot\})|(?<=%buildroot))'
+    re_initdir = re.compile(pathstart + r'/etc/init.d' + endmacro)
+    re_sysconfdir = re.compile(pathstart + r'/etc' + endmacro)
+    re_localstatedir = re.compile(pathstart + r'/var' + endmacro)
     re_libdir = re.compile(r'%{?_prefix}?/(%{?_lib}?|lib64)' + endmacro)
     re_unitdir = re.compile(r'%{?_prefix}?/lib/systemd/system' + endmacro)
     re_tmpfilesdir = re.compile(r'%{?_prefix}?/lib/tmpfiles.d' + endmacro)
     re_sysusersdir = re.compile(r'%{?_prefix}?/lib/sysusers.d' + endmacro)
     re_udevrulesdir = re.compile(r'%{?_prefix}?/lib/udev/rules.d' + endmacro)
     re_sysctldir = re.compile(r'%{?_prefix}?/lib/sysctl.d' + endmacro)
-    re_perlvendorlib = re.compile(r'%{?_prefix}?/lib/perl5/vendor_perl' + endmacro)
+    re_perlvendorlib = re.compile(
+        r'%{?_prefix}?/lib/perl5/vendor_perl/%{?perl_version}?' + endmacro
+    )
     re_fontsdir = re.compile(r'%{?_datadir}?/fonts' + endmacro)
     re_emacssitelispdir = re.compile(r'%{?_datadir}?/emacs/site-lisp' + endmacro)
     re_ocamlstdlib = re.compile(r'%{?_prefix}?/lib64/ocaml' + endmacro)
     re_apparmorprofilesdir = re.compile(r'%{?_sysconfdir}?/apparmor.d' + endmacro)
     re_nodejssitelib = re.compile(r'%{?_prefix}?/lib/node_modules' + endmacro)
     re_initddir = re.compile(r'%{?_initrddir}?' + endmacro)
-    re_rpmbuildroot = re.compile(r'(\${?RPM_BUILD_ROOT}?|"%{?buildroot}?")([/\s%]|$)')
-    re_rpmbuildroot_quotes = re.compile(r'"\${?RPM_BUILD_ROOT}?"')
-    # deprecated greps
-    re_deprecated_egrep_regex = re.compile(r'\begrep\b')
-    re_deprecated_fgrep_regex = re.compile(r'\bfgrep\b')
+    re_rpmbuildroot = re.compile(
+        r'(\$(?:RPM_BUILD_ROOT\b|\{RPM_BUILD_ROOT\})|"%{?buildroot}?")([/\s%]|$)'
+    )
+    re_rpmbuildroot_quotes = re.compile(r'"\$(?:RPM_BUILD_ROOT\b|\{RPM_BUILD_ROOT\})"')
+    # deprecated greps, only where invoked as a command
+    cmdstart = (
+        r'((?:^|[|;&(`!{]|\b(?:if|then|else|elif|do|while|until)\s'
+        r'|\b(?:sudo|env|xargs)(?:\s+-\S+)*\s|\s-exec(?:dir)?\s)'
+        r'\s*(?:\w+=\S*\s+)*(?:(?:/usr)?/bin/|%\{_bindir\}/)?)'
+    )
+    re_deprecated_egrep_regex = re.compile(cmdstart + r'egrep(?=\s|$)')
+    re_deprecated_fgrep_regex = re.compile(cmdstart + r'fgrep(?=\s|$)')
 
     def __init__(self, keywords: list[str]) -> None:
         """Compile all the keywords that are to be unbraced."""

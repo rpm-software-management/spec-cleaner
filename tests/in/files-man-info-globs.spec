@@ -1,0 +1,12 @@
+%files
+%{_infodir}/make.info*
+%{_infodir}/*.info*
+%{_infodir}/%{name}.info.*
+%{_infodir}/%{name}.info.gz
+%{_mandir}/man1/bzip2.*
+%{_mandir}/man1/lz4*
+%{_mandir}/man1/gpg2*
+%{_mandir}/man8/mkfs.ext4.*
+%{_mandir}/man1/%{name}.1*
+%{_mandir}/man5/%{name}.5.gz
+%{_mandir}/man8/%{name}.8%{ext_man}

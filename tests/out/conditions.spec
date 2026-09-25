@@ -4,6 +4,9 @@
 %define _libexecdir /lib
 %endif
 Version:        2.8.2
+%ifpython2
+Release:        0
+%endif
 Summary:        AppArmor userlevel parser utility
 License:        GPL-2.0-or-later
 Group:          Productivity/Networking/Security
@@ -14,9 +17,6 @@ BuildRequires:  bbb
 BuildRequires:  pkgconfig
 BuildRequires:  python
 Requires:       insserv
-%ifpython2
-Release:        0
-%endif
 %if %{distro} == "suse"
 # FIXME: use proper Requires(pre/post/preun/...)
 PreReq:         %insserv_prereq

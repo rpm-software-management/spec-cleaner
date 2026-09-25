@@ -19,11 +19,11 @@
 %files
 %license COPYING
 %doc ChangeLog README
-%{python_sitelib}/sitelib-python
-%{python_sitelib}/sitelib-python-%{version}*-info
-%{python_sitearch}/sitelib-python
-%{python_sitearch}/sitelib-python-%{version}*-info
-%{python3_sitearch}/sitelib-python
-%{python3_sitearch}/sitelib-python-%{version}*-info
+%{python_sitelib}/sitelib_python
+%{python_sitelib}/sitelib_python-%{version}*-info
+%{python_sitearch}/sitelib_python
+%{python_sitearch}/sitelib_python-%{version}*-info
+%{python3_sitearch}/sitelib_python
+%{python3_sitearch}/sitelib_python-%{version}*-info
 
 %changelog

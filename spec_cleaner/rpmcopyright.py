@@ -22,8 +22,10 @@ class RpmCopyright(Section):
         self.year = options['copyright_year']
         self.copyrights = []
         self.buildrules = []
+        self.directives = []
         self.distro_copyright = f'# Copyright (c) {self.year} SUSE LLC and contributors'
         self.vimmodeline = ''
+        self.header_seen = False
         # Whether the previous line looked like a copyright notice, used to
         # recognize year-led continuation lines (boo#1194504).
         self._prev_was_copyright = False
@@ -83,6 +85,8 @@ class RpmCopyright(Section):
             return
         if not self.lines and not line:
             return
+        if not line.startswith('#!'):
+            self.header_seen = True
         copyright_match = self.reg.re_copyright_string.match(
             line
         ) or self.reg.re_copyright_notice.match(line)
@@ -112,6 +116,8 @@ class RpmCopyright(Section):
             self.vimmodeline = line
         elif self.reg.re_sslcerts.match(line):
             self.buildrules.append('# needssslcertforbuild')
+        elif line.startswith('#!'):
+            self.directives.append(line)
         else:
             # anything not in our rules gets tossed out
             return
@@ -124,6 +130,7 @@ class RpmCopyright(Section):
             self._add_copyright()
             self._add_default_license()
             self._add_buildrules()
+            self.lines.extend(self.directives)
             self.lines.append('')
             self.lines.append('')
         else:

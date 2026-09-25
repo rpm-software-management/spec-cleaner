@@ -8,22 +8,26 @@ from .rpmsection import Section
 class RpmFiles(Section):
     """A class providing methods for %files section cleaning."""
 
+    _defattr_seen: bool = False
+
     def add(self, line: str) -> None:
         """Process one line of the %files section."""
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
         line = self._remove_doc_on_man(line)
         line = self._move_license_from_doc(line)
-        line = self._expand_python_sitelib(line)
         # we only get empty %doc left over
         if line == '%doc ':
             return
 
         if not self.minimal:
-            # prune obsolete defattr that is default
-            if self.reg.re_defattr.match(line):
-                return
+            # prune obsolete defattr that is default, unless it resets an earlier one
+            if line.startswith('%defattr'):
+                if self.reg.re_defattr.match(line) and not self._defattr_seen:
+                    return
+                self._defattr_seen = True
             line = self._set_man_compression(line)
+            line = self._expand_python_sitelib(line)
 
         # toss out empty lines if there are more than one in succession
         if line == '' and (not self.previous_line or self.previous_line == ''):
@@ -74,7 +78,12 @@ class RpmFiles(Section):
         Returns:
             The processed line.
         """
-        if line.startswith('%doc') and self.reg.re_doclicense.search(line):
+        # the qualifiers apply to every file on the line, so a split would lose them
+        if (
+            line.startswith('%doc')
+            and self.reg.re_doclicense.search(line)
+            and not self.reg.re_file_qualifier.search(line)
+        ):
             licences = ''
             match = self.reg.re_doclicense.search(line)
             while match:
@@ -94,8 +103,9 @@ class RpmFiles(Section):
             %{python_sitelib}/packagename
             %{python_sitelib}/packagename-%{version}*-info
 
-        This function uses the package name and removes the "python-"
-        prefix if it exists, so the name is the python module name.
+        This function uses the package name, removes the "python-" (or
+        "python3-", ...) prefix if it exists and replaces dashes with
+        underscores, so the name is the python module name.
         """
         name = '%{name}'
         match = self.reg.re_python_sitelib_glob.match(line)
@@ -108,8 +118,10 @@ class RpmFiles(Section):
                 # remove .spec
                 name = name[0 : -len('.spec')]
                 # remove python prefix if exists
-                if name.startswith('python-'):
-                    name = name[len('python-') :]
+                prefix_match = self.reg.re_python_package_name.match(name)
+                if prefix_match:
+                    name = prefix_match.group(1)
+                name = name.replace('-', '_')
 
             macro = match.group('macro')
             line = f'{macro}/{name}\n{macro}/{name}-%{{version}}*-info'

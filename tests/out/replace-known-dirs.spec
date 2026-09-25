@@ -10,6 +10,7 @@ install -D -m 0644 %{name}.ttf %{buildroot}%{_fontsdir}/%{name}.ttf
 install -D -m 0644 %{name}.cmxs %{buildroot}%{ocaml_standard_library}/%{name}.cmxs
 install -D -m 0644 %{name} %{buildroot}%{apparmor_profilesdir}/%{name}
 cp -a package.json %{buildroot}%{nodejs_sitelib}/%{name}/
+install -D -m 0644 %{name}.conf %{buildroot}%{_datadir}/%{name}/etc/%{name}.conf
 
 %files
 %{_unitdir}/%{name}.service
@@ -22,6 +23,7 @@ cp -a package.json %{buildroot}%{nodejs_sitelib}/%{name}/
 %dir %{_tmpfilesdir}
 %{perl_vendorlib}/Module.pm
 %{perl_vendorlib}/Other.pm
+%{_prefix}/lib/perl5/vendor_perl/Unversioned.pm
 %{_emacs_sitelispdir}/%{name}.el
 %{_emacs_sitelispdir}/legacy.el
 %{_emacs_sitelispdir}/premacroed.el
@@ -32,5 +34,7 @@ cp -a package.json %{buildroot}%{nodejs_sitelib}/%{name}/
 %{apparmor_profilesdir}/%{name}
 %{apparmor_profilesdir}/legacy
 %{nodejs_sitelib}/%{name}/
+%{_datadir}/%{name}/etc/%{name}.conf
+%dir %{_libdir}/%{name}/var
 
 %changelog

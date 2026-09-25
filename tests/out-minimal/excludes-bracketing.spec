@@ -125,8 +125,11 @@
 %systemd_preun
 %systemd_requires
 %tmpfiles_create
+
 %triggerin
+
 %triggerpostun
+
 %triggerun
 %udev_rules_update
 %undefine
