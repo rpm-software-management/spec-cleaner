@@ -8,7 +8,6 @@ dynamic = ["version"]
 requires-python = ">=3.11"
 
 authors = [
-    {name = "Daniel García Moreno", email = "daniel.garcia@suse.com"},
     {name = "Kristyna Streitova", email = "kstreitova@suse.com"},
     {name = "Tomáš Chvátal", email="tchvatal@suse.com"},
 ]
