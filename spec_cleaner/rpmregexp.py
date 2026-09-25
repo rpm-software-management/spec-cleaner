@@ -171,11 +171,16 @@ class Regexp:
 
     # rpmcopyright
     re_copyright_string = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
-    # Any other comment line starting with a copyright notice. The year is
-    # mandatory so garbage like "# Copyright #C 2013 Broken copyright" is
-    # still dropped instead of being kept as a copyright. The remainder
-    # (starting with the year) is exposed as group 1 for normalization.
-    re_copyright_notice = re.compile(r'^#\s*copyright\s*:?\s*(?:\(c\)\s*)?(\d.*)', re.IGNORECASE)
+    # Any other comment line starting with a copyright notice. The notice
+    # does not have to lead with a year: any non-empty remainder is kept
+    # and normalized to the canonical '# Copyright (c) ...' form, because
+    # a copyright notice must never be silently dropped (boo#1194504).
+    # The word boundary keeps '# Copyrights ...' style lines from matching
+    # and the optional second '#' covers commented-out notices like
+    # '# # Copyright (c) 2023 Foo'. The remainder is group 1.
+    re_copyright_notice = re.compile(
+        r'^#\s*#?\s*copyright\b\s*:?\s*(?:\(c\)\s*|©\s*)?(\S.*)', re.IGNORECASE
+    )
     # Year-led continuation of a copyright line, e.g.
     #   # Copyright (c) 2022 SUSE LLC
     #   # 2022 William Brown
