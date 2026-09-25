@@ -10,6 +10,8 @@ class RpmCheck(Section):
     Replace various troublemakers in check phase.
     """
 
+    shell_section = True
+
     def add(self, line: str) -> None:
         """Process one line of the %check section."""
         line = self._complete_cleanup(line)

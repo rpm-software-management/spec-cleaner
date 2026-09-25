@@ -1,9 +1,9 @@
 %check
 %pyunittest
 %pyunittest -v
-%pyunittest tests -v
+%pyunittest discover tests -v
 %pyunittest
-%pyunittest -v -s tests
+%pyunittest discover -v -s tests
 %pyunittest -v tests.test_cursors
 %pyunittest openid.test.test_suite
 %pyunittest_arch -v

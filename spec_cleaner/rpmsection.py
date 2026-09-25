@@ -1,4 +1,5 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
+import re
 from typing import IO, Any
 
 from .rpmregexp import Regexp
@@ -22,9 +23,13 @@ class Section:
         minimal: A flag indicating whether we run in minimal mode (no intrusive operations).
         no_curlification: A flag indicating whether we want to convert variables to curly brackets.
         reg: A Regexp object that holds all regexps that will be used in spec-cleaner.
+        defined_macros: A set of the macro names the specfile defines with %define or %global.
         condition: A flag representing if we are in the conditional or not.
         _condition_counter: An int for counting in how many (nested) condition we currently are.
+        shell_section: A flag indicating whether the section body is a shell script.
     """
+
+    shell_section: bool = False
 
     def __init__(self, options: dict[str, Any]) -> None:
         """Initialize variables."""
@@ -34,6 +39,7 @@ class Section:
         self.minimal: bool = options['minimal']
         self.no_curlification: bool = options['no_curlification']
         self.reg: Regexp = options['reg']
+        self.defined_macros: set[str] = options['defined_macros']
         # Are we inside of conditional or not
         self.condition: bool = False
         self._condition_counter: int = 0
@@ -219,8 +225,10 @@ class Section:
         Returns:
             The processed line.
         """
-        # if the optflags is the only thing then also add quotes around it
-        line = self.reg.re_optflags_quotes.sub('="%{optflags}"', line)
+        # quote bare assignments outside quotes so the flags stay one shell word
+        parts = re.split(r'("(?:[^"\\]|\\.)*"?|\'[^\']*\'?)', line)
+        parts[::2] = [self.reg.re_optflags_quotes.sub('="%{optflags}"', p) for p in parts[::2]]
+        line = ''.join(parts)
         line = self.reg.re_optflags.sub('%{optflags}', line)
         return line
 
@@ -239,8 +247,8 @@ class Section:
             The line with python macros replaced.
         """
         if line.startswith('%python_expand') or line.startswith('%{python_expand'):
-            line = self.reg.re_python_expand.sub(r'%{$\1}', line)
-            line = self.reg.re_python_interp_expand.sub(r' $\1 ', line)
+            line = self.reg.re_python_expand.sub(r'%{$\2}', line)
+            line = self.reg.re_python_interp_expand.sub(r'\1$python', line)
         return line
 
     def replace_known_dirs(self, line: str) -> str:
@@ -253,32 +261,58 @@ class Section:
         Returns:
             The processed line.
         """
-        line = self.reg.re_oldprefix.sub(r'%{_prefix}\1', line)
-        line = self.reg.re_prefix.sub(r'%{_prefix}\1', line)
-        line = self.reg.re_bindir.sub(r'%{_bindir}\1', line)
-        line = self.reg.re_sbindir.sub(r'%{_sbindir}\1', line)
-        line = self.reg.re_libexecdir.sub(r'%{_libexecdir}\1', line)
-        line = self.reg.re_includedir.sub(r'%{_includedir}\1', line)
-        line = self.reg.re_datadir.sub(r'%{_datadir}\1', line)
-        line = self.reg.re_mandir.sub(r'%{_mandir}\1', line)
-        line = self.reg.re_infodir.sub(r'%{_infodir}\1', line)
-        line = self.reg.re_docdir.sub(r'%{_docdir}\1', line)
-        line = self.reg.re_initdir.sub(r'%{_initddir}\1', line)
-        line = self.reg.re_sysconfdir.sub(r'%{_sysconfdir}\1', line)
-        line = self.reg.re_localstatedir.sub(r'%{_localstatedir}\1', line)
-        line = self.reg.re_ocamlstdlib.sub(r'%{ocaml_standard_library}\1', line)
-        line = self.reg.re_libdir.sub(r'%{_libdir}\2', line)
-        line = self.reg.re_unitdir.sub(r'%{_unitdir}\1', line)
-        line = self.reg.re_tmpfilesdir.sub(r'%{_tmpfilesdir}\1', line)
-        line = self.reg.re_sysusersdir.sub(r'%{_sysusersdir}\1', line)
-        line = self.reg.re_udevrulesdir.sub(r'%{_udevrulesdir}\1', line)
-        line = self.reg.re_sysctldir.sub(r'%{_sysctldir}\1', line)
-        line = self.reg.re_perlvendorlib.sub(r'%{perl_vendorlib}\1', line)
-        line = self.reg.re_fontsdir.sub(r'%{_fontsdir}\1', line)
-        line = self.reg.re_emacssitelispdir.sub(r'%{_emacs_sitelispdir}\1', line)
-        line = self.reg.re_apparmorprofilesdir.sub(r'%{apparmor_profilesdir}\1', line)
-        line = self.reg.re_nodejssitelib.sub(r'%{nodejs_sitelib}\1', line)
-        line = self.reg.re_initddir.sub(r'%{_initddir}\1', line)
+        # each rewrite only holds while the macros it reads and writes keep their default values
+        rules = (
+            (self.reg.re_oldprefix, r'%{_prefix}\1', ('_exec_prefix', '_prefix')),
+            (self.reg.re_prefix, r'%{_prefix}\1', ('_prefix',)),
+            (self.reg.re_bindir, r'%{_bindir}\1', ('_prefix', '_exec_prefix', '_bindir')),
+            (self.reg.re_sbindir, r'%{_sbindir}\1', ('_prefix', '_exec_prefix', '_sbindir')),
+            (
+                self.reg.re_libexecdir,
+                r'%{_libexecdir}\1',
+                ('_prefix', '_exec_prefix', '_libexecdir'),
+            ),
+            (self.reg.re_includedir, r'%{_includedir}\1', ('_prefix', '_includedir')),
+            (self.reg.re_datadir, r'%{_datadir}\1', ('_prefix', '_datarootdir', '_datadir')),
+            (self.reg.re_mandir, r'%{_mandir}\1', ('_datadir', '_mandir')),
+            (self.reg.re_infodir, r'%{_infodir}\1', ('_datadir', '_infodir')),
+            (self.reg.re_docdir, r'%{_docdir}\1', ('_datadir', '_docdir')),
+            (self.reg.re_initdir, r'%{_initddir}\1', ('_sysconfdir', '_initddir')),
+            (self.reg.re_sysconfdir, r'%{_sysconfdir}\1', ('_sysconfdir',)),
+            (self.reg.re_localstatedir, r'%{_localstatedir}\1', ('_localstatedir',)),
+            (
+                self.reg.re_ocamlstdlib,
+                r'%{ocaml_standard_library}\1',
+                ('_prefix', 'ocaml_standard_library'),
+            ),
+            (self.reg.re_libdir, r'%{_libdir}\2', ('_prefix', '_exec_prefix', '_lib', '_libdir')),
+            (self.reg.re_unitdir, r'%{_unitdir}\1', ('_prefix', '_unitdir')),
+            (self.reg.re_tmpfilesdir, r'%{_tmpfilesdir}\1', ('_prefix', '_tmpfilesdir')),
+            (self.reg.re_sysusersdir, r'%{_sysusersdir}\1', ('_prefix', '_sysusersdir')),
+            (self.reg.re_udevrulesdir, r'%{_udevrulesdir}\1', ('_prefix', '_udevrulesdir')),
+            (self.reg.re_sysctldir, r'%{_sysctldir}\1', ('_prefix', '_sysctldir')),
+            (
+                self.reg.re_perlvendorlib,
+                r'%{perl_vendorlib}\1',
+                ('_prefix', 'perl_version', 'perl_vendorlib'),
+            ),
+            (self.reg.re_fontsdir, r'%{_fontsdir}\1', ('_datadir', '_fontsdir')),
+            (
+                self.reg.re_emacssitelispdir,
+                r'%{_emacs_sitelispdir}\1',
+                ('_datadir', '_emacs_sitelispdir'),
+            ),
+            (
+                self.reg.re_apparmorprofilesdir,
+                r'%{apparmor_profilesdir}\1',
+                ('_sysconfdir', 'apparmor_profilesdir'),
+            ),
+            (self.reg.re_nodejssitelib, r'%{nodejs_sitelib}\1', ('_prefix', 'nodejs_sitelib')),
+            (self.reg.re_initddir, r'%{_initddir}\1', ('_initrddir', '_initddir')),
+        )
+        for regexp, replacement, macros in rules:
+            if self.defined_macros.isdisjoint(macros):
+                line = regexp.sub(replacement, line)
 
         return line
 
@@ -295,7 +329,7 @@ class Section:
         r = {
             'id_u': 'id -u',
             'ln_s': 'ln -s',
-            'lzma': 'xz --format-lzma',
+            'lzma': 'xz --format=lzma',
             'mkdir_p': 'mkdir -p',
             'awk': 'gawk',
             'cc': 'gcc',
@@ -303,10 +337,13 @@ class Section:
             'cxx': 'g++',
             'remsh': 'rsh',
         }
+        # after '#!' the macro is a shebang, which needs the absolute path it expands to
         for i in r:
-            line = line.replace('%{__' + i + '}', r[i])
+            if '__' + i in self.defined_macros:
+                continue
+            line = re.sub(r'(?<!#!)(?<!#! )%\{__' + i + r'\}', r[i], line)
             if self.minimal:
-                line = line.replace('%__' + i, r[i])
+                line = re.sub(r'(?<!#!)(?<!#! )%__' + i + r'\b', r[i], line)
 
         for i in (
             'aclocal',
@@ -354,12 +391,15 @@ class Section:
             'unzip',
             'xz',
         ):
-            line = line.replace('%{__' + i + '}', i)
+            if '__' + i in self.defined_macros:
+                continue
+            line = re.sub(r'(?<!#!)(?<!#! )%\{__' + i + r'\}', i, line)
             if self.minimal:
-                line = line.replace('%__' + i, i)
+                line = re.sub(r'(?<!#!)(?<!#! )%__' + i + r'\b', i, line)
 
-        line = self.reg.re_deprecated_egrep_regex.sub(r'grep -E', line)
-        line = self.reg.re_deprecated_fgrep_regex.sub(r'grep -F', line)
+        if self.shell_section:
+            line = self.reg.re_deprecated_egrep_regex.sub(r'\1grep -E', line)
+            line = self.reg.re_deprecated_fgrep_regex.sub(r'\1grep -F', line)
 
         return line
 
@@ -388,7 +428,7 @@ class Section:
             'ubuntu',
         ]:
             line = line.replace('%{' + i + '_version}', '0%{?' + i + '_version}').replace(
-                '00%{', '0%{'
+                '00%{?' + i + '_version}', '0%{?' + i + '_version}'
             )
         return line
 

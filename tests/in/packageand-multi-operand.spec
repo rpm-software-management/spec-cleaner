@@ -1,0 +1,5 @@
+Supplements:   packageand(a:b:c)
+Supplements:   packageand(pattern:foo:bar)
+Supplements:   packageand(kernel-default:modalias(pci:v00008086d*))
+Supplements:   packageand(product(Leap):kernel-default_aarch64)
+Supplements:   packageand(%{name}:libqt4-x11)

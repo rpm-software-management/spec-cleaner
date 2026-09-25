@@ -1,8 +1,8 @@
-Patch0:         c
 Patch0:         e
 Patch1:         d
 Patch2:         a
 Patch3:         b
+Patch:          c
 Patch10:        g
 Patch11:        h
 # PATCH-FIX-OPENSUSE fix-for-opensuse-specific-things.patch bnc#123456
