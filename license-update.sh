@@ -1,13 +1,14 @@
-#! /bin/sh
+#!/bin/bash
 
 # this script is maintained here: https://github.com/openSUSE/obs-service-format_spec_file
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-set -e
+set -e -o pipefail
 
 export LC_ALL=C
-curl -s -L 'https://docs.google.com/spreadsheets/d/14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs/export?format=tsv&id=14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs&gid=0' | grep -v "New format" \
+curl -fsSL 'https://docs.google.com/spreadsheets/d/14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs/export?format=tsv&id=14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs&gid=0' | grep -v "New format" \
   | sed -e 's,\s*$,,' > licenses_changes.ntxt
+curl -fsSL -o licenses.json https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json
 
 : > licenses_changes.ptxt
 grep ^SUSE- licenses_changes.ntxt | cut -d'	' -f1 | while read -r l; do
@@ -20,7 +21,7 @@ grep ^SUSE- licenses_changes.ntxt | cut -d'	' -f1 | while read -r l; do
   fi
 done
 
-for i in $(curl -s https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json | jq -r '.licenses | .[] | select(.isDeprecatedLicenseId|not) | .licenseId'); do
+for i in $(jq -r '.licenses | .[] | select(.isDeprecatedLicenseId|not) | .licenseId' licenses.json); do
   echo "$i	$i" >> licenses_changes.ntxt ;
   echo "$i+	$i+" >> licenses_changes.ntxt ;
   # For these that can be "or later" generate also replacement of + SPDX-2.0
@@ -48,7 +49,7 @@ echo ""
 echo "License Tag | Description"
 echo "----------- | -----------"
 IFS=:
-curl -s https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json | jq -r '.licenses | .[] | select(.isDeprecatedLicenseId|not) | [.licenseId, ":", .name] | add' | sort | while read license text; do
+jq -r '.licenses | .[] | select(.isDeprecatedLicenseId|not) | [.licenseId, ":", .name] | add' licenses.json | sort | while read license text; do
   echo "$license | $text"
   echo "$license" >> licenses_changes.raw
 done
@@ -67,8 +68,9 @@ done
 unset IFS
 
 rm licenses_changes.raw
-) > README.md
+) > README.md.tmp
 
 cat licenses_changes.ntxt licenses_changes.ptxt | sort -u -o spec_cleaner/data/licenses_changes.txt
-rm licenses_changes.ntxt licenses_changes.ptxt
+mv README.md.tmp README.md
+rm licenses_changes.ntxt licenses_changes.ptxt licenses.json
 
