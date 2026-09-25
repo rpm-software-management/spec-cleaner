@@ -402,17 +402,40 @@ class RpmPreambleElements:
         When at least one such global is present, move all globals as one
         block to keep their relative order: a plain global can reference
         another global that references %version.
+
+        Globals inside conditional blocks are left alone: moving them would
+        separate them from their %if/%endif wrappers and corrupt the
+        conditional.
         """
         flagged = []
         sensitive_found = False
+        cond_depth = 0
         for group in self.items['define']:
-            code_line = add_group(group)[-1]
+            lines = add_group(group)
+            code_line = lines[-1]
+            # Track conditional nesting to avoid moving conditional globals.
+            # A group may contain multiple lines (e.g. a flattened block).
+            for line in lines:
+                stripped = line.strip() if isinstance(line, str) else str(line).strip()
+                if stripped.startswith('%if') and not stripped.startswith('%endif'):
+                    # %if, %ifarch, %ifnarch, etc. (but not %endif)
+                    # Note: %else does not change depth
+                    if stripped.split()[0] in ('%if', '%ifarch', '%ifnarch', '%ifos', '%ifnarch'):
+                        cond_depth += 1
+                elif stripped.startswith('%endif'):
+                    cond_depth = max(0, cond_depth - 1)
             is_global = bool(self.reg.re_global.match(code_line)) or (
                 bool(self.reg.re_onelinecond.match(code_line)) and '%global' in code_line
             )
-            if is_global and self.reg.re_global_order_sensitive.search(code_line):
+            # Only consider top-level globals for moving; conditional globals
+            # stay with their wrappers.
+            if (
+                is_global
+                and cond_depth == 0
+                and self.reg.re_global_order_sensitive.search(code_line)
+            ):
                 sensitive_found = True
-            flagged.append((group, is_global))
+            flagged.append((group, is_global and cond_depth == 0))
         if not sensitive_found:
             return
         self.items['define'] = [group for group, is_global in flagged if not is_global]
@@ -436,7 +459,10 @@ class RpmPreambleElements:
         # already generates Supplements for it (#273)
         self._prune_lang_recommends()
         # keep version-dependent globals below the preamble tags (#239)
-        self._split_late_globals()
+        # Skip for nested blocks: globals inside conditionals must stay with
+        # their wrappers, otherwise the conditional is corrupted.
+        if not nested:
+            self._split_late_globals()
         for i in self.categories_order:
             sorted_list = []
             if i in self.categories_with_sorted_package_tokens:
