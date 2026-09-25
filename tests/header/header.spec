@@ -8,6 +8,10 @@
 # Copyright (c) 2022 John Doe
 # Copyright (c) 2021 Jane Doe
 # Copyright (c) 2020 John Smith
+# Copyright (c) Vincent Petry <PVince81@yahoo.fr>
+# Copyright (c) 2010 Lubos Lunak <llunak@novell.com>
+# Copyright (c) 2023, Martin Hauke <mardnh@gmx.de>
+# Copyright (c) #C 2013 Broken copyright
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed

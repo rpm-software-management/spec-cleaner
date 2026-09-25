@@ -9,6 +9,9 @@
 # Copyright 2022 John Doe
 # copyright 2021 Jane Doe
 # Copyright: 2020 John Smith
+# Copyright Vincent Petry <PVince81@yahoo.fr>
+# Copyright © 2010 Lubos Lunak <llunak@novell.com>
+# # Copyright (c) 2023, Martin Hauke <mardnh@gmx.de>
 # Copyright (c) 2013 SUSE LLC and contributors
 # Copyright #C 2013 Broken copyright
 #
