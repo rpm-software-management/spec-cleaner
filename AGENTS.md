@@ -12,11 +12,11 @@ RPM `.spec` file formatter for openSUSE. Entry point: `spec_cleaner:main` (`spec
 
 ## Acceptance tests (`tests/acceptance-tests.py`)
 
-- Test cases are discovered from the **expected-output** dirs (`tests/out/`, `out-minimal/`, `keep-space/`, `web/`); the input is always `tests/in/<same name>.spec`.
+- Test cases are discovered from the **expected-output** dirs (`tests/out/`, `out-minimal/`, `keep-space/`, `web/`, `https-probe/` with a patched urlopen whose https probe always succeeds, `header/` with `minimal` and `suse_copyright` instead of `pkgconfig`); the input is always `tests/in/<same name>.spec`.
 - Every case runs twice: the cleaned output is cleaned again and must still equal the expected file (idempotency). Non-idempotent changes fail here.
 - Tests run with `pkgconfig=True` and `copyright_year=2013`. Generate expected output with:
   `spec-cleaner --pkgconfig --copyright-year 2013 tests/in/X.spec > tests/out/X.spec` (add `-m` for `out-minimal/`), then hand-fix it to the correct output.
-- One-off option tests (`tex`, `perl`, `cmake`, `header`, `group`) are listed explicitly in `test_single_output`, not auto-discovered.
+- One-off option tests (`tex`, `perl`, `cmake`, `group`) are listed explicitly in `test_single_output`, not auto-discovered.
 
 ## Generated files — don't hand-edit
 
