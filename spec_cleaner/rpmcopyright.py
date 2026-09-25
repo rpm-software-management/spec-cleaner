@@ -24,6 +24,9 @@ class RpmCopyright(Section):
         self.buildrules = []
         self.distro_copyright = f'# Copyright (c) {self.year} SUSE LLC and contributors'
         self.vimmodeline = ''
+        # Whether the previous line looked like a copyright notice, used to
+        # recognize year-led continuation lines (boo#1194504).
+        self._prev_was_copyright = False
 
     def _add_pkg_header(self):
         """Add specfile name to the Copyright section."""
@@ -80,9 +83,21 @@ class RpmCopyright(Section):
             return
         if not self.lines and not line:
             return
-        copyright_match = self.reg.re_copyright_string.match(line)
+        copyright_match = self.reg.re_copyright_string.match(
+            line
+        ) or self.reg.re_copyright_notice.match(line)
+        if not copyright_match and self._prev_was_copyright:
+            # Year-led continuation of the previous copyright line, e.g.
+            #   # Copyright (c) 2022 SUSE LLC
+            #   # 2022 William Brown
+            # (boo#1194504)
+            copyright_match = self.reg.re_copyright_continuation.match(line)
+        # A SUSE copyright line still counts as a copyright for continuation
+        # purposes even though it is dropped itself.
+        self._prev_was_copyright = bool(copyright_match)
         if copyright_match and not self.reg.re_suse_copyright.search(line):
-            # always replace whitespace garbage on copyright line
+            # always normalize to the canonical '# Copyright (c) ...' form;
+            # a copyright notice must never be silently dropped (boo#1194504)
             line = f'# Copyright (c) {copyright_match.group(1)}'
             self.copyrights.append(line)
         elif self.reg.re_rootforbuild.match(line):

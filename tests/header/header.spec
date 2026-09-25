@@ -3,7 +3,11 @@
 # spec file for package header
 #
 # Copyright (c) 2013 SUSE LLC and contributors
+# Copyright (c) 2022 William Brown
 # Copyright (c) 2012 Dominique Leuenberger, Amsterdam, The Netherlands
+# Copyright (c) 2022 John Doe
+# Copyright (c) 2021 Jane Doe
+# Copyright (c) 2020 John Smith
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed

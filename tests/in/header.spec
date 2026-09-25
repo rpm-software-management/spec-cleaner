@@ -4,7 +4,12 @@
 #
 # Copyright (c) 2011 SUSE LINUX Products GmbH, Nuernberg, Germany.
 # Copyright (c) 2019 SUSE LLC
+# 2022 William Brown
 # Copyright (c) 2012 Dominique Leuenberger, Amsterdam, The Netherlands
+# Copyright 2022 John Doe
+# copyright 2021 Jane Doe
+# Copyright: 2020 John Smith
+# Copyright (c) 2013 SUSE LLC and contributors
 # Copyright #C 2013 Broken copyright
 #
 # All modifications and additions to the file contributed by third parties
