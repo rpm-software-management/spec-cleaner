@@ -232,6 +232,28 @@ class RpmPreamble(Section):
             )
         )
 
+    def _place_define_condition(self, sub_has_bconds, sub_has_defines):
+        """
+        Place a conditional block that defines macros.
+
+        The destination is determined solely by the block's content, not by
+        the parent's state, so placement is stable across passes.
+
+        - Bcond tests (%if %{with foo}) go to bcond_conditions: they must stay
+          below the bcond definitions, otherwise the switches have no effect.
+        - Blocks defining only bconds (no %define) go with bcond definitions.
+        - Blocks with %defines (possibly mixed with bconds) go with defines.
+        """
+        if self._condition_bcond:
+            # Bcond test: must stay below bcond definitions.
+            self.paragraph.items['bcond_conditions'] += self.paragraph.items['conditions']
+        elif sub_has_bconds and not sub_has_defines:
+            # Only bconds, no defines: with the bcond definitions.
+            self.paragraph.items['bconds'] += self.paragraph.items['conditions']
+        else:
+            # Has defines: with the define definitions.
+            self.paragraph.items['define'] += self.paragraph.items['conditions']
+
     def end_subparagraph(self, endif=False):
         """
         End the paragraph and flatten the output.
@@ -259,19 +281,7 @@ class RpmPreamble(Section):
             self._prune_empty_condition()
             self._prune_ppc_condition()
             if self._condition_define:
-                # If we have define conditions and possible bcond start
-                # we need to put it bellow bcond definitions as otherwise
-                # the switches do not have any effect
-                if self._condition_bcond:
-                    self.paragraph.items['bcond_conditions'] += self.paragraph.items['conditions']
-                elif sub_has_bconds and not sub_has_defines:
-                    # Block defining only bconds (no defines) goes with bcond
-                    # definitions, regardless of parent's define content.
-                    self.paragraph.items['bconds'] += self.paragraph.items['conditions']
-                elif len(self.paragraph.items['define']) == 0:
-                    self.paragraph.items['bconds'] += self.paragraph.items['conditions']
-                else:
-                    self.paragraph.items['define'] += self.paragraph.items['conditions']
+                self._place_define_condition(sub_has_bconds, sub_has_defines)
                 # in case the nested condition contains define we consider all parents
                 # to require to be on top too;
                 if len(self._oldstore) == 0:
@@ -496,8 +506,12 @@ class RpmPreamble(Section):
             self._add_line_to('conditions', line)
             self.condition = True
             # check for possibility of the bcond conditional
+            # Reset for each new block; the flag is sticky otherwise and
+            # contaminates subsequent non-bcond conditionals.
             if '%{with' in line or '%{without' in line:
                 self._condition_bcond = True
+            else:
+                self._condition_bcond = False
             self.start_subparagraph()
             self.previous_line = line
             return
