@@ -27,7 +27,9 @@ class RpmRequiresToken:
     ) -> None:
         """Initialize class."""
         self.prefix = prefix
-        self.name = name
+        # omit legacy 'otherproviders' codeblock before the name is looked up for conversions
+        match = Regexp.re_otherproviders.match(name)
+        self.name = match.group(1) if match else name
         self.operator = operator
         self.version = version
 
@@ -48,24 +50,22 @@ class RpmRequiresToken:
         return operator
 
     @staticmethod
-    def _format_name(name: str) -> str:
+    def _format_name(name: str, prefix: str) -> str:
         """
         Make sure the name looks sane and make various replacements.
 
         Args:
             name: A string representing the name used in the dependency token.
+            prefix: The tag the dependency token belongs to.
 
         Returns:
             Formatted name.
         """
-        # we just rename pkgconfig names to one unified one working everywhere
-        if name == 'pkgconfig(pkg-config)' or name == 'pkg-config':
+        # unify pkgconfig names, but not where the literal name is what is provided or matched
+        if name in ('pkgconfig(pkg-config)', 'pkg-config') and not prefix.startswith(
+            ('Provides', 'Obsoletes', 'Conflicts', 'BuildConflicts')
+        ):
             name = 'pkgconfig'
-
-        # omit legacy 'otherproviders' codeblock
-        match = Regexp.re_otherproviders.match(name)
-        if match:
-            name = match.group(1)
 
         # replace 'packageand(pkgA:pkgB)' with '(pkgA and pkgB)' - new in RPM 4.13
         match = Regexp.re_packageand.match(name)
@@ -89,11 +89,11 @@ class RpmRequiresToken:
         Raises:
             RpmExceptionError if prefix or name is not defined or the version is defined but no operator is present.
         """
-        self.name = self._format_name(self.name)
         if not self.prefix:
             raise RpmExceptionError(
                 f'No defined prefix in RequiresToken: prefix "{self.prefix}" name "{self.name}" operator "{self.operator}" version "{self.version}"'
             )
+        self.name = self._format_name(self.name, self.prefix)
         if not self.name:
             raise RpmExceptionError(
                 f'No defined name in RequiresToken: prefix "{self.prefix}" name "{self.name}" operator "{self.operator}" version "{self.version}"'

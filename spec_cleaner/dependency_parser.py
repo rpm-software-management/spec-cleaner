@@ -17,11 +17,13 @@ re_brackets['{'] = re.compile(
     r'(' + r'\{' + r'|' + r'\}' + r'|' + r'\\{' + r'|' + r'\\}' + r'|' + r'[^\{}]+' + r')'
 )
 
-re_name = re.compile(r'[-A-Za-z0-9_~(){}@:;.+/*\[\]^?]+')
+# a balanced (...) group may hold operator characters, e.g. font(:lang=ja)
+re_name = re.compile(r'(?:\((?:[^()\s,]|\([^()\s,]*\))*\)|[-A-Za-z0-9_~(){}@:;.+/*\[\]^?])+')
 re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
 re_spaces = re.compile(r'(\s*,\s*|\s+)')
 re_macro_unbraced = re.compile('%[?]?[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
+re_conditional_version = re.compile(r'%\{!?\?!?\w+:\s*[<>=]')
 
 logger = logging.getLogger('DepParser')
 # Switch to logging.DEBUG if needed
@@ -42,7 +44,7 @@ def find_end_of_bracketed_macro(string, regex, opening, closing):
         try:
             bite, string = consume_chars(regex, string)
         except NoMatchExceptionError:
-            raise Exception('unexpected parser error when looking for end of macro') from None
+            raise DepParserError('unexpected parser error when looking for end of macro') from None
 
         if bite == opening:
             opened += 1
@@ -51,7 +53,7 @@ def find_end_of_bracketed_macro(string, regex, opening, closing):
         macro += bite
 
     if opened:
-        raise Exception('Unexpectedly met end of string when looking for end of macro')
+        raise DepParserError('Unexpectedly met end of string when looking for end of macro')
     return macro, string
 
 
@@ -154,6 +156,7 @@ class DependencyParser:
         self.token = []
         self.state = 'start'
         self.space = False
+        self.comma = False
         self.token_name = ''
         self.token_operator = None
         self.token_version = None
@@ -162,7 +165,13 @@ class DependencyParser:
             # nothing to parse (an empty value would loop forever)
             self.go_on = False
         while self.go_on:
-            self.string, self.next, self.next_type = read_next_chunk(self.string)
+            # past the end only the name state can flush; any other state loops forever
+            if not self.string and self.state != 'name':
+                raise DepParserError(f'Unexpected end of dependency string "{line}"')
+            rest, self.next, self.next_type = read_next_chunk(self.string)
+            if self.next_type == 'space':
+                self.comma = ',' in self.string[: len(self.string) - len(rest)]
+            self.string = rest
             logger.debug(
                 """========
                 chunk: '%s'
@@ -187,7 +196,9 @@ class DependencyParser:
 
     def flush(self):
         """Clean token variables of the class."""
-        self.parsed.append((self.token_name, self.token_operator, self.token_version))
+        # extra separators, e.g. a trailing comma after a version, leave an empty token
+        if self.token_name or self.token_operator or self.token_version:
+            self.parsed.append((self.token_name, self.token_operator, self.token_version))
         # cleanup state
         self.token = []
         self.token_name = ''
@@ -205,6 +216,16 @@ class DependencyParser:
 
     def name_state_change(self):
         """Check name of next token."""
+        # e.g. 'foo %{?foo_min:>= %{foo_min}}' is one dependency with an optional version
+        if (
+            self.next_type == 'macro'
+            and self.space
+            and not self.comma
+            and re_conditional_version.match(self.next)
+        ):
+            self.token.append(' ' + self.next)
+            self.space = False
+            return
         if self.next_type in ['text', 'macro']:
             if self.space:
                 logger.debug('text after space --> flush')
