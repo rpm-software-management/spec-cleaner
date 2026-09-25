@@ -17,10 +17,10 @@ re_brackets['{'] = re.compile(
     r'(' + r'\{' + r'|' + r'\}' + r'|' + r'\\{' + r'|' + r'\\}' + r'|' + r'[^\{}]+' + r')'
 )
 
-re_name = re.compile(r'[-A-Za-z0-9_~(){}@:;.+/*\[\]]+')
+re_name = re.compile(r'[-A-Za-z0-9_~(){}@:;.+/*\[\]^?]+')
 re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
 re_spaces = re.compile(r'(\s*,\s*|\s+)')
-re_macro_unbraced = re.compile('%[A-Za-z0-9_]{3,}')
+re_macro_unbraced = re.compile('%[?]?[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
 
 logger = logging.getLogger('DepParser')
@@ -158,6 +158,9 @@ class DependencyParser:
         self.token_operator = None
         self.token_version = None
         self.go_on = True
+        if not line.strip():
+            # nothing to parse (an empty value would loop forever)
+            self.go_on = False
         while self.go_on:
             self.string, self.next, self.next_type = read_next_chunk(self.string)
             logger.debug(
