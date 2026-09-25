@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import re
-from subprocess import check_output
+from subprocess import CalledProcessError, check_output
 
 from .fileutils import open_datafile, open_stringio_spec
 from .rpmexception import RpmExceptionError
@@ -26,8 +26,12 @@ def parse_rpm_showrc() -> list[str]:
     macros: list[str] = []
 
     re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
-    output = check_output(['rpm', '--showrc'])
-    for line in output.decode().split('\n'):
+    try:
+        output = check_output(['rpm', '--showrc'])
+    except (OSError, CalledProcessError) as error:
+        raise RpmExceptionError(f'Could not run "rpm --showrc": {error}') from error
+    # rpm prints in the locale charset; only ASCII macro names are needed
+    for line in output.decode(errors='replace').split('\n'):
         found_macro = re_rc_macrofunc.sub(r'\1', line)
         if found_macro != line:
             macros += [found_macro]
@@ -57,7 +61,7 @@ def find_macros_with_arg(spec: str) -> list[str]:
     """
     macrofuncs: list[str] = []
 
-    re_spec_macrofunc = re.compile(r'^\s*%define\s(\w+)\(.*')
+    re_spec_macrofunc = re.compile(r'^\s*%(?:define|global)\s+(\w+)\(.*')
     with open_stringio_spec(spec) as f:
         for line in (i.rstrip('\n') for i in f):
             found_macro = re_spec_macrofunc.sub(r'\1', line)
@@ -76,9 +80,17 @@ def read_conversion_changes(conversion_file):
     Returns:
         A dictionary with old -> new values for conversion
     """
+    conversions = {}
     with open_datafile(conversion_file) as f:
         # the values are split by  ': '
-        return dict(line.split(': ') for line in f)
+        for key, value in (line.split(': ', 1) for line in f):
+            names = value.split()
+            # a package has one row per arch, keep only the names every row provides
+            if key in conversions:
+                provided = set(names)
+                names = [i for i in conversions[key] if i in provided]
+            conversions[key] = names
+    return {key: ' '.join(names) for key, names in conversions.items() if names}
 
 
 def read_tex_changes():
@@ -146,6 +158,10 @@ def fix_license(value, conversions):
     # license ; should be replaced by ands so find it
     re_license_semicolon = re.compile(r'\s*;\s*')
     value = value.rstrip(';')
+    # some known strings contain the separators split on below
+    whole = ' '.join(value.split())
+    if whole in conversions:
+        return conversions[whole]
     value = re_license_semicolon.sub(' and ', value)
     # split using 'or', 'and' and parenthesis, ignore empty strings
     licenses = []
@@ -205,11 +221,10 @@ def sort_uniq(seq):
             if not _check_list(item):
                 continue
             # Here we need to preserve comment content
-            # As the list is already sorted we can count on it to be
-            # seen in previous run.
             # match the current and then based on wether the previous
             # value is a list we append or convert to list entirely
-            prev = result[-1]
+            idx = seen[marker]
+            prev = result[idx]
             if _check_list(prev):
                 # Remove last line of the appending
                 # list which is the actual dupe value
@@ -220,13 +235,13 @@ def sort_uniq(seq):
                 prev += item
                 # append the value back
                 prev.append(marker)
-                result[-1] = prev
+                result[idx] = prev
             else:
                 # Easy as there was no list
                 # just replace it with our value
-                result[-1] = item
+                result[idx] = item
             continue
-        seen[marker] = 1
+        seen[marker] = len(result)
         result.append(item)
     return result
 

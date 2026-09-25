@@ -35,7 +35,7 @@ def open_datafile(name: str) -> IO[str]:
 
     for path in possible_paths:
         try:
-            _file = open(path)
+            _file = open(path, encoding='utf-8')
         except OSError:
             pass
         else:
@@ -59,7 +59,7 @@ def open_stringio_spec(name: str) -> IO[str]:
     """
     data = StringIO()
     try:
-        with open(name) as f:
+        with open(name, encoding='utf-8') as f:
             data.write(f.read())
             data.seek(0, 0)
     except (OSError, UnicodeDecodeError) as error:
