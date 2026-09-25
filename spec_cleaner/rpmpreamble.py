@@ -292,6 +292,35 @@ class RpmPreamble(Section):
                 converted.append(RpmRequiresToken(name, token.operator, token.version))
         return converted
 
+    @staticmethod
+    def _split_trailing_comment(value):
+        # Separate trailing %dnl or # comments before dependency parsing.
+        # They are not part of the dependency and would crash the parser.
+        trailing_comment = None
+        dnl_idx = value.find('%dnl')
+        if dnl_idx >= 0:
+            trailing_comment = value[dnl_idx:].strip()
+            value = value[:dnl_idx].strip()
+        else:
+            hash_idx = -1
+            for i, ch in enumerate(value):
+                if ch == '#':
+                    if i == 0 or value[i - 1] in ' \t':
+                        hash_idx = i
+                        break
+            if hash_idx >= 0:
+                trailing_comment = value[hash_idx:].strip()
+                value = value[:hash_idx].strip()
+        return value, trailing_comment
+
+    @staticmethod
+    def _attach_trailing_comment(tokens, trailing_comment):
+        if not trailing_comment or not tokens:
+            return
+        # flat_out() only yields RpmRequiresToken items, so the comment
+        # belongs to the last token on the line
+        tokens[-1].trailing_comment = trailing_comment
+
     def _fix_list_of_packages(self, value, category):
         # we do fix the package list only if there is no rpm call there on line
         # otherwise print there warning about nicer content and skip
@@ -303,7 +332,9 @@ class RpmPreamble(Section):
             ):
                 self.paragraph.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
+        value, trailing_comment = self._split_trailing_comment(value)
         tokens = DependencyParser(value).flat_out()
+        self._attach_trailing_comment(tokens, trailing_comment)
         # loop over all and do formatting as we can get more deps for one
         expanded = []
         for token in tokens:

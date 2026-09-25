@@ -16,6 +16,7 @@ class RpmRequiresToken:
     """
 
     comments: str | None = None
+    trailing_comment: str | None = None
 
     def __init__(
         self,
@@ -70,6 +71,12 @@ class RpmRequiresToken:
         match = Regexp.re_packageand.match(name)
         if match:
             name = f'({match.group(1)} and {match.group(2)})'
+            # macros inside packageand() are shielded from brace expansion by
+            # the ':' separator, so brace them here to keep the output stable
+            previous = None
+            while name != previous:
+                previous = name
+                name = Regexp.re_macro.sub(r'\1%{\3}\5', name)
         return name
 
     def __str__(self) -> str:
@@ -97,5 +104,7 @@ class RpmRequiresToken:
         if self.version and self.operator:
             self.operator = self._format_operator(self.operator)
             string += ' ' + self.operator + ' ' + self.version
+        if self.trailing_comment:
+            string += ' ' + self.trailing_comment
 
         return string
