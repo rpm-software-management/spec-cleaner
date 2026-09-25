@@ -1,4 +1,6 @@
 #!/bin/bash
+set -o pipefail
+
 fetch() {
     local status
     status="$(curl -o /dev/null -LsIw '%{http_code}' "$1" 2>&1)"
@@ -6,7 +8,7 @@ fetch() {
         echo >&2 "Unable to download the repodata from \"$1\": $status"
         exit 1
     fi
-    curl -#L "$1"
+    curl -#fL "$1"
 }
 
 if [ -z "$1" ]; then
