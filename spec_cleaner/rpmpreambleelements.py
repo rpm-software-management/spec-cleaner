@@ -456,12 +456,12 @@ class RpmPreambleElements:
 
         A unit is a single line, a multiline macro or a whole %if block, as
         RpmPreamble.add recorded it, so that moving it never breaks it apart.
-        A unit is late when one of its globals references %name, %version,
-        %release or %epoch, when one of its globals or conditions references
-        a late macro, or when it redefines one. The macros a unit defines are
-        late when it is late or references those tags or late macros, as a
-        lazy %define that stays hoisted passes the dependency on to the
-        globals using it.
+        A unit is late when one of its globals or conditions references
+        %name, %version, %release or %epoch, when one of its eagerly expanded
+        lines references a late macro, or when it redefines one. The macros a
+        unit defines are late when it is late or references those tags or
+        late macros, as a lazy %define that stays hoisted passes the
+        dependency on to the globals using it.
         Likewise a unit must follow the bconds when one of its globals or
         conditions reads a bcond or a macro depending on one, or when it
         redefines a macro moved below the bconds.
@@ -484,7 +484,7 @@ class RpmPreambleElements:
                 references = self._macro_references(line)
                 sensitive = bool(self.reg.re_global_order_sensitive.search(line))
                 reads_late = bool(late_names.intersection(references))
-                if (is_global and sensitive) or ((is_global or is_cond) and reads_late):
+                if ((is_global or is_cond) and sensitive) or (is_eager and reads_late):
                     late = True
                 if sensitive or reads_late:
                     tainted = True
