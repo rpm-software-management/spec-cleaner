@@ -21,7 +21,7 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
-BASEURL="http://download.opensuse.org/distribution/$2/repo/oss/"
+BASEURL="https://download.opensuse.org/distribution/$2/repo/oss/"
 # Newer distributions (Leap 16 and later) compress repodata with zstd
 # instead of gzip, so match either and decompress accordingly.
 ARCHIVE="$(fetch "${BASEURL}repodata/repomd.xml" \
