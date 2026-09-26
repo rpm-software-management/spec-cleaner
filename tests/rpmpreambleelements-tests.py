@@ -54,5 +54,7 @@ class TestRpmPreambleElements:
 
     def test_verify_prereq_message_without_prereq(self, elements):
         """Test that the fixme comment is not added when no prereq is present."""
-        line = ['BuildRequires: gcc', '']
-        assert elements._verify_prereq_message(line) == line
+        assert elements._verify_prereq_message(['BuildRequires: gcc', '']) == [
+            'BuildRequires: gcc',
+            '',
+        ]
