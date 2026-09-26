@@ -24,6 +24,8 @@ Group:          Development/Tools/Other
 BuildRequires:  %?suse_sgx_gcc_major
 BuildRequires:  %{python_module mock} ## <-- not available anymore!
 Requires:       (ibus or fcitx) %dnl boo#1251853
+Requires:       bar
+Requires:       baz %dnl boo#1251853
 Requires:       foo # a normal comment
 # API for Disabled Modules (ProductControl)
 # After API cleanup
