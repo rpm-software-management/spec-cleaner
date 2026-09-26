@@ -1,8 +1,9 @@
-name: Tumbleweed corpus sweep
+name: Distro corpus sweep
 
-# Stress-test spec-cleaner against all of openSUSE:Factory specs.
+# Stress-test spec-cleaner against all of openSUSE:Factory (Tumbleweed)
+# and Fedora Rawhide specs.
 # - Manual trigger: pre-release gate (workflow_dispatch)
-# - Weekly schedule: catch regressions from TW spec evolution
+# - Weekly schedule: catch regressions from distro spec evolution
 # Tickets (label: corpus-sweep) are opened for crashes and non-idempotent
 # results. Dedup is against all past corpus-sweep tickets (open and closed):
 # a recurring failure after its ticket closed is a regression and gets a new
@@ -20,7 +21,11 @@ permissions:
 jobs:
   sweep:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [tumbleweed, rawhide]
     steps:
     - uses: actions/checkout@v7
 
@@ -34,7 +39,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install --upgrade -r devel-requirements.pip
 
-    - name: Download Factory specs
+    - name: Download Tumbleweed specs
+      if: matrix.distro == 'tumbleweed'
       run: |
         python - <<'EOF'
         import os, sys, xml.etree.ElementTree as ET
@@ -43,7 +49,7 @@ jobs:
         from urllib.request import urlopen
 
         BASE = 'https://api.opensuse.org/public/source/openSUSE:Factory'
-        OUTDIR = 'tw-specs'
+        OUTDIR = 'corpus-specs'
         os.makedirs(OUTDIR, exist_ok=True)
 
         def fetch(url):
@@ -102,6 +108,83 @@ jobs:
         print(f'Downloaded {total} specs', flush=True)
         EOF
 
+    - name: Download Rawhide specs
+      if: matrix.distro == 'rawhide'
+      run: |
+        python - <<'EOF'
+        import json, os, sys
+        from concurrent.futures import ThreadPoolExecutor
+        from urllib.parse import quote
+        from urllib.request import urlopen, Request
+
+        OUTDIR = 'corpus-specs'
+        os.makedirs(OUTDIR, exist_ok=True)
+
+        def fetch_json(url):
+            try:
+                req = Request(url, headers={'Accept': 'application/json'})
+                with urlopen(req, timeout=30) as r:
+                    return json.loads(r.read())
+            except Exception as e:
+                print(f'fetch failed for {url}: {e}', flush=True)
+                return None
+
+        def fetch_raw(url):
+            try:
+                with urlopen(url, timeout=30) as r:
+                    return r.read()
+            except Exception:
+                return None
+
+        # Paginate through all rpms/* projects on src.fedoraproject.org
+        pkgs = []
+        page = 1
+        while True:
+            data = fetch_json(
+                f'https://src.fedoraproject.org/api/0/projects'
+                f'?namespace=rpms&per_page=100&page={page}&short=true')
+            if not data or not data.get('projects'):
+                break
+            pkgs.extend(p['name'] for p in data['projects'])
+            print(f'page {page}: {len(pkgs)} packages so far', flush=True)
+            pagination = data.get('pagination', {})
+            if page >= pagination.get('pages', page):
+                break
+            page += 1
+            if page > 300:  # safety cap (~30k packages)
+                break
+
+        print(f'Found {len(pkgs)} packages', flush=True)
+        if not pkgs:
+            print('ERROR: 0 packages listed, aborting', flush=True)
+            sys.exit(1)
+
+        def download(pkg):
+            out = os.path.join(OUTDIR, f'{pkg}.spec')
+            if os.path.exists(out) and os.path.getsize(out) > 0:
+                return 'cached'
+            # Rawhide branch, 'f' folder = the spec file location
+            data = fetch_raw(
+                f'https://src.fedoraproject.org/rpms/{quote(pkg)}'
+                f'/raw/rawhide/f/{quote(pkg)}.spec')
+            if data:
+                with open(out, 'wb') as f:
+                    f.write(data)
+                return 'ok'
+            return 'missing'
+
+        from collections import Counter
+        with ThreadPoolExecutor(max_workers=16) as ex:
+            results = Counter(ex.map(download, pkgs))
+        print(dict(results), flush=True)
+
+        total = sum(v for k, v in results.items() if k in ('ok', 'cached'))
+        if total == 0:
+            print('ERROR: 0 specs downloaded, aborting', flush=True)
+            sys.exit(1)
+        print(f'Downloaded {total} specs', flush=True)
+        EOF
+
     - name: Run corpus sweep
       run: |
         python - <<'EOF'
@@ -127,12 +210,15 @@ jobs:
         def skip(name):
             return name == 'texlive.spec' or name.startswith('texlive-')
 
-        specs = sorted(f for f in os.listdir('tw-specs')
+        specs = sorted(f for f in os.listdir('corpus-specs')
                        if f.endswith('.spec') and not skip(f))
         print(f'Sweeping {len(specs)} specs', flush=True)
+        if not specs:
+            print('ERROR: 0 specs to sweep, aborting', flush=True)
+            sys.exit(1)
 
         def run_one(fname):
-            path = os.path.join('tw-specs', fname)
+            path = os.path.join('corpus-specs', fname)
             try:
                 with open(path, encoding='utf-8', errors='replace') as f:
                     content = f.read()
@@ -170,16 +256,19 @@ jobs:
     - name: Upload sweep report
       uses: actions/upload-artifact@v7
       with:
-        name: tw-sweep-report
+        name: ${{ matrix.distro }}-sweep-report
         path: sweep-report.json
         retention-days: 90
 
     - name: Open tickets for new failures
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DISTRO: ${{ matrix.distro }}
       run: |
         python - <<'EOF'
         import json, os, subprocess
+
+        distro = os.environ['DISTRO']
 
         with open('sweep-report.json') as f:
             report = json.load(f)
@@ -194,7 +283,7 @@ jobs:
                              'detail': 'Second spec-cleaner pass produced '
                                        'different output than the first.'})
 
-        print(f'{len(failures)} failing specs '
+        print(f'[{distro}] {len(failures)} failing specs '
               f'({len(report["errors"])} crashes, '
               f'{len(report["non_idempotent"])} non-idempotent)', flush=True)
         if not failures:
@@ -211,12 +300,13 @@ jobs:
              '--limit', '500'],
             capture_output=True, text=True).stdout
         tickets = json.loads(existing) if existing.strip() else []
-        # title format: "[corpus-sweep] <spec> (<kind>)"
+        # title format: "[corpus-sweep:distro] <spec> (<kind>)"
         seen = {}
         for t in tickets:
             title = t['title']
-            if title.startswith('[corpus-sweep] '):
-                rest = title[len('[corpus-sweep] '):]
+            prefix = f'[corpus-sweep:{distro}] '
+            if title.startswith(prefix):
+                rest = title[len(prefix):]
                 # split off the trailing " (kind)"
                 if rest.endswith(')'):
                     spec = rest[:rest.rfind(' (')]
@@ -225,7 +315,7 @@ jobs:
         opened = 0
         for f in failures[:20]:  # cap at 20 tickets per run to avoid spam
             spec, kind = f['spec'], f['kind']
-            title = f'[corpus-sweep] {spec} ({kind})'
+            title = f'[corpus-sweep:{distro}] {spec} ({kind})'
             if spec in seen:
                 old = seen[spec]
                 if old['state'] == 'OPEN':
@@ -234,16 +324,16 @@ jobs:
                     continue
                 # Regression: was fixed/closed, now failing again
                 body = (
-                    f'Regression: `{spec}` is failing again in the corpus '
-                    f'sweep ({kind}).\n\nPreviously tracked in '
+                    f'Regression: `{spec}` is failing again in the {distro} '
+                    f'corpus sweep ({kind}).\n\nPreviously tracked in '
                     f'#{old["number"]} (now closed).\n\n'
                     f'```\n{f["detail"]}\n```'
                 )
             else:
                 body = (
-                    f'spec-cleaner failed on `{spec}` from openSUSE:Factory '
+                    f'spec-cleaner failed on `{spec}` from {distro} '
                     f'({kind}).\n\n```\n{f["detail"]}\n```\n\n'
-                    f'Found by the Tumbleweed corpus sweep. '
+                    f'Found by the distro corpus sweep. '
                     f'Please attach a minimal reproducer if possible.'
                 )
             subprocess.run(
