@@ -360,3 +360,109 @@ class TestEndSubparagraphHelpers:
         preamble._restore_condition_flags()
         assert preamble._condition_bcond is False
         assert preamble._condition_define is False
+
+    def test_handle_multilinecond_start(self, preamble):
+        """Multiline conditional start is handled."""
+        assert preamble._handle_multilinecond_start('%{?suse_version:') is True
+        assert preamble._handle_multilinecond_start('Name: foo') is False
+        assert preamble.condition is True
+
+    def test_handle_patternobsoletes_provides(self, preamble):
+        """Provides with pattern obsolete is stored."""
+        assert preamble._handle_patternobsoletes_provides('Provides: patterns-openSUSE-foo') is True
+        assert preamble._handle_patternobsoletes_provides('Provides: foo') is False
+        assert preamble._handle_patternobsoletes_provides('Name: foo') is False
+
+    def test_handle_patternrecommends(self, preamble):
+        """Recommends with pattern macro is stored."""
+        assert preamble._handle_patternrecommends('Recommends: pattern() = foo') is True
+        assert preamble._handle_patternrecommends('Recommends: foo') is False
+        assert preamble._handle_patternrecommends('Name: foo') is False
+
+    def test_handle_patternsuggests(self, preamble):
+        """Suggests with pattern macro is stored."""
+        assert preamble._handle_patternsuggests('Suggests: pattern() = foo') is True
+        assert preamble._handle_patternsuggests('Suggests: foo') is False
+        assert preamble._handle_patternsuggests('Name: foo') is False
+
+    def test_handle_patternobsoletes(self, preamble):
+        """Obsoletes with pattern obsolete is stored."""
+        assert preamble._handle_patternobsoletes('Obsoletes: patterns-openSUSE-foo') is True
+        assert preamble._handle_patternobsoletes('Obsoletes: foo') is False
+        assert preamble._handle_patternobsoletes('Name: foo') is False
+
+    def test_handle_requires_eq(self, preamble):
+        """Requires with = version is handled."""
+        assert preamble._handle_requires_eq('%requires_eq foo 1.0') is True
+        assert preamble._handle_requires_eq('Name: foo') is False
+
+    def test_handle_requires_ge(self, preamble):
+        """Requires with >= version is handled."""
+        assert preamble._handle_requires_ge('%requires_ge foo 1.0') is True
+        assert preamble._handle_requires_ge('Name: foo') is False
+
+    def test_handle_onelinecond_dep(self, preamble):
+        """One-line conditional dependency is handled."""
+        assert preamble._handle_onelinecond_dep('%{?suse_version:BuildRequires: foo}') is True
+        assert preamble._handle_onelinecond_dep('Name: foo') is False
+
+    def test_handle_requires_phase(self, preamble):
+        """Requires(phase) tag is handled."""
+        assert preamble._handle_requires_phase('Requires(post): foo') is True
+        assert preamble._handle_requires_phase('Name: foo') is False
+
+
+class TestPlaceHelpers:
+    """Unit tests for the condition block placement helpers."""
+
+    @pytest.fixture
+    def preamble(self, tmp_path):
+        """Create a preamble section with the options of a default run."""
+        return RpmPreamble(RpmSpecCleaner(_default_options(tmp_path)).options)
+
+    def test_place_non_define_block(self, preamble):
+        """Non-define condition block goes to build_conditions by default."""
+        from spec_cleaner.rpmpreamble import MacroLine
+
+        cond = MacroLine('%if foo', is_cond=True)
+        preamble.paragraph.items['conditions'] = [cond]
+        preamble._condition_nvr = False
+        preamble._pattern_condition = False
+        preamble._place_non_define_block()
+        assert preamble.paragraph.items['build_conditions'] == [cond]
+
+    def test_place_non_define_block_nvr(self, preamble):
+        """NVR condition block goes to nvr_conditions."""
+        from spec_cleaner.rpmpreamble import MacroLine
+
+        cond = MacroLine('%if foo', is_cond=True)
+        preamble.paragraph.items['conditions'] = [cond]
+        preamble._condition_nvr = True
+        preamble._pattern_condition = False
+        preamble._place_non_define_block()
+        # NVR without late macros goes to nvr_conditions
+        assert cond in (
+            preamble.paragraph.items['nvr_conditions']
+            + preamble.paragraph.items['build_conditions']
+        )
+
+    def test_place_define_block(self, preamble):
+        """Define condition block is placed without crash."""
+        from spec_cleaner.rpmpreamble import MacroLine
+
+        preamble.paragraph.items['conditions'] = [MacroLine('%if foo', is_cond=True)]
+        preamble._condition_bcond = False
+        # Should not crash
+        preamble._place_define_block(False, True)
+
+    def test_place_condition_block_dispatch(self, preamble):
+        """Condition block dispatches based on define flag."""
+        from spec_cleaner.rpmpreamble import MacroLine
+
+        cond = MacroLine('%if foo', is_cond=True)
+        preamble.paragraph.items['conditions'] = [cond]
+        preamble._condition_define = False
+        preamble._condition_nvr = False
+        preamble._pattern_condition = False
+        preamble._place_condition_block(False, False)
+        assert preamble.paragraph.items['build_conditions'] == [cond]
