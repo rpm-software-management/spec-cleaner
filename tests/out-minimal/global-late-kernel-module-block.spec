@@ -4,6 +4,8 @@ Version:        1.0
 Release:        0
 %if 0%{?suse_version}
 %define flavor suse
+%global kernel_module_build_ver \
+    %(rpm -q --qf '%%{VERSION}' kernel-default)
 %global kernel_module_ver %{version}
 %endif
 Summary:        Test

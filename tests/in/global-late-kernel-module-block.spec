@@ -7,6 +7,8 @@ License:        MIT
 %if 0%{?suse_version}
 %define flavor suse
 %global kernel_module_ver %{version}
+%global kernel_module_build_ver \
+    %(rpm -q --qf '%%{VERSION}' kernel-default)
 %endif
 
 %description
