@@ -69,6 +69,9 @@ class RpmPreamble(Section):
         # Stack for _condition_bcond to prevent nested blocks from
         # contaminating outer blocks.
         self._bcond_stack = []
+        # Stack for _condition_define so a nested bcond/define block does
+        # not leak the flag to sibling blocks (only parents inherit it).
+        self._define_stack = []
         # Is the condition based on the pattern
         self._pattern_condition = False
         # Does the condition hold Name/Version/Release/Epoch tags
@@ -313,10 +316,6 @@ class RpmPreamble(Section):
                     self.paragraph.add_define_block(self.paragraph.items['conditions'])
                 else:
                     self._place_define_condition(sub_has_bconds, sub_has_defines)
-                # in case the nested condition contains define we consider all parents
-                # to require to be on top too;
-                if len(self._oldstore) == 0:
-                    self._condition_define = False
             else:
                 # the tags define %name/%version/..., which the later tags expand
                 if self._condition_nvr and self.paragraph.reads_late_macros(
@@ -336,10 +335,17 @@ class RpmPreamble(Section):
             # the placement of outer blocks.
             if self._bcond_stack:
                 self._condition_bcond = self._bcond_stack.pop()
+            # Restore the outer block's define flag, keeping the "contains
+            # defines" bit so parents of a nested bcond/define block still
+            # move to the top; siblings start fresh instead of inheriting it.
+            if self._define_stack:
+                self._condition_define = self._define_stack.pop() or self._condition_define
             # top-level reset
             if len(self._oldstore) == 0:
                 self._condition_bcond = False
                 self._bcond_stack = []
+                self._condition_define = False
+                self._define_stack = []
                 self._pattern_condition = False
                 self._condition_nvr = False
             self.paragraph.items['conditions'] = []
@@ -595,6 +601,11 @@ class RpmPreamble(Section):
             self._condition_continued = line.endswith('\\')
             # save the outer block's flag before setting this block's own
             self._bcond_stack.append(self._condition_bcond)
+            # save the outer block's define flag and start this block fresh;
+            # a nested bcond/define block must not leak the flag to the
+            # sibling blocks parsed after it, only parents inherit it
+            self._define_stack.append(self._condition_define)
+            self._condition_define = False
             # check for possibility of the bcond conditional
             # Reset for each new block; the flag is sticky otherwise and
             # contaminates subsequent non-bcond conditionals.
@@ -623,6 +634,8 @@ class RpmPreamble(Section):
             self._multilinecond_depth += 1
             # the block keeps the outer block's flag, restored at its closing brace
             self._bcond_stack.append(self._condition_bcond)
+            self._define_stack.append(self._condition_define)
+            self._condition_define = False
             self.start_subparagraph()
             self.previous_line = line
             return
