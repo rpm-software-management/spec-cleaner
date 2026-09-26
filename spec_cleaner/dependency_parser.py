@@ -23,7 +23,8 @@ re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
 re_spaces = re.compile(r'(\s*,\s*|\s+)')
 re_macro_unbraced = re.compile('%[?]?[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
-re_conditional_version = re.compile(r'%\{[!?]*\w+:\s*[<>=]')
+# rpm only accepts ? ?? ?! and !? here, a bare ! makes it reject the whole token
+re_conditional_version = re.compile(r'%\{(?:\?!|!\?|\?\??)\w+:\s*[<>=]')
 
 logger = logging.getLogger('DepParser')
 # Switch to logging.DEBUG if needed
