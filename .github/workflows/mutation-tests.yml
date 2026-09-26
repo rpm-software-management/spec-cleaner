@@ -8,7 +8,7 @@ on:
         required: false
         default: 'spec_cleaner.rpmsection.*'
   schedule:
-    # Sunday 04:00 UTC, the corpus sweep runs at 02:00
+    # Sunday 04:00 UTC
     - cron: '0 4 * * 0'
 
 permissions:
@@ -35,18 +35,11 @@ jobs:
       - name: Install
         run: pip install -e . -r devel-requirements.pip
 
-      # mutmut keeps the results of every mutant it already ran in mutants/,
-      # restoring it turns the weekly run into a delta instead of a full sweep
-      - name: Restore mutant cache
-        uses: actions/cache/restore@v4
-        with:
-          path: mutants
-          key: mutants-${{ runner.os }}-${{ hashFiles('spec_cleaner/**/*.py', 'pyproject.toml') }}
-
       # survivors do not fail the run, the score is reported below instead
       - name: Run
-        # shellcheck disable=SC2086  # the scope is a list of wildcards, it must stay splat
-        run: mutmut run $MUTMUT_SCOPE
+        run: |
+          # shellcheck disable=SC2086  # the scope is a list of wildcards, it must stay split
+          mutmut run $MUTMUT_SCOPE
 
       - name: Report
         run: |
@@ -58,7 +51,12 @@ jobs:
 
           with open('mutants/mutmut-cicd-stats.json') as f:
               stats = json.load(f)
-          tested = int(stats.get('total', 0)) - int(stats.get('skipped', 0))
+          # the total also counts the mutants of every module outside the scope,
+          # which were never run, so score over the mutants that got a verdict
+          tested = sum(
+              int(stats.get(k, 0))
+              for k in ('killed', 'timeout', 'survived', 'no_tests', 'suspicious', 'segfault')
+          )
           # a timeout is a mutant that hung instead of failing an assertion,
           # score it as caught but report it apart from the real kills
           timeouts = int(stats.get('timeout', 0))
@@ -73,12 +71,6 @@ jobs:
                   file=out,
               )
           EOF
-
-      - name: Store the cache for the next run
-        uses: actions/cache/save@v4
-        with:
-          path: mutants
-          key: mutants-${{ runner.os }}-${{ hashFiles('spec_cleaner/**/*.py', 'pyproject.toml') }}
 
       - name: Upload stats
         uses: actions/upload-artifact@v4
