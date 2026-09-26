@@ -237,6 +237,8 @@ jobs:
     - name: Open tickets for new failures
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # There is no checkout here for gh to read the repository from.
+        GH_REPO: ${{ github.repository }}
       run: |
         python - <<'EOF'
         import json, os, subprocess, sys
@@ -283,7 +285,7 @@ jobs:
             ['gh', 'issue', 'list', '--label', 'corpus-sweep',
              '--state', 'all', '--json', 'title,number,state',
              '--limit', '2000'],
-            capture_output=True, text=True).stdout
+            stdout=subprocess.PIPE, text=True, check=True).stdout
         tickets = json.loads(existing) if existing.strip() else []
         print(f'Dedup baseline: {len(tickets)} past corpus-sweep tickets',
               flush=True)
