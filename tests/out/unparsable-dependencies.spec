@@ -10,6 +10,7 @@ BuildRequires:  pkgconfig >= 2.2
 # FIXME: Use %requires_eq macro instead
 Requires:       %(rpm -q --queryformat '%{VERSION}' foo)
 Requires:       baz %{qux
+Requires:       quux >= 1 < 2
 
 %description
 Test.
