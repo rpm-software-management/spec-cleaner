@@ -25,6 +25,7 @@ Provides:       kchmviewer = 8.0^fork
 BuildRequires:  %?suse_sgx_gcc_major
 Supplements:    modalias(mdio:0000000000110011100111??????????)
 Requires:       (ibus or fcitx) %dnl boo#1251853
+Requires:       bar baz %dnl boo#1251853
 BuildRequires:  %{python_module mock} ## <-- not available anymore!
 Requires:       foo # a normal comment
 Supplements:    packageand(apache2:%name)
