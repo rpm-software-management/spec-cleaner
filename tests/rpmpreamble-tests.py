@@ -186,3 +186,5 @@ class TestRpmPreamble:
             (True, False),
             (False, True),
         ]
+
+

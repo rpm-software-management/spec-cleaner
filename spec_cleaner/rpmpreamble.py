@@ -276,79 +276,104 @@ class RpmPreamble(Section):
         next section header goes after everything else, as its %endif follows
         that section.
         """
-        if not self._oldstore:
-            nested = False
-        else:
-            nested = True
-        if any(self.paragraph.items[i] for i in ('name', 'version', 'release', 'epoch')):
-            self._condition_nvr = True
-        # Track whether the sub block defines bconds (for placement).
-        # This is based on the sub's content, not the parent's state.
-        # (read before flattening, which moves late defines out of 'define')
-        sub_has_bconds = len(self.paragraph.items['bconds']) > 0
-        sub_has_defines = len(self.paragraph.items['define']) > 0
-        if sub_has_defines or sub_has_bconds:
-            self._condition_define = True
+        nested = len(self._oldstore) > 0
+        self._track_condition_flags()
+        sub_has_bconds, sub_has_defines = self._get_sub_block_flags()
         lines = self.paragraph.flatten_output(False, nested)
         self.paragraph = self._oldstore.pop(-1)
         self.paragraph.items['conditions'] += lines
 
         if unclosed:
-            self.paragraph.items['open_conditions'] += self.paragraph.items['conditions']
-            self.paragraph.items['conditions'] = []
+            self._handle_unclosed_condition()
             return
 
         # If we are on endif we check the condition content
         # and if we find the defines we put it on top.
         if endif or not self.condition:
-            self._prune_empty_condition()
-            self._prune_ppc_condition()
-            if self._condition_define:
-                # in source order; _split_late_globals moves it below the tags or bconds it reads
-                if (
-                    self._condition_bcond
-                    or self.paragraph.has_late_globals(self.paragraph.items['conditions'])
-                    or (
-                        sub_has_bconds
-                        and self.paragraph.reads_moved_macros(self.paragraph.items['conditions'])
-                    )
-                ):
-                    self.paragraph.add_define_block(self.paragraph.items['conditions'])
-                else:
-                    self._place_define_condition(sub_has_bconds, sub_has_defines)
-            else:
-                # the tags define %name/%version/..., which the later tags expand
-                if self._condition_nvr and self.paragraph.reads_late_macros(
-                    self.paragraph.items['conditions']
-                ):
-                    # in source order; _split_late_globals keeps it below the globals it reads
-                    self.paragraph.add_define_block(self.paragraph.items['conditions'])
-                elif self._condition_nvr:
-                    self.paragraph.items['nvr_conditions'] += self.paragraph.items['conditions']
-                elif self._pattern_condition:
-                    self.paragraph.items['patterncodeblock'] += self.paragraph.items['conditions']
-                else:
-                    self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
-
-            # Restore the outer block's bcond flag from the stack.
-            # This prevents nested bcond conditionals from contaminating
-            # the placement of outer blocks.
-            if self._bcond_stack:
-                self._condition_bcond = self._bcond_stack.pop()
-            # Restore the outer block's define flag, keeping the "contains
-            # defines" bit so parents of a nested bcond/define block still
-            # move to the top; siblings start fresh instead of inheriting it.
-            if self._define_stack:
-                self._condition_define = self._define_stack.pop() or self._condition_define
-            # top-level reset
-            if len(self._oldstore) == 0:
-                self._condition_bcond = False
-                self._bcond_stack = []
-                self._condition_define = False
-                self._define_stack = []
-                self._pattern_condition = False
-                self._condition_nvr = False
+            self._place_condition_block(sub_has_bconds, sub_has_defines)
+            self._restore_condition_flags()
             self.paragraph.items['conditions'] = []
+
+    def _track_condition_flags(self) -> None:
+        """Track NVR and define/bcond flags from the current paragraph state."""
+        if any(self.paragraph.items[i] for i in ('name', 'version', 'release', 'epoch')):
+            self._condition_nvr = True
+        # Track whether the sub block defines bconds (for placement).
+        # This is based on the sub's content, not the parent's state.
+        # (read before flattening, which moves late defines out of 'define')
+        if len(self.paragraph.items['define']) > 0 or len(self.paragraph.items['bconds']) > 0:
+            self._condition_define = True
+
+    def _get_sub_block_flags(self) -> tuple[bool, bool]:
+        """Get bcond and define flags for the sub block. Return (has_bconds, has_defines)."""
+        sub_has_bconds = len(self.paragraph.items['bconds']) > 0
+        sub_has_defines = len(self.paragraph.items['define']) > 0
+        return sub_has_bconds, sub_has_defines
+
+    def _handle_unclosed_condition(self) -> None:
+        """Move conditions to open_conditions for unclosed blocks."""
+        self.paragraph.items['open_conditions'] += self.paragraph.items['conditions']
+        self.paragraph.items['conditions'] = []
+
+    def _place_condition_block(self, sub_has_bconds: bool, sub_has_defines: bool) -> None:
+        """Place the condition block in the appropriate paragraph section."""
+        self._prune_empty_condition()
+        self._prune_ppc_condition()
+        if self._condition_define:
+            self._place_define_block(sub_has_bconds, sub_has_defines)
+        else:
+            self._place_non_define_block()
+
+    def _place_define_block(self, sub_has_bconds: bool, sub_has_defines: bool) -> None:
+        """Place a condition block that contains defines."""
+        # in source order; _split_late_globals moves it below the tags or bconds it reads
+        if (
+            self._condition_bcond
+            or self.paragraph.has_late_globals(self.paragraph.items['conditions'])
+            or (
+                sub_has_bconds
+                and self.paragraph.reads_moved_macros(self.paragraph.items['conditions'])
+            )
+        ):
+            self.paragraph.add_define_block(self.paragraph.items['conditions'])
+        else:
+            self._place_define_condition(sub_has_bconds, sub_has_defines)
+
+    def _place_non_define_block(self) -> None:
+        """Place a condition block without defines based on NVR/pattern flags."""
+        # the tags define %name/%version/..., which the later tags expand
+        if self._condition_nvr and self.paragraph.reads_late_macros(
+            self.paragraph.items['conditions']
+        ):
+            # in source order; _split_late_globals keeps it below the globals it reads
+            self.paragraph.add_define_block(self.paragraph.items['conditions'])
+        elif self._condition_nvr:
+            self.paragraph.items['nvr_conditions'] += self.paragraph.items['conditions']
+        elif self._pattern_condition:
+            self.paragraph.items['patterncodeblock'] += self.paragraph.items['conditions']
+        else:
+            self.paragraph.items['build_conditions'] += self.paragraph.items['conditions']
+
+    def _restore_condition_flags(self) -> None:
+        """Restore bcond/define flags from stacks and reset at top level."""
+        # Restore the outer block's bcond flag from the stack.
+        # This prevents nested bcond conditionals from contaminating
+        # the placement of outer blocks.
+        if self._bcond_stack:
+            self._condition_bcond = self._bcond_stack.pop()
+        # Restore the outer block's define flag, keeping the "contains
+        # defines" bit so parents of a nested bcond/define block still
+        # move to the top; siblings start fresh instead of inheriting it.
+        if self._define_stack:
+            self._condition_define = self._define_stack.pop() or self._condition_define
+        # top-level reset
+        if len(self._oldstore) == 0:
+            self._condition_bcond = False
+            self._bcond_stack = []
+            self._condition_define = False
+            self._define_stack = []
+            self._pattern_condition = False
+            self._condition_nvr = False
 
     @staticmethod
     def _pkgname_to_brackety(token, brackety, conversions):
@@ -535,6 +560,492 @@ class RpmPreamble(Section):
         # a one-line condition is evaluated when parsed, even around %define
         return MacroLine(line, is_global=is_global, is_eager=is_global or oneline)
 
+    def _handle_continued_condition(self, line):
+        """Append a continued %if/%elif line to the open condition. Return True if handled."""
+        if not self._condition_continued:
+            return False
+        self._condition_continued = line.endswith('\\')
+        line = MacroLine(line, is_cond=True, is_eager=True)
+        self._oldstore[-1].items['conditions'].append(line)
+        if '%{with' in line or '%{without' in line:
+            self._condition_bcond = True
+        self.previous_line = line
+        return True
+
+    def _handle_multiline(self, line):
+        """Append to a multiline %define. Return True if handled."""
+        if not self.multiline:
+            return False
+        line = MacroLine(
+            line, is_global=self._multiline_global, is_eager=self._multiline_global
+        )
+        self.paragraph.items['define'][-1].append(line)
+        self.previous_line = line
+        # if it is no longer trailed with backslash
+        # or if the braces of the expand are balanced then stop
+        if self.multiline_expand:
+            self._expand_depth += line.count('{') - line.count('}')
+            if self._expand_depth <= 0:
+                self.multiline_expand = False
+                self.multiline = False
+        else:
+            if not line.endswith('\\'):
+                self.multiline = False
+        return True
+
+    def _handle_if(self, line):
+        """Open a new conditional block. Return True if handled."""
+        if not (self.reg.re_if.match(line) or self.reg.re_codeblock.match(line)):
+            return False
+        self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
+        self.condition = True
+        self._condition_continued = line.endswith('\\')
+        # save the outer block's flag before setting this block's own
+        self._bcond_stack.append(self._condition_bcond)
+        # save the outer block's define flag and start this block fresh;
+        # a nested bcond/define block must not leak the flag to the
+        # sibling blocks parsed after it, only parents inherit it
+        self._define_stack.append(self._condition_define)
+        self._condition_define = False
+        # check for possibility of the bcond conditional
+        # Reset for each new block; the flag is sticky otherwise and
+        # contaminates subsequent non-bcond conditionals.
+        if '%{with' in line or '%{without' in line:
+            self._condition_bcond = True
+        else:
+            self._condition_bcond = False
+        self.start_subparagraph()
+        self.previous_line = line
+        return True
+
+    def _handle_elif(self, line):
+        """Handle %elif/%else. Return True if handled."""
+        if not self.reg.re_else_elif.match(line):
+            return False
+        if self.condition:
+            self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
+            self.end_subparagraph()
+            self.start_subparagraph()
+            self._condition_continued = line.endswith('\\')
+        self.previous_line = line
+        return True
+
+    def _handle_multilinecond_start(self, line):
+        """Open a %{?cond: block. Return True if handled."""
+        if not self.reg.re_multilinecond.match(line):
+            return False
+        # Multi-line %{?cond: block is an abbreviated %if cond block,
+        # parse it as a condition so the dependencies inside keep it.
+        self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
+        self.condition = True
+        self._multilinecond_depth += 1
+        # the block keeps the outer block's flag, restored at its closing brace
+        self._bcond_stack.append(self._condition_bcond)
+        self._define_stack.append(self._condition_define)
+        self._condition_define = False
+        self.start_subparagraph()
+        self.previous_line = line
+        return True
+
+    def _handle_endif(self, line):
+        """Close a conditional block. Return True if handled."""
+        if not (
+            self.reg.re_endif.match(line)
+            or self.reg.re_endcodeblock.match(line)
+            or (self._multilinecond_depth > 0 and self.reg.re_endmultilinecond.match(line))
+        ):
+            return False
+        # A lone } closes a multi-line %{?cond: block.
+        if self.reg.re_endmultilinecond.match(line):
+            self._multilinecond_depth -= 1
+        self._add_line_to('conditions', line)
+        # Set conditions to false only if we are
+        # closing last of the nested ones
+        if len(self._oldstore) == 1:
+            self.condition = False
+        self.end_subparagraph(True)
+        self.previous_line = line
+        return True
+
+    def _handle_comment(self, line):
+        """Add a comment line to the current group. Return True if handled."""
+        if not (self.reg.re_comment.match(line) and not self.reg.re_buildignores.match(line)):
+            return False
+        if line or self.previous_line:
+            self.paragraph.current_group.append(line)
+            self.previous_line = line
+        if not line:
+            self._comments_before_blank = len(self.paragraph.current_group)
+        return True
+
+    def _handle_url(self, line):
+        """Handle URL tag, upgrading to https if reachable. Return True if handled."""
+        if not self.reg.re_url.match(line):
+            return False
+        match = self.reg.re_url.match(line)
+        secure_url = self._make_secure_url(match.group(1), force_https=True)
+        self._add_line_value_to('url', secure_url, key='URL')
+        return True
+
+    def _handle_source(self, line):
+        """Handle Source tag with pypi and https enhancements. Return True if handled."""
+        if not self.reg.re_source.match(line):
+            return False
+        match = self.reg.re_source.match(line)
+        source = match.group(2)
+        secure_source_available = False
+
+        # expand the spec file to get URLs that can be checked
+        # (best-effort: pyrpm chokes on some valid spec files)
+        try:
+            # parse the spec once per run, not once per Source line
+            if 'pyrpm_spec' not in self.options:
+                self.options['pyrpm_spec'] = pyrpm.spec.Spec.from_file(self.options['specfile'])
+            spec = self.options['pyrpm_spec']
+            # expand the cleaned value, spec.sources holds the raw (not curlified) text
+            expanded_source_url = pyrpm.spec.replace_macros(source, spec)
+            if self._make_secure_url(expanded_source_url) != expanded_source_url:
+                secure_source_available = True
+        except Exception:
+            # On pyrpm failure, continue with normal Source handling;
+            # only the HTTPS availability enhancement is skipped.
+            pass
+
+        if not self.minimal:
+            source = self._fix_pypi_source(source)
+            if secure_source_available:
+                source = self._make_secure_url(source, skip_availabilty_check=True)
+        self._add_line_value_to('source', source, key=f'Source{match.group(1)}')
+        return True
+
+    def _handle_patch(self, line):
+        """Handle Patch tag, numbering unnumbered patches. Return True if handled."""
+        if not self.reg.re_patch.match(line):
+            return False
+        match = self.reg.re_patch.match(line)
+        number = match.group(2)
+        # %prep applies the bare %patch as '%patch -P 0'
+        if not number and not match.group(1) and self.options['rename_unnumbered_patch']:
+            number = '0'
+            self.options['rename_unnumbered_patch'] = False
+        self._add_line_value_to(
+            'patch',
+            match.group(3),
+            key=f'{match.group(1)}Patch{number}',
+        )
+        return True
+
+    def _handle_buildoption_phase(self, line):
+        """Handle BuildOption tag. Return True if handled."""
+        if not self.reg.re_buildoption_phase.match(line):
+            return False
+        match = self.reg.re_buildoption_phase.match(line)
+        value = match.group(2)
+        self._add_line_value_to('buildoption_phase', value, key=f'BuildOption{match.group(1)}')
+        return True
+
+    def _handle_bcond_with(self, line):
+        """Handle %bcond_with line. Return True if handled."""
+        if not self.reg.re_bcond_with.match(line):
+            return False
+        self._add_line_to('bconds', line)
+        return True
+
+    def _handle_mingw(self, line):
+        """Handle mingw define. Return True if handled."""
+        if not self.reg.re_mingw.match(line):
+            return False
+        self._add_line_to('define', line)
+        return True
+
+    def _handle_patterndefine(self, line):
+        """Handle pattern define. Return True if handled."""
+        if not self.reg.re_patterndefine.match(line):
+            return False
+        self._add_line_to('define', line)
+        return True
+
+    def _handle_patternprovides(self, line):
+        """Handle Provides with pattern macro. Return True if handled."""
+        if not (self.reg.re_provides.match(line) and self.reg.re_patternmacro.search(line)):
+            return False
+        match = self.reg.re_provides.match(line)
+        self._add_line_value_to('patternprovides', match.group(1), key='Provides')
+        return True
+
+    def _handle_patternobsoletes_provides(self, line):
+        """Handle Provides with pattern obsolete. Return True if handled."""
+        if not (self.reg.re_provides.match(line) and self.reg.re_patternobsolete.search(line)):
+            return False
+        match = self.reg.re_provides.match(line)
+        self._add_line_value_to('patternobsoletes', match.group(1), key='Provides')
+        return True
+
+    def _handle_patternrequires(self, line):
+        """Handle Requires with pattern macro. Return True if handled."""
+        if not (self.reg.re_requires.match(line) and self.reg.re_patternmacro.search(line)):
+            return False
+        match = self.reg.re_requires.match(line)
+        self._add_line_value_to('patternrequires', match.group(1), key='Requires')
+        return True
+
+    def _handle_patternrecommends(self, line):
+        """Handle Recommends with pattern macro. Return True if handled."""
+        if not (self.reg.re_recommends.match(line) and self.reg.re_patternmacro.search(line)):
+            return False
+        match = self.reg.re_recommends.match(line)
+        self._add_line_value_to('patternrecommends', match.group(1), key='Recommends')
+        return True
+
+    def _handle_patternsuggests(self, line):
+        """Handle Suggests with pattern macro. Return True if handled."""
+        if not (self.reg.re_suggests.match(line) and self.reg.re_patternmacro.search(line)):
+            return False
+        match = self.reg.re_suggests.match(line)
+        self._add_line_value_to('patternsuggests', match.group(1), key='Suggests')
+        return True
+
+    def _handle_patternobsoletes(self, line):
+        """Handle Obsoletes with pattern obsolete. Return True if handled."""
+        if not (self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(line)):
+            return False
+        match = self.reg.re_obsoletes.match(line)
+        self._add_line_value_to('patternobsoletes', match.group(1), key='Obsoletes')
+        return True
+
+    def _handle_requires_eq(self, line):
+        """Handle Requires with = version. Return True if handled."""
+        if not self.reg.re_requires_eq.match(line):
+            return False
+        match = self.reg.re_requires_eq.match(line)
+        if match.group(1):
+            # if we were wrapped in curly definiton we need to remove
+            # the trailing curly bracket
+            value = match.group(2)[:-1]
+        else:
+            value = match.group(2)
+        self._add_line_value_to('requires_eq', value)
+        return True
+
+    def _handle_requires_ge(self, line):
+        """Handle Requires with >= version. Return True if handled."""
+        if not self.reg.re_requires_ge.match(line):
+            return False
+        match = self.reg.re_requires_ge.match(line)
+        if match.group(1):
+            # if we were wrapped in curly definiton we need to remove
+            # the trailing curly bracket
+            value = match.group(2)[:-1]
+        else:
+            value = match.group(2)
+        self._add_line_value_to('requires_ge', value)
+        return True
+
+    def _handle_onelinecond_dep(self, line):
+        """Handle one-line conditional dependency. Return True if handled."""
+        if not self.reg.re_onelinecond_dep.match(line):
+            return False
+        # One-line conditional dependency (%{?cond:BuildRequires: ...}) is
+        # an abbreviated %if cond ... %endif block, keep it with the
+        # other conditions instead of the defines at the top.
+        self._add_line_to('build_conditions', self._macro_line(line))
+        return True
+
+    def _handle_define(self, line):
+        """Handle %define/%global/%{?cond:...} lines. Return True if handled."""
+        if not (
+            self.reg.re_define.match(line)
+            or self.reg.re_global.match(line)
+            or self.reg.re_onelinecond.match(line)
+        ):
+            return False
+        line = self._macro_line(line)
+        self._multiline_global = line.is_global
+        if line.endswith('\\'):
+            self.multiline = True
+        open_braces = line.count('{') - line.count('}')
+        if '%{expand:' in line and open_braces > 0:
+            self.multiline = True
+            self.multiline_expand = True
+            self._expand_depth = open_braces
+        # if we are kernel and not multiline we need to be at bottom, so
+        # lets use misc section, otherwise go for define
+        if not self.multiline and line.find('kernel_module') >= 0:
+            self._add_line_to('misc', line)
+        else:
+            self._add_line_to('define', line)
+
+        # catch "modname" for use in pypi url rewriting
+        match = self.reg.re_modname_define.match(line)
+        if match:
+            # a macro value cannot be put into the url path
+            self.modname = None if match.group(1).startswith('%') else match.group(1)
+        return True
+
+    def _handle_prereq(self, line):
+        """Handle PreReq tag. Return True if handled."""
+        if not self.reg.re_prereq.match(line):
+            return False
+        match = self.reg.re_prereq.match(line)
+        self._add_line_value_to('prereq', match.group(1))
+        return True
+
+    def _handle_requires(self, line):
+        """Handle Requires tag, replacing pwdutils with shadow. Return True if handled."""
+        if not self.reg.re_requires.match(line):
+            return False
+        match = self.reg.re_requires.match(line)
+        if match.group(1) == 'pwdutils' and not self.condition and not self.minimal:
+            value = 'shadow'
+        else:
+            value = match.group(1)
+        self._add_line_value_to('requires', value, key='Requires')
+        return True
+
+    def _handle_requires_phase(self, line):
+        """Handle Requires(phase) tag. Return True if handled."""
+        if not self.reg.re_requires_phase.match(line):
+            return False
+        match = self.reg.re_requires_phase.match(line)
+        # Put the requires content properly as key for formatting
+        if match.group(2) == 'pwdutils' and not self.condition and not self.minimal:
+            value = 'shadow'
+        else:
+            value = match.group(2)
+        self._add_line_value_to('requires_phase', value, key=f'Requires{match.group(1)}')
+        return True
+
+    def _handle_provides(self, line):
+        """Handle Provides tag. Return True if handled."""
+        if not self.reg.re_provides.match(line):
+            return False
+        match = self.reg.re_provides.match(line)
+        self._add_line_value_to('provides_obsoletes', match.group(1), key='Provides')
+        return True
+
+    def _handle_obsoletes(self, line):
+        """Handle Obsoletes tag. Return True if handled."""
+        if not self.reg.re_obsoletes.match(line):
+            return False
+        match = self.reg.re_obsoletes.match(line)
+        self._add_line_value_to('provides_obsoletes', match.group(1), key='Obsoletes')
+        return True
+
+    def _handle_license(self, line):
+        """Handle License tag with format conversion. Return True if handled."""
+        if not self.reg.re_license.match(line):
+            return False
+        # first convert the license string to proper format and then append
+        match = self.reg.re_license.match(line)
+        value = match.groups()[len(match.groups()) - 1]
+        value = fix_license(value, self.license_conversions)
+        self._has_license = True
+        # only store subpkgs if they have different licenses
+        if not (type(self).__name__ == 'RpmPackage' and not self.subpkglicense):
+            self._add_line_value_to('license', value)
+        else:
+            self._drop_pending_comments()
+        return True
+
+    def _handle_release(self, line):
+        """Handle Release tag. Return True if handled."""
+        if not self.reg.re_release.match(line):
+            return False
+        match = self.reg.re_release.match(line)
+        value = match.group(1)
+        if re.search(r'[a-zA-Z\s]', value):
+            self._add_line_value_to('release', value)
+        else:
+            self._add_line_value_to('release', '0')
+        return True
+
+    def _handle_summary_localized(self, line):
+        """Handle localized Summary tag. Return True if handled."""
+        if not self.reg.re_summary_localized.match(line):
+            return False
+        match = self.reg.re_summary_localized.match(line)
+        # we need to know what language we need
+        language = match.group(1)
+        # and what value is there
+        content = match.group(2)
+        self._add_line_value_to('summary_localized', content, key=f'Summary{language}')
+        return True
+
+    def _handle_group(self, line):
+        """Handle Group tag with validation. Return True if handled."""
+        if not self.reg.re_group.match(line):
+            return False
+        # remove groups if requested
+        if not self.minimal and self.remove_groups:
+            self._drop_pending_comments()
+            return True
+
+        # validate (if we have a list of groups)
+        match = self.reg.re_group.match(line)
+        value = match.group(1)
+        if not self.minimal and self.allowed_groups:
+            if (
+                self.previous_line
+                and not self.previous_line.startswith('# FIXME')
+                and value not in self.allowed_groups
+            ):
+                self.paragraph.current_group.append(
+                    '# FIXME: use correct group or remove it,'
+                    ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"'
+                )
+        self._add_line_value_to('group', value)
+        return True
+
+    def _handle_buildarch(self, line):
+        """Handle BuildArch/ExclusiveArch tags. Return True if handled."""
+        if not self.reg.re_buildarch.match(line):
+            return False
+        match = self.reg.re_buildarch.match(line)
+        value = match.group(2)
+        if value.startswith('noarch'):
+            self._add_line_value_to('buildarch', value)
+        else:
+            self._add_line_value_to('exclusivearch', value)
+        return True
+
+    def _handle_head_macros(self, line):
+        """Handle head macros. Return True if handled."""
+        if not self.reg.re_head_macros.match(line):
+            return False
+        self._add_line_value_to('head', line)
+        return True
+
+    def _handle_fallback(self, line):
+        """Handle remaining categories via table lookup, else misc. Always handles."""
+        # loop for all other matching categories which
+        # do not require special attention
+        # cleanup
+        for _category, regexp in self.category_to_clean.items():
+            match = regexp.match(line)
+            if match:
+                self._drop_pending_comments()
+                return True
+
+        # simple matching
+        for category, regexp in self.category_to_re.items():
+            match = regexp.match(line)
+            if match:
+                # instead of matching first group as there is only one,
+                # take the last group (including "whole match" if no groups present)
+                # (so I can have more advanced regexp for RPM tags)
+                self._add_line_value_to(category, match.group(len(match.groups())))
+                return True
+
+        self._add_line_to('misc', line)
+        return True
+
+    def _handle_empty_line(self, line):
+        """Skip empty lines unless keep_space is set. Return True if handled."""
+        if self.keep_space or len(line) != 0:
+            return False
+        self._comments_before_blank = len(self.paragraph.current_group)
+        return True
+
     def add(self, line):
         """Run over options and add the determined line to proper location."""
         # a } ending a line also closes a %{?cond: block; split it off so sorting keeps it last
@@ -555,39 +1066,17 @@ class RpmPreamble(Section):
             self._pattern_condition = True
 
         # the continued condition stays right after its %if/%elif line
-        if self._condition_continued:
-            self._condition_continued = line.endswith('\\')
-            line = MacroLine(line, is_cond=True, is_eager=True)
-            self._oldstore[-1].items['conditions'].append(line)
-            if '%{with' in line or '%{without' in line:
-                self._condition_bcond = True
-            self.previous_line = line
+        if self._handle_continued_condition(line):
             return
 
         # if it is multiline variable then we need to append to previous content
         # also multiline is allowed only for define lines so just cheat and
         # know ahead
-        if self.multiline:
-            line = MacroLine(
-                line, is_global=self._multiline_global, is_eager=self._multiline_global
-            )
-            self.paragraph.items['define'][-1].append(line)
-            self.previous_line = line
-            # if it is no longer trailed with backslash
-            # or if the braces of the expand are balanced then stop
-            if self.multiline_expand:
-                self._expand_depth += line.count('{') - line.count('}')
-                if self._expand_depth <= 0:
-                    self.multiline_expand = False
-                    self.multiline = False
-            else:
-                if not line.endswith('\\'):
-                    self.multiline = False
+        if self._handle_multiline(line):
             return
 
         # if the line is empty, just skip it, unless keep_space is true
-        elif not self.keep_space and len(line) == 0:
-            self._comments_before_blank = len(self.paragraph.current_group)
+        if self._handle_empty_line(line):
             return
 
         # If we match the if else or endif we create subgroup
@@ -595,352 +1084,111 @@ class RpmPreamble(Section):
         # else where we mark end of paragraph or endif
         # which mark the end of our subclass and that we can
         # return the data to our main class for at-bottom placement
-        elif self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
-            self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
-            self.condition = True
-            self._condition_continued = line.endswith('\\')
-            # save the outer block's flag before setting this block's own
-            self._bcond_stack.append(self._condition_bcond)
-            # save the outer block's define flag and start this block fresh;
-            # a nested bcond/define block must not leak the flag to the
-            # sibling blocks parsed after it, only parents inherit it
-            self._define_stack.append(self._condition_define)
-            self._condition_define = False
-            # check for possibility of the bcond conditional
-            # Reset for each new block; the flag is sticky otherwise and
-            # contaminates subsequent non-bcond conditionals.
-            if '%{with' in line or '%{without' in line:
-                self._condition_bcond = True
-            else:
-                self._condition_bcond = False
-            self.start_subparagraph()
-            self.previous_line = line
+        if self._handle_if(line):
             return
 
-        elif self.reg.re_else_elif.match(line):
-            if self.condition:
-                self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
-                self.end_subparagraph()
-                self.start_subparagraph()
-                self._condition_continued = line.endswith('\\')
-            self.previous_line = line
+        if self._handle_elif(line):
             return
 
-        elif self.reg.re_multilinecond.match(line):
-            # Multi-line %{?cond: block is an abbreviated %if cond block,
-            # parse it as a condition so the dependencies inside keep it.
-            self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
-            self.condition = True
-            self._multilinecond_depth += 1
-            # the block keeps the outer block's flag, restored at its closing brace
-            self._bcond_stack.append(self._condition_bcond)
-            self._define_stack.append(self._condition_define)
-            self._condition_define = False
-            self.start_subparagraph()
-            self.previous_line = line
+        if self._handle_multilinecond_start(line):
             return
 
-        elif (
-            self.reg.re_endif.match(line)
-            or self.reg.re_endcodeblock.match(line)
-            or (self._multilinecond_depth > 0 and self.reg.re_endmultilinecond.match(line))
-        ):
-            # A lone } closes a multi-line %{?cond: block.
-            if self.reg.re_endmultilinecond.match(line):
-                self._multilinecond_depth -= 1
-            self._add_line_to('conditions', line)
-            # Set conditions to false only if we are
-            # closing last of the nested ones
-            if len(self._oldstore) == 1:
-                self.condition = False
-            self.end_subparagraph(True)
-            self.previous_line = line
+        if self._handle_endif(line):
             return
 
-        elif self.reg.re_comment.match(line) and not self.reg.re_buildignores.match(line):
-            if line or self.previous_line:
-                self.paragraph.current_group.append(line)
-                self.previous_line = line
-            if not line:
-                self._comments_before_blank = len(self.paragraph.current_group)
+        if self._handle_comment(line):
             return
 
         # replace 'http' with 'https' in URL if https is reachable (#246)
-        elif self.reg.re_url.match(line):
-            match = self.reg.re_url.match(line)
-            secure_url = self._make_secure_url(match.group(1), force_https=True)
-            self._add_line_value_to('url', secure_url, key='URL')
+        if self._handle_url(line):
             return
 
-        elif self.reg.re_source.match(line):
-            match = self.reg.re_source.match(line)
-            source = match.group(2)
-            secure_source_available = False
-
-            # expand the spec file to get URLs that can be checked
-            # (best-effort: pyrpm chokes on some valid spec files)
-            try:
-                # parse the spec once per run, not once per Source line
-                if 'pyrpm_spec' not in self.options:
-                    self.options['pyrpm_spec'] = pyrpm.spec.Spec.from_file(self.options['specfile'])
-                spec = self.options['pyrpm_spec']
-                # expand the cleaned value, spec.sources holds the raw (not curlified) text
-                expanded_source_url = pyrpm.spec.replace_macros(source, spec)
-                if self._make_secure_url(expanded_source_url) != expanded_source_url:
-                    secure_source_available = True
-            except Exception:
-                # On pyrpm failure, continue with normal Source handling;
-                # only the HTTPS availability enhancement is skipped.
-                pass
-
-            if not self.minimal:
-                source = self._fix_pypi_source(source)
-                if secure_source_available:
-                    source = self._make_secure_url(source, skip_availabilty_check=True)
-            self._add_line_value_to('source', source, key=f'Source{match.group(1)}')
+        if self._handle_source(line):
             return
 
-        elif self.reg.re_patch.match(line):
-            match = self.reg.re_patch.match(line)
-            number = match.group(2)
-            # %prep applies the bare %patch as '%patch -P 0'
-            if not number and not match.group(1) and self.options['rename_unnumbered_patch']:
-                number = '0'
-                self.options['rename_unnumbered_patch'] = False
-            self._add_line_value_to(
-                'patch',
-                match.group(3),
-                key=f'{match.group(1)}Patch{number}',
-            )
+        if self._handle_patch(line):
             return
 
-        elif self.reg.re_buildoption_phase.match(line):
-            match = self.reg.re_buildoption_phase.match(line)
-            value = match.group(2)
-            self._add_line_value_to('buildoption_phase', value, key=f'BuildOption{match.group(1)}')
+        if self._handle_buildoption_phase(line):
             return
 
-        elif self.reg.re_bcond_with.match(line):
-            self._add_line_to('bconds', line)
+        if self._handle_bcond_with(line):
             return
 
-        elif self.reg.re_mingw.match(line):
-            self._add_line_to('define', line)
+        if self._handle_mingw(line):
             return
 
-        elif self.reg.re_patterndefine.match(line):
-            self._add_line_to('define', line)
+        if self._handle_patterndefine(line):
             return
 
-        elif self.reg.re_provides.match(line) and self.reg.re_patternmacro.search(line):
-            match = self.reg.re_provides.match(line)
-            self._add_line_value_to('patternprovides', match.group(1), key='Provides')
+        if self._handle_patternprovides(line):
             return
 
-        elif self.reg.re_provides.match(line) and self.reg.re_patternobsolete.search(line):
-            match = self.reg.re_provides.match(line)
-            self._add_line_value_to('patternobsoletes', match.group(1), key='Provides')
+        if self._handle_patternobsoletes_provides(line):
             return
 
-        elif self.reg.re_requires.match(line) and self.reg.re_patternmacro.search(line):
-            match = self.reg.re_requires.match(line)
-            self._add_line_value_to('patternrequires', match.group(1), key='Requires')
+        if self._handle_patternrequires(line):
             return
 
-        elif self.reg.re_recommends.match(line) and self.reg.re_patternmacro.search(line):
-            match = self.reg.re_recommends.match(line)
-            self._add_line_value_to('patternrecommends', match.group(1), key='Recommends')
+        if self._handle_patternrecommends(line):
             return
 
-        elif self.reg.re_suggests.match(line) and self.reg.re_patternmacro.search(line):
-            match = self.reg.re_suggests.match(line)
-            self._add_line_value_to('patternsuggests', match.group(1), key='Suggests')
+        if self._handle_patternsuggests(line):
             return
 
-        elif self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(line):
-            match = self.reg.re_obsoletes.match(line)
-            self._add_line_value_to('patternobsoletes', match.group(1), key='Obsoletes')
+        if self._handle_patternobsoletes(line):
             return
 
-        elif self.reg.re_requires_eq.match(line):
-            match = self.reg.re_requires_eq.match(line)
-            if match.group(1):
-                # if we were wrapped in curly definiton we need to remove
-                # the trailing curly bracket
-                value = match.group(2)[:-1]
-            else:
-                value = match.group(2)
-            self._add_line_value_to('requires_eq', value)
+        if self._handle_requires_eq(line):
             return
 
-        elif self.reg.re_requires_ge.match(line):
-            match = self.reg.re_requires_ge.match(line)
-            if match.group(1):
-                # if we were wrapped in curly definiton we need to remove
-                # the trailing curly bracket
-                value = match.group(2)[:-1]
-            else:
-                value = match.group(2)
-            self._add_line_value_to('requires_ge', value)
+        if self._handle_requires_ge(line):
             return
 
-        elif self.reg.re_onelinecond_dep.match(line):
-            # One-line conditional dependency (%{?cond:BuildRequires: ...}) is
-            # an abbreviated %if cond ... %endif block, keep it with the
-            # other conditions instead of the defines at the top.
-            self._add_line_to('build_conditions', self._macro_line(line))
+        if self._handle_onelinecond_dep(line):
             return
 
-        elif (
-            self.reg.re_define.match(line)
-            or self.reg.re_global.match(line)
-            or self.reg.re_onelinecond.match(line)
-        ):
-            line = self._macro_line(line)
-            self._multiline_global = line.is_global
-            if line.endswith('\\'):
-                self.multiline = True
-            open_braces = line.count('{') - line.count('}')
-            if '%{expand:' in line and open_braces > 0:
-                self.multiline = True
-                self.multiline_expand = True
-                self._expand_depth = open_braces
-            # if we are kernel and not multiline we need to be at bottom, so
-            # lets use misc section, otherwise go for define
-            if not self.multiline and line.find('kernel_module') >= 0:
-                self._add_line_to('misc', line)
-            else:
-                self._add_line_to('define', line)
-
-            # catch "modname" for use in pypi url rewriting
-            match = self.reg.re_modname_define.match(line)
-            if match:
-                # a macro value cannot be put into the url path
-                self.modname = None if match.group(1).startswith('%') else match.group(1)
-
+        if self._handle_define(line):
             return
 
-        elif self.reg.re_prereq.match(line):
-            match = self.reg.re_prereq.match(line)
-            self._add_line_value_to('prereq', match.group(1))
+        if self._handle_prereq(line):
             return
 
         # replace pwdutils with shadow in Requires (#247)
-        elif self.reg.re_requires.match(line):
-            match = self.reg.re_requires.match(line)
-            if match.group(1) == 'pwdutils' and not self.condition and not self.minimal:
-                value = 'shadow'
-            else:
-                value = match.group(1)
-            self._add_line_value_to('requires', value, key='Requires')
+        if self._handle_requires(line):
             return
 
         # replace pwdutils with shadow in Requires(phase) (#247)
-        elif self.reg.re_requires_phase.match(line):
-            match = self.reg.re_requires_phase.match(line)
-            # Put the requires content properly as key for formatting
-            if match.group(2) == 'pwdutils' and not self.condition and not self.minimal:
-                value = 'shadow'
-            else:
-                value = match.group(2)
-            self._add_line_value_to('requires_phase', value, key=f'Requires{match.group(1)}')
+        if self._handle_requires_phase(line):
             return
 
-        elif self.reg.re_provides.match(line):
-            match = self.reg.re_provides.match(line)
-            self._add_line_value_to('provides_obsoletes', match.group(1), key='Provides')
+        if self._handle_provides(line):
             return
 
-        elif self.reg.re_obsoletes.match(line):
-            match = self.reg.re_obsoletes.match(line)
-            self._add_line_value_to('provides_obsoletes', match.group(1), key='Obsoletes')
+        if self._handle_obsoletes(line):
             return
 
-        elif self.reg.re_license.match(line):
-            # first convert the license string to proper format and then append
-            match = self.reg.re_license.match(line)
-            value = match.groups()[len(match.groups()) - 1]
-            value = fix_license(value, self.license_conversions)
-            self._has_license = True
-            # only store subpkgs if they have different licenses
-            if not (type(self).__name__ == 'RpmPackage' and not self.subpkglicense):
-                self._add_line_value_to('license', value)
-            else:
-                self._drop_pending_comments()
+        if self._handle_license(line):
             return
 
-        elif self.reg.re_release.match(line):
-            match = self.reg.re_release.match(line)
-            value = match.group(1)
-            if re.search(r'[a-zA-Z\s]', value):
-                self._add_line_value_to('release', value)
-            else:
-                self._add_line_value_to('release', '0')
+        if self._handle_release(line):
             return
 
-        elif self.reg.re_summary_localized.match(line):
-            match = self.reg.re_summary_localized.match(line)
-            # we need to know what language we need
-            language = match.group(1)
-            # and what value is there
-            content = match.group(2)
-            self._add_line_value_to('summary_localized', content, key=f'Summary{language}')
+        if self._handle_summary_localized(line):
             return
 
-        elif self.reg.re_group.match(line):
-            # remove groups if requested
-            if not self.minimal and self.remove_groups:
-                self._drop_pending_comments()
-                return
-
-            # validate (if we have a list of groups)
-            match = self.reg.re_group.match(line)
-            value = match.group(1)
-            if not self.minimal and self.allowed_groups:
-                if (
-                    self.previous_line
-                    and not self.previous_line.startswith('# FIXME')
-                    and value not in self.allowed_groups
-                ):
-                    self.paragraph.current_group.append(
-                        '# FIXME: use correct group or remove it,'
-                        ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"'
-                    )
-            self._add_line_value_to('group', value)
+        if self._handle_group(line):
             return
 
-        elif self.reg.re_buildarch.match(line):
-            match = self.reg.re_buildarch.match(line)
-            value = match.group(2)
-            if value.startswith('noarch'):
-                self._add_line_value_to('buildarch', value)
-            else:
-                self._add_line_value_to('exclusivearch', value)
+        if self._handle_buildarch(line):
+            return
 
-        elif self.reg.re_head_macros.match(line):
-            self._add_line_value_to('head', line)
+        if self._handle_head_macros(line):
+            return
 
         # loop for all other matching categories which
         # do not require special attention
-        else:
-            # cleanup
-            for _category, regexp in self.category_to_clean.items():
-                match = regexp.match(line)
-                if match:
-                    self._drop_pending_comments()
-                    return
-
-            # simple matching
-            for category, regexp in self.category_to_re.items():
-                match = regexp.match(line)
-                if match:
-                    # instead of matching first group as there is only one,
-                    # take the last group (including "whole match" if no groups present)
-                    # (so I can have more advanced regexp for RPM tags)
-                    self._add_line_value_to(category, match.group(len(match.groups())))
-                    return
-
-            self._add_line_to('misc', line)
+        self._handle_fallback(line)
 
     def output(self, fout, newline=True, new_class=None):
         """Dump the results to the output list."""
