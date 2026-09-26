@@ -1,6 +1,7 @@
 # Pip Requirement file for development
 
 coveralls
+mutmut
 mypy
 pre-commit
 pytest
