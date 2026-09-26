@@ -3,6 +3,7 @@
 %define __cc clang
 %define __cxx clang++
 %endif
+%define __make make -j4
 %global __python3 /usr/bin/python3.11
 Name:           foo
 Version:        1.0
@@ -16,6 +17,7 @@ Test package.
 
 %build
 export CC=%{__cc} CXX=%{__cxx}
+%{__cpp} foo.cc
 %{__python3} setup.py build
 %__python3 setup.py test
 %{__rm} -f build.log
