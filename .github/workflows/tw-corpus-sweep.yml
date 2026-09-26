@@ -1,0 +1,260 @@
+name: Tumbleweed corpus sweep
+
+# Stress-test spec-cleaner against all of openSUSE:Factory specs.
+# - Manual trigger: pre-release gate (workflow_dispatch)
+# - Weekly schedule: catch regressions from TW spec evolution
+# Tickets (label: corpus-sweep) are opened for crashes and non-idempotent
+# results. Dedup is against all past corpus-sweep tickets (open and closed):
+# a recurring failure after its ticket closed is a regression and gets a new
+# ticket referencing the old one. Changed output alone is never ticketed.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 0'  # Sunday 02:00 UTC
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade -r devel-requirements.pip
+
+    - name: Download Factory specs
+      run: |
+        python - <<'EOF'
+        import os, sys, xml.etree.ElementTree as ET
+        from concurrent.futures import ThreadPoolExecutor
+        from urllib.parse import quote
+        from urllib.request import urlopen
+
+        BASE = 'https://api.opensuse.org/public/source/openSUSE:Factory'
+        OUTDIR = 'tw-specs'
+        os.makedirs(OUTDIR, exist_ok=True)
+
+        def fetch(url):
+            try:
+                with urlopen(url, timeout=30) as r:
+                    return r.read()
+            except Exception:
+                return None
+
+        # List all packages in Factory
+        data = fetch(f'{BASE}')
+        pkgs = []
+        if data:
+            root = ET.fromstring(data)
+            pkgs = [e.get('name') for e in root.findall('entry')]
+
+        print(f'Found {len(pkgs)} packages', flush=True)
+
+        def download(pkg):
+            out = os.path.join(OUTDIR, f'{pkg}.spec')
+            if os.path.exists(out) and os.path.getsize(out) > 0:
+                return 'cached'
+            data = fetch(f'{BASE}/{quote(pkg)}/{quote(pkg)}.spec')
+            if data:
+                with open(out, 'wb') as f:
+                    f.write(data)
+                return 'ok'
+            # Try listing the package dir for non-standard spec names
+            listing = fetch(f'{BASE}/{quote(pkg)}')
+            if listing:
+                try:
+                    root = ET.fromstring(listing)
+                    for e in root.findall('entry'):
+                        name = e.get('name', '')
+                        if name.endswith('.spec'):
+                            spec_data = fetch(f'{BASE}/{quote(pkg)}/{quote(name)}')
+                            if spec_data:
+                                safe = name.replace('/', '_')
+                                with open(os.path.join(OUTDIR, f'{pkg}__{safe}'), 'wb') as f:
+                                    f.write(spec_data)
+                                return 'ok-multi'
+                except Exception:
+                    pass
+            return 'missing'
+
+        from collections import Counter
+        with ThreadPoolExecutor(max_workers=16) as ex:
+            results = Counter(ex.map(download, pkgs))
+        print(dict(results), flush=True)
+
+        # Fail fast: 0 specs means the download broke, not a clean corpus
+        total = sum(v for k, v in results.items() if k in ('ok', 'ok-multi', 'cached'))
+        if total == 0:
+            print('ERROR: 0 specs downloaded, aborting', flush=True)
+            sys.exit(1)
+        print(f'Downloaded {total} specs', flush=True)
+        EOF
+
+    - name: Run corpus sweep
+      run: |
+        python - <<'EOF'
+        import concurrent.futures as cf
+        import json, os, sys, traceback
+
+        from spec_cleaner import RpmSpecCleaner
+        from spec_cleaner import rpmpreamble
+
+        # Disable network URL probes: deterministic, no sandbox stalls
+        _orig = rpmpreamble.RpmPreamble._make_secure_url
+        def _no_probe(self, orig_url, skip_availabilty_check=False, force_https=False):
+            return _orig(self, orig_url, skip_availabilty_check=True, force_https=force_https)
+        rpmpreamble.RpmPreamble._make_secure_url = _no_probe
+
+        OPTS = {
+            'pkgconfig': False, 'inline': False, 'diff': False,
+            'diff_prog': 'vimdiff', 'minimal': False,
+            'no_curlification': False, 'tex': False,
+        }
+
+        # texlive specs are generated, never touch them
+        def skip(name):
+            return name == 'texlive.spec' or name.startswith('texlive-')
+
+        specs = sorted(f for f in os.listdir('tw-specs')
+                       if f.endswith('.spec') and not skip(f))
+        print(f'Sweeping {len(specs)} specs', flush=True)
+
+        def run_one(fname):
+            path = os.path.join('tw-specs', fname)
+            try:
+                with open(path, encoding='utf-8', errors='replace') as f:
+                    content = f.read()
+                cleaner = RpmSpecCleaner(content.splitlines(keepends=True), OPTS)
+                out1 = cleaner.run()
+                # idempotency: second pass must be stable
+                cleaner2 = RpmSpecCleaner(out1, OPTS)
+                out2 = cleaner2.run()
+                return {'spec': fname, 'status': 'ok',
+                        'changed': out1 != content.splitlines(keepends=True),
+                        'non_idempotent': out1 != out2}
+            except Exception:
+                return {'spec': fname, 'status': 'error',
+                        'traceback': traceback.format_exc()[-2000:]}
+
+        results = []
+        with cf.ThreadPoolExecutor(max_workers=4) as ex:
+            for r in ex.map(run_one, specs):
+                results.append(r)
+
+        errors = [r for r in results if r['status'] == 'error']
+        nonidem = [r for r in results if r.get('non_idempotent')]
+        changed = [r for r in results if r.get('changed')]
+
+        print(f'done: {len(results)} specs, {len(changed)} changed, '
+              f'{len(errors)} errors, {len(nonidem)} non-idempotent', flush=True)
+
+        with open('sweep-report.json', 'w') as f:
+            json.dump({'errors': errors,
+                       'non_idempotent': [r['spec'] for r in nonidem],
+                       'total': len(results),
+                       'changed': len(changed)}, f, indent=1)
+        EOF
+
+    - name: Upload sweep report
+      uses: actions/upload-artifact@v7
+      with:
+        name: tw-sweep-report
+        path: sweep-report.json
+        retention-days: 90
+
+    - name: Open tickets for new failures
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python - <<'EOF'
+        import json, os, subprocess
+
+        with open('sweep-report.json') as f:
+            report = json.load(f)
+
+        # Both crashes and non-idempotent results indicate bugs
+        failures = []
+        for e in report['errors']:
+            failures.append({'spec': e['spec'], 'kind': 'crash',
+                             'detail': e['traceback']})
+        for spec in report['non_idempotent']:
+            failures.append({'spec': spec, 'kind': 'non-idempotent',
+                             'detail': 'Second spec-cleaner pass produced '
+                                       'different output than the first.'})
+
+        print(f'{len(failures)} failing specs '
+              f'({len(report["errors"])} crashes, '
+              f'{len(report["non_idempotent"])} non-idempotent)', flush=True)
+        if not failures:
+            print('No failures, nothing to ticket.')
+            exit(0)
+
+        # Dedup against ALL past corpus-sweep tickets (open and closed):
+        # the ticket history is the baseline. A recurring failure after
+        # its ticket was closed means a regression — ticket it again,
+        # but reference the old ticket.
+        existing = subprocess.run(
+            ['gh', 'issue', 'list', '--label', 'corpus-sweep',
+             '--state', 'all', '--json', 'title,number,state',
+             '--limit', '500'],
+            capture_output=True, text=True).stdout
+        tickets = json.loads(existing) if existing.strip() else []
+        # title format: "[corpus-sweep] <spec> (<kind>)"
+        seen = {}
+        for t in tickets:
+            title = t['title']
+            if title.startswith('[corpus-sweep] '):
+                rest = title[len('[corpus-sweep] '):]
+                # split off the trailing " (kind)"
+                if rest.endswith(')'):
+                    spec = rest[:rest.rfind(' (')]
+                    seen[spec] = t
+
+        opened = 0
+        for f in failures[:20]:  # cap at 20 tickets per run to avoid spam
+            spec, kind = f['spec'], f['kind']
+            title = f'[corpus-sweep] {spec} ({kind})'
+            if spec in seen:
+                old = seen[spec]
+                if old['state'] == 'OPEN':
+                    print(f'Skip {spec}: ticket #{old["number"]} already open',
+                          flush=True)
+                    continue
+                # Regression: was fixed/closed, now failing again
+                body = (
+                    f'Regression: `{spec}` is failing again in the corpus '
+                    f'sweep ({kind}).\n\nPreviously tracked in '
+                    f'#{old["number"]} (now closed).\n\n'
+                    f'```\n{f["detail"]}\n```'
+                )
+            else:
+                body = (
+                    f'spec-cleaner failed on `{spec}` from openSUSE:Factory '
+                    f'({kind}).\n\n```\n{f["detail"]}\n```\n\n'
+                    f'Found by the Tumbleweed corpus sweep. '
+                    f'Please attach a minimal reproducer if possible.'
+                )
+            subprocess.run(
+                ['gh', 'issue', 'create', '--title', title,
+                 '--body', body, '--label', 'corpus-sweep'],
+                check=True)
+            print(f'Opened ticket for {spec} ({kind})', flush=True)
+            opened += 1
+
+        if len(failures) > 20:
+            print(f'WARNING: {len(failures) - 20} more failures not ticketed (cap)',
+                  flush=True)
+        print(f'Opened {opened} new tickets', flush=True)
+        EOF
