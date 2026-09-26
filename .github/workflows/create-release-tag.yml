@@ -1,0 +1,43 @@
+name: Create signed release tag
+
+# Manually triggered release tagging. Imports the dedicated signing subkey
+# from secrets, creates a signed tag for the version in
+# spec_cleaner/__init__.py, and pushes it. Pushing the tag triggers the
+# "Release to PyPI" workflow, which verifies the signature before
+# publishing.
+#
+# Required secrets:
+#   TCHVATAL_SUBKEY_EXP_SEP_27 - armored private signing subkey
+#   TCHVATAL_SUBKEY_PASSPHRASE  - passphrase for the subkey
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Import signing subkey
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.TCHVATAL_SUBKEY_EXP_SEP_27 }}
+          passphrase: ${{ secrets.TCHVATAL_SUBKEY_PASSPHRASE }}
+          git_user_signingkey: true
+          git_tag_gpgsign: true
+      - name: Create and push signed tag
+        run: |
+          PKG_VERSION="$(python3 -c "import re,pathlib; print(re.search(r'__version__ = .([^\x27\"]+).', pathlib.Path('spec_cleaner/__init__.py').read_text()).group(1))")"
+          TAG="spec-cleaner-${PKG_VERSION}"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::Tag ${TAG} already exists. Bump __version__ first."
+            exit 1
+          fi
+          git tag -s "${TAG}" -m "Release ${TAG}"
+          git push origin "${TAG}"
+          echo "Pushed signed tag ${TAG}."
