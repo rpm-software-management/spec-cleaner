@@ -12,7 +12,7 @@ import pyrpm.spec  # type: ignore
 from .dependency_parser import DependencyParser, DepParserError
 from .rpmexception import NoMatchExceptionError
 from .rpmhelpers import fix_license
-from .rpmpreambleelements import RpmPreambleElements
+from .rpmpreambleelements import MacroLine, RpmPreambleElements
 from .rpmrequirestoken import RpmRequiresToken
 from .rpmsection import Section
 
@@ -56,6 +56,8 @@ class RpmPreamble(Section):
         self.multiline_expand = False
         # Open { braces of the multiline %{expand: block
         self._expand_depth = 0
+        # Is the multiline macro a %global, expanded while parsing
+        self._multiline_global = False
         # Are we inside of conditional or not
         self.condition = False
         # Does the %if/%elif condition continue on the next line (ending with \)
@@ -263,7 +265,7 @@ class RpmPreamble(Section):
             self.paragraph.items['bconds'] += self.paragraph.items['conditions']
         else:
             # Has defines: with the define definitions.
-            self.paragraph.items['define'] += self.paragraph.items['conditions']
+            self.paragraph.add_define_block(self.paragraph.items['conditions'])
 
     def end_subparagraph(self, endif=False, unclosed=False):
         """
@@ -311,7 +313,7 @@ class RpmPreamble(Section):
                         and self.paragraph.reads_moved_macros(self.paragraph.items['conditions'])
                     )
                 ):
-                    self.paragraph.items['define'] += self.paragraph.items['conditions']
+                    self.paragraph.add_define_block(self.paragraph.items['conditions'])
                 else:
                     self._place_define_condition(sub_has_bconds, sub_has_defines)
                 # in case the nested condition contains define we consider all parents
@@ -324,7 +326,7 @@ class RpmPreamble(Section):
                     self.paragraph.items['conditions']
                 ):
                     # in source order; _split_late_globals keeps it below the globals it reads
-                    self.paragraph.items['define'] += self.paragraph.items['conditions']
+                    self.paragraph.add_define_block(self.paragraph.items['conditions'])
                 elif self._condition_nvr:
                     self.paragraph.items['nvr_conditions'] += self.paragraph.items['conditions']
                 elif self._pattern_condition:
@@ -476,17 +478,17 @@ class RpmPreamble(Section):
         # Head macros already sort before the %endif and must stay above the tags.
         if category == 'tail' and self.condition:
             category = 'conditions'
+        group = line
         if self.paragraph.current_group:
             if isinstance(line, RpmRequiresToken):
                 line.comments = self.paragraph.current_group
-                self.paragraph.items[category].append(line)
             else:
                 self.paragraph.current_group.append(line)
-                self.paragraph.items[category].append(self.paragraph.current_group)
+                group = self.paragraph.current_group
             self.paragraph.current_group = []
             self._comments_before_blank = 0
-        else:
-            self.paragraph.items[category].append(line)
+        # each define entry is a unit, which moves as a whole
+        self.paragraph.items[category].append([group] if category == 'define' else group)
 
         self.previous_line = str(line)
 
@@ -523,6 +525,13 @@ class RpmPreamble(Section):
                 response.close()
         return retval
 
+    def _macro_line(self, line):
+        """Tag a %define, %global or one-line condition line with when rpm expands it."""
+        oneline = bool(self.reg.re_onelinecond.match(line))
+        is_global = bool(self.reg.re_global.match(line)) or (oneline and '%global' in line)
+        # a one-line condition is evaluated when parsed, even around %define
+        return MacroLine(line, is_global=is_global, is_eager=is_global or oneline)
+
     def add(self, line):
         """Run over options and add the determined line to proper location."""
         # a } ending a line also closes a %{?cond: block; split it off so sorting keeps it last
@@ -545,6 +554,7 @@ class RpmPreamble(Section):
         # the continued condition stays right after its %if/%elif line
         if self._condition_continued:
             self._condition_continued = line.endswith('\\')
+            line = MacroLine(line, is_cond=True, is_eager=True)
             self._oldstore[-1].items['conditions'].append(line)
             if '%{with' in line or '%{without' in line:
                 self._condition_bcond = True
@@ -555,7 +565,11 @@ class RpmPreamble(Section):
         # also multiline is allowed only for define lines so just cheat and
         # know ahead
         if self.multiline:
-            self._add_line_to('define', line)
+            line = MacroLine(
+                line, is_global=self._multiline_global, is_eager=self._multiline_global
+            )
+            self.paragraph.items['define'][-1].append(line)
+            self.previous_line = line
             # if it is no longer trailed with backslash
             # or if the braces of the expand are balanced then stop
             if self.multiline_expand:
@@ -579,7 +593,7 @@ class RpmPreamble(Section):
         # which mark the end of our subclass and that we can
         # return the data to our main class for at-bottom placement
         elif self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
-            self._add_line_to('conditions', line)
+            self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
             self.condition = True
             self._condition_continued = line.endswith('\\')
             # check for possibility of the bcond conditional
@@ -595,7 +609,7 @@ class RpmPreamble(Section):
 
         elif self.reg.re_else_elif.match(line):
             if self.condition:
-                self._add_line_to('conditions', line)
+                self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
                 self.end_subparagraph()
                 self.start_subparagraph()
                 self._condition_continued = line.endswith('\\')
@@ -605,7 +619,7 @@ class RpmPreamble(Section):
         elif self.reg.re_multilinecond.match(line):
             # Multi-line %{?cond: block is an abbreviated %if cond block,
             # parse it as a condition so the dependencies inside keep it.
-            self._add_line_to('conditions', line)
+            self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
             self.condition = True
             self._multilinecond_depth += 1
             self.start_subparagraph()
@@ -760,7 +774,7 @@ class RpmPreamble(Section):
             # One-line conditional dependency (%{?cond:BuildRequires: ...}) is
             # an abbreviated %if cond ... %endif block, keep it with the
             # other conditions instead of the defines at the top.
-            self._add_line_to('build_conditions', line)
+            self._add_line_to('build_conditions', self._macro_line(line))
             return
 
         elif (
@@ -768,6 +782,8 @@ class RpmPreamble(Section):
             or self.reg.re_global.match(line)
             or self.reg.re_onelinecond.match(line)
         ):
+            line = self._macro_line(line)
+            self._multiline_global = line.is_global
             if line.endswith('\\'):
                 self.multiline = True
             open_braces = line.count('{') - line.count('}')

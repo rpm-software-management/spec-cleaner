@@ -11,6 +11,28 @@ from .rpmhelpers import (
 from .rpmrequirestoken import RpmRequiresToken
 
 
+class MacroLine(str):
+    """
+    Preamble line tagged with when rpm expands it.
+
+    RpmPreamble.add sets the tags while parsing and the placement of the
+    define units reads them. They survive the flattening of a nested
+    block into its parent.
+    """
+
+    is_global = False
+    is_cond = False
+    is_eager = False
+
+    def __new__(cls, line, is_global=False, is_cond=False, is_eager=False):
+        """Create the tagged line."""
+        tagged = super().__new__(cls, line)
+        tagged.is_global = is_global
+        tagged.is_cond = is_cond
+        tagged.is_eager = is_eager
+        return tagged
+
+
 class RpmPreambleElements:
     """
     Class containing structure used in rpmpreamble.
@@ -428,85 +450,37 @@ class RpmPreambleElements:
         """List the macros the line defines, the with_ switch for a %bcond included."""
         return self.reg.re_macro_definition.findall(line) + self._bcond_switch(line)
 
-    def _late_global_units(self, groups, bcond_macros=()):
+    def _late_global_units(self, units, bcond_macros=()):
         """
-        Group the define lines into units, flagging the ones to keep below the tags.
+        Flag the define units to keep below the tags or the bconds.
 
-        A unit is a single line, a multiline macro or a whole %if block, so
-        that moving it never breaks it apart. A unit is late when one of its
-        globals references %name, %version, %release or %epoch, when one of
-        its globals or conditions references a late macro, or when it
-        redefines one. The macros a unit defines are late when it is late or
-        references those tags or late macros, as a lazy %define that stays
-        hoisted passes the dependency on to the globals using it.
+        A unit is a single line, a multiline macro or a whole %if block, as
+        RpmPreamble.add recorded it, so that moving it never breaks it apart.
+        A unit is late when one of its globals references %name, %version,
+        %release or %epoch, when one of its globals or conditions references
+        a late macro, or when it redefines one. The macros a unit defines are
+        late when it is late or references those tags or late macros, as a
+        lazy %define that stays hoisted passes the dependency on to the
+        globals using it.
         Likewise a unit must follow the bconds when one of its globals or
         conditions reads a bcond or a macro depending on one, or when it
         redefines a macro moved below the bconds.
         """
-        units = []
-        depth = 0
-        cond_braces = 0
-        continuing = expand = run_global = cond_continuing = False
-        expand_depth = 0
-        for group in groups:
-            line = add_group(group)[-1]
-            if not (depth or continuing):
-                units.append([])
-            is_global = is_cond = is_eager = False
-            # follows the multiline and condition parsing of RpmPreamble.add
-            if cond_continuing:
-                is_cond = is_eager = True
-            elif continuing:
-                is_global = is_eager = run_global
-                if expand:
-                    expand_depth += line.count('{') - line.count('}')
-                    continuing = expand_depth > 0
-                else:
-                    continuing = line.endswith('\\')
-            elif self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
-                depth += 1
-                is_cond = is_eager = True
-            elif self.reg.re_multilinecond.match(line):
-                depth += 1
-                cond_braces += 1
-                is_cond = is_eager = True
-            elif depth and (self.reg.re_endif.match(line) or self.reg.re_endcodeblock.match(line)):
-                depth -= 1
-            elif cond_braces and self.reg.re_endmultilinecond.match(line):
-                depth -= 1
-                cond_braces -= 1
-            elif self.reg.re_else_elif.match(line):
-                is_cond = is_eager = True
-            elif (
-                self.reg.re_define.match(line)
-                or self.reg.re_global.match(line)
-                or self.reg.re_onelinecond.match(line)
-            ):
-                is_global = bool(self.reg.re_global.match(line)) or (
-                    bool(self.reg.re_onelinecond.match(line)) and '%global' in line
-                )
-                run_global = is_global
-                # a one-line condition is evaluated when parsed, even around %define
-                is_eager = is_global or bool(self.reg.re_onelinecond.match(line))
-                expand_depth = line.count('{') - line.count('}')
-                expand = '%{expand:' in line and expand_depth > 0
-                continuing = line.endswith('\\') or expand
-            cond_continuing = is_cond and line.endswith('\\')
-            units[-1].append((group, line, is_global, is_cond, is_eager))
-
         late_names = set()
         bcond_names = set(bcond_macros)
         moved_names = set()
         flagged = []
         for unit in units:
-            definitions = [
-                name for _, line, _, _, _ in unit for name in self._macro_definitions(line)
-            ]
+            lines = self._unit_lines(unit)
+            definitions = [name for line in lines for name in self._macro_definitions(line)]
             # a redefinition must stay below the definition it overrides
             late = bool(late_names.intersection(definitions))
             after_bconds = bool(moved_names.intersection(definitions))
             tainted = bcond_tainted = False
-            for _, line, is_global, is_cond, is_eager in unit:
+            for line in lines:
+                is_global = getattr(line, 'is_global', False)
+                is_cond = getattr(line, 'is_cond', False)
+                is_eager = getattr(line, 'is_eager', False)
                 references = self._macro_references(line)
                 sensitive = bool(self.reg.re_global_order_sensitive.search(line))
                 reads_late = bool(late_names.intersection(references))
@@ -524,22 +498,37 @@ class RpmPreambleElements:
                 bcond_names.update(definitions)
             if after_bconds:
                 moved_names.update(definitions)
-            flagged.append(([group for group, _, _, _, _ in unit], late, after_bconds))
+            flagged.append((unit, late, after_bconds))
         return flagged
 
-    def has_late_globals(self, groups):
-        """Check if any of the define groups must stay below the preamble tags."""
-        return any(late for _, late, _ in self._late_global_units(groups))
+    def _block_units(self, groups):
+        """Split the lines of a closed conditional block into define units."""
+        # a tail macro kept in the enclosing block precedes the opening line and moves alone
+        lines = self._unit_lines(groups)
+        conds = [i for i, line in enumerate(lines) if getattr(line, 'is_cond', False)]
+        start = conds[0] if conds else len(groups)
+        # a pruned block is empty, and an empty unit would still count as a define
+        return [[group] for group in groups[:start]] + ([groups[start:]] if groups[start:] else [])
+
+    def add_define_block(self, groups):
+        """Add a closed conditional block to the defines."""
+        self.items['define'] += self._block_units(groups)
+
+    def has_late_globals(self, block):
+        """Check if the closed block must stay below the preamble tags."""
+        return any(late for _, late, _ in self._late_global_units(self._block_units(block)))
 
     def reads_late_macros(self, block):
         """Check if the block after the defines reads a macro kept below the tags."""
-        return bool(block) and self._late_global_units(self.items['define'] + block)[-1][1]
+        units = self.items['define'] + self._block_units(block)
+        return bool(block) and self._late_global_units(units)[-1][1]
 
     def reads_moved_macros(self, block):
         """Check if the block after the defines reads a macro kept below the tags or bconds."""
-        _, late, after_bconds = self._late_global_units(
-            self.items['define'] + block, self._bcond_macros()
-        )[-1]
+        if not block:
+            return False
+        units = self.items['define'] + self._block_units(block)
+        _, late, after_bconds = self._late_global_units(units, self._bcond_macros())[-1]
         return late or after_bconds
 
     def _bcond_macros(self):
@@ -611,7 +600,7 @@ class RpmPreambleElements:
             elif after_bconds and (has_bconds or not nested):
                 self.items['bcond_conditions'] += unit
             else:
-                self.items['define'] += unit
+                self.items['define'].append(unit)
 
     def flatten_output(self, needs_license=False, nested=False):
         """Do the finalized output for the itemlist."""
@@ -655,5 +644,6 @@ class RpmPreambleElements:
             self.current_group = []
 
         for line in lines:
-            elements.append(str(line))
+            # a MacroLine keeps its tags for the define units of the parent block
+            elements.append(line if isinstance(line, str) else str(line))
         return elements
