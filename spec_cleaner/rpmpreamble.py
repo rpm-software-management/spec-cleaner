@@ -158,9 +158,6 @@ class RpmPreamble(Section):
         """Backup the paragraph and start a new one."""
         self._oldstore.append(self.paragraph)
         self.paragraph = RpmPreambleElements(self.options)
-        # Save the bcond flag for the outer block; the new block's flag
-        # was already set when its %if line was parsed.
-        self._bcond_stack.append(self._condition_bcond)
 
     def _prune_ppc_condition(self):
         """Check if we have ppc64 obsolete and delete it."""
@@ -339,7 +336,7 @@ class RpmPreamble(Section):
             # the placement of outer blocks.
             if self._bcond_stack:
                 self._condition_bcond = self._bcond_stack.pop()
-            # top-level reset: the stack holds the %if's own flag, not the one before it
+            # top-level reset
             if len(self._oldstore) == 0:
                 self._condition_bcond = False
                 self._bcond_stack = []
@@ -596,6 +593,8 @@ class RpmPreamble(Section):
             self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
             self.condition = True
             self._condition_continued = line.endswith('\\')
+            # save the outer block's flag before setting this block's own
+            self._bcond_stack.append(self._condition_bcond)
             # check for possibility of the bcond conditional
             # Reset for each new block; the flag is sticky otherwise and
             # contaminates subsequent non-bcond conditionals.
@@ -622,6 +621,8 @@ class RpmPreamble(Section):
             self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
             self.condition = True
             self._multilinecond_depth += 1
+            # the block keeps the outer block's flag, restored at its closing brace
+            self._bcond_stack.append(self._condition_bcond)
             self.start_subparagraph()
             self.previous_line = line
             return
