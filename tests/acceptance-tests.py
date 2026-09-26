@@ -114,9 +114,8 @@ class TestCompare:
         self._compare_and_rerun(test, 'web', tmpfile, {'pkgconfig': True})
 
     @pytest.mark.parametrize('test', ['selinux-macros-args.spec', 'systemd-macros-args.spec'])
-    def test_host_without_macro_packages(self, tmpfile, monkeypatch, test):
+    def test_host_without_macro_packages(self, tmpfile, test):
         """Test that whitelisted parametric macros stay unbraced when the host does not define them."""
-        monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: [])
         self._compare_and_rerun(test, 'out', tmpfile, {'pkgconfig': True})
 
     @pytest.mark.parametrize('test', collect_tests('https-probe'))
