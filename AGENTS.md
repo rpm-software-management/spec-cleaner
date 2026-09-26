@@ -7,7 +7,7 @@ RPM `.spec` file formatter for openSUSE. Entry point: `spec_cleaner:main` (`spec
 - Deps: `devel-requirements.pip` (no lockfile). Quick env: `uv run --with-editable . --with pytest --with pytest-cov --with pytest-xdist <cmd>`.
 - Test: `pytest` — `pytest.ini` adds `-n auto --cov`; run from the repo root (tests use relative `tests/...` paths).
 - Single test: `pytest -n0 -k "bconds and normal"`. Skip network tests: `-m "not webtest"`.
-- Lint/format: `ruff check .` and `ruff format --check .` (single quotes, line length 100, pydocstyle with summary on the *second* docstring line).
+- Lint/format: `pre-commit run --all-files` runs ruff and mypy at the pinned hook versions, as CI does. Directly: `ruff check .` and `ruff format --check .` (single quotes, line length 100, pydocstyle with summary on the *second* docstring line).
 - Types: `mypy spec_cleaner` (no mypy config file; defaults).
 
 ## Acceptance tests (`tests/acceptance-tests.py`)
