@@ -466,3 +466,20 @@ class TestPlaceHelpers:
         preamble._pattern_condition = False
         preamble._place_condition_block(False, False)
         assert preamble.paragraph.items['build_conditions'] == [cond]
+
+
+class TestUnbraceKeywords:
+    """The unbrace keyword list also comes from what rpm --showrc reports."""
+
+    def keywords(self, tmp_path, monkeypatch, showrc):
+        """Build a cleaner with rpm --showrc reporting the given macro functions."""
+        monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: showrc)
+        return RpmSpecCleaner(_default_options(tmp_path)).options['unbrace_keywords']
+
+    def test_showrc_macrofunc_is_not_braced(self, tmp_path, monkeypatch):
+        """Test that a macro function rpm --showrc reports is left unbraced."""
+        assert 'cargo_install' in self.keywords(tmp_path, monkeypatch, ['cargo_install'])
+
+    def test_unreported_macrofunc_is_braced(self, tmp_path, monkeypatch):
+        """Test that a macro function rpm --showrc does not report gets braced."""
+        assert 'cargo_install' not in self.keywords(tmp_path, monkeypatch, [])
