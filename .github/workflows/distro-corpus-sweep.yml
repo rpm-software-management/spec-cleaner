@@ -14,20 +14,35 @@ on:
   schedule:
     - cron: '0 2 * * 0'  # Sunday 02:00 UTC
 
+# Least privilege: the sweep job parses untrusted third-party specs, so it
+# gets only contents:read. Issue writing lives in the separate ticket job.
 permissions:
   contents: read
-  issues: write
+
+# Prevent a manual run racing the weekly run on the ticket dedup.
+concurrency:
+  group: corpus-sweep-${{ matrix.distro }}
+  cancel-in-progress: false
 
 jobs:
   sweep:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         distro: [tumbleweed, rawhide]
     steps:
     - uses: actions/checkout@v7
+      with:
+        # Sweep the ref that was dispatched, not always the default branch,
+        # so manual runs work as a pre-release gate from release branches/tags.
+        ref: ${{ github.ref }}
+        # The workflow never touches git; don't leave a token in .git/config
+        # while parsing untrusted specs.
+        persist-credentials: false
 
     - name: Set up Python
       uses: actions/setup-python@v7
@@ -59,12 +74,14 @@ jobs:
             except Exception:
                 return None
 
-        # List all packages in Factory
+        # List all packages in Factory, skipping non-package meta projects
+        # (000product:*, _meta, ...) which carry an originpackage attribute.
         data = fetch(f'{BASE}')
         pkgs = []
         if data:
             root = ET.fromstring(data)
-            pkgs = [e.get('name') for e in root.findall('entry')]
+            pkgs = [e.get('name') for e in root.findall('entry')
+                    if not e.get('originpackage')]
 
         print(f'Found {len(pkgs)} packages', flush=True)
 
@@ -112,29 +129,35 @@ jobs:
       if: matrix.distro == 'rawhide'
       run: |
         python - <<'EOF'
-        import json, os, sys
+        import json, os, sys, time
         from concurrent.futures import ThreadPoolExecutor
         from urllib.parse import quote
         from urllib.request import urlopen, Request
+        from http.client import IncompleteRead
 
         OUTDIR = 'corpus-specs'
         os.makedirs(OUTDIR, exist_ok=True)
 
-        def fetch_json(url):
-            try:
-                req = Request(url, headers={'Accept': 'application/json'})
-                with urlopen(req, timeout=30) as r:
-                    return json.loads(r.read())
-            except Exception as e:
-                print(f'fetch failed for {url}: {e}', flush=True)
-                return None
+        def fetch_json(url, retries=3):
+            for i in range(retries):
+                try:
+                    req = Request(url, headers={'Accept': 'application/json'})
+                    with urlopen(req, timeout=30) as r:
+                        return json.loads(r.read())
+                except (IncompleteRead, Exception) as e:
+                    if i == retries - 1:
+                        print(f'Gave up on {url}: {e}', flush=True)
+                        return None
+                    time.sleep(2)
 
-        def fetch_raw(url):
-            try:
-                with urlopen(url, timeout=30) as r:
-                    return r.read()
-            except Exception:
-                return None
+        def fetch_raw(url, retries=2):
+            for i in range(retries):
+                try:
+                    with urlopen(url, timeout=30) as r:
+                        return r.read()
+                except Exception:
+                    time.sleep(1)
+            return None
 
         # Paginate through all rpms/* projects on src.fedoraproject.org
         pkgs = []
@@ -146,12 +169,11 @@ jobs:
             if not data or not data.get('projects'):
                 break
             pkgs.extend(p['name'] for p in data['projects'])
-            print(f'page {page}: {len(pkgs)} packages so far', flush=True)
             pagination = data.get('pagination', {})
             if page >= pagination.get('pages', page):
                 break
             page += 1
-            if page > 300:  # safety cap (~30k packages)
+            if page > 400:  # safety cap (~40k packages)
                 break
 
         print(f'Found {len(pkgs)} packages', flush=True)
@@ -185,7 +207,9 @@ jobs:
         print(f'Downloaded {total} specs', flush=True)
         EOF
 
-python - <<'EOF'
+    - name: Run corpus sweep
+      run: |
+        python - <<'EOF'
         import concurrent.futures as cf
         import json, os, sys, tempfile, traceback
 
@@ -224,6 +248,9 @@ python - <<'EOF'
                                              delete=False) as tf:
                 out_path = tf.name
             try:
+                # Fresh options dict per spec: RpmSpecCleaner mutates it
+                # (license, pyrpm_spec memoization, ...) and must not leak
+                # state between specs.
                 opts = dict(BASE_OPTS, specfile=in_path, output=out_path)
                 RpmSpecCleaner(opts).run()
                 with open(out_path, encoding='utf-8', errors='replace') as f:
@@ -280,13 +307,31 @@ python - <<'EOF'
         path: sweep-report.json
         retention-days: 90
 
+  # Separate job so the issues:write token is never in scope while parsing
+  # untrusted third-party specs.
+  ticket:
+    needs: sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [tumbleweed, rawhide]
+    steps:
+    - uses: actions/download-artifact@v7
+      with:
+        name: ${{ matrix.distro }}-sweep-report
+        path: .
+
     - name: Open tickets for new failures
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DISTRO: ${{ matrix.distro }}
       run: |
         python - <<'EOF'
-        import json, os, subprocess
+        import json, os, subprocess, sys
 
         distro = os.environ['DISTRO']
 
@@ -303,23 +348,37 @@ python - <<'EOF'
                              'detail': 'Second spec-cleaner pass produced '
                                        'different output than the first.'})
 
+        total = report['total']
         print(f'[{distro}] {len(failures)} failing specs '
               f'({len(report["errors"])} crashes, '
-              f'{len(report["non_idempotent"])} non-idempotent)', flush=True)
+              f'{len(report["non_idempotent"])} non-idempotent) '
+              f'out of {total}', flush=True)
         if not failures:
             print('No failures, nothing to ticket.')
             exit(0)
 
+        # Harness failure gate: if a large share of specs fail, the harness
+        # itself broke (API change, parser TypeError, ...). Filing 20 tickets
+        # that all say the same thing is noise — fail the job instead.
+        if len(failures) / total > 0.02:
+            print(f'ERROR: {len(failures)}/{total} specs failed — treating as '
+                  f'harness failure, not ticketing', flush=True)
+            print(failures[0]['detail'], flush=True)
+            sys.exit(1)
+
         # Dedup against ALL past corpus-sweep tickets (open and closed):
         # the ticket history is the baseline. A recurring failure after
         # its ticket was closed means a regression — ticket it again,
-        # but reference the old ticket.
+        # but reference the old ticket. Keyed on (spec, kind): a spec that
+        # crashed and is now non-idempotent is a different failure.
         existing = subprocess.run(
             ['gh', 'issue', 'list', '--label', 'corpus-sweep',
              '--state', 'all', '--json', 'title,number,state',
-             '--limit', '500'],
+             '--limit', '2000'],
             capture_output=True, text=True).stdout
         tickets = json.loads(existing) if existing.strip() else []
+        print(f'Dedup baseline: {len(tickets)} past corpus-sweep tickets',
+              flush=True)
         # title format: "[corpus-sweep:distro] <spec> (<kind>)"
         seen = {}
         for t in tickets:
@@ -327,20 +386,21 @@ python - <<'EOF'
             prefix = f'[corpus-sweep:{distro}] '
             if title.startswith(prefix):
                 rest = title[len(prefix):]
-                # split off the trailing " (kind)"
                 if rest.endswith(')'):
-                    spec = rest[:rest.rfind(' (')]
-                    seen[spec] = t
+                    idx = rest.rfind(' (')
+                    if idx > 0:
+                        seen[(rest[:idx], rest[idx + 2:-1])] = t
 
         opened = 0
         for f in failures[:20]:  # cap at 20 tickets per run to avoid spam
             spec, kind = f['spec'], f['kind']
             title = f'[corpus-sweep:{distro}] {spec} ({kind})'
-            if spec in seen:
-                old = seen[spec]
+            key = (spec, kind)
+            if key in seen:
+                old = seen[key]
                 if old['state'] == 'OPEN':
-                    print(f'Skip {spec}: ticket #{old["number"]} already open',
-                          flush=True)
+                    print(f'Skip {spec} ({kind}): ticket #{old["number"]} '
+                          f'already open', flush=True)
                     continue
                 # Regression: was fixed/closed, now failing again
                 body = (
