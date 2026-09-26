@@ -11,6 +11,9 @@ on:
     tags:
       - "spec-cleaner-*"
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -29,15 +32,12 @@ jobs:
         run: |
           python3 -m pytest
 
-  release:
+  # The checks and the build run here with read-only access; the jobs
+  # below only publish what it built.
+  build:
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    permissions:
-      # OIDC token for PyPI Trusted Publishing.
-      id-token: write
-      # Needed to create the GitHub Release.
-      contents: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -69,9 +69,46 @@ jobs:
         run: |
           python -m pip install --upgrade pip build
           python -m build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: pypi
+      url: https://pypi.org/project/spec-cleaner/
+    permissions:
+      # OIDC token for PyPI Trusted Publishing.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      # Needed to create the GitHub Release.
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
         with:
-          generate_release_notes: true
+          name: dist
+          path: dist/
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag \
+            --title "Release ${GITHUB_REF_NAME#spec-cleaner-}" --generate-notes

@@ -11,7 +11,9 @@ Pushing the tag triggers the `Release to PyPI` GitHub Actions workflow, which:
 - verifies the tag version matches `spec_cleaner.__version__`,
 - verifies the generated data are up-to-date (`make` must produce no diff),
 - builds the sdist and wheel,
-- uploads them to PyPI,
-- creates a GitHub Release with auto-generated notes.
+- uploads them to PyPI from the `pypi` environment, once any approval it
+  requires is given,
+- creates a GitHub Release with auto-generated notes and the sdist and wheel
+  attached.
 
 5. Post release version bump in `spec_cleaner/__init__.py`.
