@@ -569,21 +569,37 @@ class RpmPreambleElements:
         bconds splits.
         """
         flagged = self._late_global_units(self.items['define'], self._bcond_macros())
-        needed = {
+        self._keep_tag_dependencies(flagged, self._tag_references())
+        self._place_define_units(flagged, nested)
+
+    @staticmethod
+    def _unit_lines(unit):
+        """List the lines of the unit, leaving out the comments grouped with them."""
+        return [add_group(group)[-1] for group in unit]
+
+    def _tag_references(self):
+        """Collect the macros the preamble tags and the conditions holding them read."""
+        return {
             name
             for category in ('head', 'name', 'version', 'release', 'epoch', 'nvr_conditions')
             for group in self.items[category]
             for line in add_group(group)
             for name in self._macro_references(str(line))
         }
+
+    def _keep_tag_dependencies(self, flagged, needed):
+        """Keep the units defining macros the tags read on top, with the units they read."""
         # dependencies precede their users, so one backward pass collects them all
         for index in reversed(range(len(flagged))):
             unit, _, after_bconds = flagged[index]
-            lines = [add_group(group)[-1] for group in unit]
+            lines = self._unit_lines(unit)
             definitions = [name for line in lines for name in self._macro_definitions(line)]
             if needed.intersection(definitions):
                 flagged[index] = (unit, False, after_bconds)
                 needed.update(name for line in lines for name in self._macro_references(line))
+
+    def _place_define_units(self, flagged, nested):
+        """Place each flagged unit on top, below the tags or below the bconds."""
         has_tags = any(
             self.items[i] for i in ('name', 'version', 'release', 'epoch', 'nvr_conditions')
         )
