@@ -216,6 +216,7 @@ class TestCompare:
             ('cmake.spec', 'cmake', {'cmake': True}),
             ('langpackage.spec', 'group', {'remove_groups': True}),
             ('remove-groups-comments.spec', 'group', {'remove_groups': True}),
+            ('no-curlification.spec', 'no-curlification', {'no_curlification': True}),
         ],
     )
     def test_single_output(self, tmpfile, test, compare_dir, options):

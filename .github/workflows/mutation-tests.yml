@@ -1,0 +1,83 @@
+name: Mutation tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'mutmut wildcard(s) to run, space separated'
+        required: false
+        default: 'spec_cleaner.rpmsection.*'
+  schedule:
+    # Sunday 04:00 UTC, the corpus sweep runs at 02:00
+    - cron: '0 4 * * 0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation-tests
+  cancel-in-progress: true
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      MUTMUT_SCOPE: ${{ inputs.scope || 'spec_cleaner.rpmsection.*' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+          cache: pip
+      - name: Install
+        run: pip install -e . -r devel-requirements.pip
+
+      # mutmut keeps the results of every mutant it already ran in mutants/,
+      # restoring it turns the weekly run into a delta instead of a full sweep
+      - name: Restore mutant cache
+        uses: actions/cache/restore@v4
+        with:
+          path: mutants
+          key: mutants-${{ runner.os }}-${{ hashFiles('spec_cleaner/**/*.py', 'pyproject.toml') }}
+
+      # survivors do not fail the run, the score is reported below instead
+      - name: Run
+        run: mutmut run $MUTMUT_SCOPE
+
+      - name: Report
+        run: |
+          mutmut export-cicd-stats
+          python - "$GITHUB_STEP_SUMMARY" <<'EOF'
+          import json
+          import os
+          import sys
+
+          with open('mutants/mutmut-cicd-stats.json') as f:
+              stats = json.load(f)
+          tested = int(stats.get('total', 0)) - int(stats.get('skipped', 0))
+          killed = int(stats.get('killed', 0)) + int(stats.get('timeout', 0))
+          score = killed / tested * 100 if tested else 0.0
+          with open(sys.argv[1], 'a') as out:
+              print(f'## Mutation testing\n\n{score:.1f}% mutation score', file=out)
+              print(
+                  f'\n{killed} of {tested} mutants killed, '
+                  f'scope `{os.environ["MUTMUT_SCOPE"]}`',
+                  file=out,
+              )
+          EOF
+
+      - name: Store the cache for the next run
+        uses: actions/cache/save@v4
+        with:
+          path: mutants
+          key: mutants-${{ runner.os }}-${{ hashFiles('spec_cleaner/**/*.py', 'pyproject.toml') }}
+
+      - name: Upload stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-stats
+          path: mutants/mutmut-cicd-stats.json
+          retention-days: 90

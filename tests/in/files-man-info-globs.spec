@@ -10,3 +10,5 @@
 %{_mandir}/man1/%{name}.1*
 %{_mandir}/man5/%{name}.5.gz
 %{_mandir}/man8/%{name}.8%{ext_man}
+%doc %{_infodir}/%{name}.info.gz
+%doc %{_mandir}/man1/%{name}.1.gz
