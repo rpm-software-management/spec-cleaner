@@ -265,6 +265,38 @@ def add_group(group):
         raise RpmExceptionError(f'Unknown type of group in preamble: {type(group)}')
 
 
+def open_macro_bodies(line: str, depth: tuple[int, int] = (0, 0)) -> tuple[int, int]:
+    """
+    Count the %{ and %( bodies left open after the line, as rpm does when joining spec lines.
+
+    Args:
+        line: A string representing a line to process.
+        depth: The %{ and %( bodies open before the line.
+
+    Returns:
+        The %{ and %( bodies open after the line.
+    """
+    braces, parens = depth
+    index = 0
+    while index < len(line):
+        char, following = line[index], line[index + 1 : index + 2]
+        if char == '\\':
+            # an escaped character never opens or closes a body
+            index += 1
+        elif char == '%' and following in ('%', '{', '('):
+            index += 1
+            if following == '{':
+                braces += 1
+            elif following == '(':
+                parens += 1
+        elif char in '{}' and braces:
+            braces += 1 if char == '{' else -1
+        elif char in '()' and parens:
+            parens += 1 if char == '(' else -1
+        index += 1
+    return braces, parens
+
+
 def find_pkgconfig_statement(elements):
     """
     Find pkgconfig() statement.
