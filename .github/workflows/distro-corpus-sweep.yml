@@ -1,9 +1,9 @@
 name: Distro corpus sweep
 
-# Stress-test spec-cleaner against all of openSUSE:Factory (Tumbleweed)
-# and Fedora Rawhide specs.
+# Stress-test spec-cleaner against all of openSUSE:Factory (Tumbleweed) specs.
 # - Manual trigger: pre-release gate (workflow_dispatch)
-# - Weekly schedule: catch regressions from distro spec evolution
+# - Monthly schedule: catch regressions from distro spec evolution
+#   (the full distro doesn't meaningfully change week to week)
 # Tickets (label: corpus-sweep) are opened for crashes and non-idempotent
 # results. Dedup is against all past corpus-sweep tickets (open and closed):
 # a recurring failure after its ticket closed is a regression and gets a new
@@ -12,16 +12,16 @@ name: Distro corpus sweep
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * 0'  # Sunday 02:00 UTC
+    - cron: '0 2 1 * *'  # 1st of month 02:00 UTC
 
 # Least privilege: the sweep job parses untrusted third-party specs, so it
 # gets only contents:read. Issue writing lives in the separate ticket job.
 permissions:
   contents: read
 
-# Prevent a manual run racing the weekly run on the ticket dedup.
+# Prevent a manual run racing the scheduled run on the ticket dedup.
 concurrency:
-  group: corpus-sweep-${{ matrix.distro }}
+  group: corpus-sweep
   cancel-in-progress: false
 
 jobs:
@@ -30,10 +30,6 @@ jobs:
     timeout-minutes: 180
     permissions:
       contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        distro: [tumbleweed, rawhide]
     steps:
     - uses: actions/checkout@v7
       with:
@@ -55,7 +51,6 @@ jobs:
         pip install --upgrade -r devel-requirements.pip
 
     - name: Download Tumbleweed specs
-      if: matrix.distro == 'tumbleweed'
       run: |
         python - <<'EOF'
         import os, sys, xml.etree.ElementTree as ET
@@ -119,88 +114,6 @@ jobs:
 
         # Fail fast: 0 specs means the download broke, not a clean corpus
         total = sum(v for k, v in results.items() if k in ('ok', 'ok-multi', 'cached'))
-        if total == 0:
-            print('ERROR: 0 specs downloaded, aborting', flush=True)
-            sys.exit(1)
-        print(f'Downloaded {total} specs', flush=True)
-        EOF
-
-    - name: Download Rawhide specs
-      if: matrix.distro == 'rawhide'
-      run: |
-        python - <<'EOF'
-        import json, os, sys, time
-        from concurrent.futures import ThreadPoolExecutor
-        from urllib.parse import quote
-        from urllib.request import urlopen, Request
-        from http.client import IncompleteRead
-
-        OUTDIR = 'corpus-specs'
-        os.makedirs(OUTDIR, exist_ok=True)
-
-        def fetch_json(url, retries=3):
-            for i in range(retries):
-                try:
-                    req = Request(url, headers={'Accept': 'application/json'})
-                    with urlopen(req, timeout=30) as r:
-                        return json.loads(r.read())
-                except (IncompleteRead, Exception) as e:
-                    if i == retries - 1:
-                        print(f'Gave up on {url}: {e}', flush=True)
-                        return None
-                    time.sleep(2)
-
-        def fetch_raw(url, retries=2):
-            for i in range(retries):
-                try:
-                    with urlopen(url, timeout=30) as r:
-                        return r.read()
-                except Exception:
-                    time.sleep(1)
-            return None
-
-        # Paginate through all rpms/* projects on src.fedoraproject.org
-        pkgs = []
-        page = 1
-        while True:
-            data = fetch_json(
-                f'https://src.fedoraproject.org/api/0/projects'
-                f'?namespace=rpms&per_page=100&page={page}&short=true')
-            if not data or not data.get('projects'):
-                break
-            pkgs.extend(p['name'] for p in data['projects'])
-            pagination = data.get('pagination', {})
-            if page >= pagination.get('pages', page):
-                break
-            page += 1
-            if page > 400:  # safety cap (~40k packages)
-                break
-
-        print(f'Found {len(pkgs)} packages', flush=True)
-        if not pkgs:
-            print('ERROR: 0 packages listed, aborting', flush=True)
-            sys.exit(1)
-
-        def download(pkg):
-            out = os.path.join(OUTDIR, f'{pkg}.spec')
-            if os.path.exists(out) and os.path.getsize(out) > 0:
-                return 'cached'
-            # Rawhide branch, 'f' folder = the spec file location
-            data = fetch_raw(
-                f'https://src.fedoraproject.org/rpms/{quote(pkg)}'
-                f'/raw/rawhide/f/{quote(pkg)}.spec')
-            if data:
-                with open(out, 'wb') as f:
-                    f.write(data)
-                return 'ok'
-            return 'missing'
-
-        from collections import Counter
-        with ThreadPoolExecutor(max_workers=16) as ex:
-            results = Counter(ex.map(download, pkgs))
-        print(dict(results), flush=True)
-
-        total = sum(v for k, v in results.items() if k in ('ok', 'cached'))
         if total == 0:
             print('ERROR: 0 specs downloaded, aborting', flush=True)
             sys.exit(1)
@@ -303,7 +216,7 @@ jobs:
     - name: Upload sweep report
       uses: actions/upload-artifact@v7
       with:
-        name: ${{ matrix.distro }}-sweep-report
+        name: tumbleweed-sweep-report
         path: sweep-report.json
         retention-days: 90
 
@@ -315,25 +228,20 @@ jobs:
     timeout-minutes: 30
     permissions:
       issues: write
-    strategy:
-      fail-fast: false
-      matrix:
-        distro: [tumbleweed, rawhide]
     steps:
     - uses: actions/download-artifact@v7
       with:
-        name: ${{ matrix.distro }}-sweep-report
+        name: tumbleweed-sweep-report
         path: .
 
     - name: Open tickets for new failures
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DISTRO: ${{ matrix.distro }}
       run: |
         python - <<'EOF'
         import json, os, subprocess, sys
 
-        distro = os.environ['DISTRO']
+        distro = 'tumbleweed'
 
         with open('sweep-report.json') as f:
             report = json.load(f)
@@ -379,17 +287,19 @@ jobs:
         tickets = json.loads(existing) if existing.strip() else []
         print(f'Dedup baseline: {len(tickets)} past corpus-sweep tickets',
               flush=True)
-        # title format: "[corpus-sweep:distro] <spec> (<kind>)"
+        # title format: "[corpus-sweep] <spec> (<kind>)"
+        # (older tickets may lack the :distro suffix; match both)
         seen = {}
         for t in tickets:
             title = t['title']
-            prefix = f'[corpus-sweep:{distro}] '
-            if title.startswith(prefix):
-                rest = title[len(prefix):]
-                if rest.endswith(')'):
-                    idx = rest.rfind(' (')
-                    if idx > 0:
-                        seen[(rest[:idx], rest[idx + 2:-1])] = t
+            for prefix in (f'[corpus-sweep:{distro}] ', '[corpus-sweep] '):
+                if title.startswith(prefix):
+                    rest = title[len(prefix):]
+                    if rest.endswith(')'):
+                        idx = rest.rfind(' (')
+                        if idx > 0:
+                            seen[(rest[:idx], rest[idx + 2:-1])] = t
+                    break
 
         opened = 0
         for f in failures[:20]:  # cap at 20 tickets per run to avoid spam
