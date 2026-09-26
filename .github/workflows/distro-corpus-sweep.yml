@@ -185,25 +185,26 @@ jobs:
         print(f'Downloaded {total} specs', flush=True)
         EOF
 
-    - name: Run corpus sweep
-      run: |
-        python - <<'EOF'
+python - <<'EOF'
         import concurrent.futures as cf
-        import json, os, sys, traceback
+        import json, os, sys, tempfile, traceback
 
         from spec_cleaner import RpmSpecCleaner
         from spec_cleaner import rpmpreamble
 
-        # Disable network URL probes: deterministic, no sandbox stalls
+        # Disable network URL probes: deterministic, no CI stalls
         _orig = rpmpreamble.RpmPreamble._make_secure_url
         def _no_probe(self, orig_url, skip_availabilty_check=False, force_https=False):
             return _orig(self, orig_url, skip_availabilty_check=True, force_https=force_https)
         rpmpreamble.RpmPreamble._make_secure_url = _no_probe
 
-        OPTS = {
+        BASE_OPTS = {
             'pkgconfig': False, 'inline': False, 'diff': False,
             'diff_prog': 'vimdiff', 'minimal': False,
-            'no_curlification': False, 'tex': False,
+            'no_curlification': False, 'suse_copyright': False,
+            'copyright_year': 2026, 'remove_groups': False,
+            'tex': False, 'perl': False, 'cmake': False,
+            'keep_space': False,
         }
 
         # texlive specs are generated, never touch them
@@ -217,18 +218,37 @@ jobs:
             print('ERROR: 0 specs to sweep, aborting', flush=True)
             sys.exit(1)
 
+        def run_clean(in_path):
+            """Run spec-cleaner on a file, return cleaned lines."""
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.spec',
+                                             delete=False) as tf:
+                out_path = tf.name
+            try:
+                opts = dict(BASE_OPTS, specfile=in_path, output=out_path)
+                RpmSpecCleaner(opts).run()
+                with open(out_path, encoding='utf-8', errors='replace') as f:
+                    return f.read().splitlines()
+            finally:
+                if os.path.exists(out_path):
+                    os.unlink(out_path)
+
         def run_one(fname):
             path = os.path.join('corpus-specs', fname)
             try:
                 with open(path, encoding='utf-8', errors='replace') as f:
-                    content = f.read()
-                cleaner = RpmSpecCleaner(content.splitlines(keepends=True), OPTS)
-                out1 = cleaner.run()
-                # idempotency: second pass must be stable
-                cleaner2 = RpmSpecCleaner(out1, OPTS)
-                out2 = cleaner2.run()
+                    orig = f.read().splitlines()
+                out1 = run_clean(path)
+                # idempotency: write pass1 to temp, run again, must be stable
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.spec',
+                                                 delete=False) as tf:
+                    tf.write('\n'.join(out1) + '\n')
+                    tmp1 = tf.name
+                try:
+                    out2 = run_clean(tmp1)
+                finally:
+                    os.unlink(tmp1)
                 return {'spec': fname, 'status': 'ok',
-                        'changed': out1 != content.splitlines(keepends=True),
+                        'changed': out1 != orig,
                         'non_idempotent': out1 != out2}
             except Exception:
                 return {'spec': fname, 'status': 'error',
