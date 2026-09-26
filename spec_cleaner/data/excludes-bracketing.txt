@@ -7,6 +7,7 @@ apache_test_module_load
 apparmor_reload
 artifact
 attr(\s*\([^)]*\))?
+autosetup
 bcond
 bcond_with[^\s]*
 binfmt_apply
