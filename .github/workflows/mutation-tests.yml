@@ -73,7 +73,7 @@ jobs:
           EOF
 
       - name: Upload stats
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mutation-stats
           path: mutants/mutmut-cicd-stats.json
