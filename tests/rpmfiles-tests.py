@@ -31,6 +31,7 @@ def _default_options(tmp_path):
 
 @pytest.fixture
 def files(tmp_path):
+    """Build an %files section handler with the default options."""
     return RpmFiles(RpmSpecCleaner(_default_options(tmp_path)).options)
 
 

@@ -31,6 +31,7 @@ def _default_options(tmp_path):
 
 @pytest.fixture
 def elements(tmp_path):
+    """Build a preamble element handler with the default options."""
     return RpmPreambleElements(RpmSpecCleaner(_default_options(tmp_path)).options)
 
 

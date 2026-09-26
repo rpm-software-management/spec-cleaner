@@ -48,5 +48,7 @@ class TestRpmRequiresToken:
 
     def test_version_without_operator_raises(self):
         """Test that a version without an operator is rejected instead of rendering a dangling version."""
-        with pytest.raises(RpmExceptionError, match='^Have defined version and no operator or vice versa'):
+        with pytest.raises(
+            RpmExceptionError, match='^Have defined version and no operator or vice versa'
+        ):
             str(RpmRequiresToken('foo', None, '1.0', 'Requires:  '))

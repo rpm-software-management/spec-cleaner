@@ -13,12 +13,12 @@ Source0:        %{name}-%{version}.tar.gz
 Test package.
 
 %build
-aclocal
+%{__aclocal}
 %{__ar} rcs libfoo.a foo.o
 %{__as} -o foo.o foo.S
-autoconf
-autoheader
-automake
+%{__autoconf}
+%{__autoheader}
+%{__automake}
 %{__bzip2} -k foo
 %{__cat} foo
 %{__chgrp} root foo
