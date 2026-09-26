@@ -11,6 +11,12 @@ on:
 permissions:
   contents: read
 
+# Cancel superseded pull request runs; each push to master gets a run of
+# its own, so none is queued behind another or dropped.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   # Lint once, on the oldest supported Python, with the hook versions
   # that Dependabot keeps up to date in .pre-commit-config.yaml.
@@ -33,12 +39,15 @@ jobs:
         pre-commit run --all-files --show-diff-on-failure
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v7
       with:
@@ -51,7 +60,7 @@ jobs:
       run: |
         python3 -m pytest
     - name: Collect the coveralls report
-      uses: coverallsapp/github-action@v2
+      uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         flag-name: python-${{ matrix.python-version }}
@@ -63,9 +72,10 @@ jobs:
     needs: test
     if: ${{ always() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
     - name: Coveralls finished
-      uses: coverallsapp/github-action@v2
+      uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         parallel-finished: true
