@@ -354,20 +354,50 @@ class RpmSpecCleaner:
             A Section (or a subclass) object that was detected.
             None if we are staying in the same section or if we have a multiline value from preamble.
         """
-        # Detect if we have multiline value from preamble
-        # mypy: we need to ignore type check here because mypy cannot detect that we are checking the existence of
-        # the 'multiline' attribute before accessing it
-        if hasattr(self.current_section, 'multiline') and self.current_section.multiline:  # type: ignore
+        if self._is_multiline_active():
             return None
 
+        if self._is_clean_codeblock_end(line):
+            return None
+
+        breakout = self._check_condition_breakout(line)
+        if breakout:
+            return breakout
+
+        section_start = self._check_section_start(line)
+        if section_start:
+            return section_start
+
+        copyright_transition = self._check_copyright_transition(line)
+        if copyright_transition:
+            return copyright_transition
+
+        if self._detect_preamble_section(line):
+            return RpmPreambleChunk
+
+        if self._is_clean_section_end(line):
+            return Section
+
+        # we are staying in the section
+        return None
+
+    def _is_multiline_active(self) -> bool:
+        """Check if the current section has an active multiline value. Return True if so."""
+        # mypy: we need to ignore type check here because mypy cannot detect that we are checking the existence of
+        # the 'multiline' attribute before accessing it
+        return hasattr(self.current_section, 'multiline') and self.current_section.multiline  # type: ignore
+
+    def _is_clean_codeblock_end(self, line: str) -> bool:
+        """Check if the line ends a codeblock in the dropped %clean body. Return True if so."""
         # comment markers opened in the dropped %clean body wrap nothing
-        if (
+        return bool(
             isinstance(self.current_section, RpmClean)
             and self.current_section.codeblocks
             and self.reg.re_endcodeblock.match(line)
-        ):
-            return None
+        )
 
+    def _check_condition_breakout(self, line: str) -> type[Section] | None:
+        """Check if we need to break out for a condition from global space. Return Section if so, None otherwise."""
         # Detect if we match condition and that is from global space
         # Ie like in the optional packages where if is before class definition
         # For the "if" we need to detect it more smartly:
@@ -385,7 +415,10 @@ class RpmSpecCleaner:
                 # If we have to break out we go ahead with small class
                 # which just print the one evil line
                 return Section
+        return None
 
+    def _check_section_start(self, line: str) -> type[Section] | None:
+        """Check if the line starts a specific section. Return the section class if so, None otherwise."""
         # try to verify if we start some specific section
         for regexp, newclass in self.section_starts:
             if regexp.match(line):
@@ -400,7 +433,10 @@ class RpmSpecCleaner:
                         while self.current_section._oldstore:  # type: ignore
                             self.current_section.end_subparagraph(unclosed=True)  # type: ignore
                 return newclass
+        return None
 
+    def _check_copyright_transition(self, line: str) -> type[Section] | None:
+        """Check if we transition from copyright to preamble. Return RpmPreamble if so, None otherwise."""
         # if we still are here and we are just doing copyright
         # and we are not on commented line anymore, just jump to Preamble
         if isinstance(self.current_section, RpmCopyright):
@@ -418,25 +454,19 @@ class RpmSpecCleaner:
             if self._previous_line == '' and line == '':
                 self.current_section.add(line)
                 return RpmPreamble
+        return None
 
-        # If we actually start matching global content again we need to
-        # switch back to preamble, ie %define after %description/etc.
-        if self._detect_preamble_section(line):
-            return RpmPreambleChunk
-
+    def _is_clean_section_end(self, line: str) -> bool:
+        """Check if we end the %clean section on a blank line followed by non-command. Return True if so."""
         # If we are in clean section and a blank line is followed by
         # anything but a command we need to stop deleting
         # This avoids deleting %if before %files section
-        if (
+        return (
             isinstance(self.current_section, RpmClean)
             and self.current_section.previous_line == ''
             and line.lstrip().startswith(('%', '#'))
             and not line.lstrip().startswith(('%__', '%{__'))
-        ):
-            return Section
-
-        # we are staying in the section
-        return None
+        )
 
     def _check_for_newline(self, detected_class: type[Section] | None, line: str) -> bool:
         """
