@@ -76,6 +76,15 @@ class TestRpmPreamble:
             [('%global d %{expand:%{x}}', 'ge')],
         ]
 
+    def test_open_macro_bodies(self, preamble):
+        """Test that a macro continues while a lua or shell body is open, as rpm joins the lines."""
+        lines = ('%define a %{lua:', 'print("{}")', '}', '%global b %(echo 1 |', 'tr 1 2)')
+        assert self.units(preamble, *lines, '%define c 1') == [
+            [('%define a %{lua:', ''), ('print("{}")', ''), ('}', '')],
+            [('%global b %(echo 1 |', 'ge'), ('tr 1 2)', 'ge')],
+            [('%define c 1', '')],
+        ]
+
     def test_oneline_conditions(self, preamble):
         """Test that a one-line condition is expanded when parsed, even around %define."""
         assert self.units(preamble, '%{?with_a:%define a 1}', '%{?with_b:%global b 1}') == [

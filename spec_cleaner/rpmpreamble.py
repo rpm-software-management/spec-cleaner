@@ -11,7 +11,7 @@ import pyrpm.spec  # type: ignore
 
 from .dependency_parser import DependencyParser, DepParserError
 from .rpmexception import NoMatchExceptionError
-from .rpmhelpers import fix_license
+from .rpmhelpers import fix_license, open_macro_bodies
 from .rpmpreambleelements import MacroLine, RpmPreambleElements
 from .rpmrequirestoken import RpmRequiresToken
 from .rpmsection import Section
@@ -50,12 +50,11 @@ class RpmPreamble(Section):
         Section.__init__(self, options)
         # Old storage
         self._oldstore = []
-        # Is the parsed variable multiline (ending with \)
-        # alternatively if the line contains %{expand while the ending } is on other line
+        # Is the parsed variable multiline (ending with \\)
+        # alternatively if a %{ or %( body of it ends on another line
         self.multiline = False
-        self.multiline_expand = False
-        # Open { braces of the multiline %{expand: block
-        self._expand_depth = 0
+        # The %{ and %( bodies the multiline variable leaves open
+        self._open_bodies = (0, 0)
         # Is the multiline macro a %global, expanded while parsing
         self._multiline_global = False
         # Are we inside of conditional or not
@@ -580,15 +579,10 @@ class RpmPreamble(Section):
         self.paragraph.items['define'][-1].append(line)
         self.previous_line = line
         # if it is no longer trailed with backslash
-        # or if the braces of the expand are balanced then stop
-        if self.multiline_expand:
-            self._expand_depth += line.count('{') - line.count('}')
-            if self._expand_depth <= 0:
-                self.multiline_expand = False
-                self.multiline = False
-        else:
-            if not line.endswith('\\'):
-                self.multiline = False
+        # and all its %{ and %( bodies are closed then stop
+        self._open_bodies = open_macro_bodies(line, self._open_bodies)
+        if not (line.endswith('\\') or any(self._open_bodies)):
+            self.multiline = False
         return True
 
     def _handle_if(self, line):
@@ -859,13 +853,9 @@ class RpmPreamble(Section):
             return False
         line = self._macro_line(line)
         self._multiline_global = line.is_global
-        if line.endswith('\\'):
+        self._open_bodies = open_macro_bodies(line)
+        if line.endswith('\\') or any(self._open_bodies):
             self.multiline = True
-        open_braces = line.count('{') - line.count('}')
-        if '%{expand:' in line and open_braces > 0:
-            self.multiline = True
-            self.multiline_expand = True
-            self._expand_depth = open_braces
         # if we are kernel and not multiline we need to be at bottom, so
         # lets use misc section, otherwise go for define
         if not self.multiline and line.find('kernel_module') >= 0:
