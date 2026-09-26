@@ -48,6 +48,7 @@ spec-cleaner = "spec_cleaner:main"
 Homepage = "https://github.com/rpm-software-management/spec-cleaner"
 Repository = "https://github.com/rpm-software-management/spec-cleaner.git"
 Issues = "https://github.com/rpm-software-management/spec-cleaner/issues"
+Changelog = "https://github.com/rpm-software-management/spec-cleaner/releases"
 
 [tool.setuptools.dynamic]
 version = {attr = "spec_cleaner.__version__"}

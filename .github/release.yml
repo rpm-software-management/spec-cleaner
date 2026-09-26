@@ -1,0 +1,10 @@
+# Categories for the notes GitHub generates for a release. Dependabot
+# labels its pull requests "dependencies", so they are listed apart.
+changelog:
+  categories:
+    - title: Dependency updates
+      labels:
+        - dependencies
+    - title: Changes
+      labels:
+        - "*"
