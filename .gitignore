@@ -10,5 +10,6 @@ dist/
 *.orig
 .coveralls.yml
 .pytest_cache
+mutants/
 .tox
 *~

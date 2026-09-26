@@ -97,3 +97,13 @@ inline-quotes = "single"
 [tool.ruff.format]
 quote-style = "single"
 
+[tool.mutmut]
+# pip install -r devel-requirements.pip
+source_paths = ["spec_cleaner"]
+# mutmut's default copy list omits pytest.ini, so no test gets collected and the
+# forced-fail sanity phase aborts.
+also_copy = ["pytest.ini"]
+# pytest.ini sets -n auto --cov; both cost a full xdist fleet or a coverage run per mutant.
+pytest_add_cli_args = ["-n0", "--no-cov", "-p", "no:cacheprovider"]
+pytest_add_cli_args_test_selection = ["-m", "not webtest"]
+
