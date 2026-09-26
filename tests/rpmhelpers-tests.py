@@ -23,3 +23,20 @@ class TestRpmhelpers:
         monkeypatch.setattr(rpmhelpers, 'check_output', missing)
         with pytest.raises(RpmExceptionError):
             rpmhelpers.parse_rpm_showrc()
+
+    @pytest.mark.parametrize(
+        'line, depth, expected',
+        [
+            ('%define a %{lua:', (0, 0), (1, 0)),
+            ('%global b %(echo 1 |', (0, 0), (0, 1)),
+            ('%global c %{expand:%{x}', (0, 0), (1, 0)),
+            ('%define d %{x} {', (0, 0), (0, 0)),
+            ('%define e %%{x} \\%{y', (0, 0), (0, 0)),
+            ('if x then print("{") end', (1, 0), (2, 0)),
+            ('}', (1, 0), (0, 0)),
+            ('tr 1 2)', (0, 1), (0, 0)),
+        ],
+    )
+    def test_open_macro_bodies(self, line, depth, expected):
+        """Test counting the %{ and %( bodies left open, as rpm does when joining lines."""
+        assert rpmhelpers.open_macro_bodies(line, depth) == expected
