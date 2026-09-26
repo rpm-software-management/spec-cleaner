@@ -43,6 +43,7 @@ class TestDependencyParser:
             ('foo %{?bar:>= 1}', [('foo %{?bar:>= 1}', None, None)]),
             ('foo %{?!bar:>= 1}', [('foo %{?!bar:>= 1}', None, None)]),
             ('foo %{??bar:>= 1}', [('foo %{??bar:>= 1}', None, None)]),
+            ('foo %{!?bar:>= 1}', [('foo %{!?bar:>= 1}', None, None)]),
             ('foo %{?bar:>=1}', [('foo %{?bar:>=1}', None, None)]),
             ('foo, %{?bar:>= 1}', [('foo', None, None), ('%{?bar:>= 1}', None, None)]),
             ('foo ,%{?bar:>= 1}', [('foo', None, None), ('%{?bar:>= 1}', None, None)]),
