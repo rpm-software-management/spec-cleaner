@@ -9,6 +9,7 @@ BuildRequires:  foo # trailing comment
 BuildRequires:  bar >=
 BuildRequires:  pkg-config >= 2.2
 Requires:       baz %{qux
+Requires:       quux >= 1 < 2
 
 %description
 Test.

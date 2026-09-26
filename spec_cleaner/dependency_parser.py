@@ -23,7 +23,7 @@ re_version = re.compile(r'[-A-Za-z0-9_~():.+]+')
 re_spaces = re.compile(r'(\s*,\s*|\s+)')
 re_macro_unbraced = re.compile('%[?]?[A-Za-z0-9_]{3,}')
 re_version_operator = re.compile('(>=|<=|=>|=<|>|<|=)')
-re_conditional_version = re.compile(r'%\{!?\?!?\w+:\s*[<>=]')
+re_conditional_version = re.compile(r'%\{[!?]*\w+:\s*[<>=]')
 
 logger = logging.getLogger('DepParser')
 # Switch to logging.DEBUG if needed
@@ -235,6 +235,10 @@ class DependencyParser:
         elif self.next_type == 'space':
             self.space = True
         elif self.next_type == 'operator':
+            # only the separator is left in the token when the previous one was flushed
+            # after its version, so this operator continues a finished dependency
+            if not ''.join(self.token).strip():
+                raise DepParserError('found operator where a name is expected')
             self.token_name = self.reconstitute_token()
             self.state = 'operator'
             self.space = False
