@@ -11,6 +11,19 @@ install -D -m 0644 %{name}.cmxs %{buildroot}/usr/lib64/ocaml/%{name}.cmxs
 install -D -m 0644 %{name} %{buildroot}/etc/apparmor.d/%{name}
 cp -a package.json %{buildroot}/usr/lib/node_modules/%{name}/
 install -D -m 0644 %{name}.conf %{buildroot}%{_datadir}/%{name}/etc/%{name}.conf
+install -D -m 0755 legacy.sh /usr/legacy.sh
+install -D -m 0644 legacy.service /etc/init.d/legacy
+install -D -m 0644 legacy.conf /etc/legacy.conf
+install -D -m 0644 legacy.state /var/log/legacy
+install -D -m 0644 legacy.bin %{_prefix}/bin/legacy
+install -D -m 0644 legacy.sbin %{_prefix}/sbin/legacy
+install -D -m 0644 legacy.exec %{_prefix}/libexec/legacy
+install -D -m 0644 legacy.h %{_prefix}/include/legacy.h
+install -D -m 0644 legacy.1 %{_datadir}/man/man1/legacy.1
+install -D -m 0644 legacy.info %{_datadir}/info/legacy.info
+install -D -m 0644 legacy.txt %{_datadir}/doc/packages/legacy.txt
+install -D -m 0644 legacy.rd %{_initrddir}/legacy.rd
+echo %_exec_prefix
 
 %files
 %{_unitdir}/%{name}.service
