@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+from io import StringIO
+
 import pytest
 
 from spec_cleaner import RpmExceptionError, rpmhelpers
+from spec_cleaner.fileutils import open_datafile
 from spec_cleaner.rpmrequirestoken import RpmRequiresToken
 
 
@@ -82,6 +85,34 @@ class TestRpmhelpers:
     def test_fix_license_empty_value(self):
         """Test that an empty license stays empty instead of joining a None."""
         assert rpmhelpers.fix_license('', {}) == ''
+
+    @pytest.mark.parametrize('value', [';MIT', ' ; MIT', 'MIT; ', ';MIT;', 'MIT;'])
+    def test_fix_license_drops_a_separator_without_an_operand(self, value):
+        """Test that a separator missing an operand is dropped, not turned into a dangling AND."""
+        assert rpmhelpers.fix_license(value, {}) == 'MIT'
+
+    @pytest.mark.parametrize(
+        'name',
+        [
+            rpmhelpers.TEX_CONVERSIONS,
+            rpmhelpers.PKGCONFIG_CONVERSIONS,
+            rpmhelpers.CMAKE_CONVERSIONS,
+            rpmhelpers.PERL_CONVERSIONS,
+        ],
+    )
+    def test_conversion_tables_are_well_formed(self, name):
+        """Test that every line of a generated table still carries the separator."""
+        with open_datafile(name) as data:
+            for number, line in enumerate(data, 1):
+                assert ': ' in line, f'{name} line {number}: {line!r}'
+
+    def test_read_conversion_changes_reports_a_malformed_line(self, monkeypatch):
+        """Test that a line without the separator is reported instead of unpacked."""
+        monkeypatch.setattr(
+            rpmhelpers, 'open_datafile', lambda name: StringIO('good: a b \nbroken\n')
+        )
+        with pytest.raises(RpmExceptionError, match='Line 2'):
+            rpmhelpers.read_conversion_changes('probe_conversions.txt')
 
     def test_add_group_names_the_type_it_cannot_flatten(self):
         """Test that the guard reports the offending type."""

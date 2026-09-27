@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import locale
+import os
 
 import pytest
 
@@ -61,19 +62,29 @@ class TestFileutils:
         with open_datafile('probe.txt') as data:
             assert data.read() == 'PROBE\n'
 
-    def test_open_datafile_home_unset(self, tmp_path, monkeypatch):
-        """
-        Test the fallback used when the home is not set.
-
-        The fallback is the bare string ~ and no expanduser is applied, so it
-        resolves against the cwd. That looks wrong, and the test pins it so a
-        fix has to be a deliberate one.
-        """
-        _write_datadir(tmp_path / '~', 'probe.txt', 'PROBE\n')
+    def test_open_datafile_home_unset_uses_the_passwd_entry(self, tmp_path, monkeypatch):
+        """Test that an unset home falls back to the passwd entry, not to a ./~ path."""
+        # the cwd is not a data source, a ~ directory there must stay unread
+        _write_datadir(tmp_path / '~', 'probe.txt', 'CWD\n')
         monkeypatch.delenv('HOME')
         monkeypatch.chdir(tmp_path)
+        with pytest.raises(RpmExceptionError):
+            open_datafile('probe.txt')
+        # and the passwd entry is what the fallback has to end up using
+        home = tmp_path / 'home'
+        _write_datadir(home, 'probe.txt', 'PROBE\n')
+        monkeypatch.setattr(os.path, 'expanduser', lambda path: str(home))
         with open_datafile('probe.txt') as data:
             assert data.read() == 'PROBE\n'
+
+    def test_open_datafile_reports_a_decoding_error(self, tmp_path, monkeypatch):
+        """Test that a data file which is not UTF-8 is reported, not read into a UnicodeDecodeError."""
+        share = tmp_path / '.local' / 'share' / 'spec-cleaner'
+        share.mkdir(parents=True)
+        (share / 'probe.txt').write_bytes(b'keyword\ncaf\xe9\n')
+        monkeypatch.setenv('HOME', str(tmp_path))
+        with pytest.raises(RpmExceptionError, match='probe.txt'):
+            open_datafile('probe.txt')
 
     def test_open_stringio_spec_is_utf8(self, tmp_path, c_locale):
         """Test that a spec is read as UTF-8 whatever the locale says."""
