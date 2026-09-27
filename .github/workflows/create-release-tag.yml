@@ -2,9 +2,8 @@ name: Create signed release tag
 
 # Manually triggered release tagging. Imports the dedicated signing subkey
 # from secrets, creates a signed tag for the version in
-# spec_cleaner/__init__.py, and pushes it. Pushing the tag triggers the
-# "Release to PyPI" workflow, which verifies the signature before
-# publishing.
+# spec_cleaner/__init__.py, pushes it, and starts the "Release to PyPI"
+# workflow for it, which verifies the signature before publishing.
 #
 # Required secrets:
 #   TCHVATAL_SUBKEY_EXP_SEP_27 - armored private signing subkey
@@ -15,22 +14,28 @@ on:
 
 jobs:
   tag:
+    # Only release what is on master.
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
+      # To start the release workflow for the new tag.
+      actions: write
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Import signing subkey
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
         with:
           gpg_private_key: ${{ secrets.TCHVATAL_SUBKEY_EXP_SEP_27 }}
           passphrase: ${{ secrets.TCHVATAL_SUBKEY_PASSPHRASE }}
           git_user_signingkey: true
           git_tag_gpgsign: true
       - name: Create and push signed tag
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           PKG_VERSION="$(python3 -c "import re,pathlib; print(re.search(r'__version__ = .([^\x27\"]+).', pathlib.Path('spec_cleaner/__init__.py').read_text()).group(1))")"
           TAG="spec-cleaner-${PKG_VERSION}"
@@ -41,3 +46,5 @@ jobs:
           git tag -s "${TAG}" -m "Release ${TAG}"
           git push origin "${TAG}"
           echo "Pushed signed tag ${TAG}."
+          gh workflow run release.yml --ref "${TAG}"
+          echo "Started the release workflow for ${TAG}."
