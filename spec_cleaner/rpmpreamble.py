@@ -811,7 +811,7 @@ class RpmPreamble(Section):
             return False
         match = self.reg.re_requires_eq.match(line)
         if match.group(1):
-            # if we were wrapped in curly definiton we need to remove
+            # if we were wrapped in curly definition we need to remove
             # the trailing curly bracket
             value = match.group(2)[:-1]
         else:
@@ -825,7 +825,7 @@ class RpmPreamble(Section):
             return False
         match = self.reg.re_requires_ge.match(line)
         if match.group(1):
-            # if we were wrapped in curly definiton we need to remove
+            # if we were wrapped in curly definition we need to remove
             # the trailing curly bracket
             value = match.group(2)[:-1]
         else:
