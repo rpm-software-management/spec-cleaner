@@ -2,10 +2,11 @@ name: Perf guard
 
 # Comment-only benchmark guard: cleans the fixed subset in
 # tests/perf-specs/ on the base ref and the PR head back to back on the
-# same runner, and posts the median delta as a PR comment.
+# same runner, and reports the median delta in the job summary plus a
+# best-effort PR comment.
 #
 # Deliberately not a gate: the job always succeeds and a slowdown is a
-# flag in the comment, never a merge block. Same-runner base-vs-head
+# flag in the report, never a merge block. Same-runner base-vs-head
 # comparison means no stored baseline to maintain and no drift when the
 # runner fleet changes.
 
