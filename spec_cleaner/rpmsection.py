@@ -196,8 +196,18 @@ class Section:
         Args:
             line: A string representing a line to process.
         """
-        line = self._complete_cleanup(line)
+        self.add_cleaned(self._complete_cleanup(line))
 
+    def add_cleaned(self, line: str) -> None:
+        """
+        Add the line to the list of lines without cleaning it again.
+
+        For subclasses whose own transforms cannot re-dirty the line,
+        so the second _complete_cleanup would be a no-op.
+
+        Args:
+            line: A string that already went through _complete_cleanup.
+        """
         # conditions detect
         self._check_conditions(line)
 

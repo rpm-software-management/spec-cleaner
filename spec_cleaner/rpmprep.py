@@ -19,6 +19,7 @@ class RpmPrep(Section):
         if not self.minimal:
             line = self._prepare_patch(line)
             line = self._remove_dephell_call(line)
+        # cleaned twice on purpose: the transforms above re-dirty the line
         Section.add(self, line)
 
     def _cleanup_setup(self, line: str) -> str:

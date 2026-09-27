@@ -24,7 +24,7 @@ class RpmCheck(Section):
             line = self._replace_unittest(line)
             line = self._replace_make(line)
 
-        Section.add(self, line)
+        Section.add_cleaned(self, line)
 
     def _replace_pytest(self, line: str) -> str:
         """

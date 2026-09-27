@@ -33,6 +33,7 @@ class RpmFiles(Section):
         if line == '' and (not self.previous_line or self.previous_line == ''):
             return
 
+        # cleaned twice on purpose: the transforms above re-dirty the line
         Section.add(self, line)
 
     @staticmethod
