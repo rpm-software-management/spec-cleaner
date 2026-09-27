@@ -338,4 +338,4 @@ class Regexp:
         # the negative lookbehind keeps us from touching '%%{macro}'
         # where '%%' is the rpm escape for a literal percent sign
         # and thus not a macro invocation at all (gh#315)
-        self.re_unbrace_keywords = re.compile(r'(?<!%)%{(' + '|'.join(keywords) + ')}')
+        self.re_unbrace_keywords = re.compile(r'(?<!%)%{(' + '|'.join(keywords) + ')}', re.IGNORECASE)
