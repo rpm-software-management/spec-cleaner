@@ -49,6 +49,15 @@ jobs:
         pip install --upgrade -r head/devel-requirements.pip
     - name: Benchmark base
       run: |
+        if [ ! -f base/tools/perf-bench.py ]; then
+          # bootstrap: the harness itself is new in this PR, so the base
+          # tree has neither it nor the subset. Overlay head's benchmark
+          # assets onto the base checkout; the library code measured is
+          # still base's, only inputs and harness come from head.
+          mkdir -p base/tools
+          cp head/tools/perf-bench.py base/tools/perf-bench.py
+          cp -r head/tests/perf-specs base/tests/perf-specs
+        fi
         cd base
         python3 tools/perf-bench.py --runs 3 --mode both > /tmp/base.json 2>/tmp/base.table
     - name: Benchmark head
