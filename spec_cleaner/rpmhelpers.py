@@ -3,9 +3,31 @@
 import re
 from subprocess import CalledProcessError, check_output
 
-from .fileutils import open_datafile, open_stringio_spec
+from .fileutils import open_datafile, open_stringio_spec, stat_datafile
 from .rpmexception import RpmExceptionError
 from .rpmrequirestoken import RpmRequiresToken
+
+# Per-process memo of data-file and showrc reads. Every RpmSpecCleaner
+# parsed the same tables and forked the same `rpm --showrc` again, so one
+# process cleaning many specs paid it all many times over. Entries are
+# keyed by file identity and never evicted; the key space is a handful of
+# shipped files times the versions seen, and a regenerated table simply
+# misses under its new mtime. Only successes are stored: a missing file
+# or a failing rpm still raises fresh on every call, exactly as before.
+# Callers get a top-level copy, so sharing the cache cannot alias a list
+# or dict one cleaner later rues.
+_read_cache: dict = {}
+
+
+def clear_read_caches() -> None:
+    """
+    Drop all memoized reads.
+
+    Tests that mock check_output or open_datafile must call this first,
+    or they observe the process-wide result instead of their mock.
+    """
+    _read_cache.clear()
+
 
 LICENSES_CHANGES = 'licenses_changes.txt'
 TEX_CONVERSIONS = 'tex_conversions.txt'
@@ -23,6 +45,8 @@ def parse_rpm_showrc() -> list[str]:
     Returns:
         A list of such macro functions.
     """
+    if 'showrc' in _read_cache:
+        return list(_read_cache['showrc'])
     macros: list[str] = []
 
     re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
@@ -35,7 +59,31 @@ def parse_rpm_showrc() -> list[str]:
         found_macro = re_rc_macrofunc.sub(r'\1', line)
         if found_macro != line:
             macros += [found_macro]
-    return macros
+    _read_cache['showrc'] = macros
+    return list(macros)
+
+
+def _cached_datafile(name: str, loader):
+    """
+    Run a data-file loader once per file identity, then replay the result.
+
+    Args:
+        name: The data file name, as passed to open_datafile.
+        loader: A no-argument callable doing the actual read and parse.
+
+    Returns:
+        A top-level copy of the memoized result.
+    """
+    identity = stat_datafile(name)
+    if identity is None:
+        # no candidate exists, or the file layer is mocked away in a test:
+        # never cache, so the error (or the mock) is produced fresh
+        return loader()
+    key = (name, identity)
+    if key not in _read_cache:
+        _read_cache[key] = loader()
+    cached = _read_cache[key]
+    return dict(cached) if isinstance(cached, dict) else list(cached)
 
 
 def load_keywords_whitelist() -> list[str]:
@@ -45,8 +93,12 @@ def load_keywords_whitelist() -> list[str]:
     Returns:
         A list of such keywords.
     """
-    with open_datafile(BRACKETING_EXCLUDES) as f:
-        return [line.rstrip('\n') for line in f]
+
+    def load():
+        with open_datafile(BRACKETING_EXCLUDES) as f:
+            return [line.rstrip('\n') for line in f]
+
+    return _cached_datafile(BRACKETING_EXCLUDES, load)
 
 
 def find_macros_with_arg(spec: str) -> list[str]:
@@ -80,23 +132,27 @@ def read_conversion_changes(conversion_file):
     Returns:
         A dictionary with old -> new values for conversion
     """
-    conversions = {}
-    with open_datafile(conversion_file) as f:
-        # the values are split by  ': '
-        for number, line in enumerate(f, 1):
-            fields = line.rstrip('\n').split(': ', 1)
-            if len(fields) != 2:
-                raise RpmExceptionError(
-                    f"Line {number} of {conversion_file} has no ': ' separator: {line.rstrip()!r}"
-                )
-            key, value = fields
-            names = value.split()
-            # a package has one row per arch, keep only the names every row provides
-            if key in conversions:
-                provided = set(names)
-                names = [i for i in conversions[key] if i in provided]
-            conversions[key] = names
-    return {key: ' '.join(names) for key, names in conversions.items() if names}
+
+    def load():
+        conversions = {}
+        with open_datafile(conversion_file) as f:
+            # the values are split by  ': '
+            for number, line in enumerate(f, 1):
+                fields = line.rstrip('\n').split(': ', 1)
+                if len(fields) != 2:
+                    raise RpmExceptionError(
+                        f"Line {number} of {conversion_file} has no ': ' separator: {line.rstrip()!r}"
+                    )
+                key, value = fields
+                names = value.split()
+                # a package has one row per arch, keep only the names every row provides
+                if key in conversions:
+                    provided = set(names)
+                    names = [i for i in conversions[key] if i in provided]
+                conversions[key] = names
+        return {key: ' '.join(names) for key, names in conversions.items() if names}
+
+    return _cached_datafile(conversion_file, load)
 
 
 def read_tex_changes():
@@ -133,9 +189,13 @@ def read_licenses_changes() -> dict[str, str]:
         A dict with the mapping.
 
     """
-    with open_datafile(LICENSES_CHANGES) as f:
-        next(f)  # strip newline
-        return {old: correct for correct, old in (line.rstrip('\n').split('\t') for line in f)}
+
+    def load():
+        with open_datafile(LICENSES_CHANGES) as f:
+            next(f)  # strip newline
+            return {old: correct for correct, old in (line.rstrip('\n').split('\t') for line in f)}
+
+    return _cached_datafile(LICENSES_CHANGES, load)
 
 
 def read_group_changes():
@@ -145,9 +205,13 @@ def read_group_changes():
     Returns:
         A list with allowed groups
     """
-    with open_datafile(GROUPS_LIST) as f:
-        next(f)  # header starts with link where we find the groups
-        return [line.rstrip('\n') for line in f]
+
+    def load():
+        with open_datafile(GROUPS_LIST) as f:
+            next(f)  # header starts with link where we find the groups
+            return [line.rstrip('\n') for line in f]
+
+    return _cached_datafile(GROUPS_LIST, load)
 
 
 def fix_license(value, conversions):
