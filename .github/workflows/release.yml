@@ -69,7 +69,7 @@ jobs:
       - name: Verify generated files are up to date
         run: |
           make
-          if ! git diff --exit-code -- spec_cleaner/data/ README.md; then
+          if ! git diff --exit-code -- spec_cleaner/data/ README.md SPDX-LICENSES.md; then
             echo "::error::Generated files are stale. Run 'make', commit the result, and re-tag."
             exit 1
           fi
