@@ -26,16 +26,18 @@ It's used for [openSUSE](https://www.opensuse.org), where it's planned to be a r
 ### Installation
 The latest version is available on [PyPI](https://pypi.org/project/spec_cleaner/). It can be installed by running `pip install spec_cleaner`.
 
-spec-cleaner is also provided as an RPM package for openSUSE Leap ([15.0](https://build.opensuse.org/package/show/openSUSE:Leap:15.0:Update/spec-cleaner) and [15.1](https://build.opensuse.org/package/show/openSUSE:Leap:15.1:Update/spec-cleaner)) and [openSUSE Tumbleweed](https://build.opensuse.org/package/show/openSUSE:Factory/spec-cleaner). When the new version of spec-cleaner is released then the version updates are performed for all maintained openSUSE codestreams. That means that there is always the latest version available in openSUSE:Leap.
+spec-cleaner is also provided as an RPM package for openSUSE Tumbleweed ([openSUSE:Factory](https://build.opensuse.org/package/show/openSUSE:Factory/spec-cleaner)) and all maintained openSUSE Leap codestreams. When a new version of spec-cleaner is released, updates are submitted for all maintained codestreams.
 
 ### Usage
 Simply run `spec-cleaner -i <specfile>` to clean your specfile up.
+
+License conversions come from [SPDX data](https://spdx.org/licenses/) plus SUSE additions; the full tag list is in [SPDX-LICENSES.md](SPDX-LICENSES.md).
 
 
 ## Tests
 
 ### Running the tests
-spec-cleaner provides quite an extensive testsuite. You can run these tests locally either directly via `pytest`.
+spec-cleaner provides quite an extensive testsuite. You can run these tests locally directly via `pytest`.
 
 #### pytest
 Just install `python3-pytest`, `python3-pytest-cov` and `python3-pytest-sugar` (for a nice progress bar) and then run all tests via:
@@ -79,7 +81,7 @@ When a new feature is added to spec-cleaner then a test for this piece of code m
 
 
 ## Versioning and releasing
-For the versions available, see the [tags on this repository](https://github.com/openSUSE/spec-cleaner/releases).
+For the versions available, see the [tags on this repository](https://github.com/rpm-software-management/spec-cleaner/releases).
 
 If you have proper permissions you can find handy [how to do a new release](RELEASE.md).
 
