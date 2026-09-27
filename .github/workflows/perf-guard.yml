@@ -125,7 +125,9 @@ jobs:
         print(f'{len(rows)} spec-mode pairs measured, 3 runs each, medians compared. '
               'Same runner, base then head back to back.')
         EOF
-        gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
+        # --repo: both checkouts live in subdirs, so the workspace root
+        # itself is not a git repository and gh cannot infer one.
+        gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body-file /tmp/comment.md
     - name: Upload benchmark JSON
       uses: actions/upload-artifact@v7
       if: ${{ always() }}
