@@ -1,0 +1,64 @@
+# Perf benchmark subset: 50 specs copied verbatim from tests/in/ (2026-09-27).
+# Copies, not symlinks: stays fixed if tests/in/ evolves.
+# Tiers by tests/in/ file size: small <400B (20), medium 400-1200B (20), large >1200B (10).
+# Total: 51706 bytes, 1770 lines across 50 files.
+# Excluded: network-probing specs (URL/Source with http://, ftp:// or bare
+# hostname: url_https.spec, source_https.spec, source_https_macros.spec,
+# source-https-rewritten.spec, source-https-uncurlified.spec,
+# url-probe-failure.spec, url-probe-non-200.spec, pypi-url.spec,
+# pypi-url-modname.spec, source_pyrpm_failure.spec, sourcemacro.spec,
+# interestingheader.spec) and anything not idempotent under a
+# clean(clean(x)) == clean(x) check in both normal and minimal modes.
+# Harness: tools/perf-bench.py reads entry lines shaped like
+# entry lines are shaped: name.spec, tier, reason (pipe-separated).
+
+empty.spec | small, 0B, 0 lines | edge case: empty file, parser no-op
+changelog-newline.spec | small, 12B, 2 lines | %changelog newline handling
+check.spec | small, 64B, 4 lines | %check section
+cleansection.spec | small, 85B, 10 lines | %install/%files cleansection guards
+fileswhitespace.spec | small, 85B, 9 lines | %files whitespace normalization
+pkgconfigdeps.spec | small, 98B, 3 lines | pkgconfig BuildRequires/Requires
+excludearch.spec | small, 112B, 6 lines | ExcludeArch with conditions
+perl.spec | small, 123B, 5 lines | perl preamble path (standard options)
+changelogdata.spec | small, 150B, 5 lines | %changelog data lines
+buildignore.spec | small, 170B, 5 lines | BuildIgnore tags
+licenses.spec | small, 205B, 14 lines | subpackage License strings
+defattr.spec | small, 219B, 11 lines | %files %defattr handling
+enhances.spec | small, 245B, 8 lines | Enhances tag
+bracketdeps.spec | small, 252B, 9 lines | rich/bracketed dependencies
+bcond-default.spec | small, 315B, 17 lines | %bcond defaults, conditions, macros
+patches.spec | small, 318B, 23 lines | %prep with 9 Patch tags
+bcond-oneline-dep-block.spec | small, 340B, 18 lines | one-line bcond dep blocks
+sources.spec | small, 342B, 14 lines | Source tags, %prep
+sysusers.spec | small, 342B, 15 lines | sysusers %files/scriptlets/subpackage
+selinux-macros-args.spec | small, 360B, 17 lines | scriptlet macro args
+bcond-pruned-branch.spec | medium, 400B, 24 lines | pruned bcond branches
+bcond-reader-nested-order.spec | medium, 414B, 20 lines | nested bcond reader order
+boolean.spec | medium, 448B, 9 lines | boolean Requires
+sourcelist-sections.spec | medium, 446B, 38 lines | full pipeline incl Sources
+conditional-versions.spec | medium, 445B, 19 lines | conditional version deps
+filesattr.spec | medium, 454B, 11 lines | %files attr modes
+langrecommends.spec | medium, 472B, 20 lines | lang subpackage recommends
+bcond_condition.spec | medium, 480B, 22 lines | bcond conditions
+license-define-between-sections.spec | medium, 484B, 34 lines | License/macros across sections
+sourcespatches.spec | medium, 511B, 25 lines | Sources + 2 patches + bconds
+epoch-autoreqprov.spec | medium, 521B, 35 lines | epoch, subpackages, %files x3
+scriplets.spec | medium, 873B, 29 lines | %pre/%post scriptlets
+langrecommends-main-other.spec | medium, 918B, 43 lines | lang subpackage variants
+headercomment.spec | medium, 924B, 22 lines | header comments, macros
+sectiondefine.spec | medium, 951B, 37 lines | %define section starts
+skipped.spec | medium, 972B, 38 lines | nospeccleaner skip passthrough
+psp-macro.spec | medium, 976B, 30 lines | psp macros, deps
+rpm415comment.spec | medium, 1028B, 43 lines | rpm 4.15 comments, scriptlets
+requires.spec | medium, 1187B, 32 lines | heavy Requires/BuildRequires
+util-macros.spec | medium, 1196B, 65 lines | util macros, %build/%files
+description.spec | large, 1241B, 42 lines | heavy %description
+conditionalpkgs.spec | large, 1560B, 67 lines | conditional subpackages
+bconds.spec | large, 1734B, 46 lines | many %bcond/conditions/macros
+excludes-bracketing.spec | large, 1988B, 130 lines | full pipeline, subpackages
+replace-known-dirs.spec | large, 2372B, 51 lines | big %install/%files dir rewrite
+codeblock.spec | large, 2847B, 72 lines | codeblocks, 13 patches
+spec-cleaner.spec | large, 3117B, 93 lines | real-world self spec
+mingw32-clutter.spec | large, 3980B, 125 lines | real-world, patches, subpackages
+rpmpreamble.spec | large, 4897B, 143 lines | heaviest preamble, all sections
+lafileextended.spec | large, 10033B, 210 lines | huge %install, .la handling
