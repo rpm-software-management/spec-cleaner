@@ -16,6 +16,11 @@ import tempfile
 import time
 from pathlib import Path
 
+# The script lives in tools/, so the checkout root is not importable by
+# default where the package is not pip installed (unlike the pytest runs,
+# which execute from the root). Fix that here rather than in every caller.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from spec_cleaner import RpmSpecCleaner
 
 OPTION_PRESETS = {
