@@ -9,36 +9,13 @@ from spec_cleaner.rpmpreamble import RpmPreamble
 from spec_cleaner.rpmsection import Section
 
 
-def _default_options(tmp_path):
-    """Create the default options dict for tests."""
-    specfile = tmp_path / 'test.spec'
-    specfile.write_text('Name: test\n')
-    return {
-        'specfile': str(specfile),
-        'output': str(tmp_path / 'out.spec'),
-        'pkgconfig': False,
-        'inline': False,
-        'diff': False,
-        'diff_prog': 'vimdiff',
-        'minimal': False,
-        'no_curlification': False,
-        'suse_copyright': False,
-        'copyright_year': 2013,
-        'remove_groups': False,
-        'tex': False,
-        'perl': False,
-        'cmake': False,
-        'keep_space': False,
-    }
-
-
 class TestDetectNewSection:
     """Unit tests for RpmSpecCleaner._detect_new_section and its extracted helpers."""
 
     @pytest.fixture
-    def cleaner(self, tmp_path):
+    def cleaner(self, default_options):
         """Create a cleaner with default options."""
-        return RpmSpecCleaner(_default_options(tmp_path))
+        return RpmSpecCleaner(default_options())
 
     def test_is_multiline_active_true(self, cleaner):
         """Multiline active when current section has multiline=True."""
@@ -150,9 +127,9 @@ class TestRpmPreambleHandlers:
     """Unit tests for the individual _handle_* dispatch methods."""
 
     @pytest.fixture
-    def preamble(self, tmp_path):
+    def preamble(self, default_options):
         """Create a preamble section with the options of a default run."""
-        return RpmPreamble(RpmSpecCleaner(_default_options(tmp_path)).options)
+        return RpmPreamble(RpmSpecCleaner(default_options()).options)
 
     def test_handle_empty_line(self, preamble):
         """Empty lines are skipped unless keep_space is set."""
@@ -310,9 +287,9 @@ class TestEndSubparagraphHelpers:
     """Unit tests for the end_subparagraph extracted helpers."""
 
     @pytest.fixture
-    def preamble(self, tmp_path):
+    def preamble(self, default_options):
         """Create a preamble section with the options of a default run."""
-        return RpmPreamble(RpmSpecCleaner(_default_options(tmp_path)).options)
+        return RpmPreamble(RpmSpecCleaner(default_options()).options)
 
     def test_track_condition_flags_nvr(self, preamble):
         """NVR flag is set when name/version/release/epoch present."""
@@ -416,9 +393,9 @@ class TestPlaceHelpers:
     """Unit tests for the condition block placement helpers."""
 
     @pytest.fixture
-    def preamble(self, tmp_path):
+    def preamble(self, default_options):
         """Create a preamble section with the options of a default run."""
-        return RpmPreamble(RpmSpecCleaner(_default_options(tmp_path)).options)
+        return RpmPreamble(RpmSpecCleaner(default_options()).options)
 
     def test_place_non_define_block(self, preamble):
         """Non-define condition block goes to build_conditions by default."""
@@ -471,15 +448,15 @@ class TestPlaceHelpers:
 class TestUnbraceKeywords:
     """The unbrace keyword list also comes from what rpm --showrc reports."""
 
-    def keywords(self, tmp_path, monkeypatch, showrc):
+    def keywords(self, default_options, monkeypatch, showrc):
         """Build a cleaner with rpm --showrc reporting the given macro functions."""
         monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: showrc)
-        return RpmSpecCleaner(_default_options(tmp_path)).options['unbrace_keywords']
+        return RpmSpecCleaner(default_options()).options['unbrace_keywords']
 
-    def test_showrc_macrofunc_is_not_braced(self, tmp_path, monkeypatch):
+    def test_showrc_macrofunc_is_not_braced(self, default_options, monkeypatch):
         """Test that a macro function rpm --showrc reports is left unbraced."""
-        assert 'cargo_install' in self.keywords(tmp_path, monkeypatch, ['cargo_install'])
+        assert 'cargo_install' in self.keywords(default_options, monkeypatch, ['cargo_install'])
 
-    def test_unreported_macrofunc_is_braced(self, tmp_path, monkeypatch):
+    def test_unreported_macrofunc_is_braced(self, default_options, monkeypatch):
         """Test that a macro function rpm --showrc does not report gets braced."""
-        assert 'cargo_install' not in self.keywords(tmp_path, monkeypatch, [])
+        assert 'cargo_install' not in self.keywords(default_options, monkeypatch, [])
