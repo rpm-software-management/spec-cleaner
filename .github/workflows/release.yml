@@ -1,6 +1,7 @@
 name: Release to PyPI
 
-# Triggered by the maintainer pushing a signed tag, e.g.:
+# Started by the "Create signed release tag" workflow, or by a maintainer
+# pushing a signed tag, e.g.:
 #   git tag -s spec-cleaner-1.2.5
 #   git push origin spec-cleaner-1.2.5
 #
@@ -10,6 +11,9 @@ on:
   push:
     tags:
       - "spec-cleaner-*"
+  # A tag pushed by a workflow with GITHUB_TOKEN triggers nothing, so
+  # create-release-tag.yml starts this run for the tag explicitly.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -42,6 +46,10 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      - name: Import the release signing key
+        # The public half of the key create-release-tag.yml signs with.
+        run: |
+          curl -fsSL https://github.com/scarabeusiv.gpg | gpg --batch --import
       - name: Verify tag signature
         run: |
           git verify-tag "${GITHUB_REF_NAME}"
