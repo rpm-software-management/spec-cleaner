@@ -9,6 +9,51 @@ from typing import IO
 from .rpmexception import RpmExceptionError
 
 
+def datafile_paths(name: str) -> tuple[str, ...]:
+    """
+    Candidate locations of a shipped data file, in lookup order.
+
+    Args:
+        name: A string representing the name of the datafile to open.
+
+    Returns:
+        The paths open_datafile tries, first match wins.
+    """
+    # HOME may be unset or empty, then the passwd entry is the home to use
+    homedir = os.environ.get('HOME') or os.path.expanduser('~')
+    homedir = homedir.rstrip('/') + '/.local/'
+
+    # the data files are shipped inside the package itself so that pip
+    # installs work on every install scheme (venv, --user, --target,
+    # macOS, ...) instead of relying on sysconfig data paths (gh#292)
+    return (
+        f'{os.path.dirname(os.path.realpath(__file__))}/data/{name}',
+        f'{homedir}/share/spec-cleaner/{name}',
+        f'{sysconfig.get_path("data")}/share/spec-cleaner/{name}',
+        f'{sys.prefix}/share/spec-cleaner/{name}',
+    )
+
+
+def stat_datafile(name: str) -> tuple[str, int, int] | None:
+    """
+    Identify the data file open_datafile would open, without reading it.
+
+    Args:
+        name: A string representing the name of the datafile to open.
+
+    Returns:
+        The real path, mtime and size of the first candidate that exists,
+        or None when no candidate exists.
+    """
+    for path in datafile_paths(name):
+        try:
+            stat = os.stat(path)
+        except OSError:
+            continue
+        return (os.path.realpath(path), stat.st_mtime_ns, stat.st_size)
+    return None
+
+
 def open_datafile(name: str) -> IO[str]:
     """
     Open data files.
@@ -21,21 +66,7 @@ def open_datafile(name: str) -> IO[str]:
     Raises:
         RpmExceptionError if the file is not found in predefined datadirs.
     """
-    # HOME may be unset or empty, then the passwd entry is the home to use
-    homedir = os.environ.get('HOME') or os.path.expanduser('~')
-    homedir = homedir.rstrip('/') + '/.local/'
-
-    # the data files are shipped inside the package itself so that pip
-    # installs work on every install scheme (venv, --user, --target,
-    # macOS, ...) instead of relying on sysconfig data paths (gh#292)
-    possible_paths = (
-        f'{os.path.dirname(os.path.realpath(__file__))}/data/{name}',
-        f'{homedir}/share/spec-cleaner/{name}',
-        f'{sysconfig.get_path("data")}/share/spec-cleaner/{name}',
-        f'{sys.prefix}/share/spec-cleaner/{name}',
-    )
-
-    for path in possible_paths:
+    for path in datafile_paths(name):
         try:
             _file = open(path, encoding='utf-8')
         except OSError:

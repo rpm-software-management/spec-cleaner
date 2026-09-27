@@ -14,6 +14,8 @@ class TestRpmhelpers:
 
     def test_parse_rpm_showrc_locale_charset(self, monkeypatch):
         """Test parsing 'rpm --showrc' output printed in a non-UTF-8 locale (cs_CZ)."""
+        # the result is memoized per process; start from the mock, not a sibling test
+        rpmhelpers.clear_read_caches()
         output = (
             b'-13: __apply_patch(qp:m:)\t\n'
             b'-14: __os_install_post(qp:m:)\t\n'
@@ -25,6 +27,7 @@ class TestRpmhelpers:
 
     def test_parse_rpm_showrc_missing_rpm(self, monkeypatch):
         """Test that a missing rpm binary is reported as RpmExceptionError."""
+        rpmhelpers.clear_read_caches()
 
         def missing(cmd):
             raise FileNotFoundError(2, 'No such file or directory', 'rpm')
@@ -106,8 +109,40 @@ class TestRpmhelpers:
             for number, line in enumerate(data, 1):
                 assert ': ' in line, f'{name} line {number}: {line!r}'
 
+    def test_parse_rpm_showrc_runs_once_per_process(self, monkeypatch):
+        """Test that the showrc subprocess is not reforked for every spec."""
+        rpmhelpers.clear_read_caches()
+        calls = []
+
+        def counting(cmd):
+            calls.append(cmd)
+            return b'-13: __apply_patch(qp:m:)\t\n'
+
+        monkeypatch.setattr(rpmhelpers, 'check_output', counting)
+        assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch']
+        assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch']
+        assert calls == [['rpm', '--showrc']]
+
+    def test_table_reads_are_replayed_not_reread(self, monkeypatch):
+        """Test that a parsed table is reused instead of read and parsed again."""
+        rpmhelpers.clear_read_caches()
+        real_open = open_datafile
+        calls = []
+
+        def counting(name):
+            calls.append(name)
+            return real_open(name)
+
+        monkeypatch.setattr(rpmhelpers, 'open_datafile', counting)
+        first = rpmhelpers.read_licenses_changes()
+        second = rpmhelpers.read_licenses_changes()
+        assert first == second
+        assert first is not second
+        assert calls == [rpmhelpers.LICENSES_CHANGES]
+
     def test_read_conversion_changes_reports_a_malformed_line(self, monkeypatch):
         """Test that a line without the separator is reported instead of unpacked."""
+        rpmhelpers.clear_read_caches()
         monkeypatch.setattr(
             rpmhelpers, 'open_datafile', lambda name: StringIO('good: a b \nbroken\n')
         )
