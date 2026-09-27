@@ -47,12 +47,22 @@ jobs:
         with:
           fetch-depth: 0
       - name: Import signing subkey
-        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
+        # Wrapped in a retry: gpg-agent on the runner occasionally fails to
+        # start, making the passphrase preset fail with "Not found <GPG Agent>".
+        # The key import itself is idempotent, so retrying is safe.
+        uses: Wandalen/wretry.action@031368a688929442750a679b6c35c622e93389f2 # v3.8.0
         with:
-          gpg_private_key: ${{ secrets.TCHVATAL_SUBKEY_EXP_SEP_27 }}
-          passphrase: ${{ secrets.TCHVATAL_SUBKEY_PASSPHRASE }}
-          git_user_signingkey: true
-          git_tag_gpgsign: true
+          action: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
+          with: |
+            gpg_private_key: ${{ secrets.TCHVATAL_SUBKEY_EXP_SEP_27 }}
+            passphrase: ${{ secrets.TCHVATAL_SUBKEY_PASSPHRASE }}
+            git_user_signingkey: true
+            git_tag_gpgsign: true
+          attempt_limit: 3
+          attempt_delay: 15000
+          pre_retry_command: |
+            gpg-connect-agent KILLAGENT /bye 2>/dev/null || true
+            sleep 2
       - name: Create and push signed tag
         env:
           GH_TOKEN: ${{ github.token }}
