@@ -13,7 +13,27 @@ on:
   workflow_dispatch:
 
 jobs:
+  # release.yml checks this again, but failing here leaves no tag to delete.
+  check-data:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Verify generated files are up to date
+        run: |
+          make
+          if ! git diff --exit-code -- spec_cleaner/data/ README.md; then
+            echo "::error::Generated files are stale. Run 'make', merge the result, and run this workflow again."
+            exit 1
+          fi
+
   tag:
+    needs: check-data
     # Only release what is on master.
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
