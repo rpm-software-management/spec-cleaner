@@ -27,7 +27,6 @@ def _write_datadir(home, name, content):
     share.mkdir(parents=True, exist_ok=True)
     # bytes, write_text would encode with the ascii default of the C locale
     (share / name).write_bytes(content.encode())
-    return share
 
 
 class TestFileutils:
@@ -57,15 +56,21 @@ class TestFileutils:
         """Test that a data file is found under the home datadir."""
         _write_datadir(tmp_path, 'probe.txt', 'PROBE\n')
         monkeypatch.setenv('HOME', str(tmp_path))
+        # the lookup reads HOME, so a lowercase home must not stand in for it
         monkeypatch.delenv('home', raising=False)
         with open_datafile('probe.txt') as data:
             assert data.read() == 'PROBE\n'
 
     def test_open_datafile_home_unset(self, tmp_path, monkeypatch):
-        """Test that a data file is found under ~ when the home is not set."""
+        """
+        Test the fallback used when the home is not set.
+
+        The fallback is the bare string ~ and no expanduser is applied, so it
+        resolves against the cwd. That looks wrong, and the test pins it so a
+        fix has to be a deliberate one.
+        """
         _write_datadir(tmp_path / '~', 'probe.txt', 'PROBE\n')
         monkeypatch.delenv('HOME')
-        # the fallback is resolved against the cwd, so the probe has to be there
         monkeypatch.chdir(tmp_path)
         with open_datafile('probe.txt') as data:
             assert data.read() == 'PROBE\n'
