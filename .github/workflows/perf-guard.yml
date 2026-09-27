@@ -14,9 +14,13 @@ on:
     branches:
       - master
 
+# issues:write, not pull-requests:write: `gh pr comment` creates an issue
+# comment under the hood, and the token was denied addComment with only
+# the latter (seen 2026-09-27). Same convention as the corpus sweep's
+# ticket job.
 permissions:
   contents: read
-  pull-requests: write
+  issues: write
 
 # A newer push supersedes the comment the older run would post.
 concurrency:
