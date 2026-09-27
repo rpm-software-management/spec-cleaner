@@ -283,6 +283,11 @@ class Section:
         # I don't think that this can be done within one regexp replacement
         # if you have idea, send me a patch :)
 
+        # without a macro opener both substitutions below are no-ops and
+        # the split/join round-trips, so skip the whole dance
+        if '%' not in line:
+            return line
+
         # work only with non-commented part
         sp = line.split('#')
         # so, for now, put braces around everything, what looks like macro,
@@ -324,6 +329,10 @@ class Section:
         Returns:
             The processed line.
         """
+        # both substitutions below need $RPM_OPT_FLAGS; without it the
+        # split/join round-trips, so skip the whole dance
+        if '$' not in line or 'RPM_OPT_FLAGS' not in line:
+            return line
         # quote bare assignments outside quotes so the flags stay one shell word
         parts = re.split(r'("(?:[^"\\]|\\.)*"?|\'[^\']*\'?)', line)
         parts[::2] = [self.reg.re_optflags_quotes.sub('="%{optflags}"', p) for p in parts[::2]]
