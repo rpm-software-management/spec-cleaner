@@ -47,22 +47,43 @@ jobs:
         with:
           fetch-depth: 0
       - name: Import signing subkey
-        # Wrapped in a retry: gpg-agent on the runner occasionally fails to
-        # start, making the passphrase preset fail with "Not found <GPG Agent>".
-        # The key import itself is idempotent, so retrying is safe.
-        uses: Wandalen/wretry.action@031368a688929442750a679b6c35c622e93389f2 # v3.8.0
-        with:
-          action: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
-          with: |
-            gpg_private_key: ${{ secrets.TCHVATAL_SUBKEY_EXP_SEP_27 }}
-            passphrase: ${{ secrets.TCHVATAL_SUBKEY_PASSPHRASE }}
-            git_user_signingkey: true
-            git_tag_gpgsign: true
-          attempt_limit: 3
-          attempt_delay: 15000
-          pre_retry_command: |
+        # Pure shell: gpg-agent on the runner occasionally fails to start,
+        # making the passphrase preset fail with "Not found <GPG Agent>".
+        # Retry the preset; the key import itself is idempotent.
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.TCHVATAL_SUBKEY_EXP_SEP_27 }}
+          GPG_PASSPHRASE: ${{ secrets.TCHVATAL_SUBKEY_PASSPHRASE }}
+        run: |
+          set -u
+          GNUPGHOME="$HOME/.gnupg"
+          mkdir -p "$GNUPGHOME"
+          chmod 700 "$GNUPGHOME"
+          printf 'allow-preset-passphrase\nallow-loopback-pinentry\n' > "$GNUPGHOME/gpg-agent.conf"
+
+          printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --import
+
+          FPR="$(gpg --with-colons --list-secret-keys | awk -F: '/^fpr:/ {print $10; exit}')"
+          KEYGRIP="$(gpg --with-keygrip --list-secret-keys "$FPR" | awk '/Keygrip/ {print $3; exit}')"
+          HEX_PASS="$(printf '%s' "$GPG_PASSPHRASE" | od -A n -t x1 | tr -d ' \n')"
+
+          for attempt in 1 2 3; do
+            if printf 'PRESET_PASSPHRASE %s -1 %s\n' "$KEYGRIP" "$HEX_PASS" | gpg-connect-agent; then
+              break
+            fi
+            echo "Passphrase preset failed (attempt $attempt), restarting agent..."
             gpg-connect-agent KILLAGENT /bye 2>/dev/null || true
-            sleep 2
+            sleep 5
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Failed to preset GPG passphrase after 3 attempts."
+              exit 1
+            fi
+          done
+
+          printf '%s:6:\n' "$FPR" | gpg --batch --import-ownertrust
+          git config --global user.name "Tomáš Chvátal"
+          git config --global user.email "tomas.chvatal@gmail.com"
+          git config --global user.signingkey "$FPR"
+          git config --global tag.gpgsign true
       - name: Create and push signed tag
         env:
           GH_TOKEN: ${{ github.token }}
