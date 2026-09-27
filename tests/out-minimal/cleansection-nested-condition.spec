@@ -1,0 +1,4 @@
+%files
+/x
+
+%changelog
