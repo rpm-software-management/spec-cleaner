@@ -77,6 +77,27 @@ class TestFileutils:
         with open_datafile('probe.txt') as data:
             assert data.read() == 'PROBE\n'
 
+    def test_open_datafile_skips_a_file_that_fails_to_read(self, tmp_path, monkeypatch):
+        """Test that a file which opens but then fails to read is closed and skipped."""
+        closed = []
+
+        class Unreadable:
+            """A file that opens fine and then fails, like a filesystem error mid-read."""
+
+            def read(self):
+                """Fail the way an I/O error does."""
+                raise OSError(5, 'Input/output error')
+
+            def close(self):
+                """Record the close the caller owes us."""
+                closed.append(True)
+
+        monkeypatch.setattr('builtins.open', lambda *a, **kw: Unreadable())
+        with pytest.raises(RpmExceptionError, match='probe.txt'):
+            open_datafile('probe.txt')
+        # every candidate path was tried, and each handle was closed
+        assert closed
+
     def test_open_datafile_reports_a_decoding_error(self, tmp_path, monkeypatch):
         """Test that a data file which is not UTF-8 is reported, not read into a UnicodeDecodeError."""
         share = tmp_path / '.local' / 'share' / 'spec-cleaner'
