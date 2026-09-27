@@ -55,3 +55,24 @@ class TestRpmhelpers:
     def test_open_macro_bodies(self, line, depth, expected):
         """Test counting the %{ and %( bodies left open, as rpm does when joining lines."""
         assert rpmhelpers.open_macro_bodies(line, depth) == expected
+
+    def test_fix_license_keeps_a_name_ending_in_x(self):
+        """Test that trimming the trailing semicolon does not eat a trailing letter."""
+        conversions = rpmhelpers.read_licenses_changes()
+        assert conversions['SUSE-TeX'] == 'SUSE-TeX'
+        assert rpmhelpers.fix_license('SUSE-TeX', conversions) == 'SUSE-TeX'
+
+    @pytest.mark.parametrize(
+        'value, expected',
+        [
+            ('MIT-ORlater', 'MIT-or later'),
+            ('MIT-ORsim', 'MIT-or similar'),
+        ],
+    )
+    def test_fix_license_rewrites_the_suffix(self, value, expected):
+        """Test that the two non-SPDX suffixes rpm accepts are spelled out."""
+        assert rpmhelpers.fix_license(value, rpmhelpers.read_licenses_changes()) == expected
+
+    def test_fix_license_empty_value(self):
+        """Test that an empty license stays empty instead of joining a None."""
+        assert rpmhelpers.fix_license('', {}) == ''
