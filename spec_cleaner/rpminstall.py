@@ -26,7 +26,7 @@ class RpmInstall(Section):
             line = self._replace_remove_la(line)
             line = self._replace_install_command(line)
 
-        Section.add(self, line)
+        Section.add_cleaned(self, line)
 
     def _replace_install_command(self, line: str) -> str:
         """

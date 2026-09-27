@@ -17,7 +17,7 @@ class RpmScriptlets(Section):
         """Run the cleanup of the line."""
         line = self._complete_cleanup(line)
         line = self._remove_deprecated_ldconfig(line)
-        Section.add(self, line)
+        Section.add_cleaned(self, line)
 
     def replace_buildroot(self, line: str) -> str:
         """Keep $RPM_BUILD_ROOT, it is empty at install time while %{buildroot} is the build path."""
