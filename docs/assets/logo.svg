@@ -1,0 +1,9 @@
+<!-- SPDX-License-Identifier: BSD-3-Clause -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 2048 2048" role="img" aria-label="spec-cleaner logo">
+<path fill="#FFFFFF" d="M 0 0 L 2048 0 L 2048 2048 L 0 2048 L 0 0 z"/>
+<rect x="272" y="272" width="1504" height="1504" rx="336" fill="#081E26"/>
+<circle cx="730" cy="820" r="150" fill="none" stroke="#FFFFFF" stroke-width="120"/>
+<circle cx="1218" cy="1348" r="150" fill="none" stroke="#FFFFFF" stroke-width="120"/>
+<path d="M 650 1460 L 1250 725" stroke="#88B531" stroke-width="140" stroke-linecap="round"/>
+<path fill="#88B531" d="M 1430 385 Q 1430 560 1605 560 Q 1430 560 1430 735 Q 1430 560 1255 560 Q 1430 560 1430 385 Z"/>
+</svg>
