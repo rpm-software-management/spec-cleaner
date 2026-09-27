@@ -1,0 +1,128 @@
+name: Perf guard
+
+# Comment-only benchmark guard: cleans the fixed subset in
+# tests/perf-specs/ on the base ref and the PR head back to back on the
+# same runner, and posts the median delta as a PR comment.
+#
+# Deliberately not a gate: the job always succeeds and a slowdown is a
+# flag in the comment, never a merge block. Same-runner base-vs-head
+# comparison means no stored baseline to maintain and no drift when the
+# runner fleet changes.
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# A newer push supersedes the comment the older run would post.
+concurrency:
+  group: perf-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - name: Check out PR head
+      uses: actions/checkout@v7
+      with:
+        path: head
+        persist-credentials: false
+    - name: Check out base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.base_ref }}
+        path: base
+        persist-credentials: false
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade -r head/devel-requirements.pip
+    - name: Benchmark base
+      run: |
+        cd base
+        python3 tools/perf-bench.py --runs 3 --mode both > /tmp/base.json 2>/tmp/base.table
+    - name: Benchmark head
+      run: |
+        cd head
+        python3 tools/perf-bench.py --runs 3 --mode both > /tmp/head.json 2>/tmp/head.table
+    - name: Compare and comment
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python3 - /tmp/base.json /tmp/head.json > /tmp/comment.md <<'EOF'
+        import json
+        import sys
+
+        def medians(path):
+            with open(path, encoding='utf-8') as handle:
+                payload = json.load(handle)
+            return {(r['spec'], r['mode']): r['median_s'] for r in payload['results']}
+
+        base = medians(sys.argv[1])
+        head = medians(sys.argv[2])
+        # the PR itself may change the subset, so compare only pairs both
+        # sides measured instead of failing on the first missing key
+        common = [key for key in base if key in head]
+        rows = []
+        for key in common:
+            before, after = base[key], head[key]
+            delta = after - before
+            pct = (delta / before * 100) if before else 0.0
+            rows.append((key[0], key[1], before, after, delta, pct))
+        rows.sort(key=lambda row: row[4], reverse=True)
+        base_total = sum(base[key] for key in common)
+        head_total = sum(head[key] for key in common)
+        total_delta = head_total - base_total
+        # flag only a slowdown big enough to matter and to see: relative
+        # alone flaps on the small specs whose medians are mostly init floor
+        flagged = bool(common) and head_total > base_total * 1.10 and total_delta > 0.5
+        print('## Perf guard')
+        print()
+        if not common:
+            print('No common spec-mode pairs: the PR changes the benchmark '
+                  'subset itself, so there is nothing to compare.')
+        else:
+            print(f'Total median: base {base_total:.3f}s, head {head_total:.3f}s '
+                  f'({total_delta:+.3f}s, {total_delta / base_total * 100:+.1f}%).')
+        only_base = [f'{spec} [{mode}]' for spec, mode in base if (spec, mode) not in head]
+        only_head = [f'{spec} [{mode}]' for spec, mode in head if (spec, mode) not in base]
+        if only_base:
+            print(f'Only on base ({len(only_base)}): {", ".join(only_base)}.')
+        if only_head:
+            print(f'Only on head ({len(only_head)}): {", ".join(only_head)}.')
+        print()
+        if flagged:
+            print(':warning: **Flagged**: head is more than 10% and 0.5s '
+                  'slower than base on the benchmark subset.')
+        else:
+            print('No flag: within 10% and 0.5s of base.')
+        print()
+        print('| spec | mode | base ms | head ms | delta ms | delta % |')
+        print('|---|---|---|---|---|---|')
+        for spec, mode, before, after, delta, pct in rows[:10]:
+            print(f'| {spec} | {mode} | {before * 1000:.1f} | {after * 1000:.1f} '
+                  f'| {delta * 1000:+.1f} | {pct:+.1f} |')
+        print()
+        print(f'{len(rows)} spec-mode pairs measured, 3 runs each, medians compared. '
+              'Same runner, base then head back to back.')
+        EOF
+        gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
+    - name: Upload benchmark JSON
+      uses: actions/upload-artifact@v7
+      if: ${{ always() }}
+      with:
+        name: perf-guard-json
+        path: |
+          /tmp/base.json
+          /tmp/head.json
+        retention-days: 30
