@@ -129,9 +129,16 @@ jobs:
         print(f'{len(rows)} spec-mode pairs measured, 3 runs each, medians compared. '
               'Same runner, base then head back to back.')
         EOF
+        # the report always lands in the job summary, which needs no
+        # permission. The PR comment is best-effort: the Actions token is
+        # denied addComment here (seen with both pull-requests:write and
+        # issues:write), so a failed comment must never fail the job —
+        # that would turn a comment-only guard into a gate.
+        cat /tmp/comment.md >> "$GITHUB_STEP_SUMMARY"
         # --repo: both checkouts live in subdirs, so the workspace root
         # itself is not a git repository and gh cannot infer one.
-        gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body-file /tmp/comment.md
+        gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body-file /tmp/comment.md || \
+          echo 'PR comment unavailable (token denied addComment); report is in the job summary.'
     - name: Upload benchmark JSON
       uses: actions/upload-artifact@v7
       if: ${{ always() }}
