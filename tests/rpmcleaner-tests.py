@@ -79,9 +79,10 @@ def test_nospeccleaner_is_reported_and_the_spec_copied_verbatim(
     with open(spec, 'w', encoding='utf-8') as specfile:
         specfile.write('#nospeccleaner\nName: skipped\n')
     RpmSpecCleaner(options).run()
-    # the misspelling of "definition" is the current output, pinned as it stands
+    # asserted whole, not as a substring: a substring cannot catch a mutation
+    # inside the part it matches
     assert capsys.readouterr().err == (
-        f".spec file {spec} is not being processed due to definiton of 'nospeccleaner'\n"
+        f".spec file {spec} is not being processed due to definition of 'nospeccleaner'\n"
     )
     with open(options['output'], encoding='utf-8') as out:
         assert out.read() == '#nospeccleaner\nName: skipped\n'

@@ -500,7 +500,7 @@ class RpmSpecCleaner:
         # If we are skipping the specfile we should do nothing
         if self.skip_run:
             sys.stderr.write(
-                ".spec file {} is not being processed due to definiton of 'nospeccleaner'\n".format(
+                ".spec file {} is not being processed due to definition of 'nospeccleaner'\n".format(
                     self.options['specfile']
                 )
             )
