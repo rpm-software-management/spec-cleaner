@@ -48,7 +48,8 @@ def test_diff_temp_file_is_named_after_the_spec(default_options):
     """Test that the diff buffer is titled after the spec, not a random temp name."""
     cleaner = RpmSpecCleaner(default_options(output='', diff=True))
     name = os.path.basename(cleaner.fout.name)
-    assert re.fullmatch(r'test\.spec\.[a-z0-9_]{8}\.spec', name), name
+    # pin the prefix and suffix; the random middle is tempfile's business
+    assert re.fullmatch(r'test\.spec\..+\.spec', name), name
     assert cleaner.fout.encoding == 'utf-8'
 
 
