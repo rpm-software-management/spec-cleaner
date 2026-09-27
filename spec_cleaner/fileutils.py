@@ -38,15 +38,18 @@ def open_datafile(name: str) -> IO[str]:
     for path in possible_paths:
         try:
             _file = open(path, encoding='utf-8')
+        except OSError:
+            continue
+        try:
             # the decoding is lazy, so a file that is not UTF-8 only fails once
             # somebody reads it; fail here, where the path is still known
             _file.read()
             _file.seek(0)
-        except OSError:
-            pass
         except UnicodeDecodeError as error:
             _file.close()
             raise RpmExceptionError(f"File '{name}' is not valid UTF-8: {error}") from error
+        except OSError:
+            _file.close()
         else:
             return _file
     # file not found
