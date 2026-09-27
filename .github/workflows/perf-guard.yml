@@ -136,10 +136,20 @@ jobs:
         # issues:write), so a failed comment must never fail the job —
         # that would turn a comment-only guard into a gate.
         cat /tmp/comment.md >> "$GITHUB_STEP_SUMMARY"
+        # One comment per PR, updated on every push instead of posting a
+        # new one each time. Found by its marker heading, not by recency,
+        # so other bot comments are never touched.
         # --repo: both checkouts live in subdirs, so the workspace root
         # itself is not a git repository and gh cannot infer one.
-        gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body-file /tmp/comment.md || \
-          echo 'PR comment unavailable (token denied addComment); report is in the job summary.'
+        {
+          comment_id=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json comments \
+            --jq '[.comments[] | select(.author.login == "github-actions[bot]" and (.body | startswith("## Perf guard")))][0].id // empty')
+          if [ -n "$comment_id" ]; then
+            gh api "repos/${{ github.repository }}/issues/comments/$comment_id" -X PATCH -F body=@/tmp/comment.md --jq .html_url
+          else
+            gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body-file /tmp/comment.md
+          fi
+        } || echo 'PR comment unavailable (token denied addComment); report is in the job summary.'
     - name: Upload benchmark JSON
       uses: actions/upload-artifact@v7
       if: ${{ always() }}
