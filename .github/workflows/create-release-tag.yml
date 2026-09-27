@@ -63,11 +63,18 @@ jobs:
           printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --import
 
           FPR="$(gpg --with-colons --list-secret-keys | awk -F: '/^fpr:/ {print $10; exit}')"
-          KEYGRIP="$(gpg --with-keygrip --list-secret-keys "$FPR" | awk '/Keygrip/ {print $3; exit}')"
           HEX_PASS="$(printf '%s' "$GPG_PASSPHRASE" | od -A n -t x1 | tr -d ' \n')"
 
+          # Preset the passphrase for every secret keygrip (primary and
+          # subkeys): the signing subkey's grip differs from the primary's.
           for attempt in 1 2 3; do
-            if printf 'PRESET_PASSPHRASE %s -1 %s\n' "$KEYGRIP" "$HEX_PASS" | gpg-connect-agent; then
+            PRESET_OK=1
+            while read -r KEYGRIP; do
+              if ! printf 'PRESET_PASSPHRASE %s -1 %s\n' "$KEYGRIP" "$HEX_PASS" | gpg-connect-agent; then
+                PRESET_OK=0
+              fi
+            done < <(gpg --with-keygrip --list-secret-keys "$FPR" | awk '/Keygrip/ {print $3}')
+            if [ "$PRESET_OK" -eq 1 ]; then
               break
             fi
             echo "Passphrase preset failed (attempt $attempt), restarting agent..."
