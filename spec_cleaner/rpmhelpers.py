@@ -83,7 +83,13 @@ def read_conversion_changes(conversion_file):
     conversions = {}
     with open_datafile(conversion_file) as f:
         # the values are split by  ': '
-        for key, value in (line.split(': ', 1) for line in f):
+        for number, line in enumerate(f, 1):
+            fields = line.rstrip('\n').split(': ', 1)
+            if len(fields) != 2:
+                raise RpmExceptionError(
+                    f"Line {number} of {conversion_file} has no ': ' separator: {line.rstrip()!r}"
+                )
+            key, value = fields
             names = value.split()
             # a package has one row per arch, keep only the names every row provides
             if key in conversions:
@@ -157,9 +163,12 @@ def fix_license(value, conversions):
     """
     # license ; should be replaced by ands so find it
     re_license_semicolon = re.compile(r'\s*;\s*')
-    value = value.rstrip(';')
+    # normalise the whitespace first, a separator may be followed or preceded by
+    # it; one without an operand on either side is dropped, not turned into a
+    # dangling AND/OR that no SPDX expression allows
+    value = ' '.join(value.split()).strip('; ')
     # some known strings contain the separators split on below
-    whole = ' '.join(value.split())
+    whole = value
     if whole in conversions:
         return conversions[whole]
     value = re_license_semicolon.sub(' and ', value)
