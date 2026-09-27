@@ -7,7 +7,7 @@ set -e -o pipefail
 
 export LC_ALL=C
 curl -fsSL 'https://docs.google.com/spreadsheets/d/14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs/export?format=tsv&id=14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs&gid=0' | grep -v "New format" \
-  | sed -e 's,\s*$,,' > licenses_changes.ntxt
+  | sed -e 's,[[:space:]]*$,,' > licenses_changes.ntxt
 curl -fsSL -o licenses.json https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json
 
 : > licenses_changes.ptxt
