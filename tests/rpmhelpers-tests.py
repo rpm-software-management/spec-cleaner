@@ -35,6 +35,21 @@ class TestRpmhelpers:
             ('if x then print("{") end', (1, 0), (2, 0)),
             ('}', (1, 0), (0, 0)),
             ('tr 1 2)', (0, 1), (0, 0)),
+            # the char behind a backslash is skipped, so its %{ opens nothing
+            ('\\%{', (1, 0), (2, 0)),
+            # %% is an escaped percent, it never opens a body
+            ('%%{', (0, 0), (0, 0)),
+            # a %{ pair opens once, the brace is consumed with the percent
+            ('%%{', (1, 0), (2, 0)),
+            # every %( on the line adds up, the counter is not just set
+            ('%(a | %(b |', (0, 0), (0, 2)),
+            # only braces move the brace counter; the X is here because it is the
+            # one character a mutation of the '{}' set would add
+            ('%{lua:print("X")}', (1, 0), (1, 0)),
+            # ...and likewise the paren counter
+            ('%(echo "X" |', (0, 1), (0, 2)),
+            # a ( inside an open %( body counts, balanced within it or not
+            ("%(rpm -q x | cut -d'(' -f2)", (0, 0), (0, 1)),
         ],
     )
     def test_open_macro_bodies(self, line, depth, expected):
