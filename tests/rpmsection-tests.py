@@ -4,31 +4,8 @@ from spec_cleaner import RpmSpecCleaner
 from spec_cleaner.rpmsection import Section
 
 
-def _default_options(tmp_path):
-    """Create the default options dict for tests."""
-    specfile = tmp_path / 'test.spec'
-    specfile.write_text('Name: test\n')
-    return {
-        'specfile': str(specfile),
-        'output': str(tmp_path / 'out.spec'),
-        'pkgconfig': False,
-        'inline': False,
-        'diff': False,
-        'diff_prog': 'vimdiff',
-        'minimal': False,
-        'no_curlification': False,
-        'suse_copyright': False,
-        'copyright_year': 2013,
-        'remove_groups': False,
-        'tex': False,
-        'perl': False,
-        'cmake': False,
-        'keep_space': False,
-    }
-
-
-def _section(tmp_path, defined_macros):
-    options = RpmSpecCleaner(_default_options(tmp_path)).options
+def _section(default_options, defined_macros):
+    options = RpmSpecCleaner(default_options()).options
     options['defined_macros'] = defined_macros
     return Section(options)
 
@@ -100,18 +77,18 @@ KNOWN_DIR_MACROS = sorted({macro for _, _, macros in KNOWN_DIR_RULES for macro i
 
 
 @pytest.mark.parametrize(('line', 'expected', 'macros'), KNOWN_DIR_RULES)
-def test_rewrite_with_default_macros(tmp_path, line, expected, macros):
+def test_rewrite_with_default_macros(default_options, line, expected, macros):
     """Each rule rewrites its own line while none of the macros it reads is redefined."""
-    assert _section(tmp_path, set()).replace_known_dirs(line) == expected
+    assert _section(default_options, set()).replace_known_dirs(line) == expected
 
 
 @pytest.mark.parametrize(('line', 'expected', 'macros'), KNOWN_DIR_RULES)
-def test_rewrite_disabled_by_redefined_macro(tmp_path, line, expected, macros):
+def test_rewrite_disabled_by_redefined_macro(default_options, line, expected, macros):
     """Redefining any of the macros a rule reads switches that rule off."""
     # A neighbouring rule may still rewrite the line, so assert on the target replacement
     # being absent rather than on the line staying untouched.
     for macro in macros:
-        assert expected not in _section(tmp_path, {macro}).replace_known_dirs(line)
+        assert expected not in _section(default_options, {macro}).replace_known_dirs(line)
 
 
 def test_every_guard_macro_is_covered():

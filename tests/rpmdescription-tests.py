@@ -6,33 +6,10 @@ from spec_cleaner import RpmSpecCleaner
 from spec_cleaner.rpmdescription import RpmDescription
 
 
-def _default_options(tmp_path):
-    """Create the default options dict for tests."""
-    specfile = tmp_path / 'test.spec'
-    specfile.write_text('Name: test\n')
-    return {
-        'specfile': str(specfile),
-        'output': str(tmp_path / 'out.spec'),
-        'pkgconfig': False,
-        'inline': False,
-        'diff': False,
-        'diff_prog': 'vimdiff',
-        'minimal': False,
-        'no_curlification': False,
-        'suse_copyright': False,
-        'copyright_year': 2013,
-        'remove_groups': False,
-        'tex': False,
-        'perl': False,
-        'cmake': False,
-        'keep_space': False,
-    }
-
-
 @pytest.fixture
-def description(tmp_path):
+def description(default_options):
     """Build a %description section handler with the default options."""
-    return RpmDescription(RpmSpecCleaner(_default_options(tmp_path)).options)
+    return RpmDescription(RpmSpecCleaner(default_options()).options)
 
 
 class TestRpmDescription:
