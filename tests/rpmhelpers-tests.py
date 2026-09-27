@@ -3,6 +3,7 @@
 import pytest
 
 from spec_cleaner import RpmExceptionError, rpmhelpers
+from spec_cleaner.rpmrequirestoken import RpmRequiresToken
 
 
 class TestRpmhelpers:
@@ -10,9 +11,14 @@ class TestRpmhelpers:
 
     def test_parse_rpm_showrc_locale_charset(self, monkeypatch):
         """Test parsing 'rpm --showrc' output printed in a non-UTF-8 locale (cs_CZ)."""
-        output = b'-13: __apply_patch(qp:m:)\t\n==== aktivn\xed 1073 pr\xe1zdn\xe9 0\n'
+        output = (
+            b'-13: __apply_patch(qp:m:)\t\n'
+            b'-14: __os_install_post(qp:m:)\t\n'
+            b'-15: foo(bar)\t\n'
+            b'==== aktivn\xed 1073 pr\xe1zdn\xe9 0\n'
+        )
         monkeypatch.setattr(rpmhelpers, 'check_output', lambda cmd: output)
-        assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch']
+        assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch', '__os_install_post', 'foo']
 
     def test_parse_rpm_showrc_missing_rpm(self, monkeypatch):
         """Test that a missing rpm binary is reported as RpmExceptionError."""
@@ -76,3 +82,44 @@ class TestRpmhelpers:
     def test_fix_license_empty_value(self):
         """Test that an empty license stays empty instead of joining a None."""
         assert rpmhelpers.fix_license('', {}) == ''
+
+    def test_add_group_names_the_type_it_cannot_flatten(self):
+        """Test that the guard reports the offending type."""
+        with pytest.raises(RpmExceptionError, match="<class 'int'>"):
+            rpmhelpers.add_group(42)
+
+    def test_read_licenses_changes_keeps_a_key_ending_in_x(self):
+        """Test that reading the table does not trim a trailing letter off a key."""
+        conversions = rpmhelpers.read_licenses_changes()
+        assert conversions['SUSE-TeX'] == 'SUSE-TeX'
+        assert 'SUSE-Te' not in conversions
+
+    @pytest.mark.parametrize(
+        'name, declaration',
+        [
+            ('pkgconfig', True),
+            ('pkgconfig(fftw3)', False),
+            ('pkgconfig %{?v:>= 1}', True),
+            ('%{?with_x}pkgconfig', True),
+            ('pkgconfig-x11', False),
+        ],
+    )
+    def test_find_pkgconfig_declaration(self, name, declaration):
+        """Test that a pkgconfig build dependency is spotted, bracketed or not."""
+        elements = [RpmRequiresToken(name, None, None, 'BuildRequires:')]
+        assert rpmhelpers.find_pkgconfig_declaration(elements) is declaration
+
+    def test_sort_uniq_merges_duplicate_sources(self):
+        """Test that duplicates merge and no following line is dropped."""
+        source = 'Source:         %{name}-%{version}.tar.gz'
+        extra = 'Source1:        extra.tar.gz'
+        # a plain duplicate that is not the last item
+        assert rpmhelpers.sort_uniq([source, source, extra]) == [source, extra]
+        # a duplicate whose comments merge, also not the last item
+        merged = ['# one', '# two', source]
+        assert rpmhelpers.sort_uniq([['# one', source], ['# two', source], extra]) == [
+            merged,
+            extra,
+        ]
+        # a plain duplicate of an already commented group
+        assert rpmhelpers.sort_uniq([merged, source, extra]) == [merged, extra]
