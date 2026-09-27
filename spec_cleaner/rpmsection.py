@@ -4,6 +4,95 @@ from typing import IO, Any
 
 from .rpmregexp import Regexp
 
+# Short utilities and what they expand to; the bare names map to
+# themselves, the operation only strips the macro wrapper.
+_UTIL_REPLACEMENTS: dict[str, str] = {
+    **{
+        name: name
+        for name in (
+            'aclocal',
+            'ar',
+            'as',
+            'autoconf',
+            'autoheader',
+            'automake',
+            'bzip2',
+            'cat',
+            'chgrp',
+            'chmod',
+            'chown',
+            'cp',
+            'cpio',
+            'file',
+            'gpg',
+            'grep',
+            'gzip',
+            'id',
+            'install',
+            'ld',
+            'libtoolize',
+            'make',
+            'mkdir',
+            'mv',
+            'nm',
+            'objcopy',
+            'objdump',
+            'patch',
+            'perl',
+            'python',
+            'python2',
+            'python3',
+            'pypy3',
+            'ranlib',
+            'restorecon',
+            'rm',
+            'rsh',
+            'sed',
+            'semodule',
+            'ssh',
+            'strip',
+            'tar',
+            'unzip',
+            'xz',
+        )
+    },
+    'id_u': 'id -u',
+    'ln_s': 'ln -s',
+    'lzma': 'xz --format=lzma',
+    'mkdir_p': 'mkdir -p',
+    'awk': 'gawk',
+    'cc': 'gcc',
+    'cpp': 'gcc -E',
+    'cxx': 'g++',
+    'remsh': 'rsh',
+}
+# one scan instead of one re.sub per utility per line; longest first so
+# the timing favors the match mix, correctness does not depend on order
+# (the closing brace and word boundary already disambiguate prefixes)
+_UTIL_ALT = '|'.join(sorted(_UTIL_REPLACEMENTS, key=len, reverse=True))
+# after '#!' the macro is a shebang, which needs the absolute path it expands to
+_RE_UTILS_BRACED = re.compile(r'(?<!#!)(?<!#! )%\{__(?P<name>' + _UTIL_ALT + r')\}')
+_RE_UTILS_BOTH = re.compile(
+    r'(?<!#!)(?<!#! )%(?:\{(?P<b1>__(?:' + _UTIL_ALT + r'))\}|(?P<b2>__(?:' + _UTIL_ALT + r'))\b)'
+)
+
+
+def _replace_utils_braced(match: re.Match[str], defined_macros: set[str]) -> str:
+    """Expand one %{__name} match unless the spec defines the macro itself."""
+    short = match.group('name')
+    if '__' + short in defined_macros:
+        return match.group(0)
+    return _UTIL_REPLACEMENTS[short]
+
+
+def _replace_utils_both(match: re.Match[str], defined_macros: set[str]) -> str:
+    """Expand one %{__name} or %__name match unless the spec defines it."""
+    token = match.group('b1') if match.group('b1') is not None else match.group('b2')
+    short = token[2:]
+    if '__' + short in defined_macros:
+        return match.group(0)
+    return _UTIL_REPLACEMENTS[short]
+
 
 class Section:
     """
@@ -326,76 +415,15 @@ class Section:
         Returns:
             The line without macros for utilities.
         """
-        r = {
-            'id_u': 'id -u',
-            'ln_s': 'ln -s',
-            'lzma': 'xz --format=lzma',
-            'mkdir_p': 'mkdir -p',
-            'awk': 'gawk',
-            'cc': 'gcc',
-            'cpp': 'gcc -E',
-            'cxx': 'g++',
-            'remsh': 'rsh',
-        }
         # after '#!' the macro is a shebang, which needs the absolute path it expands to
-        for i in r:
-            if '__' + i in self.defined_macros:
-                continue
-            line = re.sub(r'(?<!#!)(?<!#! )%\{__' + i + r'\}', r[i], line)
-            if self.minimal:
-                line = re.sub(r'(?<!#!)(?<!#! )%__' + i + r'\b', r[i], line)
-
-        for i in (
-            'aclocal',
-            'ar',
-            'as',
-            'autoconf',
-            'autoheader',
-            'automake',
-            'bzip2',
-            'cat',
-            'chgrp',
-            'chmod',
-            'chown',
-            'cp',
-            'cpio',
-            'file',
-            'gpg',
-            'grep',
-            'gzip',
-            'id',
-            'install',
-            'ld',
-            'libtoolize',
-            'make',
-            'mkdir',
-            'mv',
-            'nm',
-            'objcopy',
-            'objdump',
-            'patch',
-            'perl',
-            'python',
-            'python2',
-            'python3',
-            'pypy3',
-            'ranlib',
-            'restorecon',
-            'rm',
-            'rsh',
-            'sed',
-            'semodule',
-            'ssh',
-            'strip',
-            'tar',
-            'unzip',
-            'xz',
-        ):
-            if '__' + i in self.defined_macros:
-                continue
-            line = re.sub(r'(?<!#!)(?<!#! )%\{__' + i + r'\}', i, line)
-            if self.minimal:
-                line = re.sub(r'(?<!#!)(?<!#! )%__' + i + r'\b', i, line)
+        if self.minimal:
+            line = _RE_UTILS_BOTH.sub(
+                lambda match: _replace_utils_both(match, self.defined_macros), line
+            )
+        else:
+            line = _RE_UTILS_BRACED.sub(
+                lambda match: _replace_utils_braced(match, self.defined_macros), line
+            )
 
         if self.shell_section:
             line = self.reg.re_deprecated_egrep_regex.sub(r'\1grep -E', line)
