@@ -183,7 +183,7 @@ def read_licenses_changes() -> dict[str, str]:
 
     correct license string<tab>known bad license string
 
-    Tab is used as a separator.
+    Tab is used as a separator. Lines starting with '#' are comments.
 
     Returns:
         A dict with the mapping.
@@ -192,8 +192,12 @@ def read_licenses_changes() -> dict[str, str]:
 
     def load():
         with open_datafile(LICENSES_CHANGES) as f:
-            next(f)  # strip newline
-            return {old: correct for correct, old in (line.rstrip('\n').split('\t') for line in f)}
+            return {
+                old: correct
+                for correct, old in (
+                    line.rstrip('\n').split('\t') for line in f if not line.startswith('#')
+                )
+            }
 
     return _cached_datafile(LICENSES_CHANGES, load)
 
