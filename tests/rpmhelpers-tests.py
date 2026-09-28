@@ -156,6 +156,7 @@ class TestRpmhelpers:
 
     def test_read_licenses_changes_keeps_a_key_ending_in_x(self):
         """Test that reading the table does not trim a trailing letter off a key."""
+        rpmhelpers.clear_read_caches()
         conversions = rpmhelpers.read_licenses_changes()
         assert conversions['SUSE-TeX'] == 'SUSE-TeX'
         assert 'SUSE-Te' not in conversions
@@ -182,6 +183,7 @@ class TestRpmhelpers:
 
     def test_fix_license_passes_a_known_zero_clause_through(self):
         """Test that the shortest real id survives, now via the table itself."""
+        rpmhelpers.clear_read_caches()
         assert rpmhelpers.fix_license('0BSD', rpmhelpers.read_licenses_changes()) == '0BSD'
 
     @pytest.mark.parametrize(
