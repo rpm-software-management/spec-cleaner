@@ -1,0 +1,103 @@
+name: SPDX license sync
+
+# Keep the vendored SPDX data from drifting behind spdx/license-list-data.
+# - Manual trigger: refresh on demand (workflow_dispatch)
+# - Monthly schedule: the list ships a few releases a year; monthly is plenty
+# On drift the job opens a refresh PR; when the data is current it is a
+# green no-op. The release workflows stay the backstop: they fail the
+# release if `make` produces any diff.
+#
+# Only the license artifacts are refreshed here, never the OBS conversion
+# tables (different source, different cadence): licenses_changes.txt, both
+# TOMLs, and SPDX-LICENSES.md.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 1 * *'  # 1st of month 03:00 UTC, an hour after the corpus sweep
+
+# The refresh only reads the network and the tree; pushing the branch and
+# opening the PR need write, granted to the job below instead.
+permissions:
+  contents: read
+
+concurrency:
+  group: spdx-sync
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Refresh license data
+        run: |
+          bash license-update.sh
+          python3 generate-licenses-for-rpmlint.py spec_cleaner/data/licenses.toml
+          python3 generate-licenses-for-rpmlint.py --suse spec_cleaner/data/licenses-suse.toml
+
+      - name: Check for drift
+        id: diff
+        run: |
+          if git diff --quiet -- spec_cleaner/data/licenses_changes.txt \
+              spec_cleaner/data/licenses.toml spec_cleaner/data/licenses-suse.toml \
+              SPDX-LICENSES.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open refresh PR
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          old_ver=$(git show HEAD:spec_cleaner/data/licenses_changes.txt | sed -n '1s/^# SPDX license list //p')
+          new_ver=$(sed -n '1s/^# SPDX license list //p' spec_cleaner/data/licenses_changes.txt)
+          branch="spdx-sync-${new_ver%%, *}-$(date -u +%F)"
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            checkout -B "$branch"
+          git add spec_cleaner/data/licenses_changes.txt spec_cleaner/data/licenses.toml \
+            spec_cleaner/data/licenses-suse.toml SPDX-LICENSES.md
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            commit -m "Refresh SPDX license data to ${new_ver}" -m "Was: ${old_ver}."
+          git push -u origin "$branch"
+          if [ -z "$(gh pr list --head "$branch" --json number --jq '.[].number')" ]; then
+            python3 - "$old_ver" "$new_ver" <<'EOF' > /tmp/spdx-pr-body.md
+          import subprocess
+          import sys
+          old_ver, new_ver = sys.argv[1], sys.argv[2]
+          old = subprocess.run(
+              ['git', 'show', 'HEAD:spec_cleaner/data/licenses_changes.txt'],
+              capture_output=True, text=True, check=True).stdout
+          new = open('spec_cleaner/data/licenses_changes.txt').read()
+
+          def ids(text):
+              out = set()
+              for line in text.splitlines():
+                  if not line or line.startswith('#'):
+                      continue
+                  new_id, _old = line.split('\t')
+                  out.add(new_id)
+              return out
+
+          old_ids, new_ids = ids(old), ids(new)
+          added = sorted(new_ids - old_ids)
+          removed = sorted(old_ids - new_ids)
+          old_ver = old_ver or 'unrecorded (first provenance run)'
+          print(f'SPDX data refresh: {old_ver} -> {new_ver}.')
+          print()
+          print(f'Added ids ({len(added)}): ' + (', '.join(added) or 'none'))
+          print(f'Removed ids ({len(removed)}): ' + (', '.join(removed) or 'none'))
+          print()
+          print('Produced by the monthly spdx-sync job; merge to pick the new ids up.')
+          EOF
+            gh pr create --base master --head "$branch" \
+              --title "Refresh SPDX license data to ${new_ver}" \
+              --body-file /tmp/spdx-pr-body.md
+          fi

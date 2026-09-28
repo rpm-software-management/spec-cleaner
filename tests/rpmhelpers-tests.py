@@ -160,6 +160,30 @@ class TestRpmhelpers:
         assert conversions['SUSE-TeX'] == 'SUSE-TeX'
         assert 'SUSE-Te' not in conversions
 
+    def test_read_licenses_changes_keeps_the_first_row(self, monkeypatch):
+        """Test that no leading row is silently dropped as a presumed header."""
+        rpmhelpers.clear_read_caches()
+        monkeypatch.setattr(
+            rpmhelpers, 'open_datafile', lambda name: StringIO('0BSD\t0BSD\nMIT\tMIT\n')
+        )
+        assert rpmhelpers.read_licenses_changes() == {'0BSD': '0BSD', 'MIT': 'MIT'}
+
+    def test_read_licenses_changes_skips_comment_lines(self, monkeypatch):
+        """Test that the provenance header is not parsed as a mapping row."""
+        rpmhelpers.clear_read_caches()
+        monkeypatch.setattr(
+            rpmhelpers,
+            'open_datafile',
+            lambda name: StringIO(
+                '# SPDX license list 3.29.0, fetched 2026-09-28\n0BSD\t0BSD\nMIT\tMIT\n'
+            ),
+        )
+        assert rpmhelpers.read_licenses_changes() == {'0BSD': '0BSD', 'MIT': 'MIT'}
+
+    def test_fix_license_passes_a_known_zero_clause_through(self):
+        """Test that the shortest real id survives, now via the table itself."""
+        assert rpmhelpers.fix_license('0BSD', rpmhelpers.read_licenses_changes()) == '0BSD'
+
     @pytest.mark.parametrize(
         'name, declaration',
         [
