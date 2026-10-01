@@ -71,9 +71,13 @@ _UTIL_REPLACEMENTS: dict[str, str] = {
 # (the closing brace and word boundary already disambiguate prefixes)
 _UTIL_ALT = '|'.join(sorted(_UTIL_REPLACEMENTS, key=len, reverse=True))
 # after '#!' the macro is a shebang, which needs the absolute path it expands to
-_RE_UTILS_BRACED = re.compile(r'(?<!#!)(?<!#! )%\{__(?P<name>' + _UTIL_ALT + r')\}')
+_RE_UTILS_BRACED = re.compile(r'(?<!#!)(?<!#! )(?<!%)%\{__(?P<name>' + _UTIL_ALT + r')\}')
 _RE_UTILS_BOTH = re.compile(
-    r'(?<!#!)(?<!#! )%(?:\{(?P<b1>__(?:' + _UTIL_ALT + r'))\}|(?P<b2>__(?:' + _UTIL_ALT + r'))\b)'
+    r'(?<!#!)(?<!#! )(?<!%)%(?:\{(?P<b1>__(?:'
+    + _UTIL_ALT
+    + r'))\}|(?P<b2>__(?:'
+    + _UTIL_ALT
+    + r'))\b)'
 )
 
 
