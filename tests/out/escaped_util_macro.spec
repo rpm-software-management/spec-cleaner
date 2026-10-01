@@ -11,6 +11,7 @@ test
 
 %define my_install() \
    %%{__unzip} -q -d "$1" \
+   %%__unzip -q -d "$1" \
    %%{nil}
 
 %build
