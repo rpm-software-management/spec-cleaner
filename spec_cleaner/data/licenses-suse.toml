@@ -1,6 +1,6 @@
 # Generated with generate-licenses-for-rpmlint.py script from spec-cleaner:
 # URL: https://github.com/rpm-software-management/spec-cleaner
-# Source data: SPDX license list 3.29.0, fetched 2026-09-28
+# Source data: SPDX license list 3.29.0, fetched 2026-10-01
 
 ValidLicenses = [
     "0BSD",

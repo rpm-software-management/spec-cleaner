@@ -1,4 +1,4 @@
-# SPDX license list 3.29.0, fetched 2026-09-28
+# SPDX license list 3.29.0, fetched 2026-10-01
 0BSD	0BSD
 0BSD+	0BSD+
 3D-Slicer-1.0	3D-Slicer-1.0
