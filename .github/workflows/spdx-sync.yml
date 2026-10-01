@@ -4,8 +4,9 @@ name: SPDX license sync
 # - Manual trigger: refresh on demand (workflow_dispatch)
 # - Monthly schedule: the list ships a few releases a year; monthly is plenty
 # On drift the job opens a refresh PR; when the data is current it is a
-# green no-op. The release workflows stay the backstop: they fail the
-# release if `make` produces any diff.
+# green no-op. Drift means the license id set changed, not just the fetch
+# date in the generated-file headers. The release workflows stay the
+# backstop: they fail the release if `make` produces any diff.
 #
 # Only the license artifacts are refreshed here, never the OBS conversion
 # tables (different source, different cadence): licenses_changes.txt, both
@@ -44,9 +45,12 @@ jobs:
       - name: Check for drift
         id: diff
         run: |
-          if git diff --quiet -- spec_cleaner/data/licenses_changes.txt \
-              spec_cleaner/data/licenses.toml spec_cleaner/data/licenses-suse.toml \
-              SPDX-LICENSES.md; then
+          # Compare the license id sets, not the raw file diff: the generated
+          # files embed the fetch date, so a no-change re-fetch would otherwise
+          # always look like drift and open a no-op PR.
+          old_ids=$(git show HEAD:spec_cleaner/data/licenses_changes.txt | grep -v '^#' | cut -f1 | sort)
+          new_ids=$(grep -v '^#' spec_cleaner/data/licenses_changes.txt | cut -f1 | sort)
+          if [ "$old_ids" = "$new_ids" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
