@@ -10,6 +10,8 @@ class RpmCheck(Section):
     Replace various troublemakers in check phase.
     """
 
+    shell_section = True
+
     def add(self, line: str) -> None:
         """Process one line of the %check section."""
         line = self._complete_cleanup(line)
@@ -22,7 +24,7 @@ class RpmCheck(Section):
             line = self._replace_unittest(line)
             line = self._replace_make(line)
 
-        Section.add(self, line)
+        Section.add_cleaned(self, line)
 
     def _replace_pytest(self, line: str) -> str:
         """
@@ -70,9 +72,9 @@ class RpmCheck(Section):
             line = self.reg.re_make.sub(r'\1%make_build\2', line)
         # remove from line all the options that are part of %make_build macro
         if self.reg.re_make_build.match(line):
-            # remove smp flags
-            line = line.replace(' %{?_smp_mflags}', '')
-            # remove verbosity
-            line = line.replace(' V=1', '')
-            line = line.replace(' VERBOSE=1', '')
+            # remove smp flags (with any preceding whitespace)
+            line = self.reg.re_smp_mflags.sub('', line)
+            # remove verbosity (with any preceding whitespace)
+            line = self.reg.re_verbose.sub('', line)
+            line = self.reg.re_verbose_long.sub('', line)
         return line
