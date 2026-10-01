@@ -12,5 +12,7 @@ test
 %build
 %make_build
 %make_build
+%make_build
+%make_build V=10
 
 %changelog

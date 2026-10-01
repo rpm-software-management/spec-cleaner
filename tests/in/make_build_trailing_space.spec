@@ -11,5 +11,7 @@ test
 %build
 make  %{?_smp_mflags}
 make   VERBOSE=1 %{?_smp_mflags}
+make  V=1
+make V=10 %{?_smp_mflags}
 
 %changelog
