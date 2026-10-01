@@ -158,6 +158,10 @@ class Regexp:
     re_jobs = re.compile(r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?')
     re_make = re.compile(r'(^\s*)make(\s.*|)$')
     re_make_build = re.compile(r'(^\s*)%make_build(\s.*|)$')
+    # whitespace-inclusive variants for stripping flags already covered by %make_build
+    re_smp_mflags_ws = re.compile(r'\s+%\{\?_smp_mflags\}')
+    re_verbose_ws = re.compile(r'\s+V=1(?!\w)')
+    re_verbose_long_ws = re.compile(r'\s+VERBOSE=1(?!\w)')
     # mid-line only as a shell assignment; 'VAR = $RPM_OPT_FLAGS ...' is Makefile or heredoc text
     re_optflags_quotes = re.compile(
         r'=\s*\$(?:RPM_OPT_FLAGS\b|\{RPM_OPT_FLAGS\})$'
