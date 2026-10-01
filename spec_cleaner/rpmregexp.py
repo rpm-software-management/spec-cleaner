@@ -174,17 +174,17 @@ class Regexp:
     re_qmake5 = re.compile(r'(^|(.*\s)?)qmake-qt5(\s.*|)$')
     re_meson = re.compile(r'(^|(.*\s)?)meson(\s.*|)$')
     re_pytest = re.compile(
-        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(?:-v|-o addopts=-v)(?=\s|$))?'
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(?!\w)(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(?:-v|-o addopts=-v)(?=\s|$))?'
     )
     re_pytest_arch = re.compile(
-        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(?:-v|-o addopts=-v)(?=\s|$))?'
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?(%{_bindir}/?|-m\s+)?py\.?test(?!\w)(-(%{\$?python_version}|%{\$?python_bin_suffix})?)?(\s+(?:-v|-o addopts=-v)(?=\s|$))?'
     )
     # 'discover' is dropped only when plain 'python -m unittest' would discover the same way
     re_pyunittest = re.compile(
-        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?-m\s+unittest(\s+discover(?=(?:\s+-v)?\s*$))?'
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitelib}\s+)?(\$?python\s+)?-m\s+unittest(?!\w)(\s+discover(?=(?:\s+-v)?\s*$))?'
     )
     re_pyunittest_arch = re.compile(
-        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?-m\s+unittest(\s+discover(?=(?:\s+-v)?\s*$))?'
+        r'%python_(expand|exec)\s+(PYTHONPATH=%{buildroot}%{\$?python_sitearch}\s+)?(\$?python\s+)?-m\s+unittest(?!\w)(\s+discover(?=(?:\s+-v)?\s*$))?'
     )
     re_python_expand = re.compile(
         r'%(\{)?(python_sitelib|python_sitearch|python_bin_suffix|python_version)(?(1)\}|(?!\w))'
