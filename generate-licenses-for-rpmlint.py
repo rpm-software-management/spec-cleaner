@@ -35,4 +35,10 @@ with open(args.output, 'w') as wfile:
         wfile.write('    # SUSE EXCEPTIONS\n')
         for name in suse_exceptions:
             wfile.write(f'    "{name}",\n')
+    wfile.write(']\n\n')
+    wfile.write('ValidLicenseExceptions = [\n')
+    for line in open('spec_cleaner/data/license_exceptions.txt').readlines():
+        if line.startswith('#'):
+            continue
+        wfile.write(f'    "{line.strip()}",\n')
     wfile.write(']\n')

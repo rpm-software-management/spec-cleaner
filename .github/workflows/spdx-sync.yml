@@ -9,8 +9,8 @@ name: SPDX license sync
 # backstop: they fail the release if `make` produces any diff.
 #
 # Only the license artifacts are refreshed here, never the OBS conversion
-# tables (different source, different cadence): licenses_changes.txt, both
-# TOMLs, and SPDX-LICENSES.md.
+# tables (different source, different cadence): licenses_changes.txt,
+# license_exceptions.txt, both TOMLs, and SPDX-LICENSES.md.
 
 on:
   workflow_dispatch:
@@ -50,7 +50,9 @@ jobs:
           # always look like drift and open a no-op PR.
           old_ids=$(git show HEAD:spec_cleaner/data/licenses_changes.txt | grep -v '^#' | cut -f1 | sort)
           new_ids=$(grep -v '^#' spec_cleaner/data/licenses_changes.txt | cut -f1 | sort)
-          if [ "$old_ids" = "$new_ids" ]; then
+          old_exc=$(git show HEAD:spec_cleaner/data/license_exceptions.txt | grep -v '^#' | sort)
+          new_exc=$(grep -v '^#' spec_cleaner/data/license_exceptions.txt | sort)
+          if [ "$old_ids" = "$new_ids" ] && [ "$old_exc" = "$new_exc" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -66,8 +68,8 @@ jobs:
           branch="spdx-sync-${new_ver%%, *}-$(date -u +%F)"
           git -c user.name=github-actions -c user.email=github-actions@github.com \
             checkout -B "$branch"
-          git add spec_cleaner/data/licenses_changes.txt spec_cleaner/data/licenses.toml \
-            spec_cleaner/data/licenses-suse.toml SPDX-LICENSES.md
+          git add spec_cleaner/data/licenses_changes.txt spec_cleaner/data/license_exceptions.txt \
+            spec_cleaner/data/licenses.toml spec_cleaner/data/licenses-suse.toml SPDX-LICENSES.md
           git -c user.name=github-actions -c user.email=github-actions@github.com \
             commit -m "Refresh SPDX license data to ${new_ver}" -m "Was: ${old_ver}."
           git push -u origin "$branch"

@@ -83,3 +83,13 @@ rm spec_cleaner/data/licenses_changes.txt.tmp
 mv SPDX-LICENSES.md.tmp SPDX-LICENSES.md
 rm licenses_changes.ntxt licenses_changes.ptxt licenses.json
 
+# License exceptions are a curated list maintained alongside the conversions
+# in obs-service-format_spec_file; rpmcrab consumes them as ValidLicenseExceptions.
+curl -fsSL -o licenses_exceptions.txt https://raw.githubusercontent.com/openSUSE/obs-service-format_spec_file/master/licenses_exceptions.txt
+{
+  echo "# Sourced from openSUSE/obs-service-format_spec_file licenses_exceptions.txt, fetched ${SPDX_FETCH_DATE}"
+  echo "# URL: https://github.com/openSUSE/obs-service-format_spec_file/blob/master/licenses_exceptions.txt"
+  cat licenses_exceptions.txt
+} > spec_cleaner/data/license_exceptions.txt
+rm licenses_exceptions.txt
+
