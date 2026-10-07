@@ -149,6 +149,7 @@ class RpmPreamble(Section):
             'autoreqprov': self.reg.re_autoreqprov,
             'icon': self.reg.re_icon,
             'copyright': self.reg.re_copyright,
+            'serial': self.reg.re_serial,
             'packager': self.reg.re_packager,
             'debugpkg': self.reg.re_debugpkg,
             'prefix': self.reg.re_preamble_prefix,
