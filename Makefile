@@ -17,11 +17,12 @@ spec_cleaner/data/perl_conversions.txt: conversions-update.pl conversions-update
 spec_cleaner/data/cmake_conversions.txt: conversions-update.pl conversions-update.sh
 	bash conversions-update.sh cmake $(distro) > $@.tmp && mv $@.tmp $@
 
+# one license-update.sh run produces both files; the empty recipe keeps plain
+# make (and make -j) from running the script twice
 spec_cleaner/data/licenses_changes.txt: license-update.sh
 	bash license-update.sh
 
-spec_cleaner/data/license_exceptions.txt: license-update.sh
-	bash license-update.sh
+spec_cleaner/data/license_exceptions.txt: spec_cleaner/data/licenses_changes.txt
 
 spec_cleaner/data/licenses.toml: generate-licenses-for-rpmlint.py spec_cleaner/data/licenses_changes.txt spec_cleaner/data/license_exceptions.txt
 	python3 generate-licenses-for-rpmlint.py $@

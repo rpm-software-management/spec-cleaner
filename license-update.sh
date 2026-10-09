@@ -9,6 +9,8 @@ export LC_ALL=C
 curl -fsSL 'https://docs.google.com/spreadsheets/d/14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs/export?format=tsv&id=14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs&gid=0' | grep -v "New format" \
   | sed -e 's,[[:space:]]*$,,' > licenses_changes.ntxt
 curl -fsSL -o licenses.json https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json
+# fetch everything before replacing any file, so a failed curl cannot leave the tree half-updated
+curl -fsSL -o licenses_exceptions.txt https://raw.githubusercontent.com/openSUSE/obs-service-format_spec_file/master/licenses_exceptions.txt
 SPDX_LIST_VERSION=$(jq -r '.licenseListVersion' licenses.json)
 SPDX_FETCH_DATE=$(date -u +%F)
 
@@ -85,7 +87,6 @@ rm licenses_changes.ntxt licenses_changes.ptxt licenses.json
 
 # License exceptions are a curated list maintained alongside the conversions
 # in obs-service-format_spec_file; rpmcrab consumes them as ValidLicenseExceptions.
-curl -fsSL -o licenses_exceptions.txt https://raw.githubusercontent.com/openSUSE/obs-service-format_spec_file/master/licenses_exceptions.txt
 {
   echo "# Sourced from openSUSE/obs-service-format_spec_file licenses_exceptions.txt, fetched ${SPDX_FETCH_DATE}"
   echo "# URL: https://github.com/openSUSE/obs-service-format_spec_file/blob/master/licenses_exceptions.txt"
