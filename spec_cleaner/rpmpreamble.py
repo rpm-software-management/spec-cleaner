@@ -1009,7 +1009,6 @@ class RpmPreamble(Section):
         # rather than dropping it (rpm >= 4.20 rejects Serial: as unknown tag).
         match = self.reg.re_serial.match(line)
         if match:
-            self._drop_pending_comments()
             self._add_line_value_to('epoch', match.group(1))
             return True
         # loop for all other matching categories which
