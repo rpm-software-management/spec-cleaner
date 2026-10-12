@@ -274,7 +274,23 @@ class RpmSpecCleaner:
         licenses: list[str] = []
         depth = 0
         first_conditional = False
+        in_macro_def = False
         for line in self.fin:
+            stripped = line.rstrip('\n').rstrip('\r')
+            # Skip License tags inside multiline macro definitions: they
+            # belong to macro-generated subpackages that we never parse as
+            # sections, so they must not trigger the subpkglicense
+            # placeholder logic.
+            if not in_macro_def:
+                if (
+                    self.reg.re_define.match(stripped) or self.reg.re_global.match(stripped)
+                ) and stripped.endswith('\\'):
+                    in_macro_def = True
+                    continue
+            else:
+                if not stripped.endswith('\\'):
+                    in_macro_def = False
+                continue
             if self.reg.re_if.match(line):
                 depth += 1
             elif self.reg.re_endif.match(line):
