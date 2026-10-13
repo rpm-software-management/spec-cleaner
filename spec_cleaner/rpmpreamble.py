@@ -1005,6 +1005,12 @@ class RpmPreamble(Section):
 
     def _handle_fallback(self, line):
         """Handle remaining categories via table lookup, else misc. Always handles."""
+        # Serial: is the obsolete name for Epoch:; rewrite to preserve the value
+        # rather than dropping it (rpm >= 4.20 rejects Serial: as unknown tag).
+        match = self.reg.re_serial.match(line)
+        if match:
+            self._add_line_value_to('epoch', match.group(1))
+            return True
         # loop for all other matching categories which
         # do not require special attention
         # cleanup

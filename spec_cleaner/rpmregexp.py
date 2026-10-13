@@ -84,6 +84,7 @@ class Regexp:
     re_epoch = re.compile(r'^\s*Epoch:\s*(.*)', re.IGNORECASE)
     re_icon = re.compile(r'^\s*Icon:\s*(.*)', re.IGNORECASE)
     re_copyright = re.compile(r'^\s*Copyright:\s*(.*)', re.IGNORECASE)
+    re_serial = re.compile(r'^\s*Serial:\s*(.*)', re.IGNORECASE)
     re_packager = re.compile(r'^\s*Packager:\s*(.*)', re.IGNORECASE)
     re_define = re.compile(r'^\s*%define\s*(.*)', re.IGNORECASE)
     re_global = re.compile(r'^\s*%global\s*(.*)', re.IGNORECASE)
