@@ -5,6 +5,7 @@ import os.path
 import re
 from http.client import HTTPException
 from urllib import parse
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 import pyrpm.spec  # type: ignore
@@ -540,7 +541,20 @@ class RpmPreamble(Section):
         try:
             if secure_url and not self.minimal:
                 req = Request(url=secure_url, headers={'User-Agent': 'Mozilla/5.0'})
-                response = urlopen(req, timeout=5)
+                # best-effort probe: retry transient failures (connection
+                # errors, 5xx answers) as one network hiccup or a busy
+                # server is not proof the url is unavailable; a definitive
+                # answer (any other status, a malformed url) is final
+                for attempt in range(3):
+                    try:
+                        response = urlopen(req, timeout=5)
+                        break
+                    except HTTPError as error:
+                        if error.code < 500 or attempt == 2:
+                            raise
+                    except (OSError, HTTPException):
+                        if attempt == 2:
+                            raise
                 retval = secure_url if response.getcode() == 200 else orig_url
             else:
                 retval = orig_url
