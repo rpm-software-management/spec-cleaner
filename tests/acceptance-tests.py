@@ -10,6 +10,7 @@ import sys
 from glob import glob
 from shutil import copyfile
 from unittest import mock
+from urllib.error import HTTPError
 
 import pytest
 
@@ -134,6 +135,42 @@ class TestCompare:
 
         monkeypatch.setattr('spec_cleaner.rpmpreamble.urlopen', reset)
         self._compare_and_rerun('url-probe-failure.spec', 'out', tmpfile, {'pkgconfig': True})
+
+    def test_https_probe_transient_failure(self, tmpfile, monkeypatch):
+        """Test that a transient https probe failure is retried before giving up."""
+        response = mock.Mock()
+        response.getcode.return_value = 200
+        attempts = 0
+
+        def flaky(*args, **kwargs):
+            nonlocal attempts
+            attempts += 1
+            if attempts == 1:
+                raise ConnectionResetError
+            return response
+
+        monkeypatch.setattr('spec_cleaner.rpmpreamble.urlopen', flaky)
+        self._compare_and_rerun(
+            'url-probe-transient.spec', 'https-probe', tmpfile, {'pkgconfig': True}
+        )
+
+    def test_https_probe_transient_server_error(self, tmpfile, monkeypatch):
+        """Test that a 503 https probe response is retried before giving up."""
+        response = mock.Mock()
+        response.getcode.return_value = 200
+        attempts = 0
+
+        def flaky(*args, **kwargs):
+            nonlocal attempts
+            attempts += 1
+            if attempts == 1:
+                raise HTTPError('https://example.org/', 503, 'Service Unavailable', {}, None)
+            return response
+
+        monkeypatch.setattr('spec_cleaner.rpmpreamble.urlopen', flaky)
+        self._compare_and_rerun(
+            'url-probe-transient.spec', 'https-probe', tmpfile, {'pkgconfig': True}
+        )
 
     def test_https_probe_non_200(self, tmpfile, monkeypatch):
         """Test that a 2xx probe response other than 200 keeps the original url."""
