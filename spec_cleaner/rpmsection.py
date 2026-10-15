@@ -120,9 +120,11 @@ class Section:
         condition: A flag representing if we are in the conditional or not.
         _condition_counter: An int for counting in how many (nested) condition we currently are.
         shell_section: A flag indicating whether the section body is a shell script.
+        headless: A flag set when the body resumes after a conditional end, without its header.
     """
 
     shell_section: bool = False
+    headless: bool = False
 
     def __init__(self, options: dict[str, Any]) -> None:
         """Initialize variables."""

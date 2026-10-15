@@ -37,6 +37,17 @@ from .rpmscriplets import RpmScriptlets
 from .rpmsection import Section
 from .rpmsourcelist import RpmSourceList
 
+BODY_SECTIONS = (
+    RpmBuild,
+    RpmCheck,
+    RpmDescription,
+    RpmFiles,
+    RpmInstall,
+    RpmPrep,
+    RpmScriptlets,
+    RpmSourceList,
+)
+
 
 class RpmSpecCleaner:
     """
@@ -71,6 +82,8 @@ class RpmSpecCleaner:
     skip_run: bool = False
     _previous_line: str | None = None
     _previous_nonempty_line: str | None = None
+    _resume_section: type[Section] | None = None
+    _resuming: bool = False
     _target: str | None = None
 
     def __init__(self, options: dict[str, Any]) -> None:
@@ -376,6 +389,10 @@ class RpmSpecCleaner:
         if self._is_clean_codeblock_end(line):
             return None
 
+        resume = self._check_section_resume(line)
+        if resume:
+            return resume
+
         breakout = self._check_condition_breakout(line)
         if breakout:
             return breakout
@@ -430,8 +447,33 @@ class RpmSpecCleaner:
             ):
                 # If we have to break out we go ahead with small class
                 # which just print the one evil line
+                if isinstance(self.current_section, BODY_SECTIONS):
+                    self._resume_section = type(self.current_section)
+                elif type(self.current_section) is not Section:
+                    self._resume_section = None
                 return Section
         return None
+
+    def _check_section_resume(self, line: str) -> type[Section] | None:
+        """
+        Return the body section a stray conditional end broke out of, if the line continues it.
+
+        A conditional opened before a body section's header closes inside the body;
+        the lines after its '%endif' or '%else' still belong to that section, unless
+        they start a section or a preamble of their own.
+        """
+        if self._resume_section is None or type(self.current_section) is not Section:
+            return None
+        if line == '' or line.startswith('#') or self._detect_condition_change(line):
+            return None
+        resume = self._resume_section
+        self._resume_section = None
+        if any(regexp.match(line) for regexp, _ in self.section_starts):
+            return None
+        if self._detect_preamble_section(line):
+            return None
+        self._resuming = True
+        return resume
 
     def _check_section_start(self, line: str) -> type[Section] | None:
         """Check if the line starts a specific section. Return the section class if so, None otherwise."""
@@ -542,13 +584,19 @@ class RpmSpecCleaner:
             # USE: 'spec-cleaner file > /dev/null' to see the stderr output
             # sys.stderr.write("class: '{0}' line: '{1}'\n".format(new_class, line))
             if new_class:
+                resumed = self._resuming
+                self._resuming = False
                 self.current_section.output(
                     self.fout,
-                    self._check_for_newline(new_class, line),
+                    not resumed and self._check_for_newline(new_class, line),
                     new_class.__name__,
                 )
                 # start new class
                 self.current_section = new_class(self.options)
+                if resumed:
+                    # the body continues without its header
+                    self.current_section.headless = True
+                    self.current_section.previous_line = self._previous_line
                 # skip empty line adding if we are switching sections
                 if self._previous_line == '' and line == '':
                     continue

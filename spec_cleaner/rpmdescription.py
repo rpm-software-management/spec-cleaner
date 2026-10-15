@@ -24,7 +24,8 @@ class RpmDescription(Section):
     def add(self, line: str) -> None:
         """Process one line of the %description section."""
         line = line.rstrip()
-        if self.previous_line is not None and len(line) > 0 and line[0] == '%':
+        # a body resumed after a conditional end does not know where it is either
+        if self.headless or (self.previous_line is not None and len(line) > 0 and line[0] == '%'):
             self.unknown_line = True
 
         if self.removing_authors and not self.unknown_line:

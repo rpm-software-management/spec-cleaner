@@ -21,9 +21,10 @@ class RpmFiles(Section):
             return
 
         if not self.minimal:
-            # prune obsolete defattr that is default, unless it resets an earlier one
+            # prune obsolete defattr that is default, unless it resets an earlier one;
+            # a resumed body cannot tell whether one came before the conditional
             if line.startswith('%defattr'):
-                if self.reg.re_defattr.match(line) and not self._defattr_seen:
+                if self.reg.re_defattr.match(line) and not self._defattr_seen and not self.headless:
                     return
                 self._defattr_seen = True
             line = self._set_man_compression(line)
