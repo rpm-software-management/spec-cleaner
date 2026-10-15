@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: 'mutmut wildcard(s) to run, space separated'
+        description: 'mutmut wildcard(s) to run, space separated; empty runs every module'
         required: false
-        default: 'spec_cleaner.rpmsection.*'
+        default: ''
   schedule:
     # Sunday 04:00 UTC
     - cron: '0 4 * * 0'
@@ -21,9 +21,10 @@ concurrency:
 jobs:
   mutation:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    # every module takes about two hours of four workers
+    timeout-minutes: 360
     env:
-      MUTMUT_SCOPE: ${{ inputs.scope || 'spec_cleaner.rpmsection.*' }}
+      MUTMUT_SCOPE: ${{ inputs.scope }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -35,18 +36,27 @@ jobs:
       - name: Install
         run: pip install -e . -r devel-requirements.pip
 
-      # survivors do not fail the run, the score is reported below instead
+      # survivors do not fail the run, the score is reported below instead; a slow
+      # run fails at the step timeout rather than being cancelled, so it is reported too
       - name: Run
+        id: run
+        timeout-minutes: 330
         run: |
           # shellcheck disable=SC2086  # the scope is a list of wildcards, it must stay split
           mutmut run $MUTMUT_SCOPE
 
       - name: Report
+        if: ${{ !cancelled() && steps.run.outcome != 'skipped' }}
+        env:
+          RUN_OUTCOME: ${{ steps.run.outcome }}
         run: |
           mutmut export-cicd-stats
           python - "$GITHUB_STEP_SUMMARY" <<'EOF'
+          import collections
           import json
           import os
+          import re
+          import subprocess
           import sys
 
           with open('mutants/mutmut-cicd-stats.json') as f:
@@ -62,19 +72,53 @@ jobs:
           timeouts = int(stats.get('timeout', 0))
           killed = int(stats.get('killed', 0)) + timeouts
           score = killed / tested * 100 if tested else 0.0
+          version = subprocess.run(
+              ['mutmut', '--version'], capture_output=True, text=True, check=True
+          ).stdout.strip().replace(', version', '')
+          results = subprocess.run(
+              ['mutmut', 'results'], capture_output=True, text=True, check=True
+          ).stdout
+          # natural order, so mutant 2 comes before mutant 10
+          left = sorted(
+              re.findall(
+                  r'^\s*(\S+): (survived|timeout|no tests|suspicious|segfault)$', results, re.MULTILINE
+              ),
+              key=lambda m: [int(p) if p.isdigit() else p for p in re.split(r'(\d+)', m[0])],
+          )
+          with open('mutants/survivors.txt', 'w') as out:
+              out.writelines(f'{name}: {status}\n' for name, status in left)
+          # every verdict that counts against the score, i.e. all but the timeouts
+          survivors = collections.defaultdict(list)
+          for name, status in left:
+              if status != 'timeout':
+                  label = name if status == 'survived' else f'{name} ({status})'
+                  survivors[re.split(r'\.x[_ǁ]', name, maxsplit=1)[0]].append(label)
           with open(sys.argv[1], 'a') as out:
               print(f'## Mutation testing\n\n{score:.1f}% mutation score', file=out)
               print(
                   f'\n{killed} of {tested} mutants killed, '
                   f'{timeouts} of them by timeout, '
-                  f'scope `{os.environ["MUTMUT_SCOPE"]}`',
+                  f'scope `{os.environ["MUTMUT_SCOPE"].strip() or "every module"}`, {version}',
                   file=out,
               )
+              if os.environ['RUN_OUTCOME'] != 'success':
+                  print(f'\n**The run ended with {os.environ["RUN_OUTCOME"]}; these are partial results.**', file=out)
+              count = sum(len(names) for names in survivors.values())
+              if count != tested - killed:
+                  print(f'\n**Only {count} of {tested - killed} mutants that were not killed could be listed.**', file=out)
+              print(f'\n<details><summary>{count} not killed, by module</summary>\n', file=out)
+              for module, names in sorted(survivors.items()):
+                  print(f'\n**{module}** ({len(names)})\n\n```', file=out)
+                  print('\n'.join(names) + '\n```', file=out)
+              print('\n</details>', file=out)
           EOF
 
       - name: Upload stats
+        if: ${{ !cancelled() && steps.run.outcome != 'skipped' }}
         uses: actions/upload-artifact@v7
         with:
           name: mutation-stats
-          path: mutants/mutmut-cicd-stats.json
+          path: |
+            mutants/mutmut-cicd-stats.json
+            mutants/survivors.txt
           retention-days: 90
