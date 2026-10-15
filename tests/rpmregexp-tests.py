@@ -15,3 +15,11 @@ class TestRegexp:
         assert not Regexp.re_clean.search(line)
         assert not Regexp.re_rm.search(line)
         assert time.perf_counter() - start < 1
+
+    def test_unbrace_keywords_case(self):
+        """Test that section names unbrace in any case but other keywords only exactly."""
+        reg = Regexp(['description', 'docdir', 'patch[0-9]*'])
+        line = '%{Description} %{patch1} %{PATCH1} %{docdir} %{DOCDIR}'
+        assert reg.re_unbrace_keywords.sub(r'%\1', line) == (
+            '%Description %patch1 %{PATCH1} %docdir %{DOCDIR}'
+        )

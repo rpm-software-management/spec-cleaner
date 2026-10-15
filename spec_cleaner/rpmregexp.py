@@ -2,6 +2,42 @@
 
 import re
 
+SECTION_NAMES = frozenset(
+    (
+        'build',
+        'changelog',
+        'check',
+        'conf',
+        'description',
+        'files',
+        'generate_buildrequires',
+        'install',
+        'package',
+        'patchlist',
+        'post',
+        'posttrans',
+        'postun',
+        'postuntrans',
+        'pre',
+        'prep',
+        'pretrans',
+        'preun',
+        'preuntrans',
+        'sourcelist',
+        'verifyscript',
+        'triggerin',
+        'triggerpostun',
+        'triggerprein',
+        'triggerun',
+        'filetriggerin',
+        'filetriggerun',
+        'filetriggerpostun',
+        'transfiletriggerin',
+        'transfiletriggerun',
+        'transfiletriggerpostun',
+    )
+)
+
 
 class Regexp:
     """
@@ -343,6 +379,10 @@ class Regexp:
         # the negative lookbehind keeps us from touching '%%{macro}'
         # where '%%' is the rpm escape for a literal percent sign
         # and thus not a macro invocation at all (gh#315)
-        self.re_unbrace_keywords = re.compile(
-            r'(?<!%)%{(' + '|'.join(keywords) + ')}', re.IGNORECASE
-        )
+        # rpm matches section names in any case, macro names only exactly:
+        # %{PATCH1} is the patch path, not the %patch1 directive
+        alternatives = [k for k in keywords if k not in SECTION_NAMES]
+        sections = [k for k in keywords if k in SECTION_NAMES]
+        if sections:
+            alternatives.append('(?i:' + '|'.join(sections) + ')')
+        self.re_unbrace_keywords = re.compile(r'(?<!%)%{(' + '|'.join(alternatives) + ')}')
