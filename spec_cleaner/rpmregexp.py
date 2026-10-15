@@ -7,6 +7,7 @@ SECTION_NAMES = frozenset(
         'build',
         'changelog',
         'check',
+        'clean',
         'conf',
         'description',
         'files',
