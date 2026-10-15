@@ -12,3 +12,4 @@ cp %{S:1} %{buildroot}
 cp %{S:2} %{buildroot}
 cp %{S:200} %{buildroot}
 cp %{S:300} %{buildroot}
+cp %{P:1} %{buildroot}

@@ -12,5 +12,6 @@ cp %{SOURCE1} %{buildroot}
 cp %{SOURCE2} %{buildroot}
 cp %{SOURCE200} %{buildroot}
 cp %{SOURCE300} %{buildroot}
+cp %{PATCH1} %{buildroot}
 
 %changelog
