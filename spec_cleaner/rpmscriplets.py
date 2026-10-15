@@ -54,7 +54,8 @@ class RpmScriptlets(Section):
                 break
             else:
                 self.lines.pop()
-        if len(self.lines) == 2:
+        # a body resumed after a conditional end has no header to fold into
+        if len(self.lines) == 2 and not self.headless:
             if self.lines[1] == '/sbin/ldconfig':
                 pkg = self.lines[0]
                 # -p after '--' would be read as a trigger condition; keep an existing -p

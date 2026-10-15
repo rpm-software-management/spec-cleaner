@@ -53,5 +53,7 @@ class RpmBuild(RpmCheck):
                     break
         # Check if on the position above is no comment
         # if not add our message
-        if not self.lines[position - 1].startswith('#'):
+        # a body resumed after a conditional end has the line above it in previous_line
+        above = self.lines[position - 1] if position else self.previous_line
+        if not (above and above.startswith('#')):
             self.lines.insert(position, msg)
