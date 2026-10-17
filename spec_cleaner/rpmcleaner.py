@@ -548,6 +548,127 @@ class RpmSpecCleaner:
             else:
                 return True
 
+    @staticmethod
+    def _ldconfig_half(line: str) -> tuple[str, str] | None:
+        """
+        Parse a scriptlet header that runs ldconfig with -p.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The scriptlet name and its package arguments, or None if the line is not
+            a plain ldconfig %post or %postun.
+        """
+        args = line.split()
+        if not line.startswith('%') or args[0].lower() not in ('%post', '%postun'):
+            return None
+        if '-p' not in args:
+            return None
+        i = args.index('-p')
+        if args[i + 1 : i + 2] != ['/sbin/ldconfig']:
+            return None
+        # nothing, '-n NAME' or a relative NAME
+        package = args[1:i] + args[i + 2 :]
+        names = package[1:] if package[:1] == ['-n'] else package
+        if (package and len(names) != 1) or any(name.startswith(('-', '\\')) for name in names):
+            return None
+        return args[0].lower(), ' '.join(package)
+
+    def _starts_section(self, line: str) -> bool:
+        """Check if the line is a section header."""
+        return any(regexp.match(line) for regexp, _ in self.section_starts)
+
+    def _is_lone_scriptlet(self, lines: list[str], index: int) -> bool:
+        """Check that the scriptlet header at the index has no body before the next section."""
+        # conditionals opened after the header, and the depth within a branch it is not in
+        inner = other = 0
+        for line in lines[index + 1 :]:
+            if other:
+                if self.reg.re_if.match(line):
+                    other += 1
+                elif self.reg.re_endif.match(line):
+                    other -= 1
+            elif self.reg.re_comment.match(line):
+                continue
+            elif self.reg.re_if.match(line):
+                inner += 1
+            elif self.reg.re_else_elif.match(line):
+                if not inner:
+                    other = 1
+            elif self._detect_condition_change(line):
+                inner = max(inner - 1, 0)
+            else:
+                return self._starts_section(line)
+        return True
+
+    def _pair_ldconfig_scriptlets(self, lines: list[str]) -> list[str]:
+        """
+        Merge each ldconfig %post with the %postun of the same package into %ldconfig_scriptlets.
+
+        Both have to be one-line scriptlets in the same conditional branch, and the second one
+        must not follow a comment of its own; the merged line takes the place of the first one.
+        A package that has %ldconfig_scriptlets elsewhere, eg for another distribution, keeps
+        its explicit scriptlets.
+
+        Args:
+            lines: A list of all the cleaned lines.
+
+        Returns:
+            The list of lines with the pairs merged.
+        """
+        macro = ('%ldconfig_scriptlets', '%{ldconfig_scriptlets}')
+        used = {
+            ' '.join(args[1:]) for args in map(str.split, lines) if args[:1] and args[0] in macro
+        }
+        waiting: dict[tuple[tuple[int, ...], str], tuple[int, str]] = {}
+        merged: dict[int, str] = {}
+        dropped: set[int] = set()
+        # one id per conditional branch, innermost last
+        branches: list[int] = []
+        count = 0
+        for i, line in enumerate(lines):
+            if self.reg.re_spec_changelog.match(line):
+                break
+            if self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
+                count += 1
+                branches.append(count)
+            elif self.reg.re_else_elif.match(line) and branches:
+                count += 1
+                branches[-1] = count
+            elif self._detect_condition_change(line) and branches:
+                branches.pop()
+            half = self._ldconfig_half(line)
+            if not half or half[1] in used or not self._is_lone_scriptlet(lines, i):
+                continue
+            key = (tuple(branches), half[1])
+            if key not in waiting:
+                waiting[key] = (i, half[0])
+            elif waiting[key][1] != half[0] and not lines[i - 1].startswith('#'):
+                merged[waiting.pop(key)[0]] = f'%ldconfig_scriptlets {half[1]}'.rstrip()
+                dropped.add(i)
+
+        result: list[str] = []
+        after_drop = after_merge = False
+        for i, line in enumerate(lines):
+            if i in dropped:
+                after_drop = True
+                continue
+            if after_drop and result and result[-1] == '':
+                # leave no doubled blank line, nor one before a condition change
+                if line == '':
+                    continue
+                if self._detect_condition_change(line):
+                    result.pop()
+            line = merged.get(i, line)
+            # a section starting after the merged line is set apart like after any body
+            if after_merge and self._starts_section(line):
+                result.append('')
+            result.append(line)
+            after_drop = False
+            after_merge = i in merged
+        return result
+
     def run(self) -> None:
         """
         Run the main spec-cleaner method.
@@ -570,6 +691,8 @@ class RpmSpecCleaner:
 
         # We always start with Copyright
         self.current_section = RpmCopyright(self.options)
+        # the ldconfig scriptlets are paired over the whole output
+        out = StringIO()
 
         # FIXME: we need to store the content locally and then reorder
         #        to maintain the specs all the same (eg somebody put
@@ -587,7 +710,7 @@ class RpmSpecCleaner:
                 resumed = self._resuming
                 self._resuming = False
                 self.current_section.output(
-                    self.fout,
+                    out,
                     not resumed and self._check_for_newline(new_class, line),
                     new_class.__name__,
                 )
@@ -610,13 +733,17 @@ class RpmSpecCleaner:
                 self._previous_nonempty_line = line
 
         # no need to not output newline at the end even for minimal -> no condition
-        self.current_section.output(self.fout)
+        self.current_section.output(out)
         # add changelog at the end of the file
         if (
             not isinstance(self.current_section, RpmChangelog)
             and self._previous_nonempty_line != '%changelog'
         ):
-            self.fout.write('%changelog\n')
+            out.write('%changelog\n')
+        lines = out.getvalue().split('\n')
+        if not self.options['minimal']:
+            lines = self._pair_ldconfig_scriptlets(lines)
+        self.fout.write('\n'.join(lines))
         self.fout.flush()
         self._write_target()
 

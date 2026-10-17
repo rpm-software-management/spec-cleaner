@@ -1,8 +1,8 @@
 %install
 %make_install
 
-%post -n libfoo1 -p /sbin/ldconfig
-%postun -n libfoo1 -p /sbin/ldconfig
+%ldconfig_scriptlets -n libfoo1
+
 %post
 /sbin/ldconfig || :
 
