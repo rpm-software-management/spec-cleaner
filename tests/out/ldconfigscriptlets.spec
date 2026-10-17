@@ -1,4 +1,3 @@
-%post -n %{libsoname} -p /sbin/ldconfig
-%postun -n %{libsoname} -p /sbin/ldconfig
+%ldconfig_scriptlets -n %{libsoname}
 
 %changelog
