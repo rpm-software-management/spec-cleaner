@@ -1,6 +1,19 @@
 %install
 %make_install
 
+%ldconfig_scriptlets -n libs1
+%ldconfig_scriptlets -n libt1
+
+%preun
+/sbin/baz
+
+%postun -n libu1 -p /sbin/ldconfig
+%preun -n libt1
+/sbin/qux
+
+%check
+%make_build check
+
 %ldconfig_scriptlets -n %{name}%{sover}
 %ldconfig_scriptlets
 %ldconfig_scriptlets libs

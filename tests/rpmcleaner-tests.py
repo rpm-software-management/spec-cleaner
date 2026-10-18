@@ -86,3 +86,45 @@ def test_nospeccleaner_is_reported_and_the_spec_copied_verbatim(
     )
     with open(options['output'], encoding='utf-8') as out:
         assert out.read() == '#nospeccleaner\nName: skipped\n'
+
+
+@pytest.mark.parametrize(
+    'line, expected',
+    [
+        ('%post -p /sbin/ldconfig', ('%post', '')),
+        ('%postun -p /sbin/ldconfig -n libfoo1', ('%postun', '-n libfoo1')),
+        ('%POST libs -p /sbin/ldconfig', ('%post', 'libs')),
+        # the macro forwards no other option, and no second name
+        ('%post -n libfoo1 -e -p /sbin/ldconfig', None),
+        ('%post -n -p /sbin/ldconfig', None),
+        ('%post libs extra -p /sbin/ldconfig', None),
+        # a header continued inside a macro definition
+        ('%post -p /sbin/ldconfig \\', None),
+        ('%post -p /bin/bash', None),
+        ('%post -n libfoo1', None),
+        ('%pre -p /sbin/ldconfig', None),
+        (' %post -p /sbin/ldconfig', None),
+    ],
+)
+def test_ldconfig_half(line, expected):
+    """Test which scriptlet headers count as half of an %ldconfig_scriptlets pair."""
+    assert RpmSpecCleaner._ldconfig_half(line) == expected
+
+
+@pytest.mark.parametrize(
+    'lines, expected',
+    [
+        # the other branch of a conditional opened before the header is not its body
+        (['%endif', '%files'], True),
+        (['%else', '%if 0', 'echo', '%endif', 'echo', '%endif', '%files'], True),
+        # both branches of a conditional opened after the header are
+        (['%if 0', '%files', '%endif'], True),
+        (['%if 0', '%else', 'echo', '%endif', '%files'], False),
+        (['', '# comment', 'echo'], False),
+        (['', '# comment'], True),
+    ],
+)
+def test_is_lone_scriptlet(default_options, lines, expected):
+    """Test that only a scriptlet without a body before the next section is lone."""
+    cleaner = RpmSpecCleaner(default_options())
+    assert cleaner._is_lone_scriptlet(['%post -p /sbin/ldconfig', *lines], 0) is expected

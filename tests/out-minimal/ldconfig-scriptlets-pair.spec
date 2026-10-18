@@ -1,6 +1,23 @@
 %install
 make install
 
+%post -n libs1 -p /sbin/ldconfig
+%post -n libt1 -p /sbin/ldconfig
+
+%preun
+/sbin/baz
+
+%postun -n libs1 -p /sbin/ldconfig
+%postun -n libu1 -p /sbin/ldconfig
+
+%preun -n libt1
+/sbin/qux
+
+%postun -n libt1 -p /sbin/ldconfig
+
+%check
+make check
+
 %post -n %{name}%{sover} -p /sbin/ldconfig
 %postun -n %{name}%{sover} -p /sbin/ldconfig
 
