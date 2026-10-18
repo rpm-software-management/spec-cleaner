@@ -17,6 +17,10 @@ CFLAGS="%{optflags}" %make_build
 CFLAGS="%{optflags}" %make_build eapol_test
 CC=gcc CFLAGS='-O2 -g' %make_build
 LDFLAGS="-Wl,--as-needed" %make_build all
+    V=1 %make_build all
+MAKEFLAGS="-k %{?_smp_mflags}" %make_build
+CFLAGS="%{optflags} V=1" %make_build
+CFLAGS="%{optflags} V=1" %make_build all
 FOO=bar %make_build
 %make_build
 CFLAGS = -O2

@@ -17,6 +17,10 @@ CFLAGS="%{optflags}" make V=1 %{?_smp_mflags}
 CFLAGS="%{optflags}" make V=1 %{?_smp_mflags} eapol_test
 CC=gcc CFLAGS='-O2 -g' make
 LDFLAGS="-Wl,--as-needed" make VERBOSE=1 all
+    V=1 make all
+MAKEFLAGS="-k %{?_smp_mflags}" make
+CFLAGS="%{optflags} V=1" make
+CFLAGS="%{optflags} V=1" make V=1 %{?_smp_mflags} all
 FOO=bar make
 make %{?_smp_mflags}
 CFLAGS = -O2

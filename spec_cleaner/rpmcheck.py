@@ -79,15 +79,20 @@ class RpmCheck(Section):
             line = self.reg.re_make.sub(r'\1%make_build\2', line)
         elif env_safe and self.reg.re_make_env.match(line):
             line = self.reg.re_make_env.sub(r'\1%make_build\2', line)
-        # remove from line all the options that are part of %make_build macro
-        if self.reg.re_make_build.match(line) or (
-            env_safe and self.reg.re_make_build_env.match(line)
-        ):
+        # remove the options that are part of %make_build macro, but only
+        # from the arguments after it: the leading assignments (group 1)
+        # are kept verbatim
+        match = self.reg.re_make_build.match(line)
+        if match is None and env_safe:
+            match = self.reg.re_make_build_env.match(line)
+        if match:
+            args = match.group(2)
             # remove smp flags (with all preceding whitespace, not just one space)
-            line = self.reg.re_smp_mflags_ws.sub('', line)
+            args = self.reg.re_smp_mflags_ws.sub('', args)
             # remove verbosity (with all preceding whitespace)
-            line = self.reg.re_verbose_ws.sub('', line)
-            line = self.reg.re_verbose_long_ws.sub('', line)
+            args = self.reg.re_verbose_ws.sub('', args)
+            args = self.reg.re_verbose_long_ws.sub('', args)
+            line = match.group(1) + '%make_build' + args
         return line
 
     @staticmethod
