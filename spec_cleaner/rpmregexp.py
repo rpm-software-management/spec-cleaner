@@ -196,6 +196,14 @@ class Regexp:
     re_jobs = re.compile(r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?')
     re_make = re.compile(r'(^\s*)make(\s.*|)$')
     re_make_build = re.compile(r'(^\s*)%make_build(\s.*|)$')
+    # 'make' call led by shell variable assignments, e.g.
+    # 'CFLAGS="%{optflags}" make V=1 target'; the assignments have to be
+    # plain NAME=value words (no spaces around '=') so that random text
+    # containing the word make is never matched
+    _make_env_value = r'(?:[^\s"\'\\;&|]+|"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\')'
+    _make_env_prefix = r'(?:[A-Za-z_][A-Za-z0-9_]*=' + _make_env_value + r'\s+)+'
+    re_make_env = re.compile(r'^(\s*' + _make_env_prefix + r')make(\s.*|)$')
+    re_make_build_env = re.compile(r'^(\s*' + _make_env_prefix + r')%make_build(\s.*|)$')
     # whitespace-inclusive variants for stripping flags already covered by %make_build
     re_smp_mflags_ws = re.compile(r'\s+%\{\?_smp_mflags\}')
     re_verbose_ws = re.compile(r'\s+V=1(?!\w)')
