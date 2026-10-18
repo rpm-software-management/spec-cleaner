@@ -628,8 +628,6 @@ class RpmSpecCleaner:
         branches: list[int] = []
         count = 0
         for i, line in enumerate(lines):
-            if self.reg.re_spec_changelog.match(line):
-                break
             if self.reg.re_if.match(line) or self.reg.re_codeblock.match(line):
                 count += 1
                 branches.append(count)
