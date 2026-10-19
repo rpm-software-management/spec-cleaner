@@ -27,6 +27,16 @@ class TestRpmRequiresToken:
         token = RpmRequiresToken('foo', operator, '1', 'Requires:  ')
         assert str(token) == f'Requires:  foo {expected} 1'
 
+    def test_pkgconfig_name_is_unified(self):
+        """Test that the pkg-config package name is unified to the pkgconfig dependency."""
+        token = RpmRequiresToken('pkg-config', None, None, 'BuildRequires:  ')
+        assert str(token) == 'BuildRequires:  pkgconfig'
+
+    def test_pkgconfig_name_is_kept_in_buildignore(self):
+        """Test that a BuildIgnore entry keeps the literal pkg-config package name."""
+        token = RpmRequiresToken('pkg-config', None, None, '#!BuildIgnore:  ')
+        assert str(token) == '#!BuildIgnore:  pkg-config'
+
     def test_packageand_macro_is_braced(self):
         """Test that a bare macro in packageand() is braced, the ':' shields it from the later expansion."""
         token = RpmRequiresToken('packageand(%name:foo)', None, None, 'Supplements: ')
