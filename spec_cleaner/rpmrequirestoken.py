@@ -63,7 +63,7 @@ class RpmRequiresToken:
         """
         # unify pkgconfig names, but not where the literal name is what is provided or matched
         if name in ('pkgconfig(pkg-config)', 'pkg-config') and not prefix.startswith(
-            ('Provides', 'Obsoletes', 'Conflicts', 'BuildConflicts')
+            ('Provides', 'Obsoletes', 'Conflicts', 'BuildConflicts', '#!BuildIgnore')
         ):
             name = 'pkgconfig'
 

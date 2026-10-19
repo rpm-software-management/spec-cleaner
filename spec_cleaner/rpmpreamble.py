@@ -448,13 +448,16 @@ class RpmPreamble(Section):
             if token.name.startswith('%'):
                 expanded.append(token)
                 continue
-            # scriptlet deps and package names (Provides/Obsoletes, %requires_eq/ge) stay as is
+            # scriptlet deps and package names (Provides/Obsoletes, %requires_eq/ge)
+            # stay as is; BuildIgnore entries are plain package names the build
+            # service excludes, not dependency strings, so they stay as is too
             if category not in (
                 'prereq',
                 'requires_phase',
                 'provides_obsoletes',
                 'requires_eq',
                 'requires_ge',
+                'buildignores',
             ):
                 # here we go with descending priority to find match and replace
                 # the strings by some optimistic value of brackety dep
