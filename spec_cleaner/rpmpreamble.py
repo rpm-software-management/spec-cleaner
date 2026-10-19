@@ -126,6 +126,7 @@ class RpmPreamble(Section):
             'buildoption': self.reg.re_buildoption,
             'buildrequires': self.reg.re_buildrequires,
             'buildconflicts': self.reg.re_buildconflicts,
+            'buildconflicts_pragma': self.reg.re_buildconflicts_pragma,
             'buildignores': self.reg.re_buildignores,
             'conflicts': self.reg.re_conflicts,
             # for prereq we append warning comment so we don't mess it there
@@ -450,7 +451,9 @@ class RpmPreamble(Section):
                 continue
             # scriptlet deps and package names (Provides/Obsoletes, %requires_eq/ge)
             # stay as is; BuildIgnore entries are plain package names the build
-            # service excludes, not dependency strings, so they stay as is too
+            # service excludes, not dependency strings, so they stay as is too.
+            # The #!BuildConflicts pragma entries are matched literally by the
+            # build service as well, so they stay as is too
             if category not in (
                 'prereq',
                 'requires_phase',
@@ -458,6 +461,7 @@ class RpmPreamble(Section):
                 'requires_eq',
                 'requires_ge',
                 'buildignores',
+                'buildconflicts_pragma',
             ):
                 # here we go with descending priority to find match and replace
                 # the strings by some optimistic value of brackety dep
@@ -678,7 +682,11 @@ class RpmPreamble(Section):
 
     def _handle_comment(self, line):
         """Add a comment line to the current group. Return True if handled."""
-        if not (self.reg.re_comment.match(line) and not self.reg.re_buildignores.match(line)):
+        if not (
+            self.reg.re_comment.match(line)
+            and not self.reg.re_buildignores.match(line)
+            and not self.reg.re_buildconflicts_pragma.match(line)
+        ):
             return False
         if line or self.previous_line:
             self.paragraph.current_group.append(line)

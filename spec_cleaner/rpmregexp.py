@@ -102,6 +102,7 @@ class Regexp:
     re_buildoption_phase = re.compile(r'^BuildOption(\([^)]+\)):\s*(.*)', re.IGNORECASE)
     re_buildrequires = re.compile(r'^(BuildRequires|BuildPreReq):\s*(.*)', re.IGNORECASE)
     re_buildconflicts = re.compile(r'^BuildConflicts:\s*(.*)', re.IGNORECASE)
+    re_buildconflicts_pragma = re.compile(r'^#!BuildConflicts:\s*(.*)', re.IGNORECASE)
     re_buildignores = re.compile(r'^#!BuildIgnore:\s*(.*)', re.IGNORECASE)
     re_prereq = re.compile(r'^PreReq:\s*(.*)', re.IGNORECASE)
     re_requires = re.compile(r'^Requires:\s*(.*)', re.IGNORECASE)
