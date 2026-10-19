@@ -37,6 +37,11 @@ class TestRpmRequiresToken:
         token = RpmRequiresToken('pkg-config', None, None, '#!BuildIgnore:  ')
         assert str(token) == '#!BuildIgnore:  pkg-config'
 
+    def test_pkgconfig_name_is_kept_in_buildconflicts_pragma(self):
+        """Test that a BuildConflicts pragma entry keeps the literal pkg-config package name."""
+        token = RpmRequiresToken('pkg-config', None, None, '#!BuildConflicts:  ')
+        assert str(token) == '#!BuildConflicts:  pkg-config'
+
     def test_packageand_macro_is_braced(self):
         """Test that a bare macro in packageand() is braced, the ':' shields it from the later expansion."""
         token = RpmRequiresToken('packageand(%name:foo)', None, None, 'Supplements: ')
