@@ -70,6 +70,7 @@ class RpmRequiresToken:
                 'BuildConflicts',
                 '#!BuildIgnore',
                 '#!BuildConflicts',
+                '#!BuildRequires',
             )
         ):
             name = 'pkgconfig'
