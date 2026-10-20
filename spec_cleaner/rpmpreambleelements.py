@@ -56,6 +56,7 @@ class RpmPreambleElements:
         'buildsystem': 'BuildSystem',
         'buildoption': 'BuildOption',
         'buildrequires': 'BuildRequires',
+        'buildrequires_pragma': '#!BuildRequires',
         'buildconflicts': 'BuildConflicts',
         'buildconflicts_pragma': '#!BuildConflicts',
         'buildignores': '#!BuildIgnore',
@@ -108,6 +109,7 @@ class RpmPreambleElements:
         'patternobsoletes',  # fake provide/obsoletes with old pattern symbols
         'patterncodeblock',  # fake condition placement for patterns to stay on top
         'buildrequires',
+        'buildrequires_pragma',
         'buildconflicts',
         'buildconflicts_pragma',
         'buildignores',
@@ -141,6 +143,7 @@ class RpmPreambleElements:
         'patternrecommends',
         'patternsuggests',
         'buildrequires',
+        'buildrequires_pragma',
         'buildconflicts',
         'buildconflicts_pragma',
         'buildignores',

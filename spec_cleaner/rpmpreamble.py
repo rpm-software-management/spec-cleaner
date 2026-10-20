@@ -125,6 +125,7 @@ class RpmPreamble(Section):
             'buildsystem': self.reg.re_buildsystem,
             'buildoption': self.reg.re_buildoption,
             'buildrequires': self.reg.re_buildrequires,
+            'buildrequires_pragma': self.reg.re_buildrequires_pragma,
             'buildconflicts': self.reg.re_buildconflicts,
             'buildconflicts_pragma': self.reg.re_buildconflicts_pragma,
             'buildignores': self.reg.re_buildignores,
@@ -434,7 +435,10 @@ class RpmPreamble(Section):
                 self.paragraph.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
         # the build service's '[arch]' or '[project]' suffix belongs to the entry before it
-        if category in ('buildignores', 'buildconflicts_pragma') and '[' in value:
+        if (
+            category in ('buildignores', 'buildconflicts_pragma', 'buildrequires_pragma')
+            and '[' in value
+        ):
             return [value]
         dependencies, trailing_comment = self._split_trailing_comment(value)
         try:
@@ -455,8 +459,9 @@ class RpmPreamble(Section):
             # scriptlet deps and package names (Provides/Obsoletes, %requires_eq/ge)
             # stay as is; BuildIgnore entries are plain package names the build
             # service excludes, not dependency strings, so they stay as is too.
-            # The #!BuildConflicts pragma entries are matched literally by the
-            # build service as well, so they stay as is too
+            # The #!BuildConflicts and #!BuildRequires pragma entries are
+            # matched literally by the build service as well, so they stay as
+            # is too
             if category not in (
                 'prereq',
                 'requires_phase',
@@ -465,6 +470,7 @@ class RpmPreamble(Section):
                 'requires_ge',
                 'buildignores',
                 'buildconflicts_pragma',
+                'buildrequires_pragma',
             ):
                 # here we go with descending priority to find match and replace
                 # the strings by some optimistic value of brackety dep
@@ -689,6 +695,7 @@ class RpmPreamble(Section):
             self.reg.re_comment.match(line)
             and not self.reg.re_buildignores.match(line)
             and not self.reg.re_buildconflicts_pragma.match(line)
+            and not self.reg.re_buildrequires_pragma.match(line)
         ):
             return False
         if line or self.previous_line:
