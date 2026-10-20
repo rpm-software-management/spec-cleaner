@@ -433,6 +433,9 @@ class RpmPreamble(Section):
             ):
                 self.paragraph.current_group.append('# FIXME: Use %requires_eq macro instead')
             return [value]
+        # the build service's '[arch]' or '[project]' suffix belongs to the entry before it
+        if category in ('buildignores', 'buildconflicts_pragma') and '[' in value:
+            return [value]
         dependencies, trailing_comment = self._split_trailing_comment(value)
         try:
             tokens = DependencyParser(dependencies).flat_out()
