@@ -288,6 +288,33 @@ class RpmPreambleElements:
         return elements
 
     @staticmethod
+    def _plain_line(element):
+        """
+        Return the line an element holds if it is a plain string line.
+
+        Plain lines are stored either directly or as the last item of a
+        group whose preceding items are the comments belonging to the
+        line; anything else returns None.
+        """
+        if isinstance(element, str):
+            return element
+        if isinstance(element, list) and element and isinstance(element[-1], str):
+            return element[-1]
+        return None
+
+    @staticmethod
+    def _absorb_line_comments(kept, dropped):
+        """Return the kept element extended with the dropped one's comments."""
+        comments = []
+        for element in (kept, dropped):
+            if isinstance(element, list):
+                comments += element[:-1]
+        if not comments:
+            return kept
+        line = kept[-1] if isinstance(kept, list) else kept
+        return comments + [line]
+
+    @staticmethod
     def _remove_duplicates(elements):
         """Remove duplicate requires/buildrequires/etc."""
         results = []
@@ -295,7 +322,21 @@ class RpmPreambleElements:
             match = False
             # anything else than requirestoken
             if not isinstance(element, RpmRequiresToken):
-                results.append(element)
+                # plain lines carry no token to compare (a suffixed #!
+                # entry is kept whole as a string); an identical line
+                # stored earlier makes this one a duplicate and the
+                # comments merge the same way they do for tokens
+                line = RpmPreambleElements._plain_line(element)
+                if line is not None:
+                    for index, item in enumerate(results):
+                        if RpmPreambleElements._plain_line(item) == line:
+                            results[index] = RpmPreambleElements._absorb_line_comments(
+                                item, element
+                            )
+                            match = True
+                            break
+                if not match:
+                    results.append(element)
                 continue
             # no results stored yet
             if not results:

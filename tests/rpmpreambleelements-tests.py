@@ -29,6 +29,23 @@ class TestRpmPreambleElements:
         assert elements._is_own_lang_package('other-lang', 'foo') is False
         assert elements._is_own_lang_package('foo', 'foo') is False
 
+    def test_remove_duplicates_plain_lines(self, elements):
+        """Test that identical plain lines deduplicate and merge comments."""
+        lines = [
+            '#!BuildIgnore:  foo [i586]',
+            '#!BuildIgnore:  foo [i586]',
+            ['# first note', '#!BuildConflicts: dup [i586]'],
+            ['# second note', '#!BuildConflicts: dup [i586]'],
+            '#!BuildConflicts: dup >= 1.0 [i586]',
+            '#!BuildConflicts: dup [x86_64]',
+        ]
+        assert elements._remove_duplicates(lines) == [
+            '#!BuildIgnore:  foo [i586]',
+            ['# first note', '# second note', '#!BuildConflicts: dup [i586]'],
+            '#!BuildConflicts: dup >= 1.0 [i586]',
+            '#!BuildConflicts: dup [x86_64]',
+        ]
+
     def test_verify_prereq_message_without_prereq(self, elements):
         """Test that the fixme comment is not added when no prereq is present."""
         assert elements._verify_prereq_message(['BuildRequires: gcc', '']) == [
