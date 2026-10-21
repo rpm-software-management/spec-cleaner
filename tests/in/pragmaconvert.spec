@@ -19,6 +19,8 @@ BuildRequires: zsh
 #!BuildConflicts:  mixold mixq [i586] # legacy combo
 #!BuildRequires:  broken [x86_64] >= 1.0
 #!BuildRequires:  nospace[x86_64]
+#!BuildRequires:  %{?with_x:condpkg} plainmate
+#!BuildRequires:  %{!?with_bootstrap:bootstrapthing}
 #!BuildIgnore:  neverconvert
 %if %{with bootstrap}
 #!BuildRequires:  stringtemplate4-bootstrap

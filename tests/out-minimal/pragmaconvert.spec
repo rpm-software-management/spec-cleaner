@@ -10,8 +10,11 @@ BuildRequires:  glassfish-jaxb-runtime
 BuildRequires:  multi1
 BuildRequires:  multi2
 BuildRequires:  pkgconfig
+BuildRequires:  plainmate
 BuildRequires:  single
 BuildRequires:  zsh
+#!BuildRequires: %{!?with_bootstrap:bootstrapthing}
+#!BuildRequires: %{?with_x:condpkg}
 #!BuildRequires: (foo or bar)
 #!BuildRequires: broken [x86_64] >= 1.0
 #!BuildRequires: nospace[x86_64]
