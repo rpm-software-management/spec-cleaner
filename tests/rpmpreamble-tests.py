@@ -195,3 +195,28 @@ class TestRpmPreamble:
             (True, False),
             (False, True),
         ]
+
+    def test_dep_pragma_entries(self, preamble):
+        """Test that a dep pragma value splits into entries and marks the qualified ones."""
+        split = preamble._split_dep_pragma_entries
+        assert split('foo bar >= 1.0') == [('foo', False), ('bar >= 1.0', False)]
+        assert split('foo [x86_64], bar') == [('foo [x86_64]', True), ('bar', False)]
+        assert split('foo >= 1.0 [home:proj]') == [('foo >= 1.0 [home:proj]', True)]
+        assert split('%{base_name}-bootstrap') == [('%{base_name}-bootstrap', False)]
+        # rich dependencies and empty values do not split into plain entries
+        assert split('(foo or bar)') is None
+        assert split('') is None
+
+    def test_dep_pragma_normalization(self, preamble):
+        """Test that dep pragmas convert to the plain tags and qualified entries stay pragmas."""
+        preamble.add('#!BuildRequires: foo [x86_64] bar >= 1.0')
+        preamble.add('#!BuildConflicts: oldthing')
+        preamble.add('#!BuildRequires: (foo or bar)')
+        items = preamble.paragraph.items
+        assert [str(item) for item in items['buildrequires']] == ['BuildRequires:  bar >= 1.0']
+        assert [str(item) for item in items['buildrequires_pragma']] == [
+            '#!BuildRequires: foo [x86_64]',
+            '#!BuildRequires: (foo or bar)',
+        ]
+        assert [str(item) for item in items['buildconflicts']] == ['BuildConflicts: oldthing']
+        assert items['buildconflicts_pragma'] == []
