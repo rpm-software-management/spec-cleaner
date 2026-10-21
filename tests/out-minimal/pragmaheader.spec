@@ -7,7 +7,7 @@
 #!BuildConflicts: headerconflict
 Name:           pragmaheader
 Version:        1.0
-BuildRequires:  bodything
-BuildConflicts: bodyconflict
+#!BuildRequires: bodything
+#!BuildConflicts: bodyconflict
 
 %changelog
