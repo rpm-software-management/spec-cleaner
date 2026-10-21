@@ -730,6 +730,11 @@ class RpmPreamble(Section):
             category, pragma_category = 'buildconflicts', 'buildconflicts_pragma'
         if not match:
             return False
+        # minimal mode (the format_spec_file service) keeps to
+        # non-intrusive changes, and this conversion changes what rpm
+        # reads, so the pragmas keep their form there
+        if self.minimal:
+            return False
         value, trailing_comment = self._split_trailing_comment(match.group(1))
         entries = self._split_dep_pragma_entries(value)
         if not entries:
