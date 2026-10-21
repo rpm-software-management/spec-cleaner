@@ -228,6 +228,24 @@ class TestRpmPreamble:
         assert [str(item) for item in items['buildconflicts']] == ['BuildConflicts: oldthing']
         assert items['buildconflicts_pragma'] == []
 
+    def test_dep_pragma_conditional_entries(self, preamble):
+        """Test that entries with conditional macros stay pragmas while plain entries convert."""
+        preamble.add('#!BuildRequires: %{?with_x:condpkg}')
+        preamble.add('#!BuildRequires: %{!?with_x:condpkg}')
+        preamble.add('#!BuildRequires: plainpkg %{?with_y:otherpkg}')
+        preamble.add('#!BuildConflicts: %{?with_x:oldpkg}')
+        items = preamble.paragraph.items
+        assert [str(item) for item in items['buildrequires']] == ['BuildRequires:  plainpkg']
+        assert [str(item) for item in items['buildrequires_pragma']] == [
+            '#!BuildRequires: %{?with_x:condpkg}',
+            '#!BuildRequires: %{!?with_x:condpkg}',
+            '#!BuildRequires: %{?with_y:otherpkg}',
+        ]
+        assert items['buildconflicts'] == []
+        assert [str(item) for item in items['buildconflicts_pragma']] == [
+            '#!BuildConflicts: %{?with_x:oldpkg}'
+        ]
+
     def test_dep_pragma_malformed_entries(self, preamble):
         """Test that malformed dep pragma values do not split into tags rpm rejects."""
         split = preamble._split_dep_pragma_entries

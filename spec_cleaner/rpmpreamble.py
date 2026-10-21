@@ -719,8 +719,9 @@ class RpmPreamble(Section):
         The build service reads the pragmas as the plain tags, so the
         entries take the plain tag's category and join its sorting at the
         pragma's location. An entry carrying an '[arch]' or '[project]'
-        qualifier has no plain rpm form, so it stays a pragma entry and
-        goes through the pragma category, which keeps it whole.
+        qualifier has no plain rpm form, and a conditional macro may
+        expand to nothing, so both stay pragma entries and go through
+        the pragma category, which keeps them whole.
         """
         match = self.reg.re_buildrequires_pragma.match(line)
         category, pragma_category = 'buildrequires', 'buildrequires_pragma'
@@ -733,8 +734,16 @@ class RpmPreamble(Section):
         entries = self._split_dep_pragma_entries(value)
         if not entries:
             return False
-        plain = [text for text, qualified in entries if not qualified]
-        qualified = [text for text, qualified in entries if qualified]
+        plain = []
+        qualified = []
+        for text, is_qualified in entries:
+            # a conditional macro may expand to nothing, which rpm rejects
+            # as an empty tag once the entry is a plain tag, so the entry
+            # stays a pragma entry like a qualified one
+            if is_qualified or '%{?' in text or '%{!?' in text:
+                qualified.append(text)
+            else:
+                plain.append(text)
         if plain:
             converted = ' '.join(plain)
             if trailing_comment:
