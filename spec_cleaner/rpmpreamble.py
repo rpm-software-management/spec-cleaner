@@ -706,8 +706,6 @@ class RpmPreamble(Section):
         for match in self.reg.re_dep_pragma_entry.finditer(value):
             if value[pos : match.start()].strip(' \t,'):
                 return None
-            if match.group(1).startswith('['):
-                return None
             entries.append((' '.join(match.group(0).split()), bool(match.group(3))))
             pos = match.end()
         if value[pos:].strip(' \t,'):
