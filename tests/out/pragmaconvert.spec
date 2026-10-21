@@ -13,6 +13,8 @@ BuildRequires:  pkgconfig
 BuildRequires:  single
 BuildRequires:  zsh
 #!BuildRequires: (foo or bar)
+#!BuildRequires: broken [x86_64] >= 1.0
+#!BuildRequires: nospace[x86_64]
 #!BuildRequires: projq [!home:proj]
 #!BuildRequires: qualified [x86_64]
 #!BuildRequires: qualonly [aarch64] # only there

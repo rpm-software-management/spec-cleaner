@@ -227,3 +227,20 @@ class TestRpmPreamble:
         ]
         assert [str(item) for item in items['buildconflicts']] == ['BuildConflicts: oldthing']
         assert items['buildconflicts_pragma'] == []
+
+    def test_dep_pragma_malformed_entries(self, preamble):
+        """Test that malformed dep pragma values do not split into tags rpm rejects."""
+        split = preamble._split_dep_pragma_entries
+        # a version relation after a qualifier is not an entry of its own:
+        # brackets and operators cannot start a token
+        assert split('foo [x86_64] >= 1.0') is None
+        # a bracket glued to the name is the entry's qualifier
+        assert split('nospace[x86_64]') == [('nospace[x86_64]', True)]
+        preamble.add('#!BuildRequires: foo [x86_64] >= 1.0')
+        preamble.add('#!BuildRequires: nospace[x86_64]')
+        items = preamble.paragraph.items
+        assert items['buildrequires'] == []
+        assert [str(item) for item in items['buildrequires_pragma']] == [
+            '#!BuildRequires: foo [x86_64] >= 1.0',
+            '#!BuildRequires: nospace[x86_64]',
+        ]

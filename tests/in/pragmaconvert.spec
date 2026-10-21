@@ -17,6 +17,8 @@ BuildRequires: zsh
 #!BuildConflicts:  oldthing
 #!BuildConflicts:  rpmlint-mini < 2.9
 #!BuildConflicts:  mixold mixq [i586] # legacy combo
+#!BuildRequires:  broken [x86_64] >= 1.0
+#!BuildRequires:  nospace[x86_64]
 #!BuildIgnore:  neverconvert
 %if %{with bootstrap}
 #!BuildRequires:  stringtemplate4-bootstrap
