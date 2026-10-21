@@ -104,6 +104,8 @@ class Regexp:
     re_buildconflicts = re.compile(r'^BuildConflicts:\s*(.*)', re.IGNORECASE)
     re_buildconflicts_pragma = re.compile(r'^#!BuildConflicts:\s*(.*)', re.IGNORECASE)
     re_buildrequires_pragma = re.compile(r'^#!BuildRequires:\s*(.*)', re.IGNORECASE)
+    # one dep pragma entry: name, optional version relation, optional '[arch]'/'[project]' qualifier
+    re_dep_pragma_entry = re.compile(r'([^\s,]+)(\s*[<=>]+\s*[^\s,]+)?(\s*\[[^\]]+\])?')
     re_buildignores = re.compile(r'^#!BuildIgnore:\s*(.*)', re.IGNORECASE)
     re_prereq = re.compile(r'^PreReq:\s*(.*)', re.IGNORECASE)
     re_requires = re.compile(r'^Requires:\s*(.*)', re.IGNORECASE)

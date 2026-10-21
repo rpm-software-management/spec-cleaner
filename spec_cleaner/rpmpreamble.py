@@ -689,6 +689,68 @@ class RpmPreamble(Section):
         self.previous_line = line
         return True
 
+    def _split_dep_pragma_entries(self, value):
+        """
+        Split a dep pragma value into (entry, qualified) pairs.
+
+        An entry is a package name with an optional version relation and
+        an optional '[arch]' or '[project]' qualifier, mirroring the deps
+        grammar of the build service. Return None when the value does not
+        split into such entries (e.g. rich dependencies), in which case
+        the line keeps its pragma form.
+        """
+        if '(' in value or ')' in value:
+            return None
+        entries = []
+        pos = 0
+        for match in self.reg.re_dep_pragma_entry.finditer(value):
+            if value[pos : match.start()].strip(' \t,'):
+                return None
+            if match.group(1).startswith('['):
+                return None
+            entries.append((' '.join(match.group(0).split()), bool(match.group(3))))
+            pos = match.end()
+        if value[pos:].strip(' \t,'):
+            return None
+        return entries or None
+
+    def _handle_dep_pragma(self, line):
+        """
+        Convert a #!BuildRequires:/#!BuildConflicts: pragma to the plain tag. Return True if handled.
+
+        The build service reads the pragmas as the plain tags, so the
+        entries take the plain tag's category and join its sorting at the
+        pragma's location. An entry carrying an '[arch]' or '[project]'
+        qualifier has no plain rpm form, so it stays a pragma entry and
+        goes through the pragma category, which keeps it whole.
+        """
+        match = self.reg.re_buildrequires_pragma.match(line)
+        category, pragma_category = 'buildrequires', 'buildrequires_pragma'
+        if not match:
+            match = self.reg.re_buildconflicts_pragma.match(line)
+            category, pragma_category = 'buildconflicts', 'buildconflicts_pragma'
+        if not match:
+            return False
+        value, trailing_comment = self._split_trailing_comment(match.group(1))
+        entries = self._split_dep_pragma_entries(value)
+        if not entries:
+            return False
+        plain = [text for text, qualified in entries if not qualified]
+        qualified = [text for text, qualified in entries if qualified]
+        if plain:
+            converted = ' '.join(plain)
+            if trailing_comment:
+                converted = f'{converted} {trailing_comment}'
+            self._add_line_value_to(category, converted)
+        if qualified:
+            # a qualified entry has no plain rpm form: it stays a pragma
+            # entry and takes the pragma category, which keeps it whole
+            remainder = ' '.join(qualified)
+            if not plain and trailing_comment:
+                remainder = f'{remainder} {trailing_comment}'
+            self._add_line_value_to(pragma_category, remainder)
+        return True
+
     def _handle_comment(self, line):
         """Add a comment line to the current group. Return True if handled."""
         if not (
@@ -1123,6 +1185,10 @@ class RpmPreamble(Section):
             return
 
         if self._handle_endif(line):
+            return
+
+        # the dep pragmas are normalized to the plain tags
+        if self._handle_dep_pragma(line):
             return
 
         if self._handle_comment(line):
