@@ -206,17 +206,24 @@ class TestRpmPreamble:
         # rich dependencies and empty values do not split into plain entries
         assert split('(foo or bar)') is None
         assert split('') is None
+        # a qualifier cannot lead the entries, and only spaces, tabs and
+        # commas separate them: anything else keeps the value unsplit
+        assert split('[i586] foo') is None
+        assert split('foo\rbar') is None
+        assert split('foo\r') is None
 
     def test_dep_pragma_normalization(self, preamble):
         """Test that dep pragmas convert to the plain tags and qualified entries stay pragmas."""
         preamble.add('#!BuildRequires: foo [x86_64] bar >= 1.0')
         preamble.add('#!BuildConflicts: oldthing')
         preamble.add('#!BuildRequires: (foo or bar)')
+        preamble.add('#!BuildRequires: [i586] foo')
         items = preamble.paragraph.items
         assert [str(item) for item in items['buildrequires']] == ['BuildRequires:  bar >= 1.0']
         assert [str(item) for item in items['buildrequires_pragma']] == [
             '#!BuildRequires: foo [x86_64]',
             '#!BuildRequires: (foo or bar)',
+            '#!BuildRequires: [i586] foo',
         ]
         assert [str(item) for item in items['buildconflicts']] == ['BuildConflicts: oldthing']
         assert items['buildconflicts_pragma'] == []
