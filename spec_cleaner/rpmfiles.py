@@ -14,13 +14,16 @@ class RpmFiles(Section):
         """Process one line of the %files section."""
         line = self._complete_cleanup(line)
         line = self.strip_useless_spaces(line)
-        line = self._remove_doc_on_man(line)
-        line = self._move_license_from_doc(line)
-        # we only get empty %doc left over
-        if line == '%doc ':
-            return
 
         if not self.minimal:
+            # The %doc rewrites change what the built package flags: man/info
+            # pages lose their prefix and licence files move to %license.
+            # The minimal run only formats, so it keeps the markers as written.
+            line = self._remove_doc_on_man(line)
+            line = self._move_license_from_doc(line)
+            # we only get empty %doc left over
+            if line == '%doc ':
+                return
             # prune obsolete defattr that is default, unless it resets an earlier one;
             # a resumed body cannot tell whether one came before the conditional
             if line.startswith('%defattr'):
@@ -40,7 +43,12 @@ class RpmFiles(Section):
     @staticmethod
     def _remove_doc_on_man(line: str) -> str:
         """
-        Remove all "%doc %_mandir" to -> "%_mandir" as it is pointless to do twice.
+        Remove the "%doc" prefix from lines listing only man/info pages.
+
+        rpm flags everything below %{_mandir} and %{_infodir} as
+        documentation on its own, so the prefix states nothing there.
+        A line mixing man/info pages with other files keeps its prefix:
+        the prefix still carries the documentation flag for those files.
 
         Args:
             line: A string representing a line to process.
@@ -48,8 +56,13 @@ class RpmFiles(Section):
         Returns:
             The processed line.
         """
-        line = line.replace('%doc %{_mandir}', '%{_mandir}', 1)
-        line = line.replace('%doc %{_infodir}', '%{_infodir}', 1)
+        if not line.startswith('%doc '):
+            return line
+        files = line[len('%doc ') :].split()
+        if files and all(
+            file.startswith('%{_mandir}') or file.startswith('%{_infodir}') for file in files
+        ):
+            return line[len('%doc ') :]
         return line
 
     def _set_man_compression(self, line: str) -> str:

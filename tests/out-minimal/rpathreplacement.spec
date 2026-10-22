@@ -4,8 +4,7 @@ mkdir -p %{buildroot}%{_sbindir}
 
 %files
 %defattr(-,root,root)
-%license COPYING
-%doc ChangeLog README
+%doc ChangeLog README COPYING
 %{_prefix}/name/
 %{_libexecdir}/name/
 %{_libdir}/name

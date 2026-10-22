@@ -1,23 +1,20 @@
 %files
-%license COPYING ringtones/default.wav.LICENSE
-%doc AUTHOR README
+%doc AUTHOR COPYING README ringtones/default.wav.LICENSE
 
 %files a
-%license COPYING.MPL
-%doc OTHER
+%doc OTHER COPYING.MPL
 
 %files b
-%license COPYING.*
+%doc COPYING.*
 
 %files c
-%license COPYING LICENCE*
+%doc COPYING LICENCE*
 
 %files d
-%license license.txt
-%doc acknow.txt readme.txt
+%doc acknow.txt license.txt readme.txt
 
 %files FOO
-%license COPYING
+%doc COPYING
 %{_libdir/library.so
 
 %changelog
