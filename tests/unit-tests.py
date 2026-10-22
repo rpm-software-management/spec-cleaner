@@ -460,3 +460,27 @@ class TestUnbraceKeywords:
     def test_unreported_macrofunc_is_braced(self, default_options, monkeypatch):
         """Test that a macro function rpm --showrc does not report gets braced."""
         assert 'cargo_install' not in self.keywords(default_options, monkeypatch, [])
+
+
+class TestMacrosWithArg:
+    """The dependency parser learns the macros that take arguments from the same sources."""
+
+    def test_showrc_macrofunc_is_collected(self, default_options, monkeypatch):
+        """Test that a macro function rpm --showrc reports is collected."""
+        monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: ['cargo_install'])
+        options = RpmSpecCleaner(default_options()).options
+        assert 'cargo_install' in options['macros_with_arg']
+
+    def test_spec_defined_macrofunc_is_collected(self, default_options):
+        """Test that a macro function the spec itself defines is collected."""
+        options = default_options()
+        with open(options['specfile'], 'a', encoding='utf-8') as spec:
+            spec.write('%define selfconflict() %1\n')
+        assert 'selfconflict' in RpmSpecCleaner(options).options['macros_with_arg']
+
+    def test_plain_macro_is_not_collected(self, default_options):
+        """Test that a macro defined without parentheses is not collected."""
+        options = default_options()
+        with open(options['specfile'], 'a', encoding='utf-8') as spec:
+            spec.write('%define plainmacro plainvalue\n')
+        assert 'plainmacro' not in RpmSpecCleaner(options).options['macros_with_arg']

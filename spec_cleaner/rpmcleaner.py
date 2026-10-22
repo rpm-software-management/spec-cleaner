@@ -205,6 +205,9 @@ class RpmSpecCleaner:
         keywords = load_keywords_whitelist()
         global_macrofuncs = parse_rpm_showrc()
         spec_macrofuncs = find_macros_with_arg(self.options['specfile'])
+        # the dependency parser needs the macro functions on their own,
+        # without the unbracing keywords mixed in
+        self.options['macros_with_arg'] = global_macrofuncs + spec_macrofuncs
         return keywords + global_macrofuncs + spec_macrofuncs
 
     def _find_skip_parser(self) -> None:

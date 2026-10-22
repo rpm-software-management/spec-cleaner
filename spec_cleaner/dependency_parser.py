@@ -150,10 +150,13 @@ class DepParserError(Exception):
 class DependencyParser:
     """Dependency parsing class."""
 
-    def __init__(self, line):
+    def __init__(self, line, macros_with_arg=()):
         """Initialize class."""
         # adding comma will cause flush in the end of line
         self.string = line + ', '
+        # the names of the macros that take arguments; an invocation of one
+        # of them takes the words after it as its arguments
+        self.macros_with_arg = frozenset(macros_with_arg)
         self.parsed = []
         self.token = []
         self.state = 'start'
@@ -216,6 +219,12 @@ class DependencyParser:
         self.token = []
         return r
 
+    def _is_macro_with_arg_invocation(self):
+        """Check whether the token being built invokes a macro that takes arguments."""
+        first = next((chunk for chunk in self.token if chunk), '')
+        match = re.match(r'%[?]?([A-Za-z0-9_]+)$', first)
+        return bool(match) and match.group(1) in self.macros_with_arg
+
     def name_state_change(self):
         """Check name of next token."""
         # e.g. 'foo %{?foo_min:>= %{foo_min}}' is one dependency with an optional version
@@ -230,6 +239,12 @@ class DependencyParser:
             return
         if self.next_type in ['text', 'macro']:
             if self.space:
+                # a macro that takes arguments takes the words after it as
+                # its arguments, so they stay part of the same dependency
+                if not self.comma and self._is_macro_with_arg_invocation():
+                    self.token.append(' ' + self.next)
+                    self.space = False
+                    return
                 logger.debug('text after space --> flush')
                 self.token_name = self.reconstitute_token()
                 self.space = False
