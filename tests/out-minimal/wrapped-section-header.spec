@@ -35,7 +35,7 @@ make
 %files -f %{name}.lang
 %endif
 %defattr(-,root,root,-)
-%license COPYING
+%doc COPYING
 %{_mandir}/man1/foo.1.*
 %ifarch s390x
 %{_bindir}/foo-s390
