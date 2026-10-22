@@ -17,6 +17,7 @@ BuildRequires:  bbb
 BuildRequires:  pkgconfig
 BuildRequires:  python
 Requires:       insserv
+BuildRoot: %{_tmppath}/%{name}-%{version}-build
 %if %{distro} == "suse"
 PreReq:         %{insserv_prereq}
 PreReq:         aaa_base

@@ -125,6 +125,7 @@ class RpmPreambleElements:
         'conflicts',
         'provides_obsoletes',
         'removepath',
+        'buildroot',
         'buildarch',
         'exclusivearch',
         'excludearch',

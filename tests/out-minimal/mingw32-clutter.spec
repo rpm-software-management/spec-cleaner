@@ -56,6 +56,7 @@ BuildRequires:  pkgconfig(gthread-2.0)
 BuildRequires:  pkgconfig(gtk-doc)
 #!BuildIgnore:  post-build-checks
 Requires:       %{name}-lang = %{version}
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildArch:      noarch
 
 %description

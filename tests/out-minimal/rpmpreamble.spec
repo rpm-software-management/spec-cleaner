@@ -42,6 +42,9 @@ BuildRequires:  pkgconfig(libcurl)
 BuildRequires:  pkgconfig(libgcrypt) >= 1.2.4
 BuildRequires:  pkgconfig(libmagic)
 BuildRequires:  pkgconfig(libtasn1)
+%if 0%{?suse_version} < 1230
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+%endif
 
 %description
 GNU libmicrohttpd is a small C library that is supposed to make it easy to run
