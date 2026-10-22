@@ -34,35 +34,35 @@ http://httpd.apache.org/docs-2.2/upgrading.html.
 %package worker
 Summary:        Apache 2 worker MPM (Multi-Processing Module)
 Group:          Productivity/Networking/Web/Servers
-Requires:       %{name} = %{version}
 Provides:       %{pname}-MPM
+Requires:       %{name} = %{version}
 %endif
 
 %if %prefork
 %package prefork
 Summary:        Apache 2 "prefork" MPM (Multi-Processing Module)
 Group:          Productivity/Networking/Web/Servers
-Requires:       %{name} = %{version}
 Provides:       %{pname}-MPM
 %if 0%{?suse_version} >= 901 && 0%{?sles_version} != 9
 Provides:       apache:%{_sbindir}/httpd
 %endif
+Requires:       %{name} = %{version}
 %endif
 
 %if %event
 %package event
 Summary:        Apache 2 event MPM (Multi-Processing Module)
 Group:          Productivity/Networking/Web/Servers
-Requires:       %{name} = %{version}
 Provides:       %{pname}-MPM
+Requires:       %{name} = %{version}
 %endif
 
 %if %itk
 %package itk
 Summary:        Apache 2 "ITK" MPM (Multi-Processing Module)
 Group:          Productivity/Networking/Web/Servers
-Requires:       %{name} = %{version}
 Provides:       %{pname}-MPM
+Requires:       %{name} = %{version}
 %endif
 
 %changelog

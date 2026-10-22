@@ -33,6 +33,60 @@ class MacroLine(str):
         return tagged
 
 
+class _TrackedList(list):
+    """
+    Bucket list reporting its elements to the owning RpmPreambleElements.
+
+    The owner records the order in which elements were first added to
+    any bucket; minimal mode uses that order to emit the preamble in
+    source order instead of the canonical category order.
+    """
+
+    def __init__(self, owner, iterable=()):
+        """Create the list, reporting any initial elements to the owner."""
+        super().__init__(iterable)
+        self._owner = owner
+        for element in self:
+            owner._record_position(element)
+
+    def append(self, element):
+        """Append the element, reporting it to the owner."""
+        self._owner._record_position(element)
+        super().append(element)
+
+    def extend(self, elements):
+        """Append all the elements, reporting them to the owner."""
+        elements = list(elements)
+        for element in elements:
+            self._owner._record_position(element)
+        super().extend(elements)
+
+    def __iadd__(self, elements):
+        """Append all the elements, reporting them to the owner."""
+        self.extend(elements)
+        return self
+
+    def insert(self, index, element):
+        """Insert the element, reporting it to the owner."""
+        self._owner._record_position(element)
+        super().insert(index, element)
+
+
+class _TrackedItems(dict):
+    """Category dict wrapping every assigned bucket in a _TrackedList."""
+
+    def __init__(self, owner):
+        """Create the dict for the given RpmPreambleElements owner."""
+        super().__init__()
+        self._owner = owner
+
+    def __setitem__(self, category, elements):
+        """Store the bucket, wrapping plain lists so appends are reported."""
+        if not isinstance(elements, _TrackedList):
+            elements = _TrackedList(self._owner, elements)
+        super().__setitem__(category, elements)
+
+
 class RpmPreambleElements:
     """
     Class containing structure used in rpmpreamble.
@@ -165,9 +219,14 @@ class RpmPreambleElements:
 
     def __init__(self, options):
         """Initialize the default variables as some are dynamic."""
-        self.items = {}
+        self.items = _TrackedItems(self)
         for i in self.categories_order:
             self.items[i] = []
+        # source position of every element added to a bucket, by identity;
+        # minimal mode emits the buckets merged in this order
+        self._positions = {}
+        self._recorded = []
+        self._next_position = 0
         self.current_group = []
         # minimal mode
         self.minimal = options['minimal']
@@ -186,6 +245,48 @@ class RpmPreambleElements:
         # these packages actually need fixing after we sent the values to
         # reorder them
         self.categories_with_package_tokens.append('provides_obsoletes')
+
+    def _record_position(self, element):
+        """
+        Record the source position of an element added to a bucket.
+
+        Only the first addition counts: an element the placement moves
+        to another bucket keeps the position of where it was written.
+        The members of a group are recorded with the group's position,
+        so a group rebuilt from its members (merged comments, a
+        conditional block split into units) still resolves to its
+        source position. Only minimal mode reads the recording.
+        """
+        if not getattr(self, 'minimal', False) or id(element) in self._positions:
+            return
+        position = self._next_position
+        self._next_position += 1
+        stack = [element]
+        while stack:
+            item = stack.pop()
+            if id(item) in self._positions:
+                continue
+            self._positions[id(item)] = position
+            # keep a reference so the id cannot be recycled while the
+            # paragraph is alive
+            self._recorded.append(item)
+            if isinstance(item, list):
+                stack.extend(item)
+
+    def _element_position(self, element):
+        """
+        Return the recorded source position of a bucket element.
+
+        Elements rebuilt from recorded members (a conditional block
+        split into define units, a group that absorbed the comments of
+        a dropped duplicate) resolve through their earliest member.
+        """
+        position = self._positions.get(id(element))
+        if position is not None or not isinstance(element, list):
+            return position
+        known = [self._element_position(item) for item in element]
+        known = [item for item in known if item is not None]
+        return min(known) if known else None
 
     def _sort_helper_key(self, a):
         if isinstance(a, str) or isinstance(a, RpmRequiresToken):
@@ -252,6 +353,25 @@ class RpmPreambleElements:
         if not nested:
             if self.br_pkgconfig_required and not find_pkgconfig_declaration(buildrequires):
                 self._insert_value('buildrequires', 'pkgconfig')
+                if self.minimal:
+                    self._place_inserted_buildrequires()
+
+    def _place_inserted_buildrequires(self):
+        """
+        Keep the inserted pkgconfig declaration with the BuildRequires lines.
+
+        The declaration is created while flattening, so its recorded
+        position is the newest one; in source order it belongs right
+        after the last BuildRequires line it was derived from.
+        """
+        elements = self.items['buildrequires']
+        known = [
+            position
+            for element in elements[:-1]
+            if (position := self._element_position(element)) is not None
+        ]
+        if known:
+            self._positions[id(elements[-1])] = max(known)
 
     @staticmethod
     def _verify_prereq_message(elements):
@@ -650,6 +770,55 @@ class RpmPreambleElements:
             else:
                 self.items['define'].append(unit)
 
+    def _flatten_in_source_order(self):
+        """
+        Emit the buckets merged by source position (minimal mode).
+
+        Every element recorded the position at which it was first added
+        to a bucket, so merging by that position restores the order the
+        lines had in the source file: conditional blocks stay where
+        they were written, in the order they were written, and no line
+        crosses the Name: tag. The transformations that only edit lines
+        in place (the deduplication above, the inserted pkgconfig
+        declaration) still apply; sorting and define relocation do not.
+        """
+        gathered = []
+        for category in self.categories_order:
+            gathered += [(category, group) for group in self.items[category]]
+        positioned = []
+        last = None
+        for category, group in gathered:
+            position = self._element_position(group)
+            if position is None:
+                # an element rebuilt from unrecorded parts inherits the
+                # position of the element gathered before it
+                position = last
+            else:
+                last = position
+            positioned.append((position, category, group))
+        # the sort is stable: elements sharing a position (the inserted
+        # pkgconfig declaration shares its anchor's) keep gathering order
+        positioned.sort(key=lambda item: -1 if item[0] is None else item[0])
+        seen = set()
+        lines = []
+        for _, category, group in positioned:
+            group_lines = add_group(group)
+            if category in self.categories_with_sorted_keyword_tokens:
+                # the canonical order sorts these categories and drops
+                # duplicates; source order keeps the lines as written
+                # but still drops exact duplicates
+                text = tuple(str(line) for line in group_lines)
+                if text in seen:
+                    continue
+                seen.add(text)
+            lines += self._run_global_list_operations(category, group_lines)
+        if self.current_group:
+            # the current group was not added to any category. It's just some
+            # random stuff that should be at the end anyway.
+            lines += add_group(self.current_group)
+            self.current_group = []
+        return [line if isinstance(line, str) else str(line) for line in lines]
+
     def flatten_output(self, needs_license=False, nested=False):
         """Do the finalized output for the itemlist."""
         lines = []
@@ -667,6 +836,10 @@ class RpmPreambleElements:
         # drop Recommends on the -lang subpackage, the %lang_package macro
         # already generates Supplements for it (#273)
         self._prune_lang_recommends()
+        if self.minimal:
+            # minimal mode does not reorder: the buckets are emitted in
+            # source order and no define unit is relocated
+            return self._flatten_in_source_order()
         # keep version-dependent globals below the tags (#239) and bcond readers below the bconds
         self._split_late_globals(nested)
         for i in self.categories_order:

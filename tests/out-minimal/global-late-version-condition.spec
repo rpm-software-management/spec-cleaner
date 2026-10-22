@@ -2,11 +2,11 @@
 Name:           global-late-version-condition
 Version:        1.0
 Release:        0
+Summary:        Test
+License:        MIT
 %if "%{version}" == "1.0"
 %define x 1
 %endif
-Summary:        Test
-License:        MIT
 
 %description
 Test.

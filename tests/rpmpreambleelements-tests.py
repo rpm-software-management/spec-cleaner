@@ -52,3 +52,54 @@ class TestRpmPreambleElements:
             'BuildRequires: gcc',
             '',
         ]
+
+
+class TestRpmPreambleElementsOrder:
+    """We run few tests to ensure the source position recording works fine."""
+
+    @pytest.fixture
+    def elements(self, default_options):
+        """Build a preamble element handler with the default options."""
+        return RpmPreambleElements(RpmSpecCleaner(default_options()).options)
+
+    @pytest.fixture
+    def minimal_elements(self, default_options):
+        """Build a preamble element handler with minimal mode options."""
+        return RpmPreambleElements(RpmSpecCleaner(default_options(minimal=True)).options)
+
+    def test_positions_recorded_only_in_minimal(self, elements, minimal_elements):
+        """Test that positions are recorded in minimal mode only."""
+        elements.items['misc'].append('Misc: full')
+        assert elements._positions == {}
+        minimal_elements.items['name'].append('Name:           test')
+        minimal_elements.items['misc'].append('Misc: minimal')
+        # moving an element to another bucket keeps its first position
+        minimal_elements.items['tail'] += minimal_elements.items['name']
+        assert minimal_elements._element_position('Name:           test') == 0
+        assert minimal_elements._element_position('Misc: minimal') == 1
+        # inserting into a bucket records the position as well
+        minimal_elements.items['misc'].insert(0, 'Misc: inserted')
+        assert minimal_elements._element_position('Misc: inserted') == 2
+
+    def test_element_position_of_rebuilt_group(self, minimal_elements):
+        """Test that a group rebuilt from recorded members resolves to them."""
+        group = ['# note', 'Requires:       something']
+        minimal_elements.items['requires'].append(group)
+        rebuilt = ['# note', '# other note', 'Requires:       something']
+        assert minimal_elements._element_position(rebuilt) == 0
+        assert minimal_elements._element_position('Requires:       unknown') is None
+
+    def test_flatten_in_source_order_with_unrecorded(self, minimal_elements):
+        """Test that an unrecorded element inherits the previous position."""
+        minimal_elements.items['name'].append('Name:           test')
+        minimal_elements.items['misc'].append('Misc: one')
+        minimal_elements.items['misc'].append('Misc: two')
+        # simulate an element whose recording was lost: it is emitted
+        # right after the element gathered before it
+        lost = minimal_elements.items['misc'][0]
+        del minimal_elements._positions[id(lost)]
+        assert minimal_elements.flatten_output() == [
+            'Name:           test',
+            'Misc: one',
+            'Misc: two',
+        ]

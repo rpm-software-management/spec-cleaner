@@ -1,10 +1,10 @@
+%global evr %{epoch}:%{version}-%{release}
 Name:           epoch-autoreqprov
 Version:        1.0
-Release:        0
-Epoch:          2
-%global evr %{epoch}:%{version}-%{release}
 Summary:        Test
 License:        MIT
+Epoch:          2
+Release:        0
 AutoReqProv:    no
 
 %description
@@ -19,8 +19,8 @@ Devel files.
 
 %package tools
 Summary:        Tools
-Requires:       %{name} = %{epoch}:%{version}
 AutoReqProv:    off
+Requires:       %{name} = %{epoch}:%{version}
 
 %description tools
 Tools.

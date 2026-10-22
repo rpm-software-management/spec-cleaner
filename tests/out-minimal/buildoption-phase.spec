@@ -5,8 +5,8 @@ Release:        0
 Summary:        Test package
 License:        MIT
 URL:            https://example.org/buildoption-phase
-BuildOption:    -O2
 BuildOption(build): -j4
+BuildOption:    -O2
 BuildOption(post): -P %{_smp_mflags}
 
 %description

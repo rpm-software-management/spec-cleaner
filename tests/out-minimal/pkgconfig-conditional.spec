@@ -3,8 +3,8 @@ Version:        1.0
 Release:        0
 Summary:        Conditional pkgconfig declarations and statements
 License:        MIT
-BuildRequires:  pkgconfig
 BuildRequires:  pkgconfig(474module)
+BuildRequires:  pkgconfig
 %if 1
 BuildRequires:  pkgconfig
 %endif

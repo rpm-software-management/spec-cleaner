@@ -16,7 +16,6 @@
 #
 
 
-%_mingw32_package_header_debug
 Name:           mingw32-clutter
 Version:        1.6.20
 Release:        0
@@ -30,6 +29,17 @@ Patch1:         clutter-1.6.20-ldl.patch
 # Native version for glib-genmarshal
 BuildRequires:  autoconf
 BuildRequires:  automake
+BuildRequires:  pkgconfig(gio-2.0)
+BuildRequires:  pkgconfig(gio-unix-2.0)
+BuildRequires:  pkgconfig(girepository-2.0)
+BuildRequires:  pkgconfig(glib-2.0)
+BuildRequires:  pkgconfig(gmodule-2.0)
+BuildRequires:  pkgconfig(gmodule-export-2.0)
+BuildRequires:  pkgconfig(gmodule-no-export-2.0)
+BuildRequires:  pkgconfig(gobject-2.0)
+BuildRequires:  pkgconfig(gthread-2.0)
+#!BuildIgnore:  post-build-checks
+BuildRequires:  pkgconfig(gtk-doc)
 BuildRequires:  libtool
 BuildRequires:  mingw32-atk-devel
 BuildRequires:  mingw32-cairo-devel
@@ -44,19 +54,9 @@ BuildRequires:  mingw32-libtool
 BuildRequires:  mingw32-pango-devel
 BuildRequires:  mingw32-win_iconv-devel
 BuildRequires:  pkgconfig
-BuildRequires:  pkgconfig(gio-2.0)
-BuildRequires:  pkgconfig(gio-unix-2.0)
-BuildRequires:  pkgconfig(girepository-2.0)
-BuildRequires:  pkgconfig(glib-2.0)
-BuildRequires:  pkgconfig(gmodule-2.0)
-BuildRequires:  pkgconfig(gmodule-export-2.0)
-BuildRequires:  pkgconfig(gmodule-no-export-2.0)
-BuildRequires:  pkgconfig(gobject-2.0)
-BuildRequires:  pkgconfig(gthread-2.0)
-BuildRequires:  pkgconfig(gtk-doc)
-#!BuildIgnore:  post-build-checks
 Requires:       %{name}-lang = %{version}
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+%_mingw32_package_header_debug
 BuildArch:      noarch
 
 %description

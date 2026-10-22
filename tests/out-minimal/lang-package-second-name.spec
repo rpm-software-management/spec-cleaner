@@ -9,13 +9,13 @@ URL:            https://example.org/lang-package-second-name
 Test package.
 
 %package -n other
-Name:           other
 Summary:        Other package
+Name:           other
 %lang_package -n lang-package-second-name
 
 %package -n other-lang
-Name:           other-lang
 Summary:        Other lang package
+Name:           other-lang
 Recommends:     lang-package-second-name-lang
 
 %changelog
