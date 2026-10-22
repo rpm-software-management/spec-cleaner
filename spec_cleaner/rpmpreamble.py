@@ -85,6 +85,8 @@ class RpmPreamble(Section):
         self.perl = options['perl']
         self.cmake = options['cmake']
         self.tex = options['tex']
+        # names of the macros that take arguments, for the dependency parser
+        self.macros_with_arg = options['macros_with_arg']
         # are we supposed to keep empty lines intact?
         self.keep_space = options['keep_space']
         # do we want to remove groups from the specfile?
@@ -442,7 +444,7 @@ class RpmPreamble(Section):
             return [value]
         dependencies, trailing_comment = self._split_trailing_comment(value)
         try:
-            tokens = DependencyParser(dependencies).flat_out()
+            tokens = DependencyParser(dependencies, self.macros_with_arg).flat_out()
         except (DepParserError, NoMatchExceptionError):
             # keep a value we cannot parse as it is instead of crashing on it
             return [value]

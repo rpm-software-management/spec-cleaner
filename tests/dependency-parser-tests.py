@@ -56,3 +56,50 @@ class TestDependencyParser:
     def test_escaped_percent_stays_in_token(self):
         """Test that a literal %% is not mistaken for the start of a macro."""
         assert DependencyParser('a%%b').parsed == [('a%%b', None, None)]
+
+    @pytest.mark.parametrize(
+        'line, expected',
+        [
+            # the gcc shape: the invocation and its argument are one dependency
+            (
+                '%selfconflict libgcc_s%{libgcc_s}',
+                [('%selfconflict libgcc_s%{libgcc_s}', None, None)],
+            ),
+            (
+                '%selfconflict libgcc_s%{libgcc_s}-32bit',
+                [('%selfconflict libgcc_s%{libgcc_s}-32bit', None, None)],
+            ),
+            # the invocation takes a whole argument list
+            ('%selfconflict liba libb', [('%selfconflict liba libb', None, None)]),
+            # an invocation in the middle of the line, ending it
+            (
+                'foo %selfconflict bar',
+                [('foo', None, None), ('%selfconflict bar', None, None)],
+            ),
+            # a comma ends the invocation and starts the next dependency
+            (
+                '%selfconflict liba, %selfconflict libb',
+                [('%selfconflict liba', None, None), ('%selfconflict libb', None, None)],
+            ),
+            (
+                '%selfconflict bar, foo',
+                [('%selfconflict bar', None, None), ('foo', None, None)],
+            ),
+            # an operator ends the invocation: the relation belongs to the
+            # dependency the invocation expands to
+            ('%selfconflict bar >= 1.0', [('%selfconflict bar', '>=', '1.0')]),
+            # an invocation without arguments stays a single dependency
+            ('%selfconflict', [('%selfconflict', None, None)]),
+            # a macro that is not known to take arguments still splits
+            ('%otherlib liba', [('%otherlib', None, None), ('liba', None, None)]),
+        ],
+    )
+    def test_macro_with_arguments(self, line, expected):
+        """Test that an invocation of a macro that takes arguments stays one dependency."""
+        assert DependencyParser(line, macros_with_arg=['selfconflict']).parsed == expected
+
+    def test_braced_macro_with_arguments(self):
+        """Test that a braced macro invocation is one dependency with no name list."""
+        assert DependencyParser('%{python_module foo}').parsed == [
+            ('%{python_module foo}', None, None)
+        ]
