@@ -2,6 +2,9 @@
 %bcond_without  foo
 %if 0%{?suse_version}
 %bcond bar %{with foo}
+%if %{with foo}
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+%endif
 %endif
 Name:           bcond-nested-flag-leak
 Version:        1.0

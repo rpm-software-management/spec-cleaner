@@ -1052,7 +1052,12 @@ class RpmPreamble(Section):
         for _category, regexp in self.category_to_clean.items():
             match = regexp.match(line)
             if match:
-                self._drop_pending_comments()
+                # Minimal mode keeps BuildRoot: as written; the full run
+                # removes the obsolete tag.
+                if _category == 'buildroot' and self.minimal:
+                    self._add_line_to('buildroot', line)
+                else:
+                    self._drop_pending_comments()
                 return True
 
         # simple matching

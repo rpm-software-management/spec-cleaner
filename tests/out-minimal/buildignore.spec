@@ -9,5 +9,6 @@ BuildConflicts: pkgconfig(aa) >= 1.0
 #!BuildIgnore:  xml-commons
 #!BuildIgnore:  xml-commons-apis
 #!BuildIgnore:  xml-commons-resolver
+BuildRoot: bla
 
 %changelog
