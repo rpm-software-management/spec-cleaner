@@ -44,7 +44,7 @@ for i in ${MYSPECFILES}; do
         echo "WARNING: spec file \"${i}\" is not writable."
         continue
     fi
-    /usr/bin/spec-cleaner -m -f "$i" -i > /dev/null 2>&1
+    /usr/bin/spec-cleaner -m --suse-copyright -f "$i" -i > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo "ERROR: failed conversion of spec file: \"${i}\""
         RETVAL=1
