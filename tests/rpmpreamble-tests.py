@@ -298,3 +298,96 @@ class TestRpmPreamble:
             '#!BuildRequires: foo [x86_64] >= 1.0',
             '#!BuildRequires: nospace[x86_64]',
         ]
+
+
+class TestRpmPreambleOrder:
+    """We run few tests to ensure minimal mode keeps the preamble order."""
+
+    @pytest.fixture(params=[False, True], ids=['full', 'minimal'])
+    def preamble_mode(self, tmp_path, request):
+        """Create a preamble section, in a full and in a minimal run."""
+        specfile = tmp_path / 'test.spec'
+        specfile.write_text('Name: test\n')
+        options = {
+            'specfile': str(specfile),
+            'output': str(tmp_path / 'out.spec'),
+            'pkgconfig': False,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': request.param,
+            'no_curlification': False,
+            'suse_copyright': False,
+            'copyright_year': 2013,
+            'remove_groups': False,
+            'tex': False,
+            'perl': False,
+            'cmake': False,
+            'keep_space': False,
+        }
+        return RpmPreamble(RpmSpecCleaner(options).options)
+
+    SCRAMBLED = [
+        'Requires:       zzz-package',
+        '%define mydef 1',
+        'Name:           scramble',
+        'BuildRequires:  zlib-devel',
+        'Version:        1.0',
+        'Release:        0',
+        'Summary:        Scramble test',
+        'License:        MIT',
+        '%if %{with foo}',
+        '%define incond 1',
+        '%endif',
+        'Source0:        scramble.tar.gz',
+        '%bcond_with foo',
+    ]
+
+    @staticmethod
+    def _flatten(preamble, lines):
+        for line in lines:
+            preamble.add(line)
+        return preamble.paragraph.flatten_output()
+
+    def test_preserves_source_order(self, preamble_mode):
+        """Test that minimal mode emits the preamble in source order."""
+        if not preamble_mode.minimal:
+            pytest.skip('source order is a minimal mode property')
+        assert self._flatten(preamble_mode, self.SCRAMBLED) == self.SCRAMBLED
+
+    def test_full_mode_reorders(self, preamble_mode):
+        """Test that a full run still emits the canonical category order."""
+        if preamble_mode.minimal:
+            pytest.skip('canonical order is a full run property')
+        assert self._flatten(preamble_mode, self.SCRAMBLED) == [
+            '%define mydef 1',
+            '%bcond_with foo',
+            '%if %{with foo}',
+            '%define incond 1',
+            '%endif',
+            'Name:           scramble',
+            'Version:        1.0',
+            'Release:        0',
+            'Summary:        Scramble test',
+            'License:        MIT',
+            'Source0:        scramble.tar.gz',
+            'BuildRequires:  zlib-devel',
+            'Requires:       zzz-package',
+        ]
+
+    def test_minimal_block_below_name_stays(self, preamble_mode):
+        """Test that a block defining subpackages stays below the Name tag."""
+        if not preamble_mode.minimal:
+            pytest.skip('source order is a minimal mode property')
+        lines = [
+            'Name:           blocktest',
+            'Version:        1.0',
+            'Release:        0',
+            'Summary:        Block test',
+            'License:        MIT',
+            '%if %{with python}',
+            '%define python_subpackage_only 1',
+            '%python_subpackages',
+            '%endif',
+        ]
+        assert self._flatten(preamble_mode, lines) == lines

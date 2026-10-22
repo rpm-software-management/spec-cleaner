@@ -23,8 +23,8 @@ Obsoletes:      libcap-devel-32bit
 Requires:       weirddep
 # bug437293
 %ifarch ppc64
-BuildRequires:  somethinghandwritten
 Obsoletes:      libcap-devel-64bit
+BuildRequires:  somethinghandwritten
 %endif
 
 %changelog

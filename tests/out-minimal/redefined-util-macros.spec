@@ -1,10 +1,10 @@
-%define __make make -j4
-%global __python3 %{_bindir}/python3.11
 %bcond_with clang
 %if %{with clang}
 %define __cc clang
 %define __cxx clang++
 %endif
+%define __make make -j4
+%global __python3 %{_bindir}/python3.11
 Name:           foo
 Version:        1.0
 Release:        0

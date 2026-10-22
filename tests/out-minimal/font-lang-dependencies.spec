@@ -6,8 +6,8 @@ Summary:        Test
 License:        MIT
 Requires:       font(:lang=en)
 Requires:       font(:lang=ja) >= 1
-Supplements:    font(:lang=de) = 2.0
 Provides:       font(:lang=cs)
+Supplements:    font(:lang=de) = 2.0
 
 %description
 Test.

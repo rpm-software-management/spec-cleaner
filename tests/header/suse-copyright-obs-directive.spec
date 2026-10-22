@@ -16,6 +16,7 @@
 #
 
 
+#!BuildIgnore:  post-build-checks
 # Run the test suite by default
 %bcond_without tests
 Name:           suse-copyright-obs-directive
@@ -24,7 +25,6 @@ Release:        0
 Summary:        Keep OBS directives placed right below the header
 License:        MIT
 BuildRequires:  gcc
-#!BuildIgnore:  post-build-checks
 
 %description
 The #!BuildIgnore directive below the header survives the header regeneration.

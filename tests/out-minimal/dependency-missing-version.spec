@@ -4,9 +4,9 @@ Version:        1
 Release:        0
 Summary:        Test
 License:        MIT
-BuildRequires:  baz >=
-Requires:       bar
 Requires:       foo >,
+Requires:       bar
+BuildRequires:  baz >=
 
 %description
 Test.

@@ -13,22 +13,21 @@ Group:          Productivity/Networking/Security
 Source0:        apparmor-%{version}.tar.gz
 Source1:        apparmor-%{version}.tar.gz.asc
 Source2:        %{name}.keyring
-BuildRequires:  bbb
-BuildRequires:  pkgconfig
-BuildRequires:  python
-Requires:       insserv
-BuildRoot: %{_tmppath}/%{name}-%{version}-build
 %if %{distro} == "suse"
 PreReq:         %{insserv_prereq}
 PreReq:         aaa_base
 %endif
+BuildRequires:  pkgconfig
+BuildRequires:  python
 %{if %{with editor}}
-BuildRequires:  gcc-c++
-BuildRequires:  update-desktop-files
 %ifarch ppc64
 Requires:       naughty-stuff
 %endif # test commentary
+BuildRequires:  gcc-c++
+BuildRequires:  update-desktop-files
 %endif
+BuildRequires:  bbb
+Requires:       insserv
 %if (0%{?suse_version} && 0%{?suse_version} >= 1210)
 Requires:       wine
 %endif
@@ -38,5 +37,6 @@ Requires:       other
 %if (0%{?sle_version} == 120100 && 0%{?is_opensuse} == 0) || 0%{?suse_version} == 1310
 Requires:       something
 %endif
+BuildRoot: %{_tmppath}/%{name}-%{version}-build
 
 %changelog

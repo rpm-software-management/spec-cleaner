@@ -4,13 +4,13 @@ Version:        1
 Release:        0
 Summary:        Test
 License:        MIT
-BuildRequires:  foo %{!?bar:>= 1}
-BuildRequires:  foo %{?!bar:>= 1}
-BuildRequires:  foo %{??bar:>= 1}
 BuildRequires:  foo %{?bar:>= 1}
+BuildRequires:  foo %{??bar:>= 1}
+BuildRequires:  foo %{?!bar:>= 1}
+BuildRequires:  foo %{!?bar:>= 1}
 BuildRequires:  foo %{?bar:>=1}
-Requires:       bar %{?baz:>= 1}
 Requires:       foo
+Requires:       bar %{?baz:>= 1}
 
 %description
 Test.

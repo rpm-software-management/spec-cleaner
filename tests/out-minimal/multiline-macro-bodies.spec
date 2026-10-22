@@ -1,4 +1,9 @@
 # A lua or shell macro body left open continues on the next lines
+Name:           multiline-macro-bodies
+Version:        1.0
+Release:        0
+Summary:        Test
+License:        MIT
 %define luafoo %{lua:
 print("1")
 }
@@ -9,11 +14,6 @@ print("1")
 print("3")
 }
 }
-Name:           multiline-macro-bodies
-Version:        1.0
-Release:        0
-Summary:        Test
-License:        MIT
 Provides:       foo = %{luafoo}
 Provides:       bar = %{shfoo}
 

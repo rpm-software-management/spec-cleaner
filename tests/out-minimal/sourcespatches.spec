@@ -1,19 +1,19 @@
 
 
-%define root %version
-%global test somethingelse
+Source15:       anothersource.tar.xz
 %if 0%{?suse_version} > 1230
 %bcond_without systemd
 %else
 %bcond_with    systemd
 %endif
-%bcond_with self_hosting
 Source:         testfile.tar.bz2
-Source2:        testfile2.tar.bz2
-Source15:       anothersource.tar.xz
 # This patch is improperly described but we are okay with it
 Patch10:        test2
+%bcond_with self_hosting
+Source2:        testfile2.tar.bz2
 Patch:          test
+%define root %version
+%global test somethingelse
 
 %prep
 %autosetup -p0

@@ -3,16 +3,16 @@ Version:        1.0
 Release:        0
 Summary:        pkgconfig insertion happens per preamble
 License:        MIT
-BuildRequires:  pkgconfig
 BuildRequires:  pkgconfig(474module)
+BuildRequires:  pkgconfig
 
 %description
 Main preamble.
 
 %package sub
 Summary:        Sub package
-BuildRequires:  pkgconfig
 BuildRequires:  pkgconfig(474submodule)
+BuildRequires:  pkgconfig
 
 %description sub
 Sub preamble with its own pkgconfig() dependency and no declaration

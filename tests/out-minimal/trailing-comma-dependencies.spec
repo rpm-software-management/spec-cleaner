@@ -6,8 +6,8 @@ Summary:        Test
 License:        MIT
 BuildRequires:  qux >= 2
 Requires:       bar
-Requires:       baz = 3
 Requires:       foo >= 1.0
+Requires:       baz = 3
 Requires:       quux
 
 %description
