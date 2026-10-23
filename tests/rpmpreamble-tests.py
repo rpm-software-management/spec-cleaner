@@ -246,6 +246,42 @@ class TestRpmPreamble:
             '#!BuildConflicts: %{?with_x:oldpkg}'
         ]
 
+    def test_dep_pragma_unbraced_conditional_entries(self, preamble):
+        """Test that entries with unbraced conditional macros stay pragmas."""
+        preamble.add('#!BuildRequires: %?foo')
+        preamble.add('#!BuildRequires: %!?foo')
+        preamble.add('#!BuildRequires: plainpkg %?bar')
+        preamble.add('#!BuildConflicts: %?oldpkg')
+        items = preamble.paragraph.items
+        assert [str(item) for item in items['buildrequires']] == ['BuildRequires:  plainpkg']
+        assert [str(item) for item in items['buildrequires_pragma']] == [
+            '#!BuildRequires: %?foo',
+            '#!BuildRequires: %!?foo',
+            '#!BuildRequires: %?bar',
+        ]
+        assert items['buildconflicts'] == []
+        assert [str(item) for item in items['buildconflicts_pragma']] == [
+            '#!BuildConflicts: %?oldpkg'
+        ]
+
+    def test_dep_pragma_comment_on_both_split_lines(self, preamble):
+        """Test that a trailing comment is kept on both lines of a plain+qualified split."""
+        preamble.add('#!BuildConflicts: mixold mixq [i586] # legacy combo')
+        preamble.add('#!BuildRequires: plainpkg %?bar # needed sometimes')
+        items = preamble.paragraph.items
+        assert [str(item) for item in items['buildconflicts']] == [
+            'BuildConflicts: mixold # legacy combo'
+        ]
+        assert [str(item) for item in items['buildconflicts_pragma']] == [
+            '#!BuildConflicts: mixq [i586] # legacy combo'
+        ]
+        assert [str(item) for item in items['buildrequires']] == [
+            'BuildRequires:  plainpkg # needed sometimes'
+        ]
+        assert [str(item) for item in items['buildrequires_pragma']] == [
+            '#!BuildRequires: %?bar # needed sometimes'
+        ]
+
     def test_dep_pragma_malformed_entries(self, preamble):
         """Test that malformed dep pragma values do not split into tags rpm rejects."""
         split = preamble._split_dep_pragma_entries

@@ -21,6 +21,8 @@ BuildRequires: zsh
 #!BuildRequires:  nospace[x86_64]
 #!BuildRequires:  %{?with_x:condpkg} plainmate
 #!BuildRequires:  %{!?with_bootstrap:bootstrapthing}
+#!BuildRequires:  %?foo
+#!BuildRequires:  %!?bar
 #!BuildIgnore:  neverconvert
 %if %{with bootstrap}
 #!BuildRequires:  stringtemplate4-bootstrap
