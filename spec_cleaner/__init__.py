@@ -36,7 +36,8 @@ def process_args(argv: list[str]) -> dict[str, Any]:
         prog='spec-cleaner',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='Cleans the given spec file according to style guide and returns the result. If "#nospeccleaner"'
-        'tag is used in the spec file than the spec file will not be cleaned.',
+        'tag is used in the spec file than the spec file will not be cleaned. A spec file whose header comment'
+        'block declares it auto generated will not be cleaned either.',
     )
 
     # Make the -d, -i, and -o exclusive as we can do only one of those
