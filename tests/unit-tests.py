@@ -525,6 +525,12 @@ class TestSuseCopyrightRecognition:
             '# Copyright (c) 2022 SUSE Software Solutions Germany GmbH, Nuernberg, Germany.',
             '# Copyright (c) 2015 LISA GmbH, Bingen, Germany.',
             '# Copyright (c) 2020 John Doe <john@example.com>',
+            '# Copyright (c) 2020 SUSE LLC, IBM',
+            '# Copyright (c) 2020 SUSE LLC, SAP',
+            '# Copyright (c) 2020 SUSE LLC, Intel',
+            '# Copyright (c) 2020 SUSE LLC, 3M',
+            '# Copyright (c) 2020 SUSE LLC, LinuxLab',
+            '# Copyright (c) 2020 SUSE LLC, B2B',
         ],
     )
     def test_other_holder_lines(self, section, line):
@@ -540,3 +546,8 @@ class TestSuseCopyrightRecognition:
         """An attribution naming SUSE stays a third-party copyright."""
         section.add('# Copyright (c) 2022 Bernhard M. Wiedemann / SUSE LLC')
         assert section.copyrights == ['# Copyright (c) 2022 Bernhard M. Wiedemann / SUSE LLC']
+
+    def test_add_keeps_joint_holder_line(self, section):
+        """A line naming SUSE and another holder stays a third-party copyright."""
+        section.add('# Copyright (c) 2020 SUSE LLC, IBM')
+        assert section.copyrights == ['# Copyright (c) 2020 SUSE LLC, IBM']

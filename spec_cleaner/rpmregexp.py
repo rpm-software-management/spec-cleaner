@@ -271,11 +271,14 @@ class Regexp:
     # contributors') and legacy ('SUSE LINUX Products GmbH', 'SUSE Linux
     # AG', the Nuernberg/Nuremberg spellings). RpmCopyright strips these
     # from a copyright line and treats the line as a SUSE holder line
-    # when nothing of substance remains, the rule the Perl
-    # format_spec_file uses.
+    # when nothing remains, the rule the Perl format_spec_file uses.
+    # The alternatives match whole words only: a holder word that merely
+    # contains one of them, or digits inside a holder name, are never
+    # stripped, so a line naming another holder alongside SUSE keeps
+    # that holder in its remainder.
     re_suse_copyright_boilerplate = re.compile(
-        r'\s*(?:\d+|copyrights?|\(c\)|suse|llc|contributors|linux|products|'
-        r'gmbh|nuremberg|n..?rnberg|germany|\W+)\s*',
+        r'\s*(?:\b\d+\b|\(c\)|\b(?:copyrights?|suse|llc|and|ag|contributors|'
+        r'linux|products|gmbh|nuremberg|germany)\b|\bn..?rnberg\b|\W+)\s*',
         re.IGNORECASE,
     )
     re_rootforbuild = re.compile(r'^#\s*needsrootforbuild\s*$', re.IGNORECASE)
