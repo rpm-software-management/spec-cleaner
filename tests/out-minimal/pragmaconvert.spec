@@ -2,6 +2,8 @@ Name:           pragmaconvert
 Version:        1.0
 BuildRequires:  aaa
 BuildRequires:  zsh
+#!BuildRequires: %!?bar
+#!BuildRequires: %?foo
 #!BuildRequires: %{!?with_bootstrap:bootstrapthing}
 #!BuildRequires: %{?with_x:condpkg}
 #!BuildRequires: %{base_name}-bootstrap

@@ -745,7 +745,7 @@ class RpmPreamble(Section):
             # a conditional macro may expand to nothing, which rpm rejects
             # as an empty tag once the entry is a plain tag, so the entry
             # stays a pragma entry like a qualified one
-            if is_qualified or '%{?' in text or '%{!?' in text:
+            if is_qualified or '%{?' in text or '%{!?' in text or '%?' in text or '%!?' in text:
                 qualified.append(text)
             else:
                 plain.append(text)
@@ -758,7 +758,7 @@ class RpmPreamble(Section):
             # a qualified entry has no plain rpm form: it stays a pragma
             # entry and takes the pragma category, which keeps it whole
             remainder = ' '.join(qualified)
-            if not plain and trailing_comment:
+            if trailing_comment:
                 remainder = f'{remainder} {trailing_comment}'
             self._add_line_value_to(pragma_category, remainder)
         return True

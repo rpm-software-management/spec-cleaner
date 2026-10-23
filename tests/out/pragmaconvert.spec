@@ -13,6 +13,8 @@ BuildRequires:  pkgconfig
 BuildRequires:  plainmate
 BuildRequires:  single
 BuildRequires:  zsh
+#!BuildRequires: %!?bar
+#!BuildRequires: %?foo
 #!BuildRequires: %{!?with_bootstrap:bootstrapthing}
 #!BuildRequires: %{?with_x:condpkg}
 #!BuildRequires: (foo or bar)
@@ -25,7 +27,7 @@ BuildRequires:  zsh
 BuildConflicts: mixold # legacy combo
 BuildConflicts: oldthing
 BuildConflicts: rpmlint-mini < 2.9
-#!BuildConflicts: mixq [i586]
+#!BuildConflicts: mixq [i586] # legacy combo
 #!BuildIgnore:  neverconvert
 %if %{with bootstrap}
 BuildRequires:  stringtemplate4-bootstrap
