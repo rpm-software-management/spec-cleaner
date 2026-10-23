@@ -40,6 +40,16 @@ class _TrackedList(list):
     The owner records the order in which elements were first added to
     any bucket; minimal mode uses that order to emit the preamble in
     source order instead of the canonical category order.
+
+    Only the additions are instrumented: construction from an iterable,
+    append, extend, += and insert report the elements they store —
+    except a group rebuilt from recorded members, which construction
+    leaves unrecorded so that it resolves through its earliest member.
+    The list is append-only for ordering purposes — no other mutator
+    (item assignment, pop, remove, sort, ...) reports anything, and no
+    mutation updates a position once recorded. Mutating a stored group
+    in place does not record the lines it gains, and the position the
+    group resolves to does not change.
     """
 
     def __init__(self, owner, iterable=()):
@@ -47,6 +57,13 @@ class _TrackedList(list):
         super().__init__(iterable)
         self._owner = owner
         for element in self:
+            # A group rebuilt from recorded members carries no position
+            # of its own: the deduplication returns its buckets through
+            # this wrapping, and a rebuilt group (merged comments of a
+            # dropped duplicate) resolves through its earliest member
+            # instead of the position of the rebuild.
+            if isinstance(element, list) and owner._has_recorded_member(element):
+                continue
             owner._record_position(element)
 
     def append(self, element):
@@ -61,7 +78,7 @@ class _TrackedList(list):
             self._owner._record_position(element)
         super().extend(elements)
 
-    def __iadd__(self, elements):
+    def __iadd__(self, elements):  # type: ignore[misc]
         """Append all the elements, reporting them to the owner."""
         self.extend(elements)
         return self
@@ -272,6 +289,17 @@ class RpmPreambleElements:
             self._recorded.append(item)
             if isinstance(item, list):
                 stack.extend(item)
+
+    def _has_recorded_member(self, group):
+        """Check whether any member of the group has a recorded position."""
+        stack = list(group)
+        while stack:
+            item = stack.pop()
+            if id(item) in self._positions:
+                return True
+            if isinstance(item, list):
+                stack.extend(item)
+        return False
 
     def _element_position(self, element):
         """
@@ -797,7 +825,9 @@ class RpmPreambleElements:
                 last = position
             positioned.append((position, category, group))
         # the sort is stable: elements sharing a position (the inserted
-        # pkgconfig declaration shares its anchor's) keep gathering order
+        # pkgconfig declaration shares its anchor's) keep gathering order;
+        # an element whose position is still None stood at the head,
+        # before every recorded element, so it sorts first
         positioned.sort(key=lambda item: -1 if item[0] is None else item[0])
         seen = set()
         lines = []

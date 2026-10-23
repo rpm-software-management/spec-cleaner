@@ -7,9 +7,9 @@ Name:           buildsuffix
 #!BuildConflicts: rpmlint-mini < 2.9 [i586]
 #!BuildConflicts: libacl-devel
 #!BuildConflicts: pkg-config
-BuildRequires:  compiler
 # needed in the build root before anything else
 # also stated by the bootstrap section below
 #!BuildRequires: dupthing [i586]
+BuildRequires:  compiler
 
 %changelog
