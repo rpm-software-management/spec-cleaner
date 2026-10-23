@@ -1,13 +1,13 @@
 %build
 # local install
-python scons/scons.py PREFIX=%{_prefix}/local
+python scons/scons.py PREFIX=/usr/local
 # more complicated case
-python scons/scons.py PREFIX=%{_libexecdir}/test/usr
+python scons/scons.py PREFIX=/usr/libexec/test/usr
 # with spaces
-python scons/scons.py PREFIX=%{_prefix} blah
+python scons/scons.py PREFIX=/usr blah
 # ending with newline
-python scons/scons.py PREFIX=%{_prefix}
+python scons/scons.py PREFIX=/usr
 # just ending
-python scons/scons.py PREFIX=%{_prefix}
+python scons/scons.py PREFIX=/usr
 
 %changelog

@@ -47,7 +47,7 @@ Patch05:        somepatch.patch
 
 %build
 ### COMMON-CONFIG-BEGIN ###
-export PATH=$PATH:/sbin:%{_sbindir}
+export PATH=$PATH:/sbin:%{_prefix}/sbin
 sed -ie "s/%{device_mapper_version}/1.03.01/g" VERSION_DM
 %configure \
     --enable-dmeventd --enable-cmdlib \

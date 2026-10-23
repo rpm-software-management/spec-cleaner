@@ -168,7 +168,8 @@ class Section:
                 line = self.embrace_macros(line)
             line = self.replace_buildroot(line)
             line = self.replace_optflags(line)
-            line = self.replace_known_dirs(line)
+            if not self.minimal:
+                line = self.replace_known_dirs(line)
             line = self.replace_utils(line)
             line = self.replace_buildservice(line)
             if not self.minimal:

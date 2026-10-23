@@ -27,7 +27,7 @@ New modules include: - mod_auth_db
 Mod_ssl is no longer a separate package, but is now included in the
 Apache distribution.
 
-See %{_docdir}/apache2/, http://httpd.apache.org/, and
+See /usr/share/doc/packages/apache2/, http://httpd.apache.org/, and
 http://httpd.apache.org/docs-2.2/upgrading.html.
 
 %if %worker
@@ -44,7 +44,7 @@ Summary:        Apache 2 "prefork" MPM (Multi-Processing Module)
 Group:          Productivity/Networking/Web/Servers
 Provides:       %{pname}-MPM
 %if 0%{?suse_version} >= 901 && 0%{?sles_version} != 9
-Provides:       apache:%{_sbindir}/httpd
+Provides:       apache:/usr/sbin/httpd
 %endif
 Requires:       %{name} = %{version}
 %endif

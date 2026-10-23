@@ -195,8 +195,8 @@ rm %{buildroot}%{_libdir}/lib*.la
 rm %{buildroot}/%{_libdir}/libpng*.la
 rm %{buildroot}/%{_libdir}/lksctp-tools/*.la
 rm %{buildroot}%{_libdir}/pidgin/*.la
-rm %{buildroot}/%{_libdir}/lib*.la
-rm %{buildroot}%{_libdir}/*.la
+rm %{buildroot}/%{_prefix}/%{_lib}/lib*.la
+rm %{buildroot}/usr/%_lib/*.la
 rm -rv %{buildroot}%{_libdir}/*.la
 rm -v %{buildroot}/%{_libdir}/*.la
 rm -v %{buildroot}%{_libdir}/*.la

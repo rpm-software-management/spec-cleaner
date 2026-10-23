@@ -2,6 +2,6 @@
 %postun -p /sbin/ldconfig
 
 %files
-%{_bindir}/a
+/usr/bin/a
 
 %changelog

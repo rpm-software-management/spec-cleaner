@@ -3,7 +3,8 @@
 # It makes sure that the spec file follows the guidelines of openSUSE.
 #
 # Only the macros that more than one known directory rewrite depends on are
-# redefined here, so those rewrites stay off while the rest keep running.
+# redefined here, so in the full run those rewrites stay off while the rest
+# keep running.
 #
 %define _prefix /usr
 %define _exec_prefix %{_prefix}

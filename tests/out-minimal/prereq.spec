@@ -8,7 +8,7 @@ PreReq:         uglyline1
 PreReq:         uglyline2
 PreReq:         /bin/rm
 PreReq:         /bin/mkdir
-PreReq:         %{_bindir}/chroot
+PreReq:         /usr/bin/chroot
 PreReq:         %fillup_prereq
 PreReq:         %insserv_prereq
 Requires(postun): somethingcrazy
