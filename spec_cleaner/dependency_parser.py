@@ -219,11 +219,15 @@ class DependencyParser:
         self.token = []
         return r
 
+    def _is_macro_with_arg(self, chunk):
+        """Check whether a chunk invokes a macro that takes arguments."""
+        match = re.match(r'%[?]?([A-Za-z0-9_]+)$', chunk)
+        return bool(match) and match.group(1) in self.macros_with_arg
+
     def _is_macro_with_arg_invocation(self):
         """Check whether the token being built invokes a macro that takes arguments."""
         first = next((chunk for chunk in self.token if chunk), '')
-        match = re.match(r'%[?]?([A-Za-z0-9_]+)$', first)
-        return bool(match) and match.group(1) in self.macros_with_arg
+        return self._is_macro_with_arg(first)
 
     def name_state_change(self):
         """Check name of next token."""
@@ -240,8 +244,13 @@ class DependencyParser:
         if self.next_type in ['text', 'macro']:
             if self.space:
                 # a macro that takes arguments takes the words after it as
-                # its arguments, so they stay part of the same dependency
-                if not self.comma and self._is_macro_with_arg_invocation():
+                # its arguments, so they stay part of the same dependency;
+                # a word that invokes such a macro itself starts a new one
+                if (
+                    not self.comma
+                    and self._is_macro_with_arg_invocation()
+                    and not self._is_macro_with_arg(self.next)
+                ):
                     self.token.append(' ' + self.next)
                     self.space = False
                     return

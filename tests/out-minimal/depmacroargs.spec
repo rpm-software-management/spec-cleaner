@@ -10,7 +10,9 @@ BuildRequires:  pkg2
 BuildRequires:  pkg3
 Requires:       %plainmacro
 Requires:       foo
+Conflicts:      %selfconflict liba
 Conflicts:      %selfconflict liba libb
+Conflicts:      %selfconflict libb
 Conflicts:      %selfconflict libgcc_s%{libgcc_s}
 Conflicts:      %selfconflict libgcc_s%{libgcc_s}-32bit
 
