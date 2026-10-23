@@ -89,6 +89,83 @@ class TestRpmPreambleElementsOrder:
         assert minimal_elements._element_position(rebuilt) == 0
         assert minimal_elements._element_position('Requires:       unknown') is None
 
+    def test_rebuilt_group_assigned_to_bucket_resolves_through_members(self, minimal_elements):
+        """Test that a rebuilt group assigned to a bucket gets no own position."""
+        group = ['# note', 'Requires:       something']
+        minimal_elements.items['requires'].append(group)
+        minimal_elements.items['requires'].append('Requires:       other')
+        rebuilt = ['# note', '# other note', 'Requires:       something']
+        minimal_elements.items['misc'] = [rebuilt]
+        assert minimal_elements._element_position(rebuilt) == 0
+        assert minimal_elements._element_position('Requires:       other') == 1
+
+    def test_has_recorded_member_through_nested_list(self, minimal_elements):
+        """Test that a rebuilt group is detected through a member in a nested list."""
+        recorded = 'Requires:       recorded'
+        minimal_elements.items['requires'].append(recorded)
+        nested = ['Requires:       inner', recorded]
+        rebuilt = ['Requires:       outer', nested]
+        # the recorded member is found only by descending into the nested list
+        assert minimal_elements._has_recorded_member(rebuilt) is True
+        # so the rebuilt group gets no own position and resolves through it,
+        # and the element gathered after it takes the next position
+        minimal_elements.items['misc'] = [rebuilt]
+        following = 'Misc:           following'
+        minimal_elements.items['misc'].append(following)
+        assert minimal_elements._element_position(rebuilt) == 0
+        assert minimal_elements._element_position(following) == 1
+
+    def test_has_recorded_member_with_only_unrecorded_nested_members(self, minimal_elements):
+        """Test that a group with nothing recorded in its nested list is recorded itself."""
+        nested = ['Requires:       inner one', 'Requires:       inner two']
+        group = ['Requires:       outer', nested]
+        # the walk descends into the nested list and still finds nothing
+        assert minimal_elements._has_recorded_member(group) is False
+        # so the group is recorded with its own position, nested list included
+        minimal_elements.items['misc'] = [group]
+        following = 'Misc:           following'
+        minimal_elements.items['misc'].append(following)
+        assert minimal_elements._element_position(group) == 0
+        assert minimal_elements._element_position(nested) == 0
+        assert minimal_elements._element_position(following) == 1
+
+    def test_flatten_after_duplicate_absorb_keeps_source_order(self, minimal_elements):
+        """Test that a group absorbing a duplicate's comments stays in place."""
+        line = "BuildRequires:  %(rpm -q --queryformat '%{VERSION}' dup)"
+        minimal_elements.items['buildrequires'].append(['# first comment', line])
+        minimal_elements.items['buildrequires'].append([line])
+        minimal_elements.items['requires'].append('Requires:       zzz-last')
+        assert minimal_elements.flatten_output() == [
+            '# first comment',
+            line,
+            'Requires:       zzz-last',
+        ]
+
+    def test_flatten_after_repeated_duplicate_absorbs_keeps_source_order(self, minimal_elements):
+        """Test that repeated absorbs of one line keep its first position."""
+        line = "BuildRequires:  %(rpm -q --queryformat '%{VERSION}' dup)"
+        minimal_elements.items['buildrequires'].append(['# first comment', line])
+        minimal_elements.items['buildrequires'].append(['# second comment', line])
+        minimal_elements.items['buildrequires'].append([line])
+        minimal_elements.items['requires'].append('Requires:       zzz-last')
+        assert minimal_elements.flatten_output() == [
+            '# first comment',
+            '# second comment',
+            line,
+            'Requires:       zzz-last',
+        ]
+
+    def test_flatten_after_duplicate_without_comments_keeps_source_order(self, minimal_elements):
+        """Test that duplicates without comments to merge stay in place."""
+        line = "BuildRequires:  %(rpm -q --queryformat '%{VERSION}' dup)"
+        minimal_elements.items['buildrequires'].append([line])
+        minimal_elements.items['buildrequires'].append([line])
+        minimal_elements.items['requires'].append('Requires:       zzz-last')
+        assert minimal_elements.flatten_output() == [
+            line,
+            'Requires:       zzz-last',
+        ]
+
     def test_flatten_in_source_order_with_unrecorded(self, minimal_elements):
         """Test that an unrecorded element inherits the previous position."""
         minimal_elements.items['name'].append('Name:           test')
