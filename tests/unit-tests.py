@@ -484,3 +484,59 @@ class TestMacrosWithArg:
         with open(options['specfile'], 'a', encoding='utf-8') as spec:
             spec.write('%define plainmacro plainvalue\n')
         assert 'plainmacro' not in RpmSpecCleaner(options).options['macros_with_arg']
+
+
+class TestSuseCopyrightRecognition:
+    """Unit tests for RpmCopyright._is_suse_copyright."""
+
+    @pytest.fixture
+    def section(self, default_options):
+        """Create a copyright section with the SUSE copyright enabled."""
+        options = RpmSpecCleaner(default_options(suse_copyright=True)).options
+        return RpmCopyright(options)
+
+    @pytest.mark.parametrize(
+        'line',
+        [
+            '# Copyright (c) 2026 SUSE LLC and contributors',
+            '# Copyright (c) 2020 SUSE LLC',
+            '# Copyright SUSE LLC',
+            '# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.',
+            '# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.',
+            '# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuremberg, Germany.',
+            '# Copyright (c) 2015 SUSE LINUX GmbH, Nuernberg, Germany',
+            '# Copyright (c) 2005 SUSE Linux AG, Nuernberg, Germany.',
+            '# Copyright 2019 SUSE LINUX GmbH, Nuernberg, Germany.',
+            '# Copyright (c) 2019-2024 SUSE LINUX GmbH, Nuernberg, Germany.',
+            '# Copyright (c) 2018, 2020 SUSE LINUX GmbH, Nuernberg, Germany.',
+        ],
+    )
+    def test_suse_holder_lines(self, section, line):
+        """Current and legacy SUSE holder lines are SUSE copyrights."""
+        assert section._is_suse_copyright(line) is True
+
+    @pytest.mark.parametrize(
+        'line',
+        [
+            '# Copyright (c) 2022 Bernhard M. Wiedemann / SUSE LLC',
+            '# Copyright (c) Peter Linnell and 2010 SUSE LINUX Products GmbH, Nuernberg, Germany.',
+            '# Copyright (c) specCURRENT_YEAR SUSE LINUX GmbH, Nuernberg, Germany.',
+            '# Copyright (c) 2021 SUSE Software Solutions GmbH',
+            '# Copyright (c) 2022 SUSE Software Solutions Germany GmbH, Nuernberg, Germany.',
+            '# Copyright (c) 2015 LISA GmbH, Bingen, Germany.',
+            '# Copyright (c) 2020 John Doe <john@example.com>',
+        ],
+    )
+    def test_other_holder_lines(self, section, line):
+        """Lines naming another holder are not SUSE copyrights."""
+        assert section._is_suse_copyright(line) is False
+
+    def test_add_drops_legacy_holder_line(self, section):
+        """A legacy holder line converts: it is not kept as a copyright."""
+        section.add('# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuremberg, Germany.')
+        assert section.copyrights == []
+
+    def test_add_keeps_attribution_line(self, section):
+        """An attribution naming SUSE stays a third-party copyright."""
+        section.add('# Copyright (c) 2022 Bernhard M. Wiedemann / SUSE LLC')
+        assert section.copyrights == ['# Copyright (c) 2022 Bernhard M. Wiedemann / SUSE LLC']

@@ -73,6 +73,22 @@ class RpmCopyright(Section):
         if self.vimmodeline:
             self.lines.append(self.vimmodeline)
 
+    def _is_suse_copyright(self, line: str) -> bool:
+        """
+        Decide whether a copyright line is a SUSE holder line.
+
+        The line counts when removing the copyright boilerplate and the
+        SUSE holder words leaves nothing of substance behind. Legacy
+        holder forms (SUSE LINUX Products GmbH, SUSE Linux AG, the
+        Nuremberg spelling, a missing trailing period) therefore
+        convert to the canonical line, while a line naming another
+        holder alongside SUSE stays a third-party copyright.
+        """
+        if 'suse' not in line.lower():
+            return False
+        remainder = self.reg.re_suse_copyright_boilerplate.sub('', line)
+        return len(remainder) <= 5
+
     def add(self, line: str) -> None:
         """
         Run the cleanup of the line.
@@ -99,7 +115,7 @@ class RpmCopyright(Section):
         # A SUSE copyright line still counts as a copyright for continuation
         # purposes even though it is dropped itself.
         self._prev_was_copyright = bool(copyright_match)
-        if copyright_match and not self.reg.re_suse_copyright.search(line):
+        if copyright_match and not self._is_suse_copyright(line):
             # always normalize to the canonical '# Copyright (c) ...' form;
             # a copyright notice must never be silently dropped (boo#1194504)
             line = f'# Copyright (c) {copyright_match.group(1)}'
