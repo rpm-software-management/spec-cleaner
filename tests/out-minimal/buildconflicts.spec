@@ -4,8 +4,7 @@ BuildRequires:  pkgconfig(libacl)
 #!BuildConflicts: rpmlint-mini < 2.9.0
 BuildRequires:  compiler
 BuildRequires:  pkgconfig
-#!BuildConflicts: libacl-devel
-#!BuildConflicts: pkg-config
+#!BuildConflicts: libacl-devel pkg-config
 BuildConflicts: pkgconfig(aa) >= 1.0
 
 %changelog

@@ -4,8 +4,7 @@ BuildRequires:  zsh
 #!BuildRequires: single
 # this one is needed by the build service only
 #!BuildRequires: glassfish-jaxb-runtime
-#!BuildRequires: multi1
-#!BuildRequires: multi2
+#!BuildRequires: multi1 multi2
 #!BuildRequires: foo >= 1.2
 #!BuildRequires: %{base_name}-bootstrap
 #!BuildRequires: pkg-config
@@ -20,8 +19,7 @@ BuildRequires:  zsh
 #!BuildConflicts: mixold mixq [i586] # legacy combo
 #!BuildRequires: broken [x86_64] >= 1.0
 #!BuildRequires: nospace[x86_64]
-#!BuildRequires: %{?with_x:condpkg}
-#!BuildRequires: plainmate
+#!BuildRequires: %{?with_x:condpkg} plainmate
 #!BuildRequires: %{!?with_bootstrap:bootstrapthing}
 #!BuildRequires: %?foo
 #!BuildRequires: %!?bar
