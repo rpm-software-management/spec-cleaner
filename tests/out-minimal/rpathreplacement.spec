@@ -1,22 +1,22 @@
 %install
-export PATH="$PATH:%{_sbindir}"
-mkdir -p %{buildroot}%{_sbindir}
+export PATH="$PATH:%{_prefix}/sbin"
+mkdir -p %{buildroot}/usr/sbin
 
 %files
 %defattr(-,root,root)
 %doc ChangeLog README COPYING
-%{_prefix}/name/
-%{_libexecdir}/name/
-%{_libdir}/name
-%{_datadir}/data/name
-%{_includedir}/name
-%{_localstatedir}/name
-%{_sbindir}/name
-%{_bindir}/name
-%{_mandir}/name
-%{_infodir}/name
-%{_docdir}/name
-%{_initddir}/name
-%{_prefix}/bla
+/usr/name/
+/usr/libexec/name/
+/usr/lib64/name
+/usr/share/data/name
+/usr/include/name
+/var/name
+/usr/sbin/name
+/usr/bin/name
+/usr/share/man/name
+/usr/share/info/name
+/usr/share/doc/packages/name
+/etc/init.d/name
+%_exec_prefix/bla
 
 %changelog

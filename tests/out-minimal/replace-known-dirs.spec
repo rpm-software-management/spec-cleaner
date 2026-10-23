@@ -1,51 +1,51 @@
 %install
-install -D -m 0644 %{name}.service %{buildroot}%{_unitdir}/%{name}.service
-install -D -m 0644 %{name}.tmpfiles %{buildroot}%{_tmpfilesdir}/%{name}.conf
-install -D -m 0644 %{name}.sysusers %{buildroot}%{_sysusersdir}/%{name}.conf
-install -D -m 0644 99-%{name}.rules %{buildroot}%{_udevrulesdir}/99-%{name}.rules
-install -D -m 0644 %{name}.sysctl %{buildroot}%{_sysctldir}/99-%{name}.conf
-install -D -m 0644 Module.pm %{buildroot}%{perl_vendorlib}/Module.pm
-install -D -m 0644 %{name}.el %{buildroot}%{_emacs_sitelispdir}/%{name}.el
-install -D -m 0644 %{name}.ttf %{buildroot}%{_fontsdir}/%{name}.ttf
-install -D -m 0644 %{name}.cmxs %{buildroot}%{ocaml_standard_library}/%{name}.cmxs
-install -D -m 0644 %{name} %{buildroot}%{apparmor_profilesdir}/%{name}
-cp -a package.json %{buildroot}%{nodejs_sitelib}/%{name}/
+install -D -m 0644 %{name}.service %{buildroot}/usr/lib/systemd/system/%{name}.service
+install -D -m 0644 %{name}.tmpfiles %{buildroot}/usr/lib/tmpfiles.d/%{name}.conf
+install -D -m 0644 %{name}.sysusers %{buildroot}/usr/lib/sysusers.d/%{name}.conf
+install -D -m 0644 99-%{name}.rules %{buildroot}/usr/lib/udev/rules.d/99-%{name}.rules
+install -D -m 0644 %{name}.sysctl %{buildroot}/usr/lib/sysctl.d/99-%{name}.conf
+install -D -m 0644 Module.pm %{buildroot}/usr/lib/perl5/vendor_perl/%{perl_version}/Module.pm
+install -D -m 0644 %{name}.el %{buildroot}/usr/share/emacs/site-lisp/%{name}.el
+install -D -m 0644 %{name}.ttf %{buildroot}/usr/share/fonts/%{name}.ttf
+install -D -m 0644 %{name}.cmxs %{buildroot}/usr/lib64/ocaml/%{name}.cmxs
+install -D -m 0644 %{name} %{buildroot}/etc/apparmor.d/%{name}
+cp -a package.json %{buildroot}/usr/lib/node_modules/%{name}/
 install -D -m 0644 %{name}.conf %{buildroot}%{_datadir}/%{name}/etc/%{name}.conf
-install -D -m 0755 legacy.sh %{_prefix}/legacy.sh
-install -D -m 0644 legacy.service %{_initddir}/legacy
-install -D -m 0644 legacy.conf %{_sysconfdir}/legacy.conf
-install -D -m 0644 legacy.state %{_localstatedir}/log/legacy
-install -D -m 0644 legacy.bin %{_bindir}/legacy
-install -D -m 0644 legacy.sbin %{_sbindir}/legacy
-install -D -m 0644 legacy.exec %{_libexecdir}/legacy
-install -D -m 0644 legacy.h %{_includedir}/legacy.h
-install -D -m 0644 legacy.1 %{_mandir}/man1/legacy.1
-install -D -m 0644 legacy.info %{_infodir}/legacy.info
-install -D -m 0644 legacy.txt %{_docdir}/legacy.txt
-install -D -m 0644 legacy.rd %{_initddir}/legacy.rd
-echo %{_prefix}
+install -D -m 0755 legacy.sh /usr/legacy.sh
+install -D -m 0644 legacy.service /etc/init.d/legacy
+install -D -m 0644 legacy.conf /etc/legacy.conf
+install -D -m 0644 legacy.state /var/log/legacy
+install -D -m 0644 legacy.bin %{_prefix}/bin/legacy
+install -D -m 0644 legacy.sbin %{_prefix}/sbin/legacy
+install -D -m 0644 legacy.exec %{_prefix}/libexec/legacy
+install -D -m 0644 legacy.h %{_prefix}/include/legacy.h
+install -D -m 0644 legacy.1 %{_datadir}/man/man1/legacy.1
+install -D -m 0644 legacy.info %{_datadir}/info/legacy.info
+install -D -m 0644 legacy.txt %{_datadir}/doc/packages/legacy.txt
+install -D -m 0644 legacy.rd %{_initrddir}/legacy.rd
+echo %_exec_prefix
 
 %files
 %{_unitdir}/%{name}.service
-%{_unitdir}/legacy.service
-%{_unitdir}/already.service
+/usr/lib/systemd/system/legacy.service
+%{_prefix}/lib/systemd/system/already.service
 %{_tmpfilesdir}/%{name}.conf
 %{_sysusersdir}/%{name}.conf
 %{_udevrulesdir}/99-%{name}.rules
 %{_sysctldir}/99-%{name}.conf
-%dir %{_tmpfilesdir}
+%dir /usr/lib/tmpfiles.d
 %{perl_vendorlib}/Module.pm
-%{perl_vendorlib}/Other.pm
-%{_prefix}/lib/perl5/vendor_perl/Unversioned.pm
+/usr/lib/perl5/vendor_perl/%{perl_version}/Other.pm
+/usr/lib/perl5/vendor_perl/Unversioned.pm
 %{_emacs_sitelispdir}/%{name}.el
-%{_emacs_sitelispdir}/legacy.el
-%{_emacs_sitelispdir}/premacroed.el
+/usr/share/emacs/site-lisp/legacy.el
+%{_datadir}/emacs/site-lisp/premacroed.el
 %{_fontsdir}/%{name}.ttf
-%dir %{_fontsdir}
+%dir /usr/share/fonts
 %{ocaml_standard_library}/%{name}.cmxs
-%{_libdir}/bar.so
+/usr/lib64/bar.so
 %{apparmor_profilesdir}/%{name}
-%{apparmor_profilesdir}/legacy
+/etc/apparmor.d/legacy
 %{nodejs_sitelib}/%{name}/
 %{_datadir}/%{name}/etc/%{name}.conf
 %dir %{_libdir}/%{name}/var

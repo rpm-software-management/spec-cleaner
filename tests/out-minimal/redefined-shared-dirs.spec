@@ -3,7 +3,8 @@
 # It makes sure that the spec file follows the guidelines of openSUSE.
 #
 # Only the macros that more than one known directory rewrite depends on are
-# redefined here, so those rewrites stay off while the rest keep running.
+# redefined here, so in the full run those rewrites stay off while the rest
+# keep running.
 #
 %define _prefix /usr
 %define _exec_prefix %{_prefix}
@@ -32,7 +33,7 @@ install -D -m 0644 %{name}.conf %{buildroot}%{_datadir}/%{name}/etc/%{name}.conf
 install -D -m 0755 legacy.sh /usr/legacy.sh
 install -D -m 0644 legacy.service /etc/init.d/legacy
 install -D -m 0644 legacy.conf /etc/legacy.conf
-install -D -m 0644 legacy.state %{_localstatedir}/log/legacy
+install -D -m 0644 legacy.state /var/log/legacy
 install -D -m 0644 legacy.bin %{_prefix}/bin/legacy
 install -D -m 0644 legacy.sbin %{_prefix}/sbin/legacy
 install -D -m 0644 legacy.exec %{_prefix}/libexec/legacy
@@ -40,7 +41,7 @@ install -D -m 0644 legacy.h %{_prefix}/include/legacy.h
 install -D -m 0644 legacy.1 %{_datadir}/man/man1/legacy.1
 install -D -m 0644 legacy.info %{_datadir}/info/legacy.info
 install -D -m 0644 legacy.txt %{_datadir}/doc/packages/legacy.txt
-install -D -m 0644 legacy.rd %{_initddir}/legacy.rd
+install -D -m 0644 legacy.rd %{_initrddir}/legacy.rd
 echo %_exec_prefix
 
 %files

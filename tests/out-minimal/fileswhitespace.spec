@@ -1,5 +1,5 @@
 %files
-%{_bindir}/test
+/usr/bin/test
 
 # some comment
 /opt/data/something

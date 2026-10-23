@@ -23,11 +23,11 @@ make EGREP=egrep PREFIX=/opt egrep
 echo LC_ALL=C egrep
 
 %install
-install -D -m 0755 --target-directory=%{buildroot}/bin %{_bindir}/egrep
+install -D -m 0755 --target-directory=%{buildroot}/bin /usr/bin/egrep
 
 %post
-sudo grep -E -q foo %{_sysconfdir}/bar || echo missing
-%{_bindir}/grep -F -q foo %{_sysconfdir}/bar
+sudo grep -E -q foo /etc/bar || echo missing
+%{_bindir}/grep -F -q foo /etc/bar
 
 %files
 /bin/egrep

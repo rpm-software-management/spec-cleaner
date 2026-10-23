@@ -11,7 +11,7 @@ rm -rf ${RPM_BUILD_ROOT}/var/cache/foo
 %triggerin -- bar
 ls $RPM_BUILD_ROOT/etc
 
-%filetriggerin -- %{_prefix}/lib
+%filetriggerin -- /usr/lib
 ls $RPM_BUILD_ROOT/etc
 
 %files

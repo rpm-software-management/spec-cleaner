@@ -1,5 +1,5 @@
 %install
-install -D -m 0644 %{name}.conf %buildroot%{_sysconfdir}/%{name}/%{name}.conf
-mkdir -p %buildroot%{_localstatedir}/lib/%{name}
+install -D -m 0644 %{name}.conf %buildroot/etc/%{name}/%{name}.conf
+mkdir -p %buildroot/var/lib/%{name}
 
 %changelog

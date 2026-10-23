@@ -152,3 +152,22 @@ def test_version_guard_rewrite_runs_in_both_modes(default_options):
             _cleaned_line(default_options, minimal, 'echo %{suse_version}')
             == 'echo 0%{?suse_version}'
         )
+
+
+def test_known_dirs_replaced_in_full_run(default_options):
+    """The full run rewrites a literal path to its directory macro."""
+    line = 'install -D -m 0755 foo /usr/bin/foo'
+    assert _cleaned_line(default_options, False, line) == 'install -D -m 0755 foo %{_bindir}/foo'
+
+
+def test_known_dirs_kept_in_minimal_run(default_options):
+    """The minimal run keeps literal paths as written."""
+    line = 'install -D -m 0755 foo /usr/bin/foo'
+    assert _cleaned_line(default_options, True, line) == line
+
+
+def test_buildroot_replaced_in_minimal_run(default_options):
+    """$RPM_BUILD_ROOT is a variable substitution and is replaced in both modes."""
+    line = 'install -D -m 0644 foo.conf $RPM_BUILD_ROOT/usr/share/foo/foo.conf'
+    expected = 'install -D -m 0644 foo.conf %{buildroot}/usr/share/foo/foo.conf'
+    assert _cleaned_line(default_options, True, line) == expected

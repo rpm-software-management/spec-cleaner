@@ -34,6 +34,6 @@ export LDFLAGS="-Wl,-z,relro,-z,now -pie"
         --disable-static \
 %endif
         --with-pic \
-        --docdir=%{_docdir}/%{name}
+        --docdir=%{_prefix}/share/doc/packages/%{name}
 
 %changelog
