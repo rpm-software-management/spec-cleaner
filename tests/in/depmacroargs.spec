@@ -11,6 +11,7 @@ Requires:       %plainmacro foo
 Conflicts:      %selfconflict libgcc_s%{libgcc_s}
 Conflicts:      %selfconflict libgcc_s%{libgcc_s}-32bit
 Conflicts:      %selfconflict liba libb
+Conflicts:      %selfconflict liba %selfconflict libb
 
 %description
 Dependency lines carrying macro arguments.

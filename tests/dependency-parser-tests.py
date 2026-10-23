@@ -98,6 +98,53 @@ class TestDependencyParser:
         """Test that an invocation of a macro that takes arguments stays one dependency."""
         assert DependencyParser(line, macros_with_arg=['selfconflict']).parsed == expected
 
+    @pytest.mark.parametrize(
+        'line, macros, expected',
+        [
+            # a second invocation starts a new dependency instead of becoming
+            # an argument of the first one
+            (
+                '%selfconflict a %selfconflict b',
+                ['selfconflict'],
+                [('%selfconflict a', None, None), ('%selfconflict b', None, None)],
+            ),
+            # the second invocation may name a different macro
+            (
+                '%selfconflict a %other b',
+                ['selfconflict', 'other'],
+                [('%selfconflict a', None, None), ('%other b', None, None)],
+            ),
+            # a trailing invocation without arguments still stands on its own
+            (
+                '%selfconflict a %selfconflict',
+                ['selfconflict'],
+                [('%selfconflict a', None, None), ('%selfconflict', None, None)],
+            ),
+            # a version relation after the second invocation belongs to it
+            (
+                '%selfconflict a %selfconflict b >= 2.0',
+                ['selfconflict'],
+                [('%selfconflict a', None, None), ('%selfconflict b', '>=', '2.0')],
+            ),
+            # a braced macro is complete in itself, so as an argument it is
+            # part of the invocation before it, never a new invocation
+            (
+                '%selfconflict %{python_module foo}',
+                ['selfconflict', 'python_module'],
+                [('%selfconflict %{python_module foo}', None, None)],
+            ),
+            # an unbraced macro that takes no arguments stays an argument
+            (
+                '%selfconflict %otherlib liba',
+                ['selfconflict'],
+                [('%selfconflict %otherlib liba', None, None)],
+            ),
+        ],
+    )
+    def test_consecutive_macro_with_arguments(self, line, macros, expected):
+        """Test that consecutive invocations split, while arguments stay with their invocation."""
+        assert DependencyParser(line, macros_with_arg=macros).parsed == expected
+
     def test_braced_macro_with_arguments(self):
         """Test that a braced macro invocation is one dependency with no name list."""
         assert DependencyParser('%{python_module foo}').parsed == [
