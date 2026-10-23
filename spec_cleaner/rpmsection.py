@@ -171,7 +171,8 @@ class Section:
             line = self.replace_known_dirs(line)
             line = self.replace_utils(line)
             line = self.replace_buildservice(line)
-            line = self.replace_preamble_macros(line)
+            if not self.minimal:
+                line = self.replace_preamble_macros(line)
             line = self.replace_python_expand(line)
 
         return line

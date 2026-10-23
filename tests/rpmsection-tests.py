@@ -94,3 +94,61 @@ def test_rewrite_disabled_by_redefined_macro(default_options, line, expected, ma
 def test_every_guard_macro_is_covered():
     """Every macro name in the rules table is exercised as a redefinition."""
     assert len(KNOWN_DIR_MACROS) == 29
+
+
+def _cleaned_line(default_options, minimal, line):
+    options = RpmSpecCleaner(default_options(minimal=minimal)).options
+    options['defined_macros'] = set()
+    section = Section(options)
+    section.add(line)
+    return section.lines[0]
+
+
+MACRO_FORM_REWRITES = [
+    ('cp %{S:1} .', 'cp %{SOURCE1} .'),
+    ('cp %{S:0} %{P:0} .', 'cp %{SOURCE0} %{PATCH0} .'),
+    ('cp %{S:1} %{S:2} %{P:12} .', 'cp %{SOURCE1} %{SOURCE2} %{PATCH12} .'),
+    ('tar xf prefix-%{S:1}.tar.xz', 'tar xf prefix-%{SOURCE1}.tar.xz'),
+    ('echo %{?with_extra:%{S:2}}', 'echo %{?with_extra:%{SOURCE2}}'),
+]
+
+# Spellings outside the rewritten family: the already-long form, a
+# non-numeric suffix and comment lines pass the cleanup unchanged.
+MACRO_FORM_UNTOUCHED = [
+    'cp %{SOURCE1} .',
+    'echo %{S:foo}',
+    '# comment mentioning %{S:1}',
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), MACRO_FORM_REWRITES)
+def test_macro_form_rewritten_in_full_mode(default_options, line, expected):
+    """The full run spells short source/patch forms out to the long form."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
+@pytest.mark.parametrize(('line', 'expected'), MACRO_FORM_REWRITES)
+def test_macro_form_kept_in_minimal_mode(default_options, line, expected):
+    """The minimal run keeps the source/patch spelling as written."""
+    assert _cleaned_line(default_options, True, line) == line
+
+
+@pytest.mark.parametrize('line', MACRO_FORM_UNTOUCHED)
+def test_macro_form_neighbours_untouched(default_options, line):
+    """Forms outside the family stay untouched in both modes."""
+    for minimal in (False, True):
+        assert _cleaned_line(default_options, minimal, line) == line
+
+
+def test_unbraced_source_form_kept_in_minimal_mode(default_options):
+    """The unbraced long form is not part of the family and stays as written."""
+    assert _cleaned_line(default_options, True, 'cp %SOURCE2 .') == 'cp %SOURCE2 .'
+
+
+def test_version_guard_rewrite_runs_in_both_modes(default_options):
+    """The %{suse_version} guard insertion changes expansion, so it is no respelling and keeps firing."""
+    for minimal in (False, True):
+        assert (
+            _cleaned_line(default_options, minimal, 'echo %{suse_version}')
+            == 'echo 0%{?suse_version}'
+        )

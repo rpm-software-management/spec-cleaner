@@ -8,10 +8,10 @@ NoSource:       300
 
 %prep
 %setup -q
-cp %{SOURCE1} %{buildroot}
-cp %{SOURCE2} %{buildroot}
-cp %{SOURCE200} %{buildroot}
-cp %{SOURCE300} %{buildroot}
-cp %{PATCH1} %{buildroot}
+cp %{S:1} %{buildroot}
+cp %{S:2} %{buildroot}
+cp %{S:200} %{buildroot}
+cp %{S:300} %{buildroot}
+cp %{P:1} %{buildroot}
 
 %changelog
