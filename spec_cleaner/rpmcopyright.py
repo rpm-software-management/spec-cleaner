@@ -78,7 +78,7 @@ class RpmCopyright(Section):
         Decide whether a copyright line is a SUSE holder line.
 
         The line counts when removing the copyright boilerplate and the
-        SUSE holder words leaves nothing of substance behind. Legacy
+        SUSE holder words leaves nothing behind. Legacy
         holder forms (SUSE LINUX Products GmbH, SUSE Linux AG, the
         Nuremberg spelling, a missing trailing period) therefore
         convert to the canonical line, while a line naming another
@@ -87,7 +87,7 @@ class RpmCopyright(Section):
         if 'suse' not in line.lower():
             return False
         remainder = self.reg.re_suse_copyright_boilerplate.sub('', line)
-        return len(remainder) <= 5
+        return not remainder
 
     def add(self, line: str) -> None:
         """
