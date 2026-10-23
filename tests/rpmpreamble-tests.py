@@ -40,6 +40,30 @@ class TestRpmPreamble:
         }
         return RpmPreamble(RpmSpecCleaner(options).options)
 
+    @pytest.fixture
+    def minimal_preamble(self, tmp_path):
+        """Create a preamble section with the options of a minimal run."""
+        specfile = tmp_path / 'test.spec'
+        specfile.write_text('Name: test\n')
+        options = {
+            'specfile': str(specfile),
+            'output': str(tmp_path / 'out.spec'),
+            'pkgconfig': False,
+            'inline': False,
+            'diff': False,
+            'diff_prog': 'vimdiff',
+            'minimal': True,
+            'no_curlification': False,
+            'suse_copyright': False,
+            'copyright_year': 2013,
+            'remove_groups': False,
+            'tex': False,
+            'perl': False,
+            'cmake': False,
+            'keep_space': False,
+        }
+        return RpmPreamble(RpmSpecCleaner(options).options)
+
     @staticmethod
     def units(preamble, *lines):
         """Add the lines and list the define units as (line, tags) pairs."""
@@ -298,6 +322,26 @@ class TestRpmPreamble:
             '#!BuildRequires: foo [x86_64] >= 1.0',
             '#!BuildRequires: nospace[x86_64]',
         ]
+
+    def test_pragma_values_kept_whole_in_minimal_mode(self, preamble, minimal_preamble):
+        """Test that a minimal run keeps pragma values whole while a full run splits them."""
+        fix = minimal_preamble._fix_list_of_packages
+        assert fix('foo >= 1.0 bar', 'buildrequires_pragma') == ['foo >= 1.0 bar']
+        assert fix('libacl-devel pkg-config', 'buildconflicts_pragma') == [
+            'libacl-devel pkg-config'
+        ]
+        assert fix('zeta alpha beta gamma', 'buildignores') == ['zeta alpha beta gamma']
+        # a qualified value stays whole in both modes, so the gate changes nothing there
+        assert fix('qualified [i586] other', 'buildrequires_pragma') == ['qualified [i586] other']
+        full = preamble._fix_list_of_packages
+        assert full('qualified [i586] other', 'buildrequires_pragma') == ['qualified [i586] other']
+        tokens = full('foo >= 1.0 bar', 'buildrequires_pragma')
+        assert [(token.name, token.operator, token.version) for token in tokens] == [
+            ('foo', '>=', '1.0'),
+            ('bar', None, None),
+        ]
+        tokens = full('zeta alpha beta gamma', 'buildignores')
+        assert [token.name for token in tokens] == ['zeta', 'alpha', 'beta', 'gamma']
 
 
 class TestRpmPreambleOrder:
