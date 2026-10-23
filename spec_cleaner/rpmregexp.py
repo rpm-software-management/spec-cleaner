@@ -266,8 +266,16 @@ class Regexp:
     # Only meaningful right after a copyright notice; the remainder is
     # group 1 for normalization.
     re_copyright_continuation = re.compile(r'^#\s*(\d{4}\b.*)')
-    re_suse_copyright = re.compile(
-        r'SUSE (LLC(\.| and contributors)?|LINUX (Products )?GmbH, Nuernberg, Germany\.)\s*$',
+    # The words a SUSE copyright holder line consists of: the copyright
+    # boilerplate plus the holder wordings, current ('SUSE LLC and
+    # contributors') and legacy ('SUSE LINUX Products GmbH', 'SUSE Linux
+    # AG', the Nuernberg/Nuremberg spellings). RpmCopyright strips these
+    # from a copyright line and treats the line as a SUSE holder line
+    # when nothing of substance remains, the rule the Perl
+    # format_spec_file uses.
+    re_suse_copyright_boilerplate = re.compile(
+        r'\s*(?:\d+|copyrights?|\(c\)|suse|llc|contributors|linux|products|'
+        r'gmbh|nuremberg|n..?rnberg|germany|\W+)\s*',
         re.IGNORECASE,
     )
     re_rootforbuild = re.compile(r'^#\s*needsrootforbuild\s*$', re.IGNORECASE)
