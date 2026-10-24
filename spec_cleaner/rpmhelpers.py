@@ -42,6 +42,11 @@ def parse_rpm_showrc() -> list[str]:
     """
     Create a list of all macro functions in the 'rpm --showrc' output.
 
+    Defined parametric macros are dumped in the 'name(args)' form,
+    while rpm's builtin functions (gsub, expand, quote, ...) are
+    dumped as 'name' followed by '<builtin>'; both forms denote a
+    macro that is invoked with arguments.
+
     Returns:
         A list of such macro functions.
     """
@@ -50,6 +55,7 @@ def parse_rpm_showrc() -> list[str]:
     macros: list[str] = []
 
     re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
+    re_rc_builtin = re.compile(r'^-[0-9]+[:=]\s(\w+)\s+<builtin>')
     try:
         output = check_output(['rpm', '--showrc'])
     except (OSError, CalledProcessError) as error:
@@ -57,6 +63,8 @@ def parse_rpm_showrc() -> list[str]:
     # rpm prints in the locale charset; only ASCII macro names are needed
     for line in output.decode(errors='replace').split('\n'):
         found_macro = re_rc_macrofunc.sub(r'\1', line)
+        if found_macro == line:
+            found_macro = re_rc_builtin.sub(r'\1', line)
         if found_macro != line:
             macros += [found_macro]
     _read_cache['showrc'] = macros

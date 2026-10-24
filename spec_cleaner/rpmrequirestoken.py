@@ -84,7 +84,7 @@ class RpmRequiresToken:
             previous = None
             while name != previous:
                 previous = name
-                name = Regexp.re_macro.sub(r'\1%{\3}\5', name)
+                name = Regexp.re_macro.sub(r'\1%{\3}\4', name)
         return name
 
     def __str__(self) -> str:

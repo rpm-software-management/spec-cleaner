@@ -81,6 +81,43 @@ _RE_UTILS_BOTH = re.compile(
 )
 
 
+# the opener of a lua macro body; the body is lua program text
+_RE_LUA_OPENER = re.compile(r'%\{lua:')
+
+
+def _lua_body_prefix(text: str, depth: int) -> tuple[str, str, int]:
+    """
+    Split off the part of a text that belongs to an open lua body.
+
+    Depth is the %{ brace depth the body stands at before the text;
+    counting follows open_macro_bodies, the same accounting rpm uses
+    to join the lines of a macro body. Returns the lua part, the
+    remaining spec text and the depth after the text.
+    """
+    braces = depth
+    parens = 0
+    index = 0
+    while index < len(text):
+        char, following = text[index], text[index + 1 : index + 2]
+        if char == '\\':
+            # an escaped character never opens or closes a body
+            index += 1
+        elif char == '%' and following in ('%', '{', '('):
+            index += 1
+            if following == '{':
+                braces += 1
+            elif following == '(':
+                parens += 1
+        elif char in '{}' and braces:
+            braces += 1 if char == '{' else -1
+            if braces == 0:
+                return text[: index + 1], text[index + 1 :], 0
+        elif char in '()' and parens:
+            parens += 1 if char == '(' else -1
+        index += 1
+    return text, '', braces
+
+
 def _replace_utils_braced(match: re.Match[str], defined_macros: set[str]) -> str:
     """Expand one %{__name} match unless the spec defines the macro itself."""
     short = match.group('name')
@@ -119,6 +156,7 @@ class Section:
         defined_macros: A set of the macro names the specfile defines with %define or %global.
         condition: A flag representing if we are in the conditional or not.
         _condition_counter: An int for counting in how many (nested) condition we currently are.
+        _lua_depth: An int holding the %{ brace depth of a lua macro body left open by previous lines.
         shell_section: A flag indicating whether the section body is a shell script.
         headless: A flag set when the body resumes after a conditional end, without its header.
     """
@@ -138,6 +176,8 @@ class Section:
         # Are we inside of conditional or not
         self.condition: bool = False
         self._condition_counter: int = 0
+        # %{ brace depth of a lua macro body left open by previous lines
+        self._lua_depth: int = 0
 
     def _complete_cleanup(self, line: str) -> str:
         """
@@ -165,7 +205,7 @@ class Section:
                 # gh#rpm-software-management/spec-cleaner#321
                 and not is_python_module
             ):
-                line = self.embrace_macros(line)
+                line = self.embrace_macros_outside_lua(line)
             line = self.replace_buildroot(line)
             line = self.replace_optflags(line)
             if not self.minimal:
@@ -276,6 +316,42 @@ class Section:
         """
         return ' '.join(line.split())
 
+    def embrace_macros_outside_lua(self, line: str) -> str:
+        """
+        Add {} around macros on a line, leaving lua macro bodies untouched.
+
+        A %{lua: ... } body is lua program text, not spec syntax: its
+        %-forms are lua string content (printf placeholders, literal
+        text), so bracing them changes what the script does. A body
+        left open continues on the following lines; that state is kept
+        on the section, the same way rpm joins the lines of a body.
+
+        Args:
+            line: A string representing a line to process.
+
+        Returns:
+            The line with curlified macros outside of lua bodies.
+        """
+        if self._lua_depth == 0 and '%{lua:' not in line:
+            return self.embrace_macros(line)
+
+        parts: list[str] = []
+        rest = line
+        while rest:
+            if self._lua_depth:
+                lua, rest, self._lua_depth = _lua_body_prefix(rest, self._lua_depth)
+                parts.append(lua)
+            else:
+                opener = _RE_LUA_OPENER.search(rest)
+                if opener is None:
+                    parts.append(self.embrace_macros(rest))
+                    rest = ''
+                else:
+                    parts.append(self.embrace_macros(rest[: opener.start()]))
+                    lua, rest, self._lua_depth = _lua_body_prefix(rest[opener.start() :], 0)
+                    parts.append(lua)
+        return ''.join(parts)
+
     def embrace_macros(self, line: str) -> str:
         """
         Add {} around known macros that have no arguments and are not on whitelist.
@@ -302,7 +378,7 @@ class Section:
         previous = sp[0]
 
         while True:
-            sp[0] = self.reg.re_macro.sub(r'\1%{\3}\5', sp[0])
+            sp[0] = self.reg.re_macro.sub(r'\1%{\3}\4', sp[0])
             if sp[0] == previous:
                 break
             else:

@@ -347,11 +347,13 @@ class Regexp:
         # or a file directive with its possibly space separated argument
         r'(?:attr|caps|config|defattr|lang|verify)\s*\([^)]*\)|'
         +
-        # or by chars where first is a-z or A-Z or underscore
-        r'[a-zA-Z_]\w*'
-        +
-        # possibly followed by parens
-        r'(\([^)]*\))?'
+        # or by chars where first is a-z or A-Z or underscore; a name
+        # directly followed by '(' is an invocation carrying an argument
+        # list (or a plain name with a literal parenthesised suffix),
+        # never a bare reference, so it is not matched for curlification;
+        # the possessive quantifier keeps the lookahead aimed at the
+        # whole name instead of letting the match shorten it
+        r'[a-zA-Z_]\w*+(?!\()'
         +
         # beyond the end of the macro
         r')(|(\W))'
