@@ -594,7 +594,7 @@ class RpmSpecCleaner:
         # a conditional in the name is dropped when the name is passed through
         # %ldconfig_scriptlets, so the merged scriptlets would name a package
         # that does not exist; such a pair is left as written
-        if any('%{?' in name or '%{!' in name for name in names):
+        if any('%{?' in name or '%{!' in name or '%?' in name or '%!?' in name for name in names):
             return None
         return args[0].lower(), ' '.join(package)
 
