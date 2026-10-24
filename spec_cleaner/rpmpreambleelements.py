@@ -654,8 +654,12 @@ class RpmPreambleElements:
         RpmPreamble.add recorded it, so that moving it never breaks it apart.
         A unit is late when one of its globals or conditions references
         %name, %version, %release or %epoch, when one of its eagerly expanded
-        lines references a late macro, or when it redefines one. The macros a
-        unit defines are late when it is late or references those tags or
+        lines references a late macro, or when it redefines one. A unit is
+        also late when it invokes a section-generating macro (the tail
+        macros, eg. %python_subpackages): the macro expands to %package
+        sections built from the whole preamble, so the unit must stay
+        below all of it, at the tail of the preamble. The macros a unit
+        defines are late when it is late or references those tags or
         late macros, as a lazy %define that stays hoisted passes the
         dependency on to the globals using it.
         Likewise a unit must follow the bconds when one of its globals or
@@ -681,6 +685,10 @@ class RpmPreambleElements:
                 sensitive = bool(self.reg.re_global_order_sensitive.search(line))
                 reads_late = bool(late_names.intersection(references))
                 if ((is_global or is_cond) and sensitive) or (is_eager and reads_late):
+                    late = True
+                if self.reg.re_tail_macros.match(line):
+                    # the macro generates %package sections from the
+                    # whole preamble, so the unit must close it
                     late = True
                 if sensitive or reads_late:
                     tainted = True
@@ -748,8 +756,11 @@ class RpmPreambleElements:
         %release, %epoch) breaks when hoisted above those tags (#239), and one
         reading a bcond breaks when hoisted above the %bcond lines. Such a
         global moves with its whole unit (see _late_global_units), any %define
-        in it included. Everything else stays hoisted at the top, and so do
-        the units defining macros the tags use, with the units those depend on.
+        in it included. A unit invoking a section-generating macro (eg.
+        %python_subpackages) moves to the tail of the preamble instead, as
+        the macro builds its %package sections from the whole preamble.
+        Everything else stays hoisted at the top, and so do the units
+        defining macros the tags use, with the units those depend on.
         Nested %if blocks move whole, so only a level holding the tags or the
         bconds splits.
         """
@@ -783,6 +794,10 @@ class RpmPreambleElements:
                 flagged[index] = (unit, False, after_bconds)
                 needed.update(name for line in lines for name in self._macro_references(line))
 
+    def _invokes_tail_macro(self, unit):
+        """Check if the unit invokes a section-generating macro (the tail macros)."""
+        return any(self.reg.re_tail_macros.match(line) for line in self._unit_lines(unit))
+
     def _place_define_units(self, flagged, nested):
         """Place each flagged unit on top, below the tags or below the bconds."""
         has_tags = any(
@@ -791,7 +806,13 @@ class RpmPreambleElements:
         has_bconds = any(self.items[i] for i in ('bconds', 'bcond_conditions'))
         self.items['define'] = []
         for unit, late, after_bconds in flagged:
-            if late and (has_tags or not nested):
+            if not nested and self._invokes_tail_macro(unit):
+                # the macro generates %package sections from the whole
+                # preamble, so the unit closes the preamble at the tail;
+                # in a nested paragraph the unit stays with the defines
+                # and the enclosing level routes the whole block instead
+                self.items['tail'] += unit
+            elif late and (has_tags or not nested):
                 self.items['global_late'] += unit
             elif after_bconds and (has_bconds or not nested):
                 self.items['bcond_conditions'] += unit
