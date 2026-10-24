@@ -85,10 +85,11 @@ debugging "works on my machine" differences:
   `data/excludes-bracketing.txt`, plus the parametric macros of the
   vendored snapshot in `data/macro_functions.txt`, plus parametric
   `%define`/`%global` in the spec.
-  `%ldconfig_scriptlets -n foo` stays braceless because it is listed in
-  `excludes-bracketing.txt` — `%{macro} args` does not pass args to the
-  macro, so bracing it would break the build. To keep a new args-taking
-  macro braceless on every host, add it to `excludes-bracketing.txt`.
+  `%ldconfig_scriptlets -n foo` stays braceless because the snapshot
+  names it — `%{macro} args` does not pass args to the macro, so bracing
+  it would break the build. A name the snapshot does not carry yet can
+  be added to `excludes-bracketing.txt` to keep it braceless until the
+  snapshot picks it up.
 - **`RpmPreamble` is the complex core.** It handles multi-line
   `%define`/`%global` bodies and continued `%if` lines, conditional
   blocks, and dependency tokenization via `DependencyParser`; subpackage
