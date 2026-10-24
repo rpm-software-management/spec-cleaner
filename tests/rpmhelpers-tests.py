@@ -97,6 +97,13 @@ class TestRpmhelpers:
         with pytest.raises(RpmExceptionError):
             rpmhelpers.find_global_macros_with_arg()
 
+    @pytest.mark.parametrize('output', [b'', b'/just-one-directory', b'/one /two /three'])
+    def test_find_global_macros_with_arg_unusable_rpm_eval_output(self, monkeypatch, output):
+        """Test that an 'rpm --eval' output without exactly two directories yields no macros."""
+        rpmhelpers.clear_read_caches()
+        monkeypatch.setattr(rpmhelpers, 'check_output', lambda cmd: output)
+        assert rpmhelpers.find_global_macros_with_arg() == []
+
     def test_find_global_macros_with_arg_runs_once_per_process(self, monkeypatch, tmp_path):
         """Test that the rpm --eval subprocess is not reforked for every spec."""
         rpmhelpers.clear_read_caches()
