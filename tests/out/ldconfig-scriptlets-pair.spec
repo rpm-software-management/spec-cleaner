@@ -15,6 +15,9 @@
 %make_build check
 
 %ldconfig_scriptlets -n %{name}%{sover}
+
+%post -n libtorch%{?pkg_suffix} -p /sbin/ldconfig
+%postun -n libtorch%{?pkg_suffix} -p /sbin/ldconfig
 %ldconfig_scriptlets
 %ldconfig_scriptlets libs
 %ldconfig_scriptlets -n libb1
