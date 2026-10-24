@@ -1,6 +1,7 @@
 import pytest
 
 from spec_cleaner import RpmSpecCleaner
+from spec_cleaner.rpmregexp import Regexp
 from spec_cleaner.rpmsection import Section
 
 
@@ -171,3 +172,75 @@ def test_buildroot_replaced_in_minimal_run(default_options):
     line = 'install -D -m 0644 foo.conf $RPM_BUILD_ROOT/usr/share/foo/foo.conf'
     expected = 'install -D -m 0644 foo.conf %{buildroot}/usr/share/foo/foo.conf'
     assert _cleaned_line(default_options, True, line) == expected
+
+
+# gh#491: curlification is only safe for a bare macro reference. A name
+# carrying an argument list is an invocation, a name directly followed
+# by '(' may also just carry a literal parenthesised suffix, and the
+# %-forms inside a lua body are program text.
+EMBRACE_INVOCATION_REWRITES = [
+    # only the bare references around the invocation are braced
+    (
+        'Provides: %name(xfrm6_raw) = %version-%release',
+        'Provides: %name(xfrm6_raw) = %{version}-%{release}',
+    ),
+    # a bare name is still braced, also in front of parenthesised text
+    ('Summary: test %name (a library)', 'Summary: test %{name} (a library)'),
+    ('echo %version (release %release)', 'echo %{version} (release %{release})'),
+]
+
+EMBRACE_INVOCATION_UNTOUCHED = [
+    # an invocation with a parenthesised argument list
+    '%lang_package(cryptsetup)',
+    'Provides: %plainpython(abi) = 3',
+    # the already braced invocation form is left alone as well
+    '%{lang_package(cryptsetup)}',
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_INVOCATION_REWRITES)
+def test_embrace_keeps_invocations_and_braces_bare_names(default_options, line, expected):
+    """Invocations keep their form while bare references around them are braced."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
+@pytest.mark.parametrize('line', EMBRACE_INVOCATION_UNTOUCHED)
+def test_embrace_leaves_invocations_untouched(default_options, line):
+    """A macro invocation with an argument list is not braced as a plain reference."""
+    assert _cleaned_line(default_options, False, line) == line
+
+
+def test_embrace_leaves_known_macro_function_unbraced(default_options):
+    """A macro function (an rpm builtin here) keeps its space separated arguments."""
+    options = RpmSpecCleaner(default_options()).options
+    options['defined_macros'] = set()
+    section = Section(options)
+    section.reg = Regexp(['global', 'gsub'])
+    line = '%global llvm_major %gsub %{llvm_version} %{quote:%..+} %{quote: }'
+    section.add(line)
+    assert section.lines[0] == line
+
+
+def test_embrace_skips_lua_body_lines(default_options):
+    """%-forms inside a multiline %{lua: ... } body are lua text, not macro references."""
+    section = _section(default_options, set())
+    lines = [
+        '%global _pyver %{lua: \\',
+        '  local ver = string.sub(rpm.expand("%python"), string.len("python") + 1, -1); \\',
+        '    print(string.format("%s.%s", string.sub(ver, 1, 1), string.sub(ver, 2, -1))); \\',
+        '  print(rpm.expand("%{_bindir}/python%_pyver")); \\',
+        '}',
+    ]
+    for line in lines:
+        section.add(line)
+    assert section.lines == lines
+    # the state ends with the body: the next line is cleaned again
+    section.add('Name: %name')
+    assert section.lines[-1] == 'Name: %{name}'
+
+
+def test_embrace_skips_single_line_lua_body(default_options):
+    """A lua body closed on the same line shields only its own text."""
+    section = _section(default_options, set())
+    section.add('%global x %{lua: print("%s")} suffix %name')
+    assert section.lines[0] == '%global x %{lua: print("%s")} suffix %{name}'
