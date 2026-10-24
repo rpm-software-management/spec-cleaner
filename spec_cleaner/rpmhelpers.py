@@ -62,11 +62,9 @@ def parse_rpm_showrc() -> list[str]:
         raise RpmExceptionError(f'Could not run "rpm --showrc": {error}') from error
     # rpm prints in the locale charset; only ASCII macro names are needed
     for line in output.decode(errors='replace').split('\n'):
-        found_macro = re_rc_macrofunc.sub(r'\1', line)
-        if found_macro == line:
-            found_macro = re_rc_builtin.sub(r'\1', line)
-        if found_macro != line:
-            macros += [found_macro]
+        found_macro = re_rc_macrofunc.match(line) or re_rc_builtin.match(line)
+        if found_macro:
+            macros += [found_macro.group(1)]
     _read_cache['showrc'] = macros
     return list(macros)
 

@@ -81,8 +81,12 @@ _RE_UTILS_BOTH = re.compile(
 )
 
 
-# the opener of a lua macro body; the body is lua program text
-_RE_LUA_OPENER = re.compile(r'%\{lua:')
+# the openers of a lua macro body; the body is lua program text.
+# rpm dispatches the braced %{lua: ... } form (whitespace may precede
+# the colon) and the space form %lua <args>, whose arguments run to
+# the end of the line. An opener directly behind a %% pair is literal
+# text, the pair being an escaped percent.
+_RE_LUA_OPENER = re.compile(r'(?<!%)%\{lua\s*:|(?<!%)%lua(?=\s)')
 
 
 def _lua_body_prefix(text: str, depth: int) -> tuple[str, str, int]:
@@ -315,11 +319,16 @@ class Section:
         """
         Add {} around macros on a line, leaving lua macro bodies untouched.
 
-        A %{lua: ... } body is lua program text, not spec syntax: its
-        %-forms are lua string content (printf placeholders, literal
-        text), so bracing them changes what the script does. A body
-        left open continues on the following lines; that state is kept
-        on the section, the same way rpm joins the lines of a body.
+        A lua body is lua program text, not spec syntax: its %-forms
+        are lua string content (printf placeholders, literal text), so
+        bracing them changes what the script does. The braced form's
+        body may continue on the following lines until its brace
+        closes; the space form's arguments run to the end of the line.
+        A body left open continues on the following lines; that state
+        is kept on the section, the same way rpm joins the lines of a
+        body. An opener inside a comment opens nothing: the search
+        covers only the text before the comment boundary, the same
+        part embrace_macros works on.
 
         Args:
             line: A string representing a line to process.
@@ -327,7 +336,7 @@ class Section:
         Returns:
             The line with curlified macros outside of lua bodies.
         """
-        if self._lua_depth == 0 and '%{lua:' not in line:
+        if self._lua_depth == 0 and not _RE_LUA_OPENER.search(line.split('#', 1)[0]):
             return self.embrace_macros(line)
 
         parts: list[str] = []
@@ -337,14 +346,26 @@ class Section:
                 lua, rest, self._lua_depth = _lua_body_prefix(rest, self._lua_depth)
                 parts.append(lua)
             else:
-                opener = _RE_LUA_OPENER.search(rest)
+                opener = _RE_LUA_OPENER.search(rest.split('#', 1)[0])
                 if opener is None:
                     parts.append(self.embrace_macros(rest))
                     rest = ''
-                else:
+                elif opener.group(0).startswith('%{'):
                     parts.append(self.embrace_macros(rest[: opener.start()]))
                     lua, rest, self._lua_depth = _lua_body_prefix(rest[opener.start() :], 0)
                     parts.append(lua)
+                else:
+                    # the space form: the arguments are lua text to the
+                    # end of the line; feed them through the body
+                    # accounting in slices, as a %{...} the arguments
+                    # close does not end them, and one they leave open
+                    # keeps the following lines shielded as well
+                    parts.append(self.embrace_macros(rest[: opener.start()]))
+                    args = rest[opener.start() :]
+                    rest = ''
+                    while args:
+                        lua, args, self._lua_depth = _lua_body_prefix(args, self._lua_depth)
+                        parts.append(lua)
         return ''.join(parts)
 
     def embrace_macros(self, line: str) -> str:

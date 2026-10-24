@@ -261,3 +261,57 @@ def test_embrace_skips_lua_body_shell_expansion(default_options):
     # the state ends with the body: the next line is cleaned again
     section.add('Name: %name')
     assert section.lines[-1] == 'Name: %{name}'
+
+
+def test_embrace_skips_lua_space_form(default_options):
+    """In the %lua space form the arguments go to lua; they are lua text, not macro references."""
+    section = _section(default_options, set())
+    section.add('%global x %lua print("%s")')
+    assert section.lines[0] == '%global x %lua print("%s")'
+    # the arguments end with the line: the next line is cleaned again
+    section.add('Name: %name')
+    assert section.lines[-1] == 'Name: %{name}'
+
+
+def test_embrace_skips_lua_space_form_with_macro_expansion(default_options):
+    """A %{...} the %lua arguments close does not end their shielding early."""
+    line = '%global x %lua print("%{name}") .. "%s"'
+    section = _section(default_options, set())
+    section.add(line)
+    assert section.lines[0] == line
+
+
+def test_embrace_skips_lua_body_with_spaced_colon(default_options):
+    """The %{lua : form with whitespace before the colon is dispatched as well."""
+    section = _section(default_options, set())
+    section.add('%global x %{lua : print("%s")} suffix %name')
+    assert section.lines[0] == '%global x %{lua : print("%s")} suffix %{name}'
+
+
+def test_embrace_escaped_percent_lua_is_no_opener(default_options):
+    """%% is an escaped percent: %%{lua: is literal text and opens no body."""
+    section = _section(default_options, set())
+    section.add('echo 100%%{lua: x')
+    assert section.lines[0] == 'echo 100%%{lua: x'
+    # no body was opened, so the next line is cleaned again
+    section.add('cp %name %version')
+    assert section.lines[-1] == 'cp %{name} %{version}'
+
+
+def test_embrace_lua_opener_in_comment_opens_nothing(default_options):
+    """An opener behind the # boundary braces no comment text and leaks no body state."""
+    section = _section(default_options, set())
+    section.add('echo %name # %{lua: } %version')
+    assert section.lines[0] == 'echo %{name} # %{lua: } %version'
+    # an unclosed opener in a trailing comment leaves no state behind either
+    section.add('echo done # %{lua: print(')
+    assert section.lines[-1] == 'echo done # %{lua: print('
+    section.add('cp %name %version')
+    assert section.lines[-1] == 'cp %{name} %{version}'
+    # the same holds on the slow path, behind a body closed earlier on the line
+    section.add('%{lua: print("x")} echo %name # %{lua: } %version')
+    assert section.lines[-1] == '%{lua: print("x")} echo %{name} # %{lua: } %version'
+    section.add('%{lua: print("x")} echo done # %{lua: print(')
+    assert section.lines[-1] == '%{lua: print("x")} echo done # %{lua: print('
+    section.add('cp %name %version')
+    assert section.lines[-1] == 'cp %{name} %{version}'
