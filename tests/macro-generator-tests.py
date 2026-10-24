@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+
+"""Tests for generate-macro-functions.py repodata verification."""
+
+import gzip
+import hashlib
+import importlib.util
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+GENERATOR = REPO_ROOT / 'generate-macro-functions.py'
+REPO = 'file:///fixture/'
+
+PRIMARY_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://linux.duke.edu/metadata/common" packages="1">
+<package type="rpm">
+<name>macropkg</name>
+<arch>noarch</arch>
+<size package="4242" installed="4242" archive="4242"/>
+<location href="macropkg-1.0-1.noarch.rpm"/>
+</package>
+</metadata>
+"""
+
+FILELISTS_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+<filelists xmlns="http://linux.duke.edu/metadata/filelists" packages="1">
+<package pkgid="00" name="macropkg" arch="noarch">
+<version epoch="0" ver="1.0" rel="1"/>
+<file>/usr/lib/rpm/macros.d/macros.fixture</file>
+</package>
+</filelists>
+"""
+
+MACRO_FILE = '/usr/lib/rpm/macros.d/macros.fixture'
+
+
+def _load_generator():
+    spec = importlib.util.spec_from_file_location('generate_macro_functions', GENERATOR)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _repomd(primary, filelists, algo='sha512', with_checksum=True):
+    """Build repomd.xml announcing the given archive bytes."""
+
+    def data(dtype, blob, href):
+        checksum = ''
+        if with_checksum:
+            digest = hashlib.new(algo, blob).hexdigest()
+            checksum = f'<checksum type="{algo}">{digest}</checksum>'
+        return (
+            f'<data type="{dtype}">{checksum}<size>{len(blob)}</size>'
+            f'<location href="repodata/{href}"/><timestamp>0</timestamp></data>'
+        )
+
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<repomd xmlns="http://linux.duke.edu/metadata/repo">\n'
+        '<revision>12345</revision>\n'
+        + data('primary', primary, 'primary.xml.gz')
+        + data('filelists', filelists, 'filelists.xml.gz')
+        + '</repomd>\n'
+    ).encode()
+
+
+def _stage(
+    tmp_path, primary, filelists, announced_primary=None, announced_filelists=None, **kwargs
+):
+    """
+    Stage a workdir the generator's fetch cache serves from.
+
+    The staged archives are what the generator reads; repomd.xml announces
+    the announced_* archives, which default to the staged ones.
+    """
+    gen = _load_generator()
+    workdir = tmp_path / 'workdir'
+    workdir.mkdir()
+    repomd = _repomd(
+        announced_primary if announced_primary is not None else primary,
+        announced_filelists if announced_filelists is not None else filelists,
+        **kwargs,
+    )
+    (workdir / 'repomd.xml').write_bytes(repomd)
+    (workdir / 'primary.xml.gz').write_bytes(primary)
+    (workdir / 'filelists.xml.gz').write_bytes(filelists)
+    return gen, str(workdir)
+
+
+def test_verified_archives_parse(tmp_path, capsys):
+    """Archives matching their repomd.xml records verify and parse normally."""
+    gen, workdir = _stage(tmp_path, gzip.compress(PRIMARY_XML), gzip.compress(FILELISTS_XML))
+    hrefs, checks, revision = gen.repodata_hrefs(REPO, workdir)
+    assert revision == '12345'
+    owners = gen.macro_packages(REPO, workdir, hrefs, checks)
+    assert owners == {('macropkg', 'noarch'): [MACRO_FILE]}
+    locations = gen.package_locations(REPO, workdir, hrefs, checks)
+    assert locations == {('macropkg', 'noarch'): ('macropkg-1.0-1.noarch.rpm', 4242)}
+    assert 'Verified' in capsys.readouterr().err
+
+
+def test_truncated_archive_aborts(tmp_path, capsys):
+    """An archive cut short still decompresses cleanly but must abort the run."""
+    full = gzip.compress(PRIMARY_XML) + gzip.compress(b'<!-- filler -->')
+    truncated = gzip.compress(PRIMARY_XML)
+    # The premise: the truncated archive decompresses without any error
+    # and even parses into the complete document.
+    assert gzip.decompress(truncated) == PRIMARY_XML
+    gen, workdir = _stage(tmp_path, truncated, gzip.compress(FILELISTS_XML), announced_primary=full)
+    hrefs, checks, _revision = gen.repodata_hrefs(REPO, workdir)
+    with pytest.raises(SystemExit):
+        gen.package_locations(REPO, workdir, hrefs, checks)
+    assert 'Size mismatch' in capsys.readouterr().err
+
+
+def test_same_size_corruption_aborts(tmp_path, capsys):
+    """An archive of the announced size with altered bytes fails the checksum."""
+    good = gzip.compress(FILELISTS_XML)
+    corrupted = bytearray(good)
+    corrupted[len(corrupted) // 2] ^= 0xFF
+    gen, workdir = _stage(
+        tmp_path, gzip.compress(PRIMARY_XML), bytes(corrupted), announced_filelists=good
+    )
+    hrefs, checks, _revision = gen.repodata_hrefs(REPO, workdir)
+    with pytest.raises(SystemExit):
+        gen.macro_packages(REPO, workdir, hrefs, checks)
+    assert 'Checksum mismatch' in capsys.readouterr().err
+
+
+def test_missing_checksum_aborts(tmp_path, capsys):
+    """repomd.xml publishing no checksum for a dataset aborts instead of trusting it."""
+    gen, workdir = _stage(
+        tmp_path,
+        gzip.compress(PRIMARY_XML),
+        gzip.compress(FILELISTS_XML),
+        with_checksum=False,
+    )
+    hrefs, checks, _revision = gen.repodata_hrefs(REPO, workdir)
+    with pytest.raises(SystemExit):
+        gen.macro_packages(REPO, workdir, hrefs, checks)
+    assert 'no sha256/sha512 checksum' in capsys.readouterr().err
+
+
+def test_sha256_checksum_accepted(tmp_path):
+    """A sha256 record verifies when repomd.xml publishes no sha512."""
+    gen, workdir = _stage(
+        tmp_path, gzip.compress(PRIMARY_XML), gzip.compress(FILELISTS_XML), algo='sha256'
+    )
+    hrefs, checks, _revision = gen.repodata_hrefs(REPO, workdir)
+    assert checks['primary'][0] == 'sha256'
+    owners = gen.macro_packages(REPO, workdir, hrefs, checks)
+    assert owners == {('macropkg', 'noarch'): [MACRO_FILE]}

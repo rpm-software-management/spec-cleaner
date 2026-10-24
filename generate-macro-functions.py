@@ -25,11 +25,18 @@ The repository defaults to the openSUSE Tumbleweed oss repository, the
 development distribution the Factory corpus is built from.  Only
 python3 and the zstd binary are needed; rpm payloads are extracted
 directly, without rpm2cpio/cpio.
+
+Downloaded repodata is verified against the checksum and size published
+for it in repomd.xml before it is parsed, the same discipline
+conversions-update.sh applies to the conversion tables: an incomplete
+or stale download aborts the run instead of producing a silently
+shortened macro list.
 """
 
 import argparse
 import bz2
 import gzip
+import hashlib
 import lzma
 import os
 import re
@@ -85,22 +92,76 @@ def open_metadata(path):
     return open(path, 'rb')
 
 
+def checksum_record(data):
+    """Return the (algorithm, checksum, size) repomd.xml publishes for one data element."""
+    by_type = {}
+    for el in data.findall(R_TAG + 'checksum'):
+        if el.text:
+            by_type[el.get('type')] = el.text.strip()
+    algo = next((a for a in ('sha512', 'sha256') if a in by_type), None)
+    size_el = data.find(R_TAG + 'size')
+    size = int(size_el.text) if size_el is not None and size_el.text else None
+    return algo, by_type.get(algo), size
+
+
+def verify_archive(path, href, record, repo):
+    """
+    Verify a downloaded repodata archive against its repomd.xml record.
+
+    The run aborts when repomd.xml publishes no usable checksum, or when
+    the download's size or checksum differs from the published one: a
+    truncated archive can still decompress cleanly (cut at a frame
+    boundary), and a mirror can serve a complete but stale file, so a
+    successful decompression alone proves nothing.
+    """
+    algo, expected, size = record
+    if not algo or not expected:
+        print(
+            f'repomd.xml of "{repo}" publishes no sha256/sha512 checksum for {href}',
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    digest = hashlib.new(algo)
+    total = 0
+    with open(path, 'rb') as fh:
+        while chunk := fh.read(1024 * 1024):
+            digest.update(chunk)
+            total += len(chunk)
+    if size is not None and total != size:
+        print(
+            f'Size mismatch for {href}: repomd.xml announces {size} bytes, got {total}',
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if digest.hexdigest() != expected:
+        print(
+            f'Checksum mismatch for {href}: '
+            f'repomd.xml announces {expected}, got {digest.hexdigest()}',
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    print(f'Verified {href} against the {algo} checksum in repomd.xml', file=sys.stderr)
+
+
 def repodata_hrefs(repo, workdir):
-    """Read repomd.xml; return the data hrefs and the snapshot revision."""
+    """Read repomd.xml; return the data hrefs, their verification records, the revision."""
     repomd = fetch(repo + 'repodata/repomd.xml', os.path.join(workdir, 'repomd.xml'))
     tree = ET.parse(repomd)
     hrefs = {}
+    checks = {}
     for data in tree.getroot().iter(R_TAG + 'data'):
         hrefs[data.get('type')] = data.find(R_TAG + 'location').get('href')
+        checks[data.get('type')] = checksum_record(data)
     rev_el = tree.getroot().find(R_TAG + 'revision')
-    return hrefs, rev_el.text if rev_el is not None else 'unknown'
+    return hrefs, checks, rev_el.text if rev_el is not None else 'unknown'
 
 
-def macro_packages(repo, workdir, hrefs):
+def macro_packages(repo, workdir, hrefs, checks):
     """Map package identity -> [macro file paths] from the filelists."""
     path = fetch(
         repo + hrefs['filelists'], os.path.join(workdir, os.path.basename(hrefs['filelists']))
     )
+    verify_archive(path, hrefs['filelists'], checks.get('filelists', (None, None, None)), repo)
     owners = {}
     with open_metadata(path) as fh:
         pkg = None
@@ -118,9 +179,10 @@ def macro_packages(repo, workdir, hrefs):
     return owners
 
 
-def package_locations(repo, workdir, hrefs):
+def package_locations(repo, workdir, hrefs, checks):
     """Map (name, arch) -> (location href, package size) from the primary data."""
     path = fetch(repo + hrefs['primary'], os.path.join(workdir, os.path.basename(hrefs['primary'])))
+    verify_archive(path, hrefs['primary'], checks.get('primary', (None, None, None)), repo)
     locations = {}
     with open_metadata(path) as fh:
         cur = None
@@ -315,9 +377,9 @@ def main():
     args = ap.parse_args()
 
     os.makedirs(args.workdir, exist_ok=True)
-    hrefs, revision = repodata_hrefs(args.repo, args.workdir)
-    owners = macro_packages(args.repo, args.workdir, hrefs)
-    locations = package_locations(args.repo, args.workdir, hrefs)
+    hrefs, checks, revision = repodata_hrefs(args.repo, args.workdir)
+    owners = macro_packages(args.repo, args.workdir, hrefs, checks)
+    locations = package_locations(args.repo, args.workdir, hrefs, checks)
     picked = pick_binaries(owners, locations)
 
     names = set()
