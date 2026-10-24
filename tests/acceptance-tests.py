@@ -14,7 +14,7 @@ from urllib.error import HTTPError
 
 import pytest
 
-from spec_cleaner import RpmExceptionError, RpmSpecCleaner
+from spec_cleaner import RpmExceptionError, RpmSpecCleaner, rpmhelpers
 
 
 def collect_tests(directory):
@@ -118,6 +118,49 @@ class TestCompare:
     def test_host_without_macro_packages(self, tmpfile, test):
         """Test that whitelisted parametric macros stay unbraced when the host does not define them."""
         self._compare_and_rerun(test, 'out', tmpfile, {'pkgconfig': True})
+
+    def test_macro_function_from_rpm_macro_files(self, tmpfile, tmp_path, monkeypatch):
+        """
+        Test that a macro function defined in the rpm macro files keeps its invocation in one dependency.
+
+        The shared fixture mocks the collector to an empty list; this test
+        restores the real one over a fixture macro directory, so locating
+        the files through 'rpm --eval', scanning them and feeding the
+        result to the dependency parser all run end to end.
+        """
+        rpmhelpers.clear_read_caches()
+        configdir = tmp_path / 'rpm'
+        macrodir = configdir / 'macros.d'
+        macrodir.mkdir(parents=True)
+        (configdir / 'macros').write_text('%plainmacro a body\n')
+        (macrodir / 'macros.python').write_text('%python_module() %{lua: body}\n')
+        monkeypatch.setattr(
+            rpmhelpers, 'check_output', lambda cmd: f'{configdir} {macrodir}'.encode()
+        )
+        monkeypatch.setattr(
+            'spec_cleaner.rpmcleaner.find_global_macros_with_arg',
+            rpmhelpers.find_global_macros_with_arg,
+        )
+        infile = tmp_path / 'testing.spec'
+        infile.write_text(
+            'Name:           test\n'
+            'Version:        1.0\n'
+            'Release:        1\n'
+            'Summary:        Test\n'
+            'License:        MIT\n'
+            'BuildRequires:  %python_module devel\n'
+            '\n'
+            '%description\n'
+            'Test.\n'
+        )
+        self._run_individual_test(
+            'testing.spec', None, infile=str(infile), outfile=tmpfile, options={'pkgconfig': True}
+        )
+        with open(tmpfile, encoding='utf-8') as result:
+            output = result.read()
+        assert 'BuildRequires:  %python_module devel' in output
+        assert 'BuildRequires:  devel' not in output
+        assert '%{python_module}' not in output
 
     @pytest.mark.parametrize('test', collect_tests('https-probe'))
     def test_https_probe_success(self, tmpfile, monkeypatch, test):
