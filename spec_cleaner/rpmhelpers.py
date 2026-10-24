@@ -1,6 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import glob
+import logging
 import os
 import re
 from subprocess import CalledProcessError, check_output
@@ -8,6 +9,8 @@ from subprocess import CalledProcessError, check_output
 from .fileutils import open_datafile, open_stringio_spec, stat_datafile
 from .rpmexception import RpmExceptionError
 from .rpmrequirestoken import RpmRequiresToken
+
+logger = logging.getLogger('RpmHelpers')
 
 # Per-process memo of data-file and showrc reads. Every RpmSpecCleaner
 # parsed the same tables and forked the same `rpm --showrc` again, so one
@@ -131,7 +134,8 @@ def _rpm_macro_files() -> list[str]:
     The locations follow the host's rpm installation: the configuration
     directory ('%{_rpmconfigdir}') provides the main 'macros' file and the
     per-platform files, '%{_rpmmacrodir}' the files the macro packages
-    install.
+    install. An output naming anything but the two directories is
+    reported through the module logger and yields no files.
 
     Returns:
         A list of the definition files that exist.
@@ -143,6 +147,10 @@ def _rpm_macro_files() -> list[str]:
     # rpm prints in the locale charset; only ASCII paths are expected
     dirs = output.decode(errors='replace').split()
     if len(dirs) != 2:
+        logger.warning(
+            'Unusable "rpm --eval" output %r; no macro definition files will be scanned',
+            output.decode(errors='replace'),
+        )
         return []
     configdir, macrodir = dirs
     candidates = [os.path.join(configdir, 'macros')]
