@@ -150,3 +150,44 @@ class TestDependencyParser:
         assert DependencyParser('%{python_module foo}').parsed == [
             ('%{python_module foo}', None, None)
         ]
+
+    @pytest.mark.parametrize(
+        'line, macros, expected',
+        [
+            # the libyal BuildRequires lines of gh#492: the argument is part
+            # of the invocation, not a dependency of its own
+            (
+                '%python_module devel',
+                ['python_module'],
+                [('%python_module devel', None, None)],
+            ),
+            # a version relation after the argument belongs to the invocation
+            (
+                '%python_module setuptools >= 40.8.0',
+                ['python_module'],
+                [('%python_module setuptools', '>=', '40.8.0')],
+            ),
+            (
+                '%python_module Cython >= 0.29',
+                ['python_module'],
+                [('%python_module Cython', '>=', '0.29')],
+            ),
+            # a plain macro that takes no arguments is a dependency of its
+            # own, and the word after it is the next dependency
+            (
+                '%plainmacro devel',
+                ['python_module'],
+                [('%plainmacro', None, None), ('devel', None, None)],
+            ),
+            # without the macro in the set the invocation splits, which is
+            # why the set has to learn it from the rpm macro files
+            (
+                '%python_module devel',
+                [],
+                [('%python_module', None, None), ('devel', None, None)],
+            ),
+        ],
+    )
+    def test_unbraced_macro_with_arguments(self, line, macros, expected):
+        """Test that an unbraced invocation stays one dependency when the macro takes arguments."""
+        assert DependencyParser(line, macros_with_arg=macros).parsed == expected

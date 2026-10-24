@@ -461,6 +461,14 @@ class TestUnbraceKeywords:
         """Test that a macro function rpm --showrc does not report gets braced."""
         assert 'cargo_install' not in self.keywords(default_options, monkeypatch, [])
 
+    def test_macrofile_macrofunc_is_braced(self, default_options, monkeypatch):
+        """Test that a macro function from the rpm macro files is not an unbrace keyword."""
+        monkeypatch.setattr(
+            'spec_cleaner.rpmcleaner.find_global_macros_with_arg', lambda: ['python_module']
+        )
+        keywords = RpmSpecCleaner(default_options()).options['unbrace_keywords']
+        assert 'python_module' not in keywords
+
 
 class TestMacrosWithArg:
     """The dependency parser learns the macros that take arguments from the same sources."""
@@ -470,6 +478,30 @@ class TestMacrosWithArg:
         monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: ['cargo_install'])
         options = RpmSpecCleaner(default_options()).options
         assert 'cargo_install' in options['macros_with_arg']
+
+    def test_macrofile_macrofunc_is_collected(self, default_options, monkeypatch):
+        """Test that a macro function from the rpm macro files is collected."""
+        monkeypatch.setattr(
+            'spec_cleaner.rpmcleaner.find_global_macros_with_arg', lambda: ['python_module']
+        )
+        options = RpmSpecCleaner(default_options()).options
+        assert 'python_module' in options['macros_with_arg']
+
+    def test_macrofile_macrofunc_invocation_stays_one_dependency(
+        self, default_options, monkeypatch
+    ):
+        """Test that an unbraced invocation of a macro file function stays one dependency."""
+        monkeypatch.setattr(
+            'spec_cleaner.rpmcleaner.find_global_macros_with_arg', lambda: ['python_module']
+        )
+        options = default_options()
+        with open(options['specfile'], 'w', encoding='utf-8') as spec:
+            spec.write('Name: test\nBuildRequires: %python_module devel\n')
+        RpmSpecCleaner(options).run()
+        with open(options['output'], encoding='utf-8') as out:
+            lines = out.read().splitlines()
+        assert any('%python_module devel' in line for line in lines)
+        assert not any(line.split(':')[-1].strip() == 'devel' for line in lines)
 
     def test_spec_defined_macrofunc_is_collected(self, default_options):
         """Test that a macro function the spec itself defines is collected."""
