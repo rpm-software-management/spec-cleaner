@@ -21,6 +21,9 @@ make check
 %post -n %{name}%{sover} -p /sbin/ldconfig
 %postun -n %{name}%{sover} -p /sbin/ldconfig
 
+%post -n libtorch%{?pkg_suffix} -p /sbin/ldconfig
+%postun -n libtorch%{?pkg_suffix} -p /sbin/ldconfig
+
 %post
 /sbin/ldconfig
 

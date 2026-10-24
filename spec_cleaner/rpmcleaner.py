@@ -591,6 +591,11 @@ class RpmSpecCleaner:
         names = package[1:] if package[:1] == ['-n'] else package
         if (package and len(names) != 1) or any(name.startswith(('-', '\\')) for name in names):
             return None
+        # a conditional in the name is dropped when the name is passed through
+        # %ldconfig_scriptlets, so the merged scriptlets would name a package
+        # that does not exist; such a pair is left as written
+        if any('%{?' in name or '%{!' in name for name in names):
+            return None
         return args[0].lower(), ' '.join(package)
 
     def _starts_section(self, line: str) -> bool:
