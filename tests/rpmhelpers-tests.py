@@ -39,6 +39,19 @@ class TestRpmhelpers:
         monkeypatch.setattr(rpmhelpers, 'check_output', lambda cmd: output)
         assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch', 'gsub', 'expand']
 
+    def test_parse_rpm_showrc_collects_builtins_with_trailing_text(self, monkeypatch):
+        """Nothing behind the '<builtin>' marker is collected into the macro name."""
+        # the result is memoized per process; start from the mock, not a sibling test
+        rpmhelpers.clear_read_caches()
+        output = (
+            b'-20: gsub   <builtin>  \n'
+            b'-20: expand <builtin> extra\n'
+            b'-20: quote\t<builtin>\n'
+            b'==== active 1073 empty 0\n'
+        )
+        monkeypatch.setattr(rpmhelpers, 'check_output', lambda cmd: output)
+        assert rpmhelpers.parse_rpm_showrc() == ['gsub', 'expand', 'quote']
+
     def test_parse_rpm_showrc_missing_rpm(self, monkeypatch):
         """Test that a missing rpm binary is reported as RpmExceptionError."""
         rpmhelpers.clear_read_caches()
