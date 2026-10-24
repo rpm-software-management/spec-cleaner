@@ -87,6 +87,16 @@ class RpmPreamble(Section):
         self.tex = options['tex']
         # names of the macros that take arguments, for the dependency parser
         self.macros_with_arg = options['macros_with_arg']
+        # the cleanup braces an invocation of one of them and the unbracing
+        # there only restores the ones it knows; restore the rest here, in
+        # dependency values only, so the parser sees the invocation in the
+        # unbraced form it recognises
+        if self.macros_with_arg:
+            self.re_macro_with_arg_braced = re.compile(
+                r'%{(' + '|'.join(re.escape(name) for name in self.macros_with_arg) + r')}'
+            )
+        else:
+            self.re_macro_with_arg_braced = None
         # are we supposed to keep empty lines intact?
         self.keep_space = options['keep_space']
         # do we want to remove groups from the specfile?
@@ -445,6 +455,8 @@ class RpmPreamble(Section):
         ) and (self.minimal or '[' in value):
             return [value]
         dependencies, trailing_comment = self._split_trailing_comment(value)
+        if self.re_macro_with_arg_braced:
+            dependencies = self.re_macro_with_arg_braced.sub(r'%\1', dependencies)
         try:
             tokens = DependencyParser(dependencies, self.macros_with_arg).flat_out()
         except (DepParserError, NoMatchExceptionError):
