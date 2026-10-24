@@ -55,7 +55,7 @@ spec file → RpmSpecCleaner.run() → line-by-line section detection
 | `dependency_parser.py` | `DependencyParser` — parses `Requires:`/`BuildRequires:` tokens |
 | `rpmrequirestoken.py` | `RpmRequiresToken` — single dependency token |
 | `rpmregexp.py` | `Regexp` — the shared compiled regexes (the dependency tokenizer and a few helpers keep their own) |
-| `rpmhelpers.py` | `parse_rpm_showrc()` and small shared helpers |
+| `rpmhelpers.py` | the vendored macro snapshot loader and small shared helpers |
 | `fileutils.py` | file I/O helpers |
 
 ## Live runtime dependencies
@@ -63,11 +63,11 @@ spec file → RpmSpecCleaner.run() → line-by-line section detection
 The tool's output depends on the host it runs on. Know these before
 debugging "works on my machine" differences:
 
-- **`rpm --showrc`.** Without `rpm` (e.g. macOS) the tool aborts with
-  `Could not run "rpm --showrc"`. With a different rpm macro set the
-  unbrace list differs, and so does the output. Tests mock this via
-  `tests/conftest.py` (but `test_utf8_in_non_utf8_locale` runs the
-  tool in a subprocess, where the mock does not apply).
+- **The vendored macro snapshot.** Which macros take arguments is read
+  from `data/macro_functions.txt`, a snapshot of the distributions'
+  macro packages plus the rpm builtins, refreshed by the macro-sync
+  workflow. The list is the same on every host, so the unbrace list
+  and the dependency tokenisation do not depend on a local rpm.
 - **HTTPS probes.** The `https-probe/` tests patch `rpmpreamble.urlopen`
   so every probe succeeds; the `webtest` mark gates the `web/` tests.
   Some unmarked `out/` cases (e.g. `source_https.spec`) still probe the
@@ -82,8 +82,9 @@ debugging "works on my machine" differences:
 
 - **Macros on the unbrace list stay braceless.** `embrace_macros` braces
   every macro and then unbraces the names on the list, which is
-  `data/excludes-bracketing.txt`, plus parametric macros from
-  `rpm --showrc`, plus parametric `%define`/`%global` in the spec.
+  `data/excludes-bracketing.txt`, plus the parametric macros of the
+  vendored snapshot in `data/macro_functions.txt`, plus parametric
+  `%define`/`%global` in the spec.
   `%ldconfig_scriptlets -n foo` stays braceless because it is listed in
   `excludes-bracketing.txt` — `%{macro} args` does not pass args to the
   macro, so bracing it would break the build. To keep a new args-taking
