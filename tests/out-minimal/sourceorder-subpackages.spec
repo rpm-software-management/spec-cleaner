@@ -16,7 +16,7 @@ License:        LPPL-1.0
 Summary:        Binary files of alpha
 Group:          Productivity/Publishing/TeX/Utilities
 URL:            https://example.org/
-Requires(pre):  sourceorder-subpackages-alpha >= %{pkg_version}
+Requires(pre):  sourceorder-subpackages-alpha >= %pkg_version
 #!BuildIgnore:  sourceorder-subpackages-alpha
 
 %description alpha-bin
@@ -29,7 +29,7 @@ License:        LPPL-1.0
 Summary:        Binary files of beta
 Group:          Productivity/Publishing/TeX/Utilities
 URL:            https://example.org/
-Requires(pre):  sourceorder-subpackages-beta >= %{pkg_version}
+Requires(pre):  sourceorder-subpackages-beta >= %pkg_version
 #!BuildIgnore:  sourceorder-subpackages-beta
 
 %description beta-bin
