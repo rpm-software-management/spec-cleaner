@@ -21,10 +21,11 @@ Usage:
     generate-macro-functions.py [--repo URL] [--out FILE] [--workdir DIR]
                                 [--keep-builtins]
 
-The repository defaults to the openSUSE Tumbleweed oss repository, the
-development distribution the Factory corpus is built from.  Only
-python3 and the zstd binary are needed; rpm payloads are extracted
-directly, without rpm2cpio/cpio.
+The snapshot unions two rolling development distributions: openSUSE
+Tumbleweed, the distribution the Factory corpus is built from, and
+Fedora Rawhide, whose macro packages cover the macro vocabulary of the
+Fedora ecosystem.  Only python3 and the zstd binary are needed; rpm
+payloads are extracted directly, without rpm2cpio/cpio.
 
 Downloaded repodata is verified against the checksum and size published
 for it in repomd.xml before it is parsed, the same discipline
@@ -49,6 +50,9 @@ import xml.etree.ElementTree as ET
 from datetime import date
 
 DEFAULT_REPO = 'http://download.opensuse.org/tumbleweed/repo/oss/'
+DEFAULT_FEDORA_REPO = (
+    'https://download.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/x86_64/os/'
+)
 
 NS = {
     'r': 'http://linux.duke.edu/metadata/repo',
@@ -340,6 +344,34 @@ def parse_macro_text(text, into):
             into.add(name)
 
 
+def collect_macro_names(repo, workdir, picked):
+    """Download the picked packages of one repository; collect their macro names."""
+    names = set()
+    files_seen = 0
+    for name in sorted(picked):
+        arch, files, href, size = picked[name]
+        dest = os.path.join(workdir, 'rpms', os.path.basename(href))
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        fetch(repo + href, dest)
+        with open(dest, 'rb') as fh:
+            payload = rpm_payload(fh.read())
+        found = extract_files(payload, files)
+        files_seen += len(found)
+        for content in found.values():
+            parse_macro_text(content.decode('utf-8', 'replace'), names)
+    return names, files_seen
+
+
+def repo_macro_names(repo, workdir):
+    """Run the full enumeration over one repository; return its names and revision."""
+    hrefs, checks, revision = repodata_hrefs(repo, workdir)
+    owners = macro_packages(repo, workdir, hrefs, checks)
+    locations = package_locations(repo, workdir, hrefs, checks)
+    picked = pick_binaries(owners, locations)
+    names, files_seen = collect_macro_names(repo, workdir, picked)
+    return names, revision, len(picked), files_seen
+
+
 def builtin_macros():
     """Collect the builtin macro names from the local rpm --showrc."""
     out = subprocess.run(['rpm', '--showrc'], capture_output=True, text=True, check=True).stdout
@@ -365,6 +397,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--repo', default=DEFAULT_REPO)
     ap.add_argument(
+        '--fedora-repo',
+        default=DEFAULT_FEDORA_REPO,
+        help='Fedora Rawhide repository unioned into the snapshot; '
+        'pass an empty string to build from --repo only',
+    )
+    ap.add_argument(
         '--workdir', default=os.path.join(tempfile.gettempdir(), 'spec-cleaner-macro-functions')
     )
     ap.add_argument('--out', default='spec_cleaner/data/macro_functions.txt')
@@ -377,24 +415,18 @@ def main():
     args = ap.parse_args()
 
     os.makedirs(args.workdir, exist_ok=True)
-    hrefs, checks, revision = repodata_hrefs(args.repo, args.workdir)
-    owners = macro_packages(args.repo, args.workdir, hrefs, checks)
-    locations = package_locations(args.repo, args.workdir, hrefs, checks)
-    picked = pick_binaries(owners, locations)
+    names, revision, picked, files_seen = repo_macro_names(args.repo, args.workdir)
 
-    names = set()
-    files_seen = 0
-    for name in sorted(picked):
-        arch, files, href, size = picked[name]
-        dest = os.path.join(args.workdir, 'rpms', os.path.basename(href))
-        os.makedirs(os.path.dirname(dest), exist_ok=True)
-        fetch(args.repo + href, dest)
-        with open(dest, 'rb') as fh:
-            payload = rpm_payload(fh.read())
-        found = extract_files(payload, files)
-        files_seen += len(found)
-        for content in found.values():
-            parse_macro_text(content.decode('utf-8', 'replace'), names)
+    fedora_revision = None
+    fedora_picked = 0
+    if args.fedora_repo:
+        fedora_workdir = os.path.join(args.workdir, 'fedora')
+        os.makedirs(fedora_workdir, exist_ok=True)
+        f_names, fedora_revision, fedora_picked, f_files = repo_macro_names(
+            args.fedora_repo, fedora_workdir
+        )
+        names |= f_names
+        files_seen += f_files
 
     _old, kept_builtins = read_existing(args.out)
     if args.keep_builtins and kept_builtins:
@@ -418,6 +450,11 @@ def main():
             '# Argument-taking rpm macros from the openSUSE Tumbleweed '
             f'snapshot {revision}, fetched {date.today().isoformat()}\n'
         )
+        if fedora_revision is not None:
+            fh.write(
+                '# Unioned with Fedora Rawhide '
+                f'snapshot {fedora_revision}, fetched {date.today().isoformat()}\n'
+            )
         fh.write(
             '# Generated by generate-macro-functions.py; refresh with '
             "'make spec_cleaner/data/macro_functions.txt'.\n"
@@ -427,9 +464,12 @@ def main():
         fh.write(f'{BUILTINS_MARKER} ({builtin_note})\n')
         for name in sorted(builtins):
             fh.write(name + '\n')
+    package_counts = f'{picked} macro packages'
+    if fedora_revision is not None:
+        package_counts += f' + {fedora_picked} Fedora macro packages'
     print(
         f'wrote {args.out}: {len(names) + len(builtins)} names '
-        f'({len(picked)} macro packages, {files_seen} macro files, '
+        f'({package_counts}, {files_seen} macro files, '
         f'{len(builtins)} builtins)'
     )
 
