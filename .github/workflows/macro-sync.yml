@@ -1,0 +1,105 @@
+name: Macro snapshot sync
+
+# Keep the vendored macro function snapshot from drifting behind the
+# distribution. The snapshot (spec_cleaner/data/macro_functions.txt) is
+# generated from the openSUSE Tumbleweed repository by
+# generate-macro-functions.py.
+# - Manual trigger: refresh on demand (workflow_dispatch)
+# - Monthly schedule: macro packages change slowly; monthly is plenty
+# On drift the job opens a refresh PR; when the data is current it is a
+# green no-op. Drift means the name set changed, not just the snapshot
+# revision or fetch date in the generated-file header.
+#
+# The builtin section is carried over (--keep-builtins): it is recorded
+# from a current rpm on a distribution host, while the runner's rpm, if
+# any, is older and its showrc dump does not list every builtin.
+# Refreshing the builtins is part of a manual regeneration.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 1 * *'  # 1st of month 04:00 UTC, an hour after the SPDX sync
+
+# The refresh only reads the network and the tree; pushing the branch and
+# opening the PR need write, granted to the job below instead.
+permissions:
+  contents: read
+
+concurrency:
+  group: macro-sync
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install -y zstd
+
+      - name: Refresh macro snapshot
+        run: python3 generate-macro-functions.py --keep-builtins
+
+      - name: Check for drift
+        id: diff
+        run: |
+          # Compare the name sets, not the raw file diff: the generated
+          # file embeds the snapshot revision and fetch date, so a
+          # no-change re-fetch would otherwise always look like drift
+          # and open a no-op PR.
+          old_names=$(git show HEAD:spec_cleaner/data/macro_functions.txt | grep -v '^#' | sort)
+          new_names=$(grep -v '^#' spec_cleaner/data/macro_functions.txt | sort)
+          if [ "$old_names" = "$new_names" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open refresh PR
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          old_rev=$(git show HEAD:spec_cleaner/data/macro_functions.txt | sed -n '1s/^# Argument-taking rpm macros from the openSUSE Tumbleweed snapshot \([0-9]*\),.*/\1/p')
+          new_rev=$(sed -n '1s/^# Argument-taking rpm macros from the openSUSE Tumbleweed snapshot \([0-9]*\),.*/\1/p' spec_cleaner/data/macro_functions.txt)
+          branch="macro-sync-$(date -u +%F)"
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            checkout -B "$branch"
+          git add spec_cleaner/data/macro_functions.txt
+          git -c user.name=github-actions -c user.email=github-actions@github.com \
+            commit -m "Refresh macro snapshot to Tumbleweed ${new_rev}" -m "Was: ${old_rev}."
+          git push -u origin "$branch"
+          if [ -z "$(gh pr list --head "$branch" --json number --jq '.[].number')" ]; then
+            python3 - "$old_rev" "$new_rev" <<'EOF' > /tmp/macro-pr-body.md
+          import subprocess
+          import sys
+          old_rev, new_rev = sys.argv[1], sys.argv[2]
+          old = subprocess.run(
+              ['git', 'show', 'HEAD:spec_cleaner/data/macro_functions.txt'],
+              capture_output=True, text=True, check=True).stdout
+          new = open('spec_cleaner/data/macro_functions.txt').read()
+
+          def names(text):
+              return {line.strip() for line in text.splitlines()
+                      if line.strip() and not line.startswith('#')}
+
+          old_names, new_names = names(old), names(new)
+          added = sorted(new_names - old_names)
+          removed = sorted(old_names - new_names)
+          old_rev = old_rev or 'unrecorded (first provenance run)'
+          print(f'Macro snapshot refresh: Tumbleweed {old_rev} -> {new_rev}.')
+          print()
+          print(f'Added macros ({len(added)}): ' + (', '.join(added) or 'none'))
+          print(f'Removed macros ({len(removed)}): ' + (', '.join(removed) or 'none'))
+          print()
+          print('Produced by the monthly macro-sync job; merge to pick the new snapshot up.')
+          EOF
+            gh pr create --base master --head "$branch" \
+              --title "Refresh macro snapshot to Tumbleweed ${new_rev}" \
+              --body-file /tmp/macro-pr-body.md
+          fi
