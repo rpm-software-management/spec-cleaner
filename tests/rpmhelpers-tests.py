@@ -29,6 +29,14 @@ class TestRpmhelpers:
         # cleaner constructions in other tests do not clear the cache
         rpmhelpers.clear_read_caches()
 
+    def test_load_keywords_whitelist_skips_comments_and_blanks(self, monkeypatch):
+        """Test that the bracketing excludes loader skips comment and empty lines."""
+        rpmhelpers.clear_read_caches()
+        content = '# rpm section keyword\nbuild\n\n# %files directive\nattr(\\s*\\([^)]*\\))?\n'
+        monkeypatch.setattr(rpmhelpers, 'open_datafile', lambda name: StringIO(content))
+        assert rpmhelpers.load_keywords_whitelist() == ['build', 'attr(\\s*\\([^)]*\\))?']
+        rpmhelpers.clear_read_caches()
+
     def test_find_bracketing_macrofuncs_collects_body_arg_defines(self, tmp_path):
         """Test that defines whose body uses the argument vector are collected for bracketing."""
         spec = tmp_path / 'test.spec'

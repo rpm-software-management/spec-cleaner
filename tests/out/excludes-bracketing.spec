@@ -1,6 +1,5 @@
 %bcond_with[^\s]*
 %add_maven_depmap
-%apache_test_module_load
 %attr(\s*\([^)]*\))?
 
 %build
@@ -12,7 +11,6 @@
 %cmake_[^\s]*
 %config(\s*\([^)]*\))?
 %configure
-%create_exclude_filelist
 %ctest
 %defattr(\s*\([^)]*\))?
 %define
@@ -31,14 +29,11 @@
 %files
 %files_fontsconf_file
 %fillup_[^\s]*
-%find_gconf_schemas
 %find_lang
 %gem_install
 %gem_packages
 %ghc_bin_build
 %ghc_bin_install
-%ghc_check_bootstrap
-%ghc_fix_dynamic_rpath
 %ghc_fix_rpath
 %ghc_lib_build
 %ghc_lib_install
@@ -56,12 +51,7 @@
 %install
 %install_info
 %install_info_delete
-%jar
-%java
-%javac
 %jpackage_script
-%kde_post_install
-%kde4_makeinstall
 %kernel_module_package
 %kf5_makeinstall
 %lang_package
@@ -79,7 +69,6 @@
 %patch[0-9]*
 %perl_gen_filelist
 %perl_make_install
-%perl_process_[^\s]*
 %pom_add_dep
 %pom_remove_dep
 
@@ -101,7 +90,6 @@
 %pycache_only
 %python3_build
 %python2_install
-%pypy3_build
 %pypy3_install
 %python_exec
 %python_expand

@@ -109,13 +109,16 @@ def load_keywords_whitelist() -> list[str]:
     """
     Create a list of keywords contained in BRACKETING_EXCLUDES file (keywords that shouldn't be in brackets).
 
+    Lines starting with '#' and empty lines are skipped: the comments
+    record why the listed semantic exceptions stay unbraced.
+
     Returns:
         A list of such keywords.
     """
 
     def load():
         with open_datafile(BRACKETING_EXCLUDES) as f:
-            return [line.rstrip('\n') for line in f]
+            return [line.rstrip('\n') for line in f if line.strip() and not line.startswith('#')]
 
     return _cached_datafile(BRACKETING_EXCLUDES, load)
 

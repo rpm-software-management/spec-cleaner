@@ -1,96 +1,88 @@
-add_maven_depmap
-apache_rex_check
-apache_test_module_start_apache
-apache_test_module_stop_apache
-apache_test_module_curl
-apache_test_module_load
-apparmor_reload
+# Keywords and patterns the cleaner keeps out of curly brackets, on top of
+# the argument-taking macros of the vendored snapshot in macro_functions.txt
+# and the macros the spec itself declares.
+#
+# A name the snapshot carries is not listed here: the snapshot is the
+# data-driven source for argument-taking macros, and listing such a name
+# again would only restate what the data already provides. Lines starting
+# with '#' and empty lines are skipped by the loader.
+#
+# Entries with a reason recorded above them are semantic exceptions: they
+# are section keywords, %files directives or parser directives rather than
+# macro invocations, or plain macros taking no arguments, so the
+# argument-taking snapshot cannot express why they stay unbraced.
+#
+# The remaining entries without a recorded reason are argument-taking
+# macros the snapshot does not carry yet (whole families among them, e.g.
+# the cmake_*, meson_* and yast_* helpers); they stay until the snapshot
+# covers them.
+# %files directive or flag word, not a macro invocation
 artifact
+# %files directive: the braced invocation form is the directive syntax itself
 attr(\s*\([^)]*\))?
-autosetup
-bcond
-bcond_with[^\s]*
-binfmt_apply
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 build
 cabal_test
-cake_build
-cake_install
+# %files directive: the braced invocation form is the directive syntax itself
 caps(\s*\([^)]*\))?
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 changelog
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 check
 cmake
 cmake_[^\s]*
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 conf
+# %files directive: the braced invocation form is the directive syntax itself
 config(\s*\([^)]*\))?
 configure
-create_exclude_filelist
-ctest
+# %files directive: the braced invocation form is the directive syntax itself
 defattr(\s*\([^)]*\))?
-define
-defined
+# %files directive: the braced invocation form is the directive syntax itself
 defverify(\s*\([^)]*\))?
+# emitted by the cleaner's own dephell conversion in rpmprep; kept unbraced in the generated output
 dephell_gensetup
-description
-desktop_database_post[^\s]*
+# %files directive: the braced invocation form is the directive syntax itself
 dev(\s*\([^)]*\))?
+# %files directive or flag word, not a macro invocation
 dir
-dnl
+# %files directive or flag word, not a macro invocation
 doc
+# %files directive or flag word, not a macro invocation
 docdir
+# spec parser directive, not a macro the snapshot can carry
 else
+# spec parser directive, not a macro the snapshot can carry
 elif[^\s]*
+# spec parser directive, not a macro the snapshot can carry
 endif
+# %files directive or flag word, not a macro invocation
 exclude
-fdupes
-files
-files_fontsconf_file
 fillup_[^\s]*
-find_gconf_schemas
 find_lang
-firewalld_reload
-gem_install
 gem_packages
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 generate_buildrequires
-ghc_bin_build
-ghc_bin_install
-ghc_check_bootstrap
-ghc_fix_dynamic_rpath
-ghc_fix_rpath
-ghc_lib_build
-ghc_lib_build_without_haddock
-ghc_lib_install
 ghc_pkg_recache
+# %files directive or flag word, not a macro invocation
 ghost
 glib2_gsettings_schema_[^\s]*
-global
 gpg_verify
-hpc_setup
-hpc_configure
-hpc_write_modules_files
-icon_theme_cache_post[^\s]*
-icon_theme_cache_create_ghost
+# spec parser directive, not a macro the snapshot can carry
 if(\s*\(.*\))?
+# spec parser directive, not a macro the snapshot can carry
 if[^\s]*
+# spec parser directive, not a macro the snapshot can carry
 include
 insserv_[^\s]*
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 install
-install_info
-install_info_delete
-jar
-java
-javac
-jpackage_script
 jupyter_move_config
-kde_post_install
-kde4_makeinstall
-kernel_module_package
-kf5_makeinstall
-lang_package
+# %files directive: the braced invocation form is the directive syntax itself
 lang(\s*\([^)]*\))
 langpack
-ldconfig_scriptlets
+# %files directive or flag word, not a macro invocation
 license
-limit_build
 make_build
 make_install
 make_jobs
@@ -98,124 +90,82 @@ makeinstall
 meson
 meson_[^\s]*
 ninja_[^\s]*
-mime_database_post[^\s]*
+# %files directive or flag word, not a macro invocation
 missingok
 _mingw32_configure
-mysql_testserver[^\s]*
-nagios_command_user_group_add
-nagios_user_group_add
 nodejs_install
-obsolete_legacy_pattern
+# plain macro taking no arguments; the snapshot carries argument-taking macros only
 __os_install_post
-package
+# spec parser directive, not a macro the snapshot can carry
 patch[0-9]*
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 patchlist
-perl_gen_filelist
 perl_make_install
-perl_process_[^\s]*
-pom_[^\s]*
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 post
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 posttrans
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 postun
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 postuntrans
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 pre
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 prep
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 pretrans
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 preun
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 preuntrans
+# %files directive or flag word, not a macro invocation
 pubkey
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 filetriggerin
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 filetriggerun
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 filetriggerpostun
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 transfiletriggerin
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 transfiletriggerun
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 transfiletriggerpostun
-openstack_cleanup_prep
-openstack_test_package_install
-openstack_pre_user_group_create
-py2_entrypoint
 pattern_[^\s]*
-py_build
-py2_build
-py2_install
 py_compile
-py2_compile
-py3_compile
-py_req_cleanup
-pyproject_install
-pyproject_wheel
-python_alternative
-python_clone
-python_group_libalternatives
-python_install_alternative
-python_libalternatives_reset_alternative
-python_uninstall_alternative
-python(.?)_only
-pypy(.?)_only
-pycache_only
-pytest
-pytest_arch
-pyunittest
-pyunittest_arch
 python(.?)_build
-python(.?)_install
-py(.?)_build
-py(.?)_install
-pypy3_build
-pypy3_install
-python_exec
-python_expand
-python_subpackages
 qmake
 qmake5
 qmake5_install
+# %files directive or flag word, not a macro invocation
 readme
 reconfigure_fonts_[^\s]*
 requires_[^\s]*
-restart_on_update
+# plain macro taking no arguments; the snapshot carries argument-taking macros only
 run_permissions
-selinux_modules_install
-selinux_modules_uninstall
-selinux_relabel_post
-selinux_relabel_pre
-selinux_set_booleans
-selinux_unset_booleans
-service_(add|del)_[^\s]*
-set_permissions
+# spec parser directive, not a macro the snapshot can carry
 setup
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 sourcelist
-stop_on_removal
-suse_kernel_module_package
-suse_update_desktop_file
-sysctl_apply
+# plain macro taking no arguments; the snapshot carries argument-taking macros only
 systemd_ordering
-systemd_post
-systemd_postun
-systemd_postun_with_restart
-systemd_pre
-systemd_preun
+# plain macro taking no arguments; the snapshot carries argument-taking macros only
 systemd_requires
-systemd_user_post
-systemd_user_postun
-systemd_user_postun_with_restart
-systemd_user_pre
-systemd_user_preun
-systemd_user_prerun
-sysusers_create
-sysusers_create_package
+# plain macro taking no arguments; the snapshot carries argument-taking macros only
 sysusers_requires
-sysusers_generate_pre
-tmpfiles_create
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 triggerin
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 triggerpostun
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 triggerprein
+# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 triggerun
-udev_rules_update
-undefine
-update_bootloader_check_type_refresh_post
+# covers the %verify directive and the %verifyscript section keyword
 verify[^\s]*
+# %files directive: the braced invocation form is the directive syntax itself
 verify(\s*\([^)]*\))?
-with
-without
 yast_(build|check|install)[^\s]*
 yast_metainfo
