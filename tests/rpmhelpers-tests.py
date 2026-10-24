@@ -63,6 +63,54 @@ class TestRpmhelpers:
         with pytest.raises(RpmExceptionError):
             rpmhelpers.parse_rpm_showrc()
 
+    def test_find_global_macros_with_arg_collects_definitions(self, monkeypatch, tmp_path):
+        """Test that macro functions are collected from the rpm macro files."""
+        rpmhelpers.clear_read_caches()
+        configdir = tmp_path / 'rpm'
+        macrodir = configdir / 'macros.d'
+        platformdir = configdir / 'platform' / 'x86_64-linux'
+        macrodir.mkdir(parents=True)
+        platformdir.mkdir(parents=True)
+        (configdir / 'macros').write_text('%plainmacro a body\n%define defined_one() body\n')
+        (macrodir / 'macros.python').write_text(
+            '%python_module() %{lua: body}\n%python_module_iter(a:) body\n%pythons body\n'
+        )
+        (platformdir / 'macros').write_text('%platform_macro() body\n')
+        monkeypatch.setattr(
+            rpmhelpers, 'check_output', lambda cmd: f'{configdir} {macrodir}'.encode()
+        )
+        assert rpmhelpers.find_global_macros_with_arg() == [
+            'defined_one',
+            'python_module',
+            'python_module_iter',
+            'platform_macro',
+        ]
+
+    def test_find_global_macros_with_arg_missing_rpm(self, monkeypatch):
+        """Test that a missing rpm binary is reported as RpmExceptionError."""
+        rpmhelpers.clear_read_caches()
+
+        def missing(cmd):
+            raise FileNotFoundError(2, 'No such file or directory', 'rpm')
+
+        monkeypatch.setattr(rpmhelpers, 'check_output', missing)
+        with pytest.raises(RpmExceptionError):
+            rpmhelpers.find_global_macros_with_arg()
+
+    def test_find_global_macros_with_arg_runs_once_per_process(self, monkeypatch, tmp_path):
+        """Test that the rpm --eval subprocess is not reforked for every spec."""
+        rpmhelpers.clear_read_caches()
+        calls = []
+
+        def counting(cmd):
+            calls.append(cmd)
+            return f'{tmp_path} {tmp_path}'.encode()
+
+        monkeypatch.setattr(rpmhelpers, 'check_output', counting)
+        assert rpmhelpers.find_global_macros_with_arg() == []
+        assert rpmhelpers.find_global_macros_with_arg() == []
+        assert calls == [['rpm', '--eval', '%{_rpmconfigdir} %{_rpmmacrodir}']]
+
     @pytest.mark.parametrize(
         'line, depth, expected',
         [

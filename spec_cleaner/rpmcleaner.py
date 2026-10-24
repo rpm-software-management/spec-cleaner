@@ -16,6 +16,7 @@ from .rpmdescription import RpmDescription
 from .rpmexception import RpmExceptionError
 from .rpmfiles import RpmFiles
 from .rpmhelpers import (
+    find_global_macros_with_arg,
     find_macros_with_arg,
     fix_license,
     load_keywords_whitelist,
@@ -209,8 +210,14 @@ class RpmSpecCleaner:
         global_macrofuncs = parse_rpm_showrc()
         spec_macrofuncs = find_macros_with_arg(self.options['specfile'])
         # the dependency parser needs the macro functions on their own,
-        # without the unbracing keywords mixed in
-        self.options['macros_with_arg'] = global_macrofuncs + spec_macrofuncs
+        # without the unbracing keywords mixed in; the rpm macro files
+        # name further functions 'rpm --showrc' cannot tell from plain
+        # macros, and those are the parser's set only -- unbracing them
+        # everywhere would also unbrace them where the words after them
+        # are not their arguments, e.g. '%files %{python_files} -f ...'
+        self.options['macros_with_arg'] = (
+            global_macrofuncs + find_global_macros_with_arg() + spec_macrofuncs
+        )
         return keywords + global_macrofuncs + spec_macrofuncs
 
     def _find_skip_parser(self) -> None:
