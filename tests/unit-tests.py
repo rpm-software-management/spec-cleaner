@@ -448,9 +448,10 @@ class TestPlaceHelpers:
 class TestUnbraceKeywords:
     """The unbrace keyword list also comes from what rpm --showrc reports."""
 
-    def keywords(self, default_options, monkeypatch, showrc):
-        """Build a cleaner with rpm --showrc reporting the given macro functions."""
+    def keywords(self, default_options, monkeypatch, showrc, vendored=()):
+        """Build a cleaner with the given showrc and vendored macro functions."""
         monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: showrc)
+        monkeypatch.setattr('spec_cleaner.rpmcleaner.load_macro_functions', lambda: list(vendored))
         return RpmSpecCleaner(default_options()).options['unbrace_keywords']
 
     def test_showrc_macrofunc_is_not_braced(self, default_options, monkeypatch):
@@ -463,11 +464,28 @@ class TestUnbraceKeywords:
 
     def test_macrofile_macrofunc_is_braced(self, default_options, monkeypatch):
         """Test that a macro function from the rpm macro files is not an unbrace keyword."""
+        monkeypatch.setattr('spec_cleaner.rpmcleaner.load_macro_functions', lambda: [])
         monkeypatch.setattr(
             'spec_cleaner.rpmcleaner.find_global_macros_with_arg', lambda: ['python_module']
         )
         keywords = RpmSpecCleaner(default_options()).options['unbrace_keywords']
         assert 'python_module' not in keywords
+
+    def test_vendored_macrofunc_is_not_braced(self, default_options, monkeypatch):
+        """Test that a macro function from the vendored snapshot is left unbraced."""
+        keywords = self.keywords(default_options, monkeypatch, [], ['cargo_install'])
+        assert 'cargo_install' in keywords
+
+    def test_vendored_macrofunc_has_no_invocation_entry(self, default_options, monkeypatch):
+        """Test that no invocation entry is derived for a vendored function (gh#491)."""
+        keywords = self.keywords(default_options, monkeypatch, [], ['cargo_install'])
+        assert 'cargo_install' in keywords
+        assert r'cargo_install(\s*\([^)]*\))?' not in keywords
+
+    def test_whitelist_fallback_is_kept(self, default_options, monkeypatch):
+        """Test that the whitelist applies when no derivation reports the name."""
+        keywords = self.keywords(default_options, monkeypatch, [], [])
+        assert 'meson' in keywords
 
 
 class TestMacrosWithArg:
@@ -509,6 +527,20 @@ class TestMacrosWithArg:
         with open(options['specfile'], 'a', encoding='utf-8') as spec:
             spec.write('%define selfconflict() %1\n')
         assert 'selfconflict' in RpmSpecCleaner(options).options['macros_with_arg']
+
+    def test_vendored_macrofunc_is_not_collected(self, default_options, monkeypatch):
+        """
+        Test that the vendored snapshot feeds the bracketing list only.
+
+        The dependency parser's own collection is a separate derivation;
+        the snapshot joins it only through the unbracing keywords.
+        """
+        monkeypatch.setattr(
+            'spec_cleaner.rpmcleaner.load_macro_functions', lambda: ['cargo_install']
+        )
+        options = RpmSpecCleaner(default_options()).options
+        assert 'cargo_install' in options['unbrace_keywords']
+        assert 'cargo_install' not in options['macros_with_arg']
 
     def test_plain_macro_is_not_collected(self, default_options):
         """Test that a macro defined without parentheses is not collected."""

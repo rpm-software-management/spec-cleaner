@@ -16,10 +16,12 @@ from .rpmdescription import RpmDescription
 from .rpmexception import RpmExceptionError
 from .rpmfiles import RpmFiles
 from .rpmhelpers import (
+    find_bracketing_macrofuncs,
     find_global_macros_with_arg,
     find_macros_with_arg,
     fix_license,
     load_keywords_whitelist,
+    load_macro_functions,
     parse_rpm_showrc,
     read_cmake_changes,
     read_group_changes,
@@ -200,15 +202,17 @@ class RpmSpecCleaner:
         """
         Create a list of keywords that shouldn't be in the curly brackets.
 
-        It searches for keywords in the whitelist file, global macro functions in 'rpm --showrc' and macro functions
-        in the specfile.
+        It searches for keywords in the whitelist file, in the vendored
+        macro function snapshot, in 'rpm --showrc' and in the specfile.
 
         Returns:
             A list of such keywords.
         """
         keywords = load_keywords_whitelist()
+        vendored_macrofuncs = load_macro_functions()
         global_macrofuncs = parse_rpm_showrc()
         spec_macrofuncs = find_macros_with_arg(self.options['specfile'])
+        bracketing_macrofuncs = find_bracketing_macrofuncs(self.options['specfile'])
         # the dependency parser needs the macro functions on their own,
         # without the unbracing keywords mixed in; the rpm macro files
         # name further functions 'rpm --showrc' cannot tell from plain
@@ -218,7 +222,17 @@ class RpmSpecCleaner:
         self.options['macros_with_arg'] = (
             global_macrofuncs + find_global_macros_with_arg() + spec_macrofuncs
         )
-        return keywords + global_macrofuncs + spec_macrofuncs
+        # the bracketing exclusions are protection only and cover more:
+        # the vendored snapshot and the spec's own argument-consuming
+        # definitions join the showrc functions here, while the parser
+        # above keeps its own collection
+        derived = vendored_macrofuncs + global_macrofuncs + bracketing_macrofuncs
+        # the names protect the space separated argument forms; the
+        # invocation forms '%name(args)' need no entry of their own, as
+        # no curlification touches an invocation in either spelling
+        # (gh#491): a braced invocation keeps its braces and an
+        # unbraced one is never braced
+        return keywords + derived
 
     def _find_skip_parser(self) -> None:
         """

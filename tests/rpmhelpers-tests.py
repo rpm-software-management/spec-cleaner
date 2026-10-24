@@ -127,6 +127,53 @@ class TestRpmhelpers:
         assert rpmhelpers.find_global_macros_with_arg() == []
         assert rpmhelpers.find_global_macros_with_arg() == []
         assert calls == [['rpm', '--eval', '%{_rpmconfigdir} %{_rpmmacrodir}']]
+    def test_load_macro_functions_reads_the_snapshot(self, monkeypatch):
+        """Test that the vendored snapshot yields its names, headers skipped."""
+        rpmhelpers.clear_read_caches()
+        content = (
+            '# Argument-taking rpm macros from a snapshot\n'
+            '# rpm builtins (read from RPM version 4.20.1)\n'
+            '\n'
+            'autosetup\n'
+            'lang_package\n'
+            'gsub\n'
+        )
+        monkeypatch.setattr(rpmhelpers, 'open_datafile', lambda name: StringIO(content))
+        assert rpmhelpers.load_macro_functions() == ['autosetup', 'lang_package', 'gsub']
+        # the mocked result is cached under the real file's identity and
+        # cleaner constructions in other tests do not clear the cache
+        rpmhelpers.clear_read_caches()
+
+    def test_find_bracketing_macrofuncs_collects_body_arg_defines(self, tmp_path):
+        """Test that defines whose body uses the argument vector are collected for bracketing."""
+        spec = tmp_path / 'test.spec'
+        spec.write_text(
+            '%define declared() %1\n'
+            '%define wrapper %{__install} %*\n'
+            '%define continued first \\\n'
+            '    second %2\n'
+            '%define plain plainvalue\n'
+            '%global flagonly %{?flag}\n'
+            '%define helper %{-c:%{-c*}}\n'
+            '%define luapat %{lua: print(("%1"):gsub("%2", "x"))}\n'
+        )
+        assert rpmhelpers.find_bracketing_macrofuncs(str(spec)) == [
+            'declared',
+            'wrapper',
+            'continued',
+        ]
+
+    def test_find_macros_with_arg_keeps_declared_only(self, tmp_path):
+        """Test that the dependency parser's collection stays declaration-based."""
+        spec = tmp_path / 'test.spec'
+        spec.write_text('%define declared() %1\n%define wrapper %{__install} %*\n')
+        assert rpmhelpers.find_macros_with_arg(str(spec)) == ['declared']
+
+    def test_find_bracketing_macrofuncs_trailing_backslash(self, tmp_path):
+        """Test that a definition ending the file mid-continuation does not overrun."""
+        spec = tmp_path / 'test.spec'
+        spec.write_text('%define dangling body %1 \\\n')
+        assert rpmhelpers.find_bracketing_macrofuncs(str(spec)) == ['dangling']
 
     @pytest.mark.parametrize(
         'line, depth, expected',

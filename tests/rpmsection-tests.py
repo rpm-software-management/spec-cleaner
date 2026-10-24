@@ -315,3 +315,20 @@ def test_embrace_lua_opener_in_comment_opens_nothing(default_options):
     assert section.lines[-1] == '%{lua: print("x")} echo done # %{lua: print('
     section.add('cp %name %version')
     assert section.lines[-1] == 'cp %{name} %{version}'
+
+
+def test_vendored_invocation_survives_full_run(default_options, monkeypatch):
+    """A function from the vendored snapshot keeps its invocation form through the full run."""
+    monkeypatch.setattr('spec_cleaner.rpmcleaner.load_macro_functions', lambda: ['lang_package'])
+    assert (
+        _cleaned_line(default_options, False, '%lang_package(cryptsetup)')
+        == '%lang_package(cryptsetup)'
+    )
+    assert _cleaned_line(default_options, False, '%lang_package foo') == '%lang_package foo'
+
+
+def test_undetected_invocation_is_left_alone_in_full_run(default_options, monkeypatch):
+    """A function no source reports keeps its invocation form; only bare references are braced."""
+    monkeypatch.setattr('spec_cleaner.rpmcleaner.load_macro_functions', lambda: [])
+    assert _cleaned_line(default_options, False, '%other_macro(x)') == '%other_macro(x)'
+    assert _cleaned_line(default_options, False, 'echo %frobnicate') == 'echo %{frobnicate}'
