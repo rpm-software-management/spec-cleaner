@@ -95,7 +95,6 @@ def _lua_body_prefix(text: str, depth: int) -> tuple[str, str, int]:
     remaining spec text and the depth after the text.
     """
     braces = depth
-    parens = 0
     index = 0
     while index < len(text):
         char, following = text[index], text[index + 1 : index + 2]
@@ -106,14 +105,10 @@ def _lua_body_prefix(text: str, depth: int) -> tuple[str, str, int]:
             index += 1
             if following == '{':
                 braces += 1
-            elif following == '(':
-                parens += 1
         elif char in '{}' and braces:
             braces += 1 if char == '{' else -1
             if braces == 0:
                 return text[: index + 1], text[index + 1 :], 0
-        elif char in '()' and parens:
-            parens += 1 if char == '(' else -1
         index += 1
     return text, '', braces
 
