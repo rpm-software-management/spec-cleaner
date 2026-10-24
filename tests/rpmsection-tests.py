@@ -244,3 +244,20 @@ def test_embrace_skips_single_line_lua_body(default_options):
     section = _section(default_options, set())
     section.add('%global x %{lua: print("%s")} suffix %name')
     assert section.lines[0] == '%global x %{lua: print("%s")} suffix %{name}'
+
+
+def test_embrace_skips_lua_body_shell_expansion(default_options):
+    """A shell expansion with nested parens inside a lua body is left verbatim."""
+    section = _section(default_options, set())
+    lines = [
+        '%global _host_cpu %{lua: \\',
+        '  local out = rpm.expand("%(echo (nested) done)"); \\',
+        '  print(string.format("%s", out)); \\',
+        '}',
+    ]
+    for line in lines:
+        section.add(line)
+    assert section.lines == lines
+    # the state ends with the body: the next line is cleaned again
+    section.add('Name: %name')
+    assert section.lines[-1] == 'Name: %{name}'
