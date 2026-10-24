@@ -214,33 +214,30 @@ def package_locations(repo, workdir, hrefs, checks):
     return locations
 
 
-def pick_binaries(owners, locations):
+def all_binaries(owners, locations):
     """
-    One binary per package name: noarch first, then x86_64, then any arch.
+    Every binary the filelists show installing macro files, in a stable order.
 
-    Packages whose macro files are all provided by an already picked,
-    smaller package are skipped: several packages ship the same macro
-    file (cmake-full and cmake-mini both ship macros.cmake) and one copy
-    is enough to read its definitions.
+    Coverage is exhaustive by construction: each (name, arch) pair in
+    the filelists contributes its macro files. A package is not skipped
+    because another package ships a file at the same path — the copies
+    do not necessarily agree (cmake and cmake-mini both ship
+    macros.cmake, each llvm version ships its own macros.llvm) — and no
+    architecture variant stands in for its siblings, whose macro files
+    can differ just as well.
     """
-    by_name = {}
-    for (name, arch), files in owners.items():
-        by_name.setdefault(name, []).append((arch, files))
-    candidates = []
-    for name, variants in by_name.items():
-        variants.sort(key=lambda v: (v[0] != 'noarch', v[0] != 'x86_64', v[0]))
-        arch, files = variants[0]
+    binaries = []
+    for (name, arch), files in sorted(owners.items()):
         loc = locations.get((name, arch))
-        if loc:
-            candidates.append((loc[1], name, arch, files, loc[0]))
-    picked = {}
-    covered = set()
-    for size, name, arch, files, href in sorted(candidates):
-        if all(f in covered for f in files):
+        if loc is None:
+            print(
+                f'warning: {name} ({arch}) installs macro files but has '
+                'no location in the primary data; skipped',
+                file=sys.stderr,
+            )
             continue
-        covered.update(files)
-        picked[name] = (arch, files, href, size)
-    return picked
+        binaries.append((name, arch, files, loc[0], loc[1]))
+    return binaries
 
 
 def _header_end(data, offset):
@@ -344,20 +341,31 @@ def parse_macro_text(text, into):
             into.add(name)
 
 
-def collect_macro_names(repo, workdir, picked):
-    """Download the picked packages of one repository; collect their macro names."""
+def collect_macro_names(repo, workdir, binaries):
+    """
+    Download the given packages of one repository; collect their macro names.
+
+    Every package is downloaded and read. Identical macro file contents
+    are parsed once: several packages ship byte-identical copies of a
+    macro file, and a second copy could only produce the names the
+    first one produced.
+    """
     names = set()
+    seen_contents = set()
     files_seen = 0
-    for name in sorted(picked):
-        arch, files, href, size = picked[name]
+    for _name, _arch, files, href, _size in binaries:
         dest = os.path.join(workdir, 'rpms', os.path.basename(href))
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         fetch(repo + href, dest)
         with open(dest, 'rb') as fh:
             payload = rpm_payload(fh.read())
         found = extract_files(payload, files)
-        files_seen += len(found)
         for content in found.values():
+            digest = hashlib.sha256(content).digest()
+            if digest in seen_contents:
+                continue
+            seen_contents.add(digest)
+            files_seen += 1
             parse_macro_text(content.decode('utf-8', 'replace'), names)
     return names, files_seen
 
@@ -367,9 +375,9 @@ def repo_macro_names(repo, workdir):
     hrefs, checks, revision = repodata_hrefs(repo, workdir)
     owners = macro_packages(repo, workdir, hrefs, checks)
     locations = package_locations(repo, workdir, hrefs, checks)
-    picked = pick_binaries(owners, locations)
-    names, files_seen = collect_macro_names(repo, workdir, picked)
-    return names, revision, len(picked), files_seen
+    binaries = all_binaries(owners, locations)
+    names, files_seen = collect_macro_names(repo, workdir, binaries)
+    return names, revision, len(binaries), files_seen
 
 
 def builtin_macros():
@@ -415,14 +423,14 @@ def main():
     args = ap.parse_args()
 
     os.makedirs(args.workdir, exist_ok=True)
-    names, revision, picked, files_seen = repo_macro_names(args.repo, args.workdir)
+    names, revision, binaries, files_seen = repo_macro_names(args.repo, args.workdir)
 
     fedora_revision = None
-    fedora_picked = 0
+    fedora_binaries = 0
     if args.fedora_repo:
         fedora_workdir = os.path.join(args.workdir, 'fedora')
         os.makedirs(fedora_workdir, exist_ok=True)
-        f_names, fedora_revision, fedora_picked, f_files = repo_macro_names(
+        f_names, fedora_revision, fedora_binaries, f_files = repo_macro_names(
             args.fedora_repo, fedora_workdir
         )
         names |= f_names
@@ -464,9 +472,9 @@ def main():
         fh.write(f'{BUILTINS_MARKER} ({builtin_note})\n')
         for name in sorted(builtins):
             fh.write(name + '\n')
-    package_counts = f'{picked} macro packages'
+    package_counts = f'{binaries} macro packages'
     if fedora_revision is not None:
-        package_counts += f' + {fedora_picked} Fedora macro packages'
+        package_counts += f' + {fedora_binaries} Fedora macro packages'
     print(
         f'wrote {args.out}: {len(names) + len(builtins)} names '
         f'({package_counts}, {files_seen} macro files, '

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-"""Tests for generate-macro-functions.py repodata verification."""
+"""Tests for generate-macro-functions.py: repodata verification, package selection."""
 
 import gzip
 import hashlib
 import importlib.util
+import struct
 from pathlib import Path
 
 import pytest
@@ -152,3 +153,93 @@ def test_sha256_checksum_accepted(tmp_path):
     assert checks['primary'][0] == 'sha256'
     owners = gen.macro_packages(REPO, workdir, hrefs, checks)
     assert owners == {('macropkg', 'noarch'): [MACRO_FILE]}
+
+
+def _cpio_entry(name, body):
+    """Build one newc cpio entry holding the given file body."""
+    fields = [0, 0o100644, 0, 0, 1, 0, len(body), 0, 0, 0, 0, len(name) + 1, 0]
+    out = b'070701' + ''.join(f'{field:08x}' for field in fields).encode()
+    out += name.encode() + b'\0'
+    out += b'\0' * (-len(out) % 4)
+    out += body
+    out += b'\0' * (-len(body) % 4)
+    return out
+
+
+def _rpm_bytes(files):
+    """Build a minimal rpm holding the given {path: body} payload files."""
+    header = b'\x8e\xad\xe8\x01' + b'\0' * 4 + struct.pack('>II', 0, 0)
+    payload = b''.join(_cpio_entry('./' + path, body) for path, body in sorted(files.items()))
+    payload += _cpio_entry('TRAILER!!!', b'')
+    return b'\xed\xab\xee\xdb' + b'\0' * 92 + header + header + payload
+
+
+SELECTION_PACKAGES = [
+    # (name, arch, macro path, macro defined there)
+    ('alpha', 'noarch', '/usr/lib/rpm/macros.d/macros.shared', 'shared_alpha'),
+    ('beta', 'noarch', '/usr/lib/rpm/macros.d/macros.shared', 'shared_beta'),
+    ('delta', 'noarch', '/usr/lib/rpm/macros.d/macros.shared', 'shared_alpha'),
+    ('gamma', 'x86_64', '/usr/lib/rpm/macros.d/macros.gamma', 'gamma_x86'),
+    ('gamma', 'i686', '/usr/lib/rpm/macros.d/macros.gamma', 'gamma_i686'),
+]
+
+
+def _selection_repodata():
+    """Build primary/filelists blobs describing the selection fixture packages."""
+    primary_pkgs = []
+    filelists_pkgs = []
+    for name, arch, path, _macro in SELECTION_PACKAGES:
+        href = f'{name}-1.0-1.{arch}.rpm'
+        primary_pkgs.append(
+            f'<package type="rpm"><name>{name}</name><arch>{arch}</arch>'
+            f'<size package="1" installed="1" archive="1"/>'
+            f'<location href="{href}"/></package>'
+        )
+        filelists_pkgs.append(
+            f'<package pkgid="00" name="{name}" arch="{arch}">'
+            f'<version epoch="0" ver="1.0" rel="1"/><file>{path}</file></package>'
+        )
+    primary = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<metadata xmlns="http://linux.duke.edu/metadata/common" '
+        f'packages="{len(primary_pkgs)}">' + ''.join(primary_pkgs) + '</metadata>\n'
+    ).encode()
+    filelists = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<filelists xmlns="http://linux.duke.edu/metadata/filelists" '
+        f'packages="{len(filelists_pkgs)}">' + ''.join(filelists_pkgs) + '</filelists>\n'
+    ).encode()
+    return primary, filelists
+
+
+def _stage_selection(tmp_path):
+    """Stage the selection fixture: repodata plus the rpm payloads in the fetch cache."""
+    primary, filelists = _selection_repodata()
+    gen, workdir = _stage(tmp_path, gzip.compress(primary), gzip.compress(filelists))
+    rpms = Path(workdir) / 'rpms'
+    rpms.mkdir()
+    for name, arch, path, macro in SELECTION_PACKAGES:
+        body = f'%{macro}(x) body\n'.encode()
+        (rpms / f'{name}-1.0-1.{arch}.rpm').write_bytes(_rpm_bytes({path.lstrip('/'): body}))
+    return gen, workdir
+
+
+def test_every_macro_package_contributes(tmp_path):
+    """All filelists owners are read: same-path rivals and arch variants alike."""
+    gen, workdir = _stage_selection(tmp_path)
+    names, revision, binaries, files_seen = gen.repo_macro_names(REPO, workdir)
+    assert revision == '12345'
+    # alpha and beta ship macros.shared with different contents; gamma's
+    # two arch variants define different macros: all of them contribute.
+    assert names == {'shared_alpha', 'shared_beta', 'gamma_x86', 'gamma_i686'}
+    assert binaries == 5
+    # delta's copy of macros.shared is byte-identical to alpha's: parsed once.
+    assert files_seen == 4
+
+
+def test_owner_without_location_is_skipped_with_a_warning(tmp_path, capsys):
+    """A filelists owner the primary data does not locate is reported, not read."""
+    gen = _load_generator()
+    owners = {('ghost', 'noarch'): [MACRO_FILE]}
+    assert gen.all_binaries(owners, {}) == []
+    assert 'ghost' in capsys.readouterr().err
