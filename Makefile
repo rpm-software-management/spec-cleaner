@@ -6,16 +6,16 @@ all: spec_cleaner/data/pkgconfig_conversions.txt spec_cleaner/data/licenses_chan
 distro = leap/16.0
 
 spec_cleaner/data/tex_conversions.txt: conversions-update.pl conversions-update.sh
-	bash conversions-update.sh tex $(distro) > $@.tmp && mv $@.tmp $@
+	bash conversions-update.sh tex $(distro) > $@.tmp && mv $@.tmp $@ || { rm -f $@.tmp; false; }
 
 spec_cleaner/data/pkgconfig_conversions.txt: conversions-update.pl conversions-update.sh
-	bash conversions-update.sh pkgconfig $(distro) > $@.tmp && mv $@.tmp $@
+	bash conversions-update.sh pkgconfig $(distro) > $@.tmp && mv $@.tmp $@ || { rm -f $@.tmp; false; }
 
 spec_cleaner/data/perl_conversions.txt: conversions-update.pl conversions-update.sh
-	bash conversions-update.sh perl $(distro) > $@.tmp && mv $@.tmp $@
+	bash conversions-update.sh perl $(distro) > $@.tmp && mv $@.tmp $@ || { rm -f $@.tmp; false; }
 
 spec_cleaner/data/cmake_conversions.txt: conversions-update.pl conversions-update.sh
-	bash conversions-update.sh cmake $(distro) > $@.tmp && mv $@.tmp $@
+	bash conversions-update.sh cmake $(distro) > $@.tmp && mv $@.tmp $@ || { rm -f $@.tmp; false; }
 
 # one license-update.sh run produces both files; the empty recipe keeps plain
 # make (and make -j) from running the script twice

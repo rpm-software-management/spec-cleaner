@@ -8,10 +8,14 @@ set -e -o pipefail
 export LC_ALL=C
 curl -fsSL 'https://docs.google.com/spreadsheets/d/14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs/export?format=tsv&id=14AdaJ6cmU0kvQ4ulq9pWpjdZL5tkR03exRSYJmPGdfs&gid=0' | grep -v "New format" \
   | sed -e 's,[[:space:]]*$,,' > licenses_changes.ntxt
+# an empty download is a failed download: never let it gut the tables
+test -s licenses_changes.ntxt
 curl -fsSL -o licenses.json https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json
 # fetch everything before replacing any file, so a failed curl cannot leave the tree half-updated
 curl -fsSL -o licenses_exceptions.txt https://raw.githubusercontent.com/openSUSE/obs-service-format_spec_file/master/licenses_exceptions.txt
+test -s licenses_exceptions.txt
 SPDX_LIST_VERSION=$(jq -r '.licenseListVersion' licenses.json)
+test -n "$SPDX_LIST_VERSION"
 SPDX_FETCH_DATE=$(date -u +%F)
 
 : > licenses_changes.ptxt
@@ -76,12 +80,16 @@ rm licenses_changes.raw
 
 # the provenance header is prepended after the sort, so it stays first
 # whatever the locale collates '#' as
-cat licenses_changes.ntxt licenses_changes.ptxt | sort -u > spec_cleaner/data/licenses_changes.txt.tmp
+cat licenses_changes.ntxt licenses_changes.ptxt | sort -u > licenses_changes.sorted
+test -s licenses_changes.sorted
+# compose the committed files next to their targets and move them into
+# place only once complete, so an interrupted run cannot truncate them
 {
   echo "# SPDX license list ${SPDX_LIST_VERSION}, fetched ${SPDX_FETCH_DATE}"
-  cat spec_cleaner/data/licenses_changes.txt.tmp
-} > spec_cleaner/data/licenses_changes.txt
-rm spec_cleaner/data/licenses_changes.txt.tmp
+  cat licenses_changes.sorted
+} > spec_cleaner/data/licenses_changes.txt.tmp
+mv spec_cleaner/data/licenses_changes.txt.tmp spec_cleaner/data/licenses_changes.txt
+rm licenses_changes.sorted
 mv SPDX-LICENSES.md.tmp SPDX-LICENSES.md
 rm licenses_changes.ntxt licenses_changes.ptxt licenses.json
 
@@ -91,6 +99,7 @@ rm licenses_changes.ntxt licenses_changes.ptxt licenses.json
   echo "# Sourced from openSUSE/obs-service-format_spec_file licenses_exceptions.txt, fetched ${SPDX_FETCH_DATE}"
   echo "# URL: https://github.com/openSUSE/obs-service-format_spec_file/blob/master/licenses_exceptions.txt"
   cat licenses_exceptions.txt
-} > spec_cleaner/data/license_exceptions.txt
+} > spec_cleaner/data/license_exceptions.txt.tmp
+mv spec_cleaner/data/license_exceptions.txt.tmp spec_cleaner/data/license_exceptions.txt
 rm licenses_exceptions.txt
 
