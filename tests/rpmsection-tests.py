@@ -210,6 +210,34 @@ def test_embrace_leaves_invocations_untouched(default_options, line):
     assert _cleaned_line(default_options, False, line) == line
 
 
+EMBRACE_VALUE_POSITIONS = [
+    # a braced use of an argument-taking macro keeps its braces where
+    # the following tokens belong to the surrounding grammar: unbraced,
+    # rpm would hand them to the macro as its arguments (gh#500)
+    ('Requires: %{typelib} = %{version}', 'Requires: %{typelib} = %{version}'),
+    ('%files %{python_files} -f python-test.lang', '%files %{python_files} -f python-test.lang'),
+    (
+        'Summary: Haskell %{pkg_name} library documentation',
+        'Summary: Haskell %{pkg_name} library documentation',
+    ),
+    # glued to a suffix the use takes no arguments and still unbraces
+    ('Name: ghc-%{pkg_name}', 'Name: ghc-%pkg_name'),
+    # closing the line the use takes no arguments and still unbraces
+    ('%package -n %{typelib}', '%package -n %typelib'),
+    # an invocation in the space form keeps its form
+    ('%python_module devel', '%python_module devel'),
+    # in command position the tokens behind a braced use are its own
+    # arguments, so the use unbraces and the arguments bind to it
+    ('%{ldconfig_scriptlets} -n foo', '%ldconfig_scriptlets -n foo'),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_VALUE_POSITIONS)
+def test_embrace_value_positions(default_options, line, expected):
+    """Braced uses in value positions keep their braces, the rest of the unbracing stays."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
 def test_embrace_leaves_known_macro_function_unbraced(default_options):
     """A macro function (an rpm builtin here) keeps its space separated arguments."""
     options = RpmSpecCleaner(default_options()).options

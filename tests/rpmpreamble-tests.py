@@ -361,18 +361,30 @@ class TestRpmPreamble:
         assert [token.name for token in tokens] == ['zeta', 'alpha', 'beta', 'gamma']
 
     def test_empty_macros_with_arg(self, preamble):
-        """Test that an empty macro set restores nothing and parses the rest as usual."""
+        """Test that an empty macro set parses an invocation as separate dependencies."""
         options = dict(preamble.options)
         options['macros_with_arg'] = []
         empty = RpmPreamble(options)
-        assert preamble.re_macro_with_arg_braced is not None
-        assert empty.re_macro_with_arg_braced is None
-        # without a known macro the braced invocation is not restored to the
-        # unbraced form, so it and its argument stay separate dependencies
+        # without a known macro the parser cannot tell the braced form is
+        # an invocation, so it and its argument stay separate dependencies
         tokens = empty._fix_list_of_packages('%{python_module} devel', 'buildrequires')
         assert [token.name for token in tokens] == ['%{python_module}', 'devel']
+        # with the macro known the parser recognises the invocation in
+        # the braced spelling as written, no unbracing needed
         tokens = preamble._fix_list_of_packages('%{python_module} devel', 'buildrequires')
-        assert [token.name for token in tokens] == ['%python_module devel']
+        assert [token.name for token in tokens] == ['%{python_module} devel']
+        # a version relation after a braced use is a relation, not an
+        # argument of the macro (gh#500)
+        tokens = preamble._fix_list_of_packages('%{typelib} = %{version}', 'requires')
+        assert [(token.name, token.operator, token.version) for token in tokens] == [
+            ('%{typelib}', '=', '%{version}'),
+        ]
+        # a braced use that closes the value captures nothing and
+        # unbraces like any other macro name
+        tokens = preamble._fix_list_of_packages('foo >= %{pkg_version}', 'requires')
+        assert [(token.name, token.operator, token.version) for token in tokens] == [
+            ('foo', '>=', '%pkg_version'),
+        ]
         # plain values parse the same with and without the macro set
         for section in (preamble, empty):
             tokens = section._fix_list_of_packages('foo >= 1.0 bar', 'buildrequires')
