@@ -111,13 +111,3 @@ pytest_add_cli_args_test_selection = ["-m", "not webtest"]
 
 [tool.mypy]
 strict = true
-
-# Per-module strict debt: each override lists exactly the error codes the
-# module still produces under strict mode. An override is deleted in the
-# same commit that makes its module strict-clean.
-[[tool.mypy.overrides]]
-module = "spec_cleaner.rpmpackage"
-disable_error_code = ["no-untyped-call", "no-untyped-def", "var-annotated"]
-
-
-
