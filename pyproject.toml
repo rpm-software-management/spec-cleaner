@@ -116,10 +116,6 @@ strict = true
 # module still produces under strict mode. An override is deleted in the
 # same commit that makes its module strict-clean.
 [[tool.mypy.overrides]]
-module = "spec_cleaner.rpmcleaner"
-disable_error_code = ["no-untyped-call"]
-
-[[tool.mypy.overrides]]
 module = "spec_cleaner.rpmpackage"
 disable_error_code = ["no-untyped-call", "no-untyped-def", "var-annotated"]
 
