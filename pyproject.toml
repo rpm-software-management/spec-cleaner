@@ -120,10 +120,6 @@ module = "spec_cleaner.rpmcleaner"
 disable_error_code = ["no-untyped-call"]
 
 [[tool.mypy.overrides]]
-module = "spec_cleaner.rpmcopyright"
-disable_error_code = ["no-untyped-call", "no-untyped-def"]
-
-[[tool.mypy.overrides]]
 module = "spec_cleaner.rpmpackage"
 disable_error_code = ["no-untyped-call", "no-untyped-def", "var-annotated"]
 
