@@ -23,3 +23,23 @@ class TestRegexp:
         assert reg.re_unbrace_keywords.sub(r'%\1', line) == (
             '%Description %patch1 %{PATCH1} %docdir %{DOCDIR}'
         )
+
+    def test_braced_argument_macro_contexts(self):
+        """Test that only value-position uses of an argument-taking macro match."""
+        reg = Regexp(['typelib'], ['typelib'])
+        shielded = reg.re_braced_argument_macro.search
+        # the following tokens belong to the surrounding grammar
+        assert shielded('Requires: %{typelib} = %{version}')
+        assert shielded('%files %{typelib} -f files.lang')
+        assert shielded('Summary: the %{typelib} library files')
+        # the closing quote of the value the use sits in
+        assert shielded('optimize="%{typelib}"')
+        # glued to a suffix the use takes no arguments in either spelling
+        assert not shielded('Name: ghc-%{typelib}')
+        assert not shielded('Name: ghc-%{typelib}-devel')
+        # closing the line the use takes no arguments either
+        assert not shielded('%package -n %{typelib}')
+        # an escaped percent is not a macro use at all
+        assert not shielded('echo %%{typelib} = 1')
+        # without argument-taking names nothing is shielded
+        assert Regexp(['typelib']).re_braced_argument_macro is None

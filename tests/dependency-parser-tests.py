@@ -191,3 +191,38 @@ class TestDependencyParser:
     def test_unbraced_macro_with_arguments(self, line, macros, expected):
         """Test that an unbraced invocation stays one dependency when the macro takes arguments."""
         assert DependencyParser(line, macros_with_arg=macros).parsed == expected
+
+    @pytest.mark.parametrize(
+        'line, macros, expected',
+        [
+            # the braced spelling of an invocation: the braces delimit
+            # the name, the arguments still follow it
+            (
+                '%{python_module} devel',
+                ['python_module'],
+                [('%{python_module} devel', None, None)],
+            ),
+            (
+                '%{python_module} setuptools >= 40.8.0',
+                ['python_module'],
+                [('%{python_module} setuptools', '>=', '40.8.0')],
+            ),
+            # a version relation after a braced use belongs to the
+            # dependency, it is not an argument of the macro (gh#500)
+            (
+                '%{typelib} = %{version}',
+                ['typelib'],
+                [('%{typelib}', '=', '%{version}')],
+            ),
+            # without the macro in the set the braced form is a plain
+            # name again and the word after it a dependency of its own
+            (
+                '%{python_module} devel',
+                [],
+                [('%{python_module}', None, None), ('devel', None, None)],
+            ),
+        ],
+    )
+    def test_braced_spelling_macro_with_arguments(self, line, macros, expected):
+        """Test that the braced spelling of an invocation parses like the unbraced one."""
+        assert DependencyParser(line, macros_with_arg=macros).parsed == expected
