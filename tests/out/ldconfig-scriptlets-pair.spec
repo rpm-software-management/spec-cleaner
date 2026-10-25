@@ -1,3 +1,5 @@
+%define libname() libpair%{sover}
+
 %install
 %make_install
 
@@ -84,6 +86,7 @@
 %endif
 
 %ldconfig_scriptlets -n libm1
+%ldconfig_scriptlets -n %libname
 # library files
 %files -n libb1
 %{_libdir}/libb.so.*
