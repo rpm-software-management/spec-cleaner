@@ -446,53 +446,50 @@ class TestPlaceHelpers:
 
 
 class TestUnbraceKeywords:
-    """The unbrace keyword list also comes from what rpm --showrc reports."""
+    """The unbrace keyword list also comes from the vendored macro snapshot."""
 
-    def keywords(self, default_options, monkeypatch, showrc):
-        """Build a cleaner with rpm --showrc reporting the given macro functions."""
-        monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: showrc)
+    def keywords(self, default_options, monkeypatch, vendored=()):
+        """Build a cleaner with the given vendored macro functions."""
+        monkeypatch.setattr('spec_cleaner.rpmcleaner.load_macro_functions', lambda: list(vendored))
         return RpmSpecCleaner(default_options()).options['unbrace_keywords']
 
-    def test_showrc_macrofunc_is_not_braced(self, default_options, monkeypatch):
-        """Test that a macro function rpm --showrc reports is left unbraced."""
-        assert 'cargo_install' in self.keywords(default_options, monkeypatch, ['cargo_install'])
+    def test_vendored_macrofunc_is_not_braced(self, default_options, monkeypatch):
+        """Test that a macro function from the vendored snapshot is left unbraced."""
+        keywords = self.keywords(default_options, monkeypatch, ['cargo_install'])
+        assert 'cargo_install' in keywords
 
-    def test_unreported_macrofunc_is_braced(self, default_options, monkeypatch):
-        """Test that a macro function rpm --showrc does not report gets braced."""
-        assert 'cargo_install' not in self.keywords(default_options, monkeypatch, [])
+    def test_unlisted_macrofunc_is_braced(self, default_options, monkeypatch):
+        """Test that a macro function the snapshot does not name gets braced."""
+        keywords = self.keywords(default_options, monkeypatch, [])
+        assert 'cargo_install' not in keywords
 
-    def test_macrofile_macrofunc_is_braced(self, default_options, monkeypatch):
-        """Test that a macro function from the rpm macro files is not an unbrace keyword."""
-        monkeypatch.setattr(
-            'spec_cleaner.rpmcleaner.find_global_macros_with_arg', lambda: ['python_module']
-        )
-        keywords = RpmSpecCleaner(default_options()).options['unbrace_keywords']
-        assert 'python_module' not in keywords
+    def test_vendored_macrofunc_has_no_invocation_entry(self, default_options, monkeypatch):
+        """Test that no invocation entry is derived for a vendored function (gh#491)."""
+        keywords = self.keywords(default_options, monkeypatch, ['cargo_install'])
+        assert 'cargo_install' in keywords
+        assert r'cargo_install(\s*\([^)]*\))?' not in keywords
+
+    def test_whitelist_fallback_is_kept(self, default_options, monkeypatch):
+        """Test that the whitelist applies when the snapshot does not report the name."""
+        keywords = self.keywords(default_options, monkeypatch, [])
+        assert 'meson' in keywords
 
 
 class TestMacrosWithArg:
-    """The dependency parser learns the macros that take arguments from the same sources."""
+    """The dependency parser learns the macros that take arguments from the vendored snapshot."""
 
-    def test_showrc_macrofunc_is_collected(self, default_options, monkeypatch):
-        """Test that a macro function rpm --showrc reports is collected."""
-        monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: ['cargo_install'])
+    def test_vendored_macrofunc_is_collected(self, default_options, monkeypatch):
+        """Test that a macro function from the vendored snapshot is collected."""
+        monkeypatch.setattr(
+            'spec_cleaner.rpmcleaner.load_macro_functions', lambda: ['cargo_install']
+        )
         options = RpmSpecCleaner(default_options()).options
         assert 'cargo_install' in options['macros_with_arg']
 
-    def test_macrofile_macrofunc_is_collected(self, default_options, monkeypatch):
-        """Test that a macro function from the rpm macro files is collected."""
+    def test_vendored_macrofunc_invocation_stays_one_dependency(self, default_options, monkeypatch):
+        """Test that an unbraced invocation of a snapshot function stays one dependency."""
         monkeypatch.setattr(
-            'spec_cleaner.rpmcleaner.find_global_macros_with_arg', lambda: ['python_module']
-        )
-        options = RpmSpecCleaner(default_options()).options
-        assert 'python_module' in options['macros_with_arg']
-
-    def test_macrofile_macrofunc_invocation_stays_one_dependency(
-        self, default_options, monkeypatch
-    ):
-        """Test that an unbraced invocation of a macro file function stays one dependency."""
-        monkeypatch.setattr(
-            'spec_cleaner.rpmcleaner.find_global_macros_with_arg', lambda: ['python_module']
+            'spec_cleaner.rpmcleaner.load_macro_functions', lambda: ['python_module']
         )
         options = default_options()
         with open(options['specfile'], 'w', encoding='utf-8') as spec:

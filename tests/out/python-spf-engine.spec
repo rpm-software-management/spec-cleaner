@@ -104,7 +104,7 @@ ln -s %{_sbindir}/service %{buildroot}%{_sbindir}/rcpyspf-milter
 %python_uninstall_alternative pyspf-milter
 %service_del_postun pyspf-milter.service
 
-%files %{python_files}
+%files %python_files
 %doc CHANGES README.txt
 %dir %{_docdir}/%{policyd_spf}
 %doc %{_docdir}/%{policyd_spf}/README.per_user_whitelisting

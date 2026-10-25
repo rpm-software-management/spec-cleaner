@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import logging
 from io import StringIO
 
 import pytest
@@ -13,120 +12,61 @@ from spec_cleaner.rpmrequirestoken import RpmRequiresToken
 class TestRpmhelpers:
     """We run few tests to ensure rpmhelpers functions work fine."""
 
-    def test_parse_rpm_showrc_locale_charset(self, monkeypatch):
-        """Test parsing 'rpm --showrc' output printed in a non-UTF-8 locale (cs_CZ)."""
-        # the result is memoized per process; start from the mock, not a sibling test
+    def test_load_macro_functions_reads_the_snapshot(self, monkeypatch):
+        """Test that the vendored snapshot yields its names, headers skipped."""
         rpmhelpers.clear_read_caches()
-        output = (
-            b'-13: __apply_patch(qp:m:)\t\n'
-            b'-14: __os_install_post(qp:m:)\t\n'
-            b'-15: foo(bar)\t\n'
-            b'==== aktivn\xed 1073 pr\xe1zdn\xe9 0\n'
+        content = (
+            '# Argument-taking rpm macros from a snapshot\n'
+            '# rpm builtins (read from RPM version 4.20.1)\n'
+            '\n'
+            'autosetup\n'
+            'lang_package\n'
+            'gsub\n'
         )
-        monkeypatch.setattr(rpmhelpers, 'check_output', lambda cmd: output)
-        assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch', '__os_install_post', 'foo']
-
-    def test_parse_rpm_showrc_collects_builtins(self, monkeypatch):
-        """Test that rpm builtin functions are collected from the '<builtin>' dump form."""
-        # the result is memoized per process; start from the mock, not a sibling test
+        monkeypatch.setattr(rpmhelpers, 'open_datafile', lambda name: StringIO(content))
+        assert rpmhelpers.load_macro_functions() == ['autosetup', 'lang_package', 'gsub']
+        # the mocked result is cached under the real file's identity and
+        # cleaner constructions in other tests do not clear the cache
         rpmhelpers.clear_read_caches()
-        output = (
-            b'-13: __apply_patch(qp:m:)\t\n'
-            b'-20: gsub\t<builtin>\n'
-            b'-20: expand\t<builtin>\n'
-            b'-13: plain_macro\tvalue\n'
-            b'==== active 1073 empty 0\n'
+
+    def test_load_keywords_whitelist_skips_comments_and_blanks(self, monkeypatch):
+        """Test that the bracketing excludes loader skips comment and empty lines."""
+        rpmhelpers.clear_read_caches()
+        content = '# rpm section keyword\nbuild\n\n# %files directive\nattr(\\s*\\([^)]*\\))?\n'
+        monkeypatch.setattr(rpmhelpers, 'open_datafile', lambda name: StringIO(content))
+        assert rpmhelpers.load_keywords_whitelist() == ['build', 'attr(\\s*\\([^)]*\\))?']
+        rpmhelpers.clear_read_caches()
+
+    def test_find_bracketing_macrofuncs_collects_body_arg_defines(self, tmp_path):
+        """Test that defines whose body uses the argument vector are collected for bracketing."""
+        spec = tmp_path / 'test.spec'
+        spec.write_text(
+            '%define declared() %1\n'
+            '%define wrapper %{__install} %*\n'
+            '%define continued first \\\n'
+            '    second %2\n'
+            '%define plain plainvalue\n'
+            '%global flagonly %{?flag}\n'
+            '%define helper %{-c:%{-c*}}\n'
+            '%define luapat %{lua: print(("%1"):gsub("%2", "x"))}\n'
         )
-        monkeypatch.setattr(rpmhelpers, 'check_output', lambda cmd: output)
-        assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch', 'gsub', 'expand']
+        assert rpmhelpers.find_bracketing_macrofuncs(str(spec)) == [
+            'declared',
+            'wrapper',
+            'continued',
+        ]
 
-    def test_parse_rpm_showrc_collects_builtins_with_trailing_text(self, monkeypatch):
-        """Nothing behind the '<builtin>' marker is collected into the macro name."""
-        # the result is memoized per process; start from the mock, not a sibling test
-        rpmhelpers.clear_read_caches()
-        output = (
-            b'-20: gsub   <builtin>  \n'
-            b'-20: expand <builtin> extra\n'
-            b'-20: quote\t<builtin>\n'
-            b'==== active 1073 empty 0\n'
-        )
-        monkeypatch.setattr(rpmhelpers, 'check_output', lambda cmd: output)
-        assert rpmhelpers.parse_rpm_showrc() == ['gsub', 'expand', 'quote']
+    def test_find_macros_with_arg_keeps_declared_only(self, tmp_path):
+        """Test that the dependency parser's collection stays declaration-based."""
+        spec = tmp_path / 'test.spec'
+        spec.write_text('%define declared() %1\n%define wrapper %{__install} %*\n')
+        assert rpmhelpers.find_macros_with_arg(str(spec)) == ['declared']
 
-    def test_parse_rpm_showrc_missing_rpm(self, monkeypatch):
-        """Test that a missing rpm binary is reported as RpmExceptionError."""
-        rpmhelpers.clear_read_caches()
-
-        def missing(cmd):
-            raise FileNotFoundError(2, 'No such file or directory', 'rpm')
-
-        monkeypatch.setattr(rpmhelpers, 'check_output', missing)
-        with pytest.raises(RpmExceptionError):
-            rpmhelpers.parse_rpm_showrc()
-
-    def test_find_global_macros_with_arg_collects_definitions(self, monkeypatch, tmp_path, caplog):
-        """Test that macro functions are collected from the rpm macro files."""
-        rpmhelpers.clear_read_caches()
-        configdir = tmp_path / 'rpm'
-        macrodir = configdir / 'macros.d'
-        platformdir = configdir / 'platform' / 'x86_64-linux'
-        macrodir.mkdir(parents=True)
-        platformdir.mkdir(parents=True)
-        (configdir / 'macros').write_text('%plainmacro a body\n%define defined_one() body\n')
-        (macrodir / 'macros.python').write_text(
-            '%python_module() %{lua: body}\n%python_module_iter(a:) body\n%pythons body\n'
-        )
-        (platformdir / 'macros').write_text('%platform_macro() body\n')
-        monkeypatch.setattr(
-            rpmhelpers, 'check_output', lambda cmd: f'{configdir} {macrodir}'.encode()
-        )
-        with caplog.at_level(logging.WARNING, logger=rpmhelpers.logger.name):
-            assert rpmhelpers.find_global_macros_with_arg() == [
-                'defined_one',
-                'python_module',
-                'python_module_iter',
-                'platform_macro',
-            ]
-        # the normal path stays silent; the warning is for unusable output only
-        assert [r for r in caplog.records if r.name == rpmhelpers.logger.name] == []
-
-    def test_find_global_macros_with_arg_missing_rpm(self, monkeypatch):
-        """Test that a missing rpm binary is reported as RpmExceptionError."""
-        rpmhelpers.clear_read_caches()
-
-        def missing(cmd):
-            raise FileNotFoundError(2, 'No such file or directory', 'rpm')
-
-        monkeypatch.setattr(rpmhelpers, 'check_output', missing)
-        with pytest.raises(RpmExceptionError):
-            rpmhelpers.find_global_macros_with_arg()
-
-    @pytest.mark.parametrize('output', [b'', b'/just-one-directory', b'/one /two /three'])
-    def test_find_global_macros_with_arg_unusable_rpm_eval_output(
-        self, monkeypatch, caplog, output
-    ):
-        """Test that an 'rpm --eval' output without exactly two directories yields no macros but a warning."""
-        rpmhelpers.clear_read_caches()
-        monkeypatch.setattr(rpmhelpers, 'check_output', lambda cmd: output)
-        with caplog.at_level(logging.WARNING, logger=rpmhelpers.logger.name):
-            assert rpmhelpers.find_global_macros_with_arg() == []
-        warnings = [r for r in caplog.records if r.name == rpmhelpers.logger.name]
-        assert len(warnings) == 1
-        assert warnings[0].levelno == logging.WARNING
-
-    def test_find_global_macros_with_arg_runs_once_per_process(self, monkeypatch, tmp_path):
-        """Test that the rpm --eval subprocess is not reforked for every spec."""
-        rpmhelpers.clear_read_caches()
-        calls = []
-
-        def counting(cmd):
-            calls.append(cmd)
-            return f'{tmp_path} {tmp_path}'.encode()
-
-        monkeypatch.setattr(rpmhelpers, 'check_output', counting)
-        assert rpmhelpers.find_global_macros_with_arg() == []
-        assert rpmhelpers.find_global_macros_with_arg() == []
-        assert calls == [['rpm', '--eval', '%{_rpmconfigdir} %{_rpmmacrodir}']]
+    def test_find_bracketing_macrofuncs_trailing_backslash(self, tmp_path):
+        """Test that a definition ending the file mid-continuation does not overrun."""
+        spec = tmp_path / 'test.spec'
+        spec.write_text('%define dangling body %1 \\\n')
+        assert rpmhelpers.find_bracketing_macrofuncs(str(spec)) == ['dangling']
 
     @pytest.mark.parametrize(
         'line, depth, expected',
@@ -200,20 +140,6 @@ class TestRpmhelpers:
         with open_datafile(name) as data:
             for number, line in enumerate(data, 1):
                 assert ': ' in line, f'{name} line {number}: {line!r}'
-
-    def test_parse_rpm_showrc_runs_once_per_process(self, monkeypatch):
-        """Test that the showrc subprocess is not reforked for every spec."""
-        rpmhelpers.clear_read_caches()
-        calls = []
-
-        def counting(cmd):
-            calls.append(cmd)
-            return b'-13: __apply_patch(qp:m:)\t\n'
-
-        monkeypatch.setattr(rpmhelpers, 'check_output', counting)
-        assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch']
-        assert rpmhelpers.parse_rpm_showrc() == ['__apply_patch']
-        assert calls == [['rpm', '--showrc']]
 
     def test_table_reads_are_replayed_not_reread(self, monkeypatch):
         """Test that a parsed table is reused instead of read and parsed again."""

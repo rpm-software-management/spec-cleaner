@@ -86,7 +86,7 @@ Clutter is an open source software library for creating fast, visually
 rich and animated graphical user interfaces. This package contain the
 files for development.
 
-%{_mingw32_debug_package}
+%_mingw32_debug_package
 
 %lang_package
 

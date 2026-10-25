@@ -360,6 +360,27 @@ class TestRpmPreamble:
         tokens = full('zeta alpha beta gamma', 'buildignores')
         assert [token.name for token in tokens] == ['zeta', 'alpha', 'beta', 'gamma']
 
+    def test_empty_macros_with_arg(self, preamble):
+        """Test that an empty macro set restores nothing and parses the rest as usual."""
+        options = dict(preamble.options)
+        options['macros_with_arg'] = []
+        empty = RpmPreamble(options)
+        assert preamble.re_macro_with_arg_braced is not None
+        assert empty.re_macro_with_arg_braced is None
+        # without a known macro the braced invocation is not restored to the
+        # unbraced form, so it and its argument stay separate dependencies
+        tokens = empty._fix_list_of_packages('%{python_module} devel', 'buildrequires')
+        assert [token.name for token in tokens] == ['%{python_module}', 'devel']
+        tokens = preamble._fix_list_of_packages('%{python_module} devel', 'buildrequires')
+        assert [token.name for token in tokens] == ['%python_module devel']
+        # plain values parse the same with and without the macro set
+        for section in (preamble, empty):
+            tokens = section._fix_list_of_packages('foo >= 1.0 bar', 'buildrequires')
+            assert [(token.name, token.operator, token.version) for token in tokens] == [
+                ('foo', '>=', '1.0'),
+                ('bar', None, None),
+            ]
+
 
 class TestRpmPreambleOrder:
     """We run few tests to ensure minimal mode keeps the preamble order."""

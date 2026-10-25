@@ -1,21 +1,12 @@
 """
 Shared test fixtures.
 
-The acceptance and CLI tests run the full cleaner, which calls
-'parse_rpm_showrc()' and 'find_global_macros_with_arg()' to learn
-macro functions from the host's rpm. Mock both to an empty list so
-the suite runs on machines without the rpm binary (e.g. macOS);
-tests that exercise them themselves (rpmhelpers-tests.py) call
-them directly and are unaffected.
+The acceptance and CLI tests run the full cleaner, whose macro
+knowledge comes from the vendored snapshot and from the spec under
+test, so the suite runs on machines without the rpm binary.
 """
 
 import pytest
-
-
-@pytest.fixture(autouse=True)
-def _mock_rpm_showrc(monkeypatch):
-    monkeypatch.setattr('spec_cleaner.rpmcleaner.parse_rpm_showrc', lambda: [])
-    monkeypatch.setattr('spec_cleaner.rpmcleaner.find_global_macros_with_arg', lambda: [])
 
 
 @pytest.fixture

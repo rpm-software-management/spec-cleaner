@@ -14,7 +14,7 @@ from urllib.error import HTTPError
 
 import pytest
 
-from spec_cleaner import RpmExceptionError, RpmSpecCleaner, rpmhelpers
+from spec_cleaner import RpmExceptionError, RpmSpecCleaner
 
 
 def collect_tests(directory):
@@ -119,28 +119,14 @@ class TestCompare:
         """Test that whitelisted parametric macros stay unbraced when the host does not define them."""
         self._compare_and_rerun(test, 'out', tmpfile, {'pkgconfig': True})
 
-    def test_macro_function_from_rpm_macro_files(self, tmpfile, tmp_path, monkeypatch):
+    def test_macro_function_from_vendored_snapshot(self, tmpfile, tmp_path):
         """
-        Test that a macro function defined in the rpm macro files keeps its invocation in one dependency.
+        Test that a macro function named by the vendored snapshot keeps its invocation in one dependency.
 
-        The shared fixture mocks the collector to an empty list; this test
-        restores the real one over a fixture macro directory, so locating
-        the files through 'rpm --eval', scanning them and feeding the
-        result to the dependency parser all run end to end.
+        '%python_module' is one of the snapshot's argument-taking macros,
+        so feeding the shipped snapshot to the dependency parser end to
+        end keeps '%python_module devel' together and unbraced.
         """
-        rpmhelpers.clear_read_caches()
-        configdir = tmp_path / 'rpm'
-        macrodir = configdir / 'macros.d'
-        macrodir.mkdir(parents=True)
-        (configdir / 'macros').write_text('%plainmacro a body\n')
-        (macrodir / 'macros.python').write_text('%python_module() %{lua: body}\n')
-        monkeypatch.setattr(
-            rpmhelpers, 'check_output', lambda cmd: f'{configdir} {macrodir}'.encode()
-        )
-        monkeypatch.setattr(
-            'spec_cleaner.rpmcleaner.find_global_macros_with_arg',
-            rpmhelpers.find_global_macros_with_arg,
-        )
         infile = tmp_path / 'testing.spec'
         infile.write_text(
             'Name:           test\n'

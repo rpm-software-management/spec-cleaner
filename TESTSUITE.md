@@ -61,10 +61,10 @@ tests only where they pin something fixtures can't.
 
 ## Test environment notes
 
-+ tests/conftest.py has an autouse fixture mocking
-  `spec_cleaner.rpmcleaner.parse_rpm_showrc`, so the in-process tests run
-  without the `rpm` binary; `test_utf8_in_non_utf8_locale` and the CLI
-  used to generate fixtures still need it.
++ Nothing in the suite needs the `rpm` binary: the cleaner's macro
+  knowledge comes from the vendored snapshot in
+  `spec_cleaner/data/macro_functions.txt` and from the spec under test,
+  for the in-process tests and the fixture-generating CLI alike.
 + `test_web_output` (the `web/` fixtures) is marked `webtest`; skip it
   with `-m "not webtest"`. Some `out/` fixtures (e.g. `source_https.spec`)
   still probe the network.

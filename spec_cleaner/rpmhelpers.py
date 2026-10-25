@@ -1,26 +1,19 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-import glob
-import logging
-import os
 import re
-from subprocess import CalledProcessError, check_output
 
 from .fileutils import open_datafile, open_stringio_spec, stat_datafile
 from .rpmexception import RpmExceptionError
 from .rpmrequirestoken import RpmRequiresToken
 
-logger = logging.getLogger('RpmHelpers')
-
-# Per-process memo of data-file and showrc reads. Every RpmSpecCleaner
-# parsed the same tables and forked the same `rpm --showrc` again, so one
-# process cleaning many specs paid it all many times over. Entries are
-# keyed by file identity and never evicted; the key space is a handful of
-# shipped files times the versions seen, and a regenerated table simply
-# misses under its new mtime. Only successes are stored: a missing file
-# or a failing rpm still raises fresh on every call, exactly as before.
-# Callers get a top-level copy, so sharing the cache cannot alias a list
-# or dict one cleaner later rues.
+# Per-process memo of data-file reads. Every RpmSpecCleaner parsed the
+# same tables again, so one process cleaning many specs paid it all many
+# times over. Entries are keyed by file identity and never evicted; the
+# key space is a handful of shipped files times the versions seen, and a
+# regenerated table simply misses under its new mtime. Only successes
+# are stored: a missing file still raises fresh on every call, exactly
+# as before. Callers get a top-level copy, so sharing the cache cannot
+# alias a list or dict one cleaner later rues.
 _read_cache: dict = {}
 
 
@@ -28,8 +21,8 @@ def clear_read_caches() -> None:
     """
     Drop all memoized reads.
 
-    Tests that mock check_output or open_datafile must call this first,
-    or they observe the process-wide result instead of their mock.
+    Tests that mock open_datafile must call this first, or they observe
+    the process-wide result instead of their mock.
     """
     _read_cache.clear()
 
@@ -41,37 +34,52 @@ PERL_CONVERSIONS = 'perl_conversions.txt'
 CMAKE_CONVERSIONS = 'cmake_conversions.txt'
 GROUPS_LIST = 'allowed_groups.txt'
 BRACKETING_EXCLUDES = 'excludes-bracketing.txt'
+MACRO_FUNCTIONS = 'macro_functions.txt'
 
 
-def parse_rpm_showrc() -> list[str]:
+# A macro body consumes the argument vector when it references %1 .. %9,
+# %*, %** or %#, in plain, braced or conditional spelling. A %{-n} style
+# reference is not one: it reads the option of the macro whose expansion
+# is in progress, which makes it a helper's idiom, not an argument list.
+# The macro snapshot generator (generate-macro-functions.py) reads
+# bodies with the same pattern.
+re_macro_arg_ref = re.compile(r'%(?:[1-9#*]|\*\*|\{[1-9#*]\}|\{\*\*?\}|\{\?[*#1-9]|\{#)')
+
+
+def strip_lua_bodies(text: str) -> str:
     """
-    Create a list of all macro functions in the 'rpm --showrc' output.
+    Remove %{lua: ...} spans from a macro body.
 
-    Defined parametric macros are dumped in the 'name(args)' form,
-    while rpm's builtin functions (gsub, expand, quote, ...) are
-    dumped as 'name' followed by '<builtin>'; both forms denote a
-    macro that is invoked with arguments.
+    Their content is lua code: a %1 inside it is a lua pattern capture,
+    not a reference to the macro's argument vector (the __python3 body,
+    a gsub pattern, is the canonical example). The macro snapshot
+    generator reads bodies the same way.
+
+    Args:
+        text: The macro body to strip.
 
     Returns:
-        A list of such macro functions.
+        The body with every %{lua: ...} span removed.
     """
-    if 'showrc' in _read_cache:
-        return list(_read_cache['showrc'])
-    macros: list[str] = []
-
-    re_rc_macrofunc = re.compile(r'^-[0-9]+[:=]\s(\w+)\(.*')
-    re_rc_builtin = re.compile(r'^-[0-9]+[:=]\s(\w+)\s+<builtin>')
-    try:
-        output = check_output(['rpm', '--showrc'])
-    except (OSError, CalledProcessError) as error:
-        raise RpmExceptionError(f'Could not run "rpm --showrc": {error}') from error
-    # rpm prints in the locale charset; only ASCII macro names are needed
-    for line in output.decode(errors='replace').split('\n'):
-        found_macro = re_rc_macrofunc.match(line) or re_rc_builtin.match(line)
-        if found_macro:
-            macros += [found_macro.group(1)]
-    _read_cache['showrc'] = macros
-    return list(macros)
+    out = []
+    index = 0
+    while True:
+        start = text.find('%{lua:', index)
+        if start < 0:
+            out.append(text[index:])
+            return ''.join(out)
+        out.append(text[index:start])
+        depth = 0
+        pos = start + 1
+        while pos < len(text):
+            if text[pos] == '{':
+                depth += 1
+            elif text[pos] == '}':
+                depth -= 1
+                if depth == 0:
+                    break
+            pos += 1
+        index = pos + 1
 
 
 def _cached_datafile(name: str, loader):
@@ -101,15 +109,38 @@ def load_keywords_whitelist() -> list[str]:
     """
     Create a list of keywords contained in BRACKETING_EXCLUDES file (keywords that shouldn't be in brackets).
 
+    Lines starting with '#' and empty lines are skipped: the comments
+    record why the listed semantic exceptions stay unbraced.
+
     Returns:
         A list of such keywords.
     """
 
     def load():
         with open_datafile(BRACKETING_EXCLUDES) as f:
-            return [line.rstrip('\n') for line in f]
+            return [line.rstrip('\n') for line in f if line.strip() and not line.startswith('#')]
 
     return _cached_datafile(BRACKETING_EXCLUDES, load)
+
+
+def load_macro_functions() -> list[str]:
+    """
+    Create a list of the vendored argument-taking macros in MACRO_FUNCTIONS.
+
+    The file is a distribution snapshot generated by
+    generate-macro-functions.py; it carries the macro functions of every
+    package installing rpm macro files, so the list does not depend on
+    the macro packages of the host the cleaner runs on.
+
+    Returns:
+        A list of macro names that take arguments.
+    """
+
+    def load():
+        with open_datafile(MACRO_FUNCTIONS) as f:
+            return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+
+    return _cached_datafile(MACRO_FUNCTIONS, load)
 
 
 def find_macros_with_arg(spec: str) -> list[str]:
@@ -133,66 +164,49 @@ def find_macros_with_arg(spec: str) -> list[str]:
     return macrofuncs
 
 
-def _rpm_macro_files() -> list[str]:
+def find_bracketing_macrofuncs(spec: str) -> list[str]:
     """
-    Create a list of the macro definition files rpm loads.
+    Create a list of all macro functions in the spec file for bracketing.
 
-    The locations follow the host's rpm installation: the configuration
-    directory ('%{_rpmconfigdir}') provides the main 'macros' file and the
-    per-platform files, '%{_rpmmacrodir}' the files the macro packages
-    install. An output naming anything but the two directories is
-    reported through the module logger and yields no files.
+    A macro function is a %define/%global declared with an argument
+    list, or one whose body consumes the argument vector (%1 .. %9,
+    %*, %** or %#), which is how a definition without an argument
+    list still takes arguments. The list feeds the bracketing
+    exclusions only: a name here is protected from bracing, but the
+    dependency parser keeps its own, narrower collection, since
+    treating an invocation as argument-taking changes how its line
+    is tokenised.
 
-    Returns:
-        A list of the definition files that exist.
-    """
-    try:
-        output = check_output(['rpm', '--eval', '%{_rpmconfigdir} %{_rpmmacrodir}'])
-    except (OSError, CalledProcessError) as error:
-        raise RpmExceptionError(f'Could not run "rpm --eval": {error}') from error
-    # rpm prints in the locale charset; only ASCII paths are expected
-    dirs = output.decode(errors='replace').split()
-    if len(dirs) != 2:
-        logger.warning(
-            'Unusable "rpm --eval" output %r; no macro definition files will be scanned',
-            output.decode(errors='replace'),
-        )
-        return []
-    configdir, macrodir = dirs
-    candidates = [os.path.join(configdir, 'macros')]
-    if os.path.isdir(macrodir):
-        candidates += [os.path.join(macrodir, name) for name in sorted(os.listdir(macrodir))]
-    candidates += sorted(glob.glob(os.path.join(configdir, 'platform', '*', 'macros')))
-    return [path for path in candidates if os.path.isfile(path)]
-
-
-def find_global_macros_with_arg() -> list[str]:
-    """
-    Create a list of all macro functions defined in the rpm macro files.
-
-    'rpm --showrc' prints the parameter list of a macro function only when
-    it is not empty, so a function defined with an empty parameter list --
-    '%python_module()' in the python macros -- looks like a plain macro in
-    its output and parse_rpm_showrc() cannot collect it. The definition
-    files keep the parentheses, so scan them the same way
-    find_macros_with_arg() scans a spec file.
+    Args:
+        spec: A string with the path to the specfile.
 
     Returns:
         A list of such macro functions.
     """
-    if 'macrofiles' in _read_cache:
-        return list(_read_cache['macrofiles'])
     macrofuncs: list[str] = []
 
-    re_macrofile_macrofunc = re.compile(r'^\s*%(?:(?:define|global)\s+)?(\w+)\(')
-    for path in _rpm_macro_files():
-        with open(path, encoding='utf-8', errors='replace') as f:
-            for line in f:
-                found_macro = re_macrofile_macrofunc.match(line)
-                if found_macro:
-                    macrofuncs += [found_macro.group(1)]
-    _read_cache['macrofiles'] = macrofuncs
-    return list(macrofuncs)
+    re_spec_macrofunc = re.compile(r'^\s*%(?:define|global)\s+(\w+)\(')
+    re_spec_define = re.compile(r'^\s*%(?:define|global)\s+(\w+)\s*(.*)$')
+    with open_stringio_spec(spec) as f:
+        lines = [line.rstrip('\n') for line in f]
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        index += 1
+        declared = re_spec_macrofunc.match(line)
+        if declared:
+            macrofuncs += [declared.group(1)]
+            continue
+        define = re_spec_define.match(line)
+        if define:
+            body = define.group(2)
+            # a definition body continues while its lines end in a backslash
+            while body.endswith('\\') and index < len(lines):
+                body += '\n' + lines[index]
+                index += 1
+            if re_macro_arg_ref.search(strip_lua_bodies(body)):
+                macrofuncs += [define.group(1)]
+    return macrofuncs
 
 
 def read_conversion_changes(conversion_file):
