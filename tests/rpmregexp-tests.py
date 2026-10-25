@@ -24,6 +24,20 @@ class TestRegexp:
             '%Description %patch1 %{PATCH1} %docdir %{DOCDIR}'
         )
 
+    def test_unbrace_keywords_glued(self):
+        """Test that a use glued to a word character keeps its braces."""
+        reg = Regexp(['description', 'docdir', 'patch[0-9]*'])
+        unbrace = reg.re_unbrace_keywords.sub
+        # glued to a letter or a digit the suffix would merge into
+        # the macro name of the unbraced form
+        assert unbrace(r'%\1', '%{docdir}foo') == '%{docdir}foo'
+        assert unbrace(r'%\1', '%{patch0}2') == '%{patch0}2'
+        assert unbrace(r'%\1', '%{Description}foo') == '%{Description}foo'
+        # glued to a delimiter or closing the value it still unbraces
+        assert unbrace(r'%\1', '%{docdir}/foo') == '%docdir/foo'
+        assert unbrace(r'%\1', '%{patch0}-p1') == '%patch0-p1'
+        assert unbrace(r'%\1', '%{docdir}') == '%docdir'
+
     def test_braced_argument_macro_contexts(self):
         """Test that only value-position uses of an argument-taking macro match."""
         reg = Regexp(['typelib'], ['typelib'])

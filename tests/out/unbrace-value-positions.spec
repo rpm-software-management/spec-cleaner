@@ -13,6 +13,7 @@ Requires:       %{typelib} = %{version}
 
 %description
 Haskell %{pkg_name} library documentation files.
+Glued %{ghost}foo and %{patch0}2 references stay braced.
 
 %package -n ghc-%pkg_name
 Summary:        Haskell %{pkg_name} library development files
@@ -26,6 +27,7 @@ perl ./Build.PL optimize="%{optflags}"
 
 %files
 %typelib
+%ghost/run/unbrace-value-positions
 
 %files -n ghc-%pkg_name
 %{_libdir}/libHS%pkg_name.so
