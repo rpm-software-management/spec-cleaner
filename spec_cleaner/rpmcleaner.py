@@ -678,6 +678,12 @@ class RpmSpecCleaner:
             elif self._detect_condition_change(line) and branches:
                 branches.pop()
             half = self._ldconfig_half(line)
+            if half:
+                # the package argument closes the merged line, so a
+                # braced use of a listed macro takes the braceless form
+                # it has in that position; the merged line is then a
+                # fixed point of a following run
+                half = (half[0], self.options['reg'].re_unbrace_keywords.sub(r'%\1', half[1]))
             if not half or half[1] in used or not self._is_lone_scriptlet(lines, i):
                 continue
             key = (tuple(branches), half[1])

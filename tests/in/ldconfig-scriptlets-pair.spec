@@ -1,3 +1,5 @@
+%define libname() libpair%{sover}
+
 %install
 make install
 
@@ -108,6 +110,9 @@ make check
 
 %post -n libm1 -p /sbin/ldconfig
 %postun -n libm1 -p /sbin/ldconfig
+
+%post -n %{libname} -p /sbin/ldconfig
+%postun -n %{libname} -p /sbin/ldconfig
 # library files
 %files -n libb1
 %{_libdir}/libb.so.*
