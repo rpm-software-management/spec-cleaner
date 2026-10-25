@@ -241,6 +241,27 @@ def test_embrace_value_positions(default_options, line, expected):
     assert _cleaned_line(default_options, False, line) == expected
 
 
+EMBRACE_GLUED_KEYWORDS = [
+    # a braced use of a plain keyword glued to a word character keeps
+    # its braces: the unbraced form would merge the suffix into the
+    # macro name, so rpm would read a different macro
+    ('Requires: %{patch0}foo', 'Requires: %{patch0}foo'),
+    ('echo %{setup}2', 'echo %{setup}2'),
+    ('Summary: %{ghost}foo files', 'Summary: %{ghost}foo files'),
+    # glued to a delimiter the use still unbraces
+    ('echo %{patch0}-p1', 'echo %patch0-p1'),
+    ('%{ghost}/run/foo', '%ghost/run/foo'),
+    # closing the line the use still unbraces
+    ('echo %{ghost}', 'echo %ghost'),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_GLUED_KEYWORDS)
+def test_embrace_glued_keywords(default_options, line, expected):
+    """Braced uses of plain keywords glued to a word character keep their braces."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
 def test_embrace_leaves_known_macro_function_unbraced(default_options):
     """A macro function (an rpm builtin here) keeps its space separated arguments."""
     options = RpmSpecCleaner(default_options()).options
