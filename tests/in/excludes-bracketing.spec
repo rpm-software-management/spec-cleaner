@@ -18,6 +18,8 @@
 %dir
 %doc
 %docdir
+%electron_check_native
+%electron_rebuild
 %else
 %endif
 %exclude
@@ -49,6 +51,8 @@
 %jpackage_script
 %kernel_module_package
 %kf5_makeinstall
+%kf6_build
+%kf6_install
 %lang_package
 %lang(\s*\([^)]*\))
 %make_build
@@ -59,6 +63,14 @@
 %nagios_command_user_group_add
 %nagios_user_group_add
 %__os_install_post
+%ocaml_create_file_list
+%ocaml_dune_build
+%ocaml_dune_install
+%ocaml_dune_setup
+%ocaml_dune_test
+%octave
+%octave_pkg_src
+%octave_pkg_test
 %package
 %patch[0-9]*
 %perl_gen_filelist
@@ -73,6 +85,7 @@
 %pretrans
 %preun
 %py_compile
+%pyqt_install
 %python_alternative
 %python_install_alternative
 %python_uninstall_alternative
@@ -90,7 +103,13 @@
 %qmake5
 %qmake5_install
 %qmake6
+%qmake6_build
+%qmake6_install
+%qt6_build
+%qt6_install
 %reconfigure_fonts_[^\s]*
+%regenerate_initrd_post
+%regenerate_initrd_posttrans
 %requires_[^\s]*
 %restart_on_update
 %run_permissions
@@ -98,19 +117,29 @@
 %service_add_post foo.service
 %service_del_preun foo.service
 %service_del_postun foo.service
+%set_build_flags
 %set_permissions
 %setup
+%setup_openmpi
 %stop_on_removal
 %suse_kernel_module_package
 %suse_update_desktop_file
+%suseconfig_fonts_prereq
+%systemd_preset_post
+%systemd_preset_posttrans
+%systemd_preset_pre
 %systemd_preun
 %systemd_requires
+%systemd_user_preset_post
+%systemd_user_preset_posttrans
+%systemd_user_preset_pre
 %tmpfiles_create
 %triggerin
 %triggerpostun
 %triggerun
 %udev_rules_update
 %undefine
+%update_bootloader_posttrans
 %verify[^\s]*
 %verify(\s*\([^)]*\))?
 %with
