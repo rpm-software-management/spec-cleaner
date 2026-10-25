@@ -393,6 +393,48 @@ class TestRpmPreamble:
                 ('bar', None, None),
             ]
 
+    def test_glued_macro_with_arg(self, preamble):
+        """Test that a use glued to a word character keeps its braces."""
+        # unbraced, the suffix would merge into the macro name and rpm
+        # would read a different macro, so the braced form stays
+        for line in ('%{pkg_version}foo', '%{typelib}foo'):
+            tokens = preamble._fix_list_of_packages(line, 'requires')
+            assert [(token.name, token.operator, token.version) for token in tokens] == [
+                (line, None, None),
+            ]
+        # a relation behind a glued use is still the dependency's own
+        tokens = preamble._fix_list_of_packages('%{typelib}foo >= 1.0', 'requires')
+        assert [(token.name, token.operator, token.version) for token in tokens] == [
+            ('%{typelib}foo', '>=', '1.0'),
+        ]
+        tokens = preamble._fix_list_of_packages('foo >= %{pkg_version}foo', 'requires')
+        assert [(token.name, token.operator, token.version) for token in tokens] == [
+            ('foo', '>=', '%{pkg_version}foo'),
+        ]
+        # each glued use in a list keeps its braces
+        tokens = preamble._fix_list_of_packages('%{typelib}foo, bar', 'requires')
+        assert [(token.name, token.operator, token.version) for token in tokens] == [
+            ('%{typelib}foo', None, None),
+            ('bar', None, None),
+        ]
+        # a delimiter behind the use ends the macro name in rpm too, so
+        # those uses restore to the unbraced form as before
+        for line, name in (
+            ('%{pkg_version}-1', '%pkg_version-1'),
+            ('%{pkg_version}.1', '%pkg_version.1'),
+            ('%{pkg_version}/foo', '%pkg_version/foo'),
+            ('%{pkg_version}', '%pkg_version'),
+        ):
+            tokens = preamble._fix_list_of_packages(line, 'requires')
+            assert [(token.name, token.operator, token.version) for token in tokens] == [
+                (name, None, None),
+            ]
+        tokens = preamble._fix_list_of_packages('%{pkg_version}, foo', 'requires')
+        assert [(token.name, token.operator, token.version) for token in tokens] == [
+            ('%pkg_version', None, None),
+            ('foo', None, None),
+        ]
+
 
 class TestRpmPreambleOrder:
     """We run few tests to ensure minimal mode keeps the preamble order."""

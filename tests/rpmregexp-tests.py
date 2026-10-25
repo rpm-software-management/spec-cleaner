@@ -34,7 +34,10 @@ class TestRegexp:
         assert shielded('Summary: the %{typelib} library files')
         # the closing quote of the value the use sits in
         assert shielded('optimize="%{typelib}"')
-        # glued to a suffix the use takes no arguments in either spelling
+        # glued to a word character the suffix would merge into the
+        # macro name of the unbraced form
+        assert shielded('Requires: %{typelib}foo')
+        # glued to a delimiter the use takes no arguments in either spelling
         assert not shielded('Name: ghc-%{typelib}')
         assert not shielded('Name: ghc-%{typelib}-devel')
         # closing the line the use takes no arguments either
