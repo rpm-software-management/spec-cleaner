@@ -7,165 +7,124 @@
 # again would only restate what the data already provides. Lines starting
 # with '#' and empty lines are skipped by the loader.
 #
-# Entries with a reason recorded above them are semantic exceptions: they
-# are section keywords, %files directives or parser directives rather than
-# macro invocations, or plain macros taking no arguments, so the
-# argument-taking snapshot cannot express why they stay unbraced.
-#
-# The remaining entries without a recorded reason are argument-taking
-# macros the snapshot does not carry yet (whole families among them, e.g.
-# the cmake_*, meson_* and yast_* helpers); they stay until the snapshot
-# covers them.
-# %files directive or flag word, not a macro invocation
-artifact
-# %files directive: the braced invocation form is the directive syntax itself
-attr(\s*\([^)]*\))?
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
+# The entries are grouped by the reason they are here; the group header
+# states the reason, and an entry carries its own comment only where the
+# name needs one beyond that.
+
+# rpm section keywords: a braced %{...} would be a macro expansion, not a
+# section header
 build
-cabal_test
-# %files directive: the braced invocation form is the directive syntax itself
-caps(\s*\([^)]*\))?
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 changelog
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
 check
+conf
+filetriggerin
+filetriggerpostun
+filetriggerun
+generate_buildrequires
+install
+patchlist
+post
+posttrans
+postun
+postuntrans
+pre
+prep
+pretrans
+preun
+preuntrans
+sourcelist
+transfiletriggerin
+transfiletriggerpostun
+transfiletriggerun
+triggerin
+triggerpostun
+triggerprein
+triggerun
+
+# spec parser directives, not macros the snapshot can carry
+else
+elif[^\s]*
+endif
+if(\s*\(.*\))?
+if[^\s]*
+include
+patch[0-9]*
+setup
+
+# %files directives and flag words, not macro invocations; for the
+# parenthesised forms the braced invocation form is the directive syntax
+# itself
+artifact
+attr(\s*\([^)]*\))?
+caps(\s*\([^)]*\))?
+config(\s*\([^)]*\))?
+defattr(\s*\([^)]*\))?
+defverify(\s*\([^)]*\))?
+dev(\s*\([^)]*\))?
+dir
+doc
+docdir
+exclude
+ghost
+lang(\s*\([^)]*\))
+license
+missingok
+pubkey
+readme
+# also covers the %verifyscript section keyword
+verify[^\s]*
+verify(\s*\([^)]*\))?
+
+# plain macros taking no arguments; the snapshot carries argument-taking
+# macros only
+__os_install_post
+run_permissions
+systemd_ordering
+systemd_requires
+sysusers_requires
+
+# emitted by the cleaner's own dephell conversion in rpmprep; the
+# generated output keeps the spelling the conversion produces
+dephell_gensetup
+
+# macros invoked like commands, kept unbraced by convention: they read as
+# the command line they expand to, and bracing is applied only where it
+# makes sense. The snapshot does not carry them as argument-taking
+# macros — several families among them the snapshot does not fully
+# carry — and a few are defined in neither distribution's macro files.
+__id_u
+__ln_s
+__mkdir_p
+cabal_test
 cmake
 cmake_[^\s]*
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-conf
-# %files directive: the braced invocation form is the directive syntax itself
-config(\s*\([^)]*\))?
 configure
-# %files directive: the braced invocation form is the directive syntax itself
-defattr(\s*\([^)]*\))?
-# %files directive: the braced invocation form is the directive syntax itself
-defverify(\s*\([^)]*\))?
-# emitted by the cleaner's own dephell conversion in rpmprep; kept unbraced in the generated output
-dephell_gensetup
-# %files directive: the braced invocation form is the directive syntax itself
-dev(\s*\([^)]*\))?
-# %files directive or flag word, not a macro invocation
-dir
-# %files directive or flag word, not a macro invocation
-doc
-# %files directive or flag word, not a macro invocation
-docdir
-# spec parser directive, not a macro the snapshot can carry
-else
-# spec parser directive, not a macro the snapshot can carry
-elif[^\s]*
-# spec parser directive, not a macro the snapshot can carry
-endif
-# %files directive or flag word, not a macro invocation
-exclude
 fillup_[^\s]*
 find_lang
 gem_packages
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-generate_buildrequires
 ghc_pkg_recache
-# %files directive or flag word, not a macro invocation
-ghost
 glib2_gsettings_schema_[^\s]*
 gpg_verify
-# spec parser directive, not a macro the snapshot can carry
-if(\s*\(.*\))?
-# spec parser directive, not a macro the snapshot can carry
-if[^\s]*
-# spec parser directive, not a macro the snapshot can carry
-include
 insserv_[^\s]*
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-install
 jupyter_move_config
-# %files directive: the braced invocation form is the directive syntax itself
-lang(\s*\([^)]*\))
 langpack
-# %files directive or flag word, not a macro invocation
-license
 make_build
 make_install
 make_jobs
 makeinstall
 meson
 meson_[^\s]*
-ninja_[^\s]*
-# %files directive or flag word, not a macro invocation
-missingok
 _mingw32_configure
+ninja_[^\s]*
 nodejs_install
-# plain macro taking no arguments; the snapshot carries argument-taking macros only
-__os_install_post
-# spec parser directive, not a macro the snapshot can carry
-patch[0-9]*
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-patchlist
-perl_make_install
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-post
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-posttrans
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-postun
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-postuntrans
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-pre
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-prep
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-pretrans
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-preun
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-preuntrans
-# %files directive or flag word, not a macro invocation
-pubkey
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-filetriggerin
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-filetriggerun
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-filetriggerpostun
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-transfiletriggerin
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-transfiletriggerun
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-transfiletriggerpostun
 pattern_[^\s]*
+perl_make_install
 py_compile
 python(.?)_build
 qmake
 qmake5
 qmake5_install
-# %files directive or flag word, not a macro invocation
-readme
 reconfigure_fonts_[^\s]*
 requires_[^\s]*
-# plain macro taking no arguments; the snapshot carries argument-taking macros only
-run_permissions
-# spec parser directive, not a macro the snapshot can carry
-setup
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-sourcelist
-# plain macro taking no arguments; the snapshot carries argument-taking macros only
-systemd_ordering
-# plain macro taking no arguments; the snapshot carries argument-taking macros only
-systemd_requires
-# plain macro taking no arguments; the snapshot carries argument-taking macros only
-sysusers_requires
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-triggerin
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-triggerpostun
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-triggerprein
-# rpm section keyword: a braced %{...} would be a macro expansion, not a section
-triggerun
-# covers the %verify directive and the %verifyscript section keyword
-verify[^\s]*
-# %files directive: the braced invocation form is the directive syntax itself
-verify(\s*\([^)]*\))?
 yast_(build|check|install)[^\s]*
 yast_metainfo
