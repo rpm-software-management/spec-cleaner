@@ -415,7 +415,11 @@ class Regexp:
         sections = [k for k in keywords if k in SECTION_NAMES]
         if sections:
             alternatives.append('(?i:' + '|'.join(sections) + ')')
-        self.re_unbrace_keywords = re.compile(r'(?<!%)%{(' + '|'.join(alternatives) + ')}')
+        # a use glued to a word character keeps its braces: the
+        # unbraced form would merge the suffix into the macro name,
+        # so rpm would read a different macro; a use glued to a
+        # delimiter or closing the value unbraces as before
+        self.re_unbrace_keywords = re.compile(r'(?<!%)%{(' + '|'.join(alternatives) + r')}(?!\w)')
         # braced uses of an argument-taking macro that keep their braces:
         # what follows is separated content (whitespace and further
         # tokens) or the closing quote of the value the use sits in, and
