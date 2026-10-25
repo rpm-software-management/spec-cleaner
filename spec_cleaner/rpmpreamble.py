@@ -85,15 +85,16 @@ class RpmPreamble(Section):
         self.perl = options['perl']
         self.cmake = options['cmake']
         self.tex = options['tex']
-        # names of the macros that take arguments, for the dependency parser
+        # names of the macros that take arguments, for the dependency
+        # parser, which recognises an invocation of one of them in
+        # either spelling; a braced use keeps its braces wherever the
+        # following tokens would be captured as its arguments, so only
+        # the uses that close the value or are glued to a suffix are
+        # restored to the unbraced form here
         self.macros_with_arg = options['macros_with_arg']
-        # the cleanup braces an invocation of one of them and the unbracing
-        # there only restores the ones it knows; restore the rest here, in
-        # dependency values only, so the parser sees the invocation in the
-        # unbraced form it recognises
         if self.macros_with_arg:
             self.re_macro_with_arg_braced = re.compile(
-                r'%{(' + '|'.join(re.escape(name) for name in self.macros_with_arg) + r')}'
+                r'%{(' + '|'.join(re.escape(name) for name in self.macros_with_arg) + r')}(?!\s+\S)'
             )
         else:
             self.re_macro_with_arg_braced = None
