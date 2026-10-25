@@ -109,3 +109,45 @@ also_copy = ["pytest.ini", "generate-licenses-for-rpmlint.py"]
 pytest_add_cli_args = ["-n0", "--no-cov", "-p", "no:cacheprovider"]
 pytest_add_cli_args_test_selection = ["-m", "not webtest"]
 
+[tool.mypy]
+strict = true
+
+# Per-module strict debt: each override lists exactly the error codes the
+# module still produces under strict mode. An override is deleted in the
+# same commit that makes its module strict-clean.
+[[tool.mypy.overrides]]
+module = "spec_cleaner.dependency_parser"
+disable_error_code = ["no-untyped-call", "no-untyped-def", "union-attr", "var-annotated"]
+
+[[tool.mypy.overrides]]
+module = "spec_cleaner.rpmcleaner"
+disable_error_code = ["no-untyped-call"]
+
+[[tool.mypy.overrides]]
+module = "spec_cleaner.rpmcopyright"
+disable_error_code = ["no-untyped-call", "no-untyped-def"]
+
+[[tool.mypy.overrides]]
+module = "spec_cleaner.rpmexception"
+disable_error_code = ["no-untyped-def"]
+
+[[tool.mypy.overrides]]
+module = "spec_cleaner.rpmhelpers"
+disable_error_code = ["no-any-return", "no-untyped-call", "no-untyped-def", "type-arg", "var-annotated"]
+
+[[tool.mypy.overrides]]
+module = "spec_cleaner.rpmpackage"
+disable_error_code = ["no-untyped-call", "no-untyped-def", "var-annotated"]
+
+[[tool.mypy.overrides]]
+module = "spec_cleaner.rpmpreamble"
+disable_error_code = ["assignment", "no-untyped-call", "no-untyped-def", "union-attr"]
+
+[[tool.mypy.overrides]]
+module = "spec_cleaner.rpmpreambleelements"
+disable_error_code = ["assignment", "no-untyped-call", "no-untyped-def", "operator", "type-arg", "union-attr", "var-annotated"]
+
+[[tool.mypy.overrides]]
+module = "spec_cleaner.rpmprep"
+disable_error_code = ["no-untyped-def"]
+
