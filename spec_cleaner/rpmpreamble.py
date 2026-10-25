@@ -88,13 +88,17 @@ class RpmPreamble(Section):
         # names of the macros that take arguments, for the dependency
         # parser, which recognises an invocation of one of them in
         # either spelling; a braced use keeps its braces wherever the
-        # following tokens would be captured as its arguments, so only
-        # the uses that close the value or are glued to a suffix are
-        # restored to the unbraced form here
+        # following tokens would be captured as its arguments, and
+        # wherever a word character follows, as the unbraced form
+        # would merge it into the macro name; only the uses that close
+        # the value or are glued to a delimiter are restored to the
+        # unbraced form here
         self.macros_with_arg = options['macros_with_arg']
         if self.macros_with_arg:
             self.re_macro_with_arg_braced = re.compile(
-                r'%{(' + '|'.join(re.escape(name) for name in self.macros_with_arg) + r')}(?!\s+\S)'
+                r'%{('
+                + '|'.join(re.escape(name) for name in self.macros_with_arg)
+                + r')}(?!\w)(?!\s+\S)'
             )
         else:
             self.re_macro_with_arg_braced = None
