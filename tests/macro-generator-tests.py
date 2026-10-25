@@ -14,16 +14,19 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 GENERATOR = REPO_ROOT / 'generate-macro-functions.py'
 REPO = 'file:///fixture/'
 
-PRIMARY_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+PACKAGE_CHECKSUM = 'ab' * 32
+
+PRIMARY_XML = f"""<?xml version="1.0" encoding="UTF-8"?>
 <metadata xmlns="http://linux.duke.edu/metadata/common" packages="1">
 <package type="rpm">
 <name>macropkg</name>
 <arch>noarch</arch>
+<checksum type="sha256" pkgid="YES">{PACKAGE_CHECKSUM}</checksum>
 <size package="4242" installed="4242" archive="4242"/>
 <location href="macropkg-1.0-1.noarch.rpm"/>
 </package>
 </metadata>
-"""
+""".encode()
 
 FILELISTS_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
 <filelists xmlns="http://linux.duke.edu/metadata/filelists" packages="1">
@@ -84,7 +87,7 @@ def _stage(
         announced_filelists if announced_filelists is not None else filelists,
         **kwargs,
     )
-    (workdir / 'repomd.xml').write_bytes(repomd)
+    (workdir / gen.repomd_cache_name(REPO)).write_bytes(repomd)
     (workdir / 'primary.xml.gz').write_bytes(primary)
     (workdir / 'filelists.xml.gz').write_bytes(filelists)
     return gen, str(workdir)
@@ -98,8 +101,18 @@ def test_verified_archives_parse(tmp_path, capsys):
     owners = gen.macro_packages(REPO, workdir, hrefs, checks)
     assert owners == {('macropkg', 'noarch'): [MACRO_FILE]}
     locations = gen.package_locations(REPO, workdir, hrefs, checks)
-    assert locations == {('macropkg', 'noarch'): ('macropkg-1.0-1.noarch.rpm', 4242)}
+    assert locations == {
+        ('macropkg', 'noarch'): ('macropkg-1.0-1.noarch.rpm', 4242, ('sha256', PACKAGE_CHECKSUM))
+    }
     assert 'Verified' in capsys.readouterr().err
+
+
+def test_repomd_cache_is_keyed_to_the_repo(tmp_path):
+    """A repomd.xml cached under the plain name (another repo's, or a stale one) is not read."""
+    gen, workdir = _stage(tmp_path, gzip.compress(PRIMARY_XML), gzip.compress(FILELISTS_XML))
+    (Path(workdir) / 'repomd.xml').write_bytes(b'not xml at all')
+    _hrefs, _checks, revision = gen.repodata_hrefs(REPO, workdir)
+    assert revision == '12345'
 
 
 def test_truncated_archive_aborts(tmp_path, capsys):
@@ -184,15 +197,27 @@ SELECTION_PACKAGES = [
 ]
 
 
-def _selection_repodata():
+def _selection_rpms():
+    """Build the selection fixture rpms: {href: bytes}."""
+    rpms = {}
+    for name, arch, path, macro in SELECTION_PACKAGES:
+        body = f'%{macro}(x) body\n'.encode()
+        rpms[f'{name}-1.0-1.{arch}.rpm'] = _rpm_bytes({path.lstrip('/'): body})
+    return rpms
+
+
+def _selection_repodata(rpms):
     """Build primary/filelists blobs describing the selection fixture packages."""
     primary_pkgs = []
     filelists_pkgs = []
     for name, arch, path, _macro in SELECTION_PACKAGES:
         href = f'{name}-1.0-1.{arch}.rpm'
+        blob = rpms[href]
+        digest = hashlib.sha256(blob).hexdigest()
         primary_pkgs.append(
             f'<package type="rpm"><name>{name}</name><arch>{arch}</arch>'
-            f'<size package="1" installed="1" archive="1"/>'
+            f'<checksum type="sha256" pkgid="YES">{digest}</checksum>'
+            f'<size package="{len(blob)}" installed="1" archive="1"/>'
             f'<location href="{href}"/></package>'
         )
         filelists_pkgs.append(
@@ -214,13 +239,13 @@ def _selection_repodata():
 
 def _stage_selection(tmp_path):
     """Stage the selection fixture: repodata plus the rpm payloads in the fetch cache."""
-    primary, filelists = _selection_repodata()
+    rpms = _selection_rpms()
+    primary, filelists = _selection_repodata(rpms)
     gen, workdir = _stage(tmp_path, gzip.compress(primary), gzip.compress(filelists))
-    rpms = Path(workdir) / 'rpms'
-    rpms.mkdir()
-    for name, arch, path, macro in SELECTION_PACKAGES:
-        body = f'%{macro}(x) body\n'.encode()
-        (rpms / f'{name}-1.0-1.{arch}.rpm').write_bytes(_rpm_bytes({path.lstrip('/'): body}))
+    rpms_dir = Path(workdir) / 'rpms'
+    rpms_dir.mkdir()
+    for href, blob in rpms.items():
+        (rpms_dir / href).write_bytes(blob)
     return gen, workdir
 
 
@@ -235,6 +260,18 @@ def test_every_macro_package_contributes(tmp_path):
     assert binaries == 5
     # delta's copy of macros.shared is byte-identical to alpha's: parsed once.
     assert files_seen == 4
+
+
+def test_corrupt_rpm_aborts(tmp_path, capsys):
+    """An rpm whose bytes differ from the primary record aborts instead of parsing short."""
+    gen, workdir = _stage_selection(tmp_path)
+    victim = Path(workdir) / 'rpms' / 'alpha-1.0-1.noarch.rpm'
+    blob = bytearray(victim.read_bytes())
+    blob[len(blob) // 2] ^= 0xFF
+    victim.write_bytes(bytes(blob))
+    with pytest.raises(SystemExit):
+        gen.repo_macro_names(REPO, workdir)
+    assert 'Checksum mismatch' in capsys.readouterr().err
 
 
 def test_owner_without_location_is_skipped_with_a_warning(tmp_path, capsys):

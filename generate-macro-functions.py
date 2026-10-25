@@ -31,7 +31,9 @@ Downloaded repodata is verified against the checksum and size published
 for it in repomd.xml before it is parsed, the same discipline
 conversions-update.sh applies to the conversion tables: an incomplete
 or stale download aborts the run instead of producing a silently
-shortened macro list.
+shortened macro list. The rpm payloads are verified the same way,
+against the checksum and size the primary metadata publishes for each
+package, before they are parsed.
 """
 
 import argparse
@@ -49,7 +51,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import date
 
-DEFAULT_REPO = 'http://download.opensuse.org/tumbleweed/repo/oss/'
+DEFAULT_REPO = 'https://download.opensuse.org/tumbleweed/repo/oss/'
 DEFAULT_FEDORA_REPO = (
     'https://download.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/x86_64/os/'
 )
@@ -108,6 +110,17 @@ def checksum_record(data):
     return algo, by_type.get(algo), size
 
 
+def _file_digest(path, algo):
+    """Return the (hexdigest, size) of a local file under one algorithm."""
+    digest = hashlib.new(algo)
+    total = 0
+    with open(path, 'rb') as fh:
+        while chunk := fh.read(1024 * 1024):
+            digest.update(chunk)
+            total += len(chunk)
+    return digest.hexdigest(), total
+
+
 def verify_archive(path, href, record, repo):
     """
     Verify a downloaded repodata archive against its repomd.xml record.
@@ -125,31 +138,64 @@ def verify_archive(path, href, record, repo):
             file=sys.stderr,
         )
         sys.exit(1)
-    digest = hashlib.new(algo)
-    total = 0
-    with open(path, 'rb') as fh:
-        while chunk := fh.read(1024 * 1024):
-            digest.update(chunk)
-            total += len(chunk)
+    actual, total = _file_digest(path, algo)
     if size is not None and total != size:
         print(
             f'Size mismatch for {href}: repomd.xml announces {size} bytes, got {total}',
             file=sys.stderr,
         )
         sys.exit(1)
-    if digest.hexdigest() != expected:
+    if actual != expected:
         print(
-            f'Checksum mismatch for {href}: '
-            f'repomd.xml announces {expected}, got {digest.hexdigest()}',
+            f'Checksum mismatch for {href}: repomd.xml announces {expected}, got {actual}',
             file=sys.stderr,
         )
         sys.exit(1)
     print(f'Verified {href} against the {algo} checksum in repomd.xml', file=sys.stderr)
 
 
+def verify_package(path, href, checksum, size):
+    """
+    Verify a downloaded rpm against the record the primary data publishes.
+
+    The run aborts when the primary data publishes no usable checksum,
+    or when the download's size or checksum differs from the published
+    one: a corrupt rpm still parses as a cpio stream, with the damaged
+    entries silently missing, so a successful parse proves nothing.
+    """
+    algo, expected = checksum
+    if not algo or not expected:
+        print(f'primary data publishes no checksum for {href}', file=sys.stderr)
+        sys.exit(1)
+    actual, total = _file_digest(path, algo)
+    if size and total != size:
+        print(
+            f'Size mismatch for {href}: primary data announces {size} bytes, got {total}',
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if actual != expected:
+        print(
+            f'Checksum mismatch for {href}: primary data announces {expected}, got {actual}',
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def repomd_cache_name(repo):
+    """
+    Name of the workdir cache file for one repository's repomd.xml.
+
+    The name is keyed to the repository: a workdir reused with another
+    --repo value holds each repository's repomd.xml separately, so one
+    repository's cached file is never read as another's.
+    """
+    return 'repomd-' + hashlib.sha256(repo.encode()).hexdigest()[:16] + '.xml'
+
+
 def repodata_hrefs(repo, workdir):
     """Read repomd.xml; return the data hrefs, their verification records, the revision."""
-    repomd = fetch(repo + 'repodata/repomd.xml', os.path.join(workdir, 'repomd.xml'))
+    repomd = fetch(repo + 'repodata/repomd.xml', os.path.join(workdir, repomd_cache_name(repo)))
     tree = ET.parse(repomd)
     hrefs = {}
     checks = {}
@@ -184,7 +230,7 @@ def macro_packages(repo, workdir, hrefs, checks):
 
 
 def package_locations(repo, workdir, hrefs, checks):
-    """Map (name, arch) -> (location href, package size) from the primary data."""
+    """Map (name, arch) -> (location href, package size, package checksum) from the primary data."""
     path = fetch(repo + hrefs['primary'], os.path.join(workdir, os.path.basename(hrefs['primary'])))
     verify_archive(path, hrefs['primary'], checks.get('primary', (None, None, None)), repo)
     locations = {}
@@ -199,6 +245,7 @@ def package_locations(repo, workdir, hrefs, checks):
                         locations[(cur['name'], cur.get('arch'))] = (
                             cur['location'],
                             cur.get('size', 0),
+                            cur.get('checksum', (None, None)),
                         )
                     cur = None
                     el.clear()
@@ -211,6 +258,10 @@ def package_locations(repo, workdir, hrefs, checks):
                     cur['location'] = el.get('href')
                 elif el.tag == C_TAG + 'size':
                     cur['size'] = int(el.get('package', '0'))
+                elif el.tag == C_TAG + 'checksum':
+                    record = (el.get('type'), (el.text or '').strip())
+                    if el.get('pkgid') or 'checksum' not in cur:
+                        cur['checksum'] = record
     return locations
 
 
@@ -236,7 +287,7 @@ def all_binaries(owners, locations):
                 file=sys.stderr,
             )
             continue
-        binaries.append((name, arch, files, loc[0], loc[1]))
+        binaries.append((name, arch, files, loc[0], loc[1], loc[2]))
     return binaries
 
 
@@ -345,18 +396,20 @@ def collect_macro_names(repo, workdir, binaries):
     """
     Download the given packages of one repository; collect their macro names.
 
-    Every package is downloaded and read. Identical macro file contents
-    are parsed once: several packages ship byte-identical copies of a
-    macro file, and a second copy could only produce the names the
-    first one produced.
+    Every package is verified against the checksum and size the primary
+    data publishes for it, then downloaded and read. Identical macro
+    file contents are parsed once: several packages ship byte-identical
+    copies of a macro file, and a second copy could only produce the
+    names the first one produced.
     """
     names = set()
     seen_contents = set()
     files_seen = 0
-    for _name, _arch, files, href, _size in binaries:
+    for _name, _arch, files, href, size, checksum in binaries:
         dest = os.path.join(workdir, 'rpms', os.path.basename(href))
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         fetch(repo + href, dest)
+        verify_package(dest, href, checksum, size)
         with open(dest, 'rb') as fh:
             payload = rpm_payload(fh.read())
         found = extract_files(payload, files)
