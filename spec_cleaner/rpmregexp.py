@@ -404,7 +404,7 @@ class Regexp:
     re_deprecated_egrep_regex = re.compile(cmdstart + r'egrep(?=\s|$)')
     re_deprecated_fgrep_regex = re.compile(cmdstart + r'fgrep(?=\s|$)')
 
-    def __init__(self, keywords: list[str]) -> None:
+    def __init__(self, keywords: list[str], argument_macros: list[str] | None = None) -> None:
         """Compile all the keywords that are to be unbraced."""
         # the negative lookbehind keeps us from touching '%%{macro}'
         # where '%%' is the rpm escape for a literal percent sign
@@ -416,3 +416,15 @@ class Regexp:
         if sections:
             alternatives.append('(?i:' + '|'.join(sections) + ')')
         self.re_unbrace_keywords = re.compile(r'(?<!%)%{(' + '|'.join(alternatives) + ')}')
+        # braced uses of an argument-taking macro that keep their braces:
+        # what follows is separated content (whitespace and further
+        # tokens) or the closing quote of the value the use sits in, and
+        # unbraced rpm would hand that content to the macro as its
+        # arguments; a use glued to a suffix or closing a line takes no
+        # arguments in either spelling and is not matched here
+        self.re_braced_argument_macro: re.Pattern[str] | None
+        if argument_macros:
+            names = '|'.join(re.escape(name) for name in argument_macros)
+            self.re_braced_argument_macro = re.compile(r'(?<!%)%{(' + names + r')}(?=\s+\S|["\'])')
+        else:
+            self.re_braced_argument_macro = None

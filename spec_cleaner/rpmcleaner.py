@@ -124,7 +124,9 @@ class RpmSpecCleaner:
             self.options['allowed_groups'] = None
         else:
             self.options['allowed_groups'] = read_group_changes()
-        self.options['reg'] = Regexp(self.options['unbrace_keywords'])
+        self.options['reg'] = Regexp(
+            self.options['unbrace_keywords'], self.options['argument_macros']
+        )
 
         # If gvim is used for the diff then run it in foreground mode
         if self.options['diff_prog'].startswith('gvim') and ' -f' not in self.options['diff_prog']:
@@ -218,6 +220,10 @@ class RpmSpecCleaner:
         # the bracketing exclusions are protection only and cover the
         # spec's own argument-consuming definitions on top of that
         derived = vendored_macrofuncs + bracketing_macrofuncs
+        # the argument-taking names on their own: a braced use of one of
+        # them keeps its braces where the following tokens are not its
+        # arguments (see Regexp.re_braced_argument_macro)
+        self.options['argument_macros'] = derived
         # the names protect the space separated argument forms; the
         # invocation forms '%name(args)' need no entry of their own, as
         # no curlification touches an invocation in either spelling
