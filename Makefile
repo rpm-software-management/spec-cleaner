@@ -1,5 +1,5 @@
 # This is to force regenerating everytime you run make as we rely on web data
-.PHONY: spec_cleaner/data/pkgconfig_conversions.txt spec_cleaner/data/licenses_changes.txt spec_cleaner/data/license_exceptions.txt spec_cleaner/data/cmake_conversions.txt spec_cleaner/data/tex_conversions.txt spec_cleaner/data/perl_conversions.txt spec_cleaner/data/licenses.toml spec_cleaner/data/licenses-suse.toml
+.PHONY: spec_cleaner/data/pkgconfig_conversions.txt spec_cleaner/data/licenses_changes.txt spec_cleaner/data/license_exceptions.txt spec_cleaner/data/cmake_conversions.txt spec_cleaner/data/tex_conversions.txt spec_cleaner/data/perl_conversions.txt spec_cleaner/data/licenses.toml spec_cleaner/data/licenses-suse.toml spec_cleaner/data/macro_functions.txt
 
 all: spec_cleaner/data/pkgconfig_conversions.txt spec_cleaner/data/licenses_changes.txt spec_cleaner/data/license_exceptions.txt spec_cleaner/data/cmake_conversions.txt spec_cleaner/data/tex_conversions.txt spec_cleaner/data/perl_conversions.txt spec_cleaner/data/licenses.toml spec_cleaner/data/licenses-suse.toml
 
