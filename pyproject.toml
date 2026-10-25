@@ -119,9 +119,5 @@ strict = true
 module = "spec_cleaner.rpmpackage"
 disable_error_code = ["no-untyped-call", "no-untyped-def", "var-annotated"]
 
-[[tool.mypy.overrides]]
-module = "spec_cleaner.rpmpreamble"
-disable_error_code = ["assignment", "no-untyped-call", "no-untyped-def", "union-attr"]
-
 
 

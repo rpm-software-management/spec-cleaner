@@ -3,18 +3,18 @@
 import logging
 import os.path
 import re
-from http.client import HTTPException
-from typing import cast
+from http.client import HTTPException, HTTPResponse
+from typing import IO, Any, cast
 from urllib import parse
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-import pyrpm.spec  # type: ignore
+import pyrpm.spec  # type: ignore[import-untyped]
 
 from .dependency_parser import DependencyParser, DepParserError
 from .rpmexception import NoMatchExceptionError
-from .rpmhelpers import fix_license, open_macro_bodies
-from .rpmpreambleelements import MacroLine, RpmPreambleElements
+from .rpmhelpers import GroupItem, GroupLine, fix_license, open_macro_bodies
+from .rpmpreambleelements import MacroLine, RpmPreambleElements, Unit
 from .rpmrequirestoken import RpmRequiresToken
 from .rpmsection import Section
 
@@ -47,11 +47,11 @@ class RpmPreamble(Section):
         line, even if we reorder the lines.
     """
 
-    def __init__(self, options):
+    def __init__(self, options: dict[str, Any]) -> None:
         """Initialize all the global variables and known categories."""
         Section.__init__(self, options)
         # Old storage
-        self._oldstore = []
+        self._oldstore: list[RpmPreambleElements] = []
         # Is the parsed variable multiline (ending with \\)
         # alternatively if a %{ or %( body of it ends on another line
         self.multiline = False
@@ -69,10 +69,10 @@ class RpmPreamble(Section):
         self._condition_bcond = False
         # Stack for _condition_bcond to prevent nested blocks from
         # contaminating outer blocks.
-        self._bcond_stack = []
+        self._bcond_stack: list[bool] = []
         # Stack for _condition_define so a nested bcond/define block does
         # not leak the flag to sibling blocks (only parents inherit it).
-        self._define_stack = []
+        self._define_stack: list[bool] = []
         # Is the condition based on the pattern
         self._pattern_condition = False
         # Does the condition hold Name/Version/Release/Epoch tags
@@ -80,12 +80,12 @@ class RpmPreamble(Section):
         # How many multi-line %{?cond: ... } blocks are currently open, so we
         # know a lone } closes such a block instead of being misc content
         self._multilinecond_depth = 0
-        self.options = options
+        self.options: dict[str, Any] = options
         # do we want pkgconfig and others?
-        self.pkgconfig = options['pkgconfig']
-        self.perl = options['perl']
-        self.cmake = options['cmake']
-        self.tex = options['tex']
+        self.pkgconfig: bool = options['pkgconfig']
+        self.perl: bool = options['perl']
+        self.cmake: bool = options['cmake']
+        self.tex: bool = options['tex']
         # names of the macros that take arguments, for the dependency
         # parser, which recognises an invocation of one of them in
         # either spelling; a braced use keeps its braces wherever the
@@ -94,7 +94,8 @@ class RpmPreamble(Section):
         # would merge it into the macro name; only the uses that close
         # the value or are glued to a delimiter are restored to the
         # unbraced form here
-        self.macros_with_arg = options['macros_with_arg']
+        self.macros_with_arg: list[str] = options['macros_with_arg']
+        self.re_macro_with_arg_braced: re.Pattern[str] | None
         if self.macros_with_arg:
             self.re_macro_with_arg_braced = re.compile(
                 r'%{('
@@ -104,26 +105,26 @@ class RpmPreamble(Section):
         else:
             self.re_macro_with_arg_braced = None
         # are we supposed to keep empty lines intact?
-        self.keep_space = options['keep_space']
+        self.keep_space: bool = options['keep_space']
         # do we want to remove groups from the specfile?
-        self.remove_groups = options['remove_groups']
+        self.remove_groups: bool = options['remove_groups']
         # dict of license replacement options
-        self.license_conversions = options['license_conversions']
+        self.license_conversions: dict[str, str] = options['license_conversions']
         # dict of pkgconfig and other conversions
-        self.pkgconfig_conversions = options['pkgconfig_conversions']
-        self.perl_conversions = options['perl_conversions']
-        self.cmake_conversions = options['cmake_conversions']
-        self.tex_conversions = options['tex_conversions']
+        self.pkgconfig_conversions: dict[str, str] = options['pkgconfig_conversions']
+        self.perl_conversions: dict[str, str] = options['perl_conversions']
+        self.cmake_conversions: dict[str, str] = options['cmake_conversions']
+        self.tex_conversions: dict[str, str] = options['tex_conversions']
         # list of allowed groups
-        self.allowed_groups = options['allowed_groups']
+        self.allowed_groups: list[str] = options['allowed_groups']
         # start the object
         self.paragraph = RpmPreambleElements(options)
         # license handling
-        self.subpkglicense = options['subpkglicense']
+        self.subpkglicense: bool = options['subpkglicense']
         # License seen at any nesting level, so no placeholder is needed
         self._has_license = False
         # modname detection
-        self.modname = None
+        self.modname: str | None = None
         # comments separated from a removed tag by a blank line are kept
         self._comments_before_blank = 0
 
@@ -177,35 +178,39 @@ class RpmPreamble(Section):
             'py_requires': self.reg.re_py_requires,
         }
 
-    def start_subparagraph(self):
+    def start_subparagraph(self) -> None:
         """Backup the paragraph and start a new one."""
         self._oldstore.append(self.paragraph)
         self.paragraph = RpmPreambleElements(self.options)
 
-    def _prune_ppc_condition(self):
+    def _prune_ppc_condition(self) -> None:
         """Check if we have ppc64 obsolete and delete it."""
         if (
             not self.minimal
             and len(self.paragraph.items['conditions']) == 3
             and isinstance(self.paragraph.items['conditions'][0], list)
             and self.paragraph.items['conditions'][0][0] == '# bug437293'
-            and self.paragraph.items['conditions'][1].endswith('64bit')
+            # the second condition element is the %if line itself
+            and cast(str, self.paragraph.items['conditions'][1]).endswith('64bit')
         ):
             self.paragraph.items['conditions'] = []
 
-    def _prune_empty_condition(self):
+    def _prune_empty_condition(self) -> None:
         """Remove empty conditions."""
         conditions = self.paragraph.items['conditions']
         # check if we have just the if (maybe with comments) and its endif
         if len(conditions) == 2:
-            opener = conditions[0][-1] if isinstance(conditions[0], list) else conditions[0]
+            # a condition element is a line or a group ending in the line
+            opener = cast(
+                str, conditions[0][-1] if isinstance(conditions[0], list) else conditions[0]
+            )
             # the second condition element is the %endif line itself
             if opener.startswith('%if') and self.reg.re_endif.match(cast(str, conditions[1])):
                 self.paragraph.items['conditions'] = []
 
     PYPI_SOURCE_HOSTS = ('pypi.io', 'files.pythonhosted.org', 'pypi.python.org')
 
-    def _fix_pypi_source(self, url):
+    def _fix_pypi_source(self, url: str) -> str:
         """
         Check if the source is URL that points to PyPI.
 
@@ -231,15 +236,15 @@ class RpmPreamble(Section):
         if self.reg.re_pypi_hashed.match(parsed.path):
             return url
 
-        if self.reg.re_pypi_type.match(parsed.path):
-            match = self.reg.re_pypi_type.match(parsed.path)
+        match = self.reg.re_pypi_type.match(parsed.path)
+        if match:
             pkg_type = match.group('type')
         else:
             pkg_type = 'source'
 
         filename = os.path.basename(parsed.path)
-        if self.reg.re_pypi_modname.match(filename):
-            match = self.reg.re_pypi_modname.match(filename)
+        match = self.reg.re_pypi_modname.match(filename)
+        if match:
             modname = match.group('pkgname')
         else:
             # no modname -> can't compile url
@@ -266,7 +271,7 @@ class RpmPreamble(Section):
             )
         )
 
-    def _place_define_condition(self, sub_has_bconds, sub_has_defines):
+    def _place_define_condition(self, sub_has_bconds: bool, sub_has_defines: bool) -> None:
         """
         Place a conditional block that defines macros.
 
@@ -288,7 +293,7 @@ class RpmPreamble(Section):
             # Has defines: with the define definitions.
             self.paragraph.add_define_block(self.paragraph.items['conditions'])
 
-    def end_subparagraph(self, endif=False, unclosed=False):
+    def end_subparagraph(self, endif: bool = False, unclosed: bool = False) -> None:
         """
         End the paragraph and flatten the output.
 
@@ -397,8 +402,10 @@ class RpmPreamble(Section):
             self._condition_nvr = False
 
     @staticmethod
-    def _pkgname_to_brackety(token, brackety, conversions):
-        converted = []
+    def _pkgname_to_brackety(
+        token: RpmRequiresToken, brackety: str, conversions: dict[str, str]
+    ) -> RpmRequiresToken | list[RpmRequiresToken]:
+        converted: list[RpmRequiresToken] = []
         # just never convert pkgconfig dependency
         # The same if we do not have a match
         if token.name == 'pkgconfig' or token.name not in conversions:
@@ -414,10 +421,10 @@ class RpmPreamble(Section):
         return converted
 
     @staticmethod
-    def _split_trailing_comment(value):
+    def _split_trailing_comment(value: str) -> tuple[str, str | None]:
         # Separate trailing %dnl or # comments before dependency parsing.
         # They are not part of the dependency and would crash the parser.
-        trailing_comment = None
+        trailing_comment: str | None = None
         dnl_idx = value.find('%dnl')
         if dnl_idx >= 0:
             trailing_comment = value[dnl_idx:].strip()
@@ -435,14 +442,16 @@ class RpmPreamble(Section):
         return value, trailing_comment
 
     @staticmethod
-    def _attach_trailing_comment(tokens, trailing_comment):
+    def _attach_trailing_comment(
+        tokens: list[RpmRequiresToken], trailing_comment: str | None
+    ) -> None:
         if not trailing_comment or not tokens:
             return
         # flat_out() only yields RpmRequiresToken items, so the comment
         # belongs to the last token on the line
         tokens[-1].trailing_comment = trailing_comment
 
-    def _fix_list_of_packages(self, value, category):
+    def _fix_list_of_packages(self, value: str, category: str) -> list[GroupLine]:
         # we do fix the package list only if there is no rpm call there on line
         # otherwise print there warning about nicer content and skip
         if self.reg.re_rpm_command.search(value):
@@ -471,7 +480,7 @@ class RpmPreamble(Section):
             return [value]
         self._attach_trailing_comment(tokens, trailing_comment)
         # loop over all and do formatting as we can get more deps for one
-        expanded = []
+        expanded: list[GroupLine] = []
         for token in tokens:
             # skip all various rpm-macroed content as it
             # is usually not easy to determine how that should be
@@ -485,6 +494,8 @@ class RpmPreamble(Section):
             # The #!BuildConflicts and #!BuildRequires pragma entries are
             # matched literally by the build service as well, so they stay as
             # is too
+            # a conversion replaces the token by a list of tokens
+            converted: RpmRequiresToken | list[RpmRequiresToken] = token
             if category not in (
                 'prereq',
                 'requires_phase',
@@ -499,24 +510,26 @@ class RpmPreamble(Section):
                 # the strings by some optimistic value of brackety dep
                 # priority is based on the first come first serve
                 if self.pkgconfig:
-                    token = self._pkgname_to_brackety(
+                    converted = self._pkgname_to_brackety(
                         token, 'pkgconfig', self.pkgconfig_conversions
                     )
                 # checking if it is not list is simple avoidance of running
                 # over already converted values
-                if not isinstance(token, list) and self.perl:
-                    token = self._pkgname_to_brackety(token, 'perl', self.perl_conversions)
-                if not isinstance(token, list) and self.tex:
-                    token = self._pkgname_to_brackety(token, 'tex', self.tex_conversions)
-                if not isinstance(token, list) and self.cmake:
-                    token = self._pkgname_to_brackety(token, 'cmake', self.cmake_conversions)
-            if isinstance(token, list):
-                expanded += token
+                if not isinstance(converted, list) and self.perl:
+                    converted = self._pkgname_to_brackety(converted, 'perl', self.perl_conversions)
+                if not isinstance(converted, list) and self.tex:
+                    converted = self._pkgname_to_brackety(converted, 'tex', self.tex_conversions)
+                if not isinstance(converted, list) and self.cmake:
+                    converted = self._pkgname_to_brackety(
+                        converted, 'cmake', self.cmake_conversions
+                    )
+            if isinstance(converted, list):
+                expanded += converted
             else:
-                expanded.append(token)
+                expanded.append(converted)
         return expanded
 
-    def _add_line_value_to(self, category, value, key=None):
+    def _add_line_value_to(self, category: str, value: str, key: str | None = None) -> None:
         """
         Change a key-value line, to make sure we have the right spacing.
 
@@ -527,17 +540,17 @@ class RpmPreamble(Section):
 
         if category in self.paragraph.categories_with_package_tokens:
             values = self._fix_list_of_packages(value, category)
-            for value in values:
-                if isinstance(value, str):
-                    value = key + value
+            for item in values:
+                if isinstance(item, str):
+                    item = key + item
                 else:
-                    value.prefix = key
-                self._add_line_to(category, value)
+                    item.prefix = key
+                self._add_line_to(category, item)
         else:
             line = key + value
             self._add_line_to(category, line)
 
-    def _add_line_to(self, category, line):
+    def _add_line_to(self, category: str, line: GroupLine) -> None:
         # Tail macros (e.g. %python_subpackages) inside a conditional
         # must stay with their %if/%endif wrapper. Routing them to
         # 'conditions' keeps the block atomic; otherwise the macro escapes
@@ -545,10 +558,11 @@ class RpmPreamble(Section):
         # Head macros already sort before the %endif and must stay above the tags.
         if category == 'tail' and self.condition:
             category = 'conditions'
-        group = line
+        group: GroupItem = line
         if self.paragraph.current_group:
             if isinstance(line, RpmRequiresToken):
-                line.comments = self.paragraph.current_group
+                # the current group holds the pending comment lines only
+                line.comments = cast(list[str], self.paragraph.current_group)
             else:
                 self.paragraph.current_group.append(line)
                 group = self.paragraph.current_group
@@ -559,13 +573,15 @@ class RpmPreamble(Section):
 
         self.previous_line = str(line)
 
-    def _drop_pending_comments(self):
+    def _drop_pending_comments(self) -> None:
         """Drop the comments written directly above a tag that is removed."""
         del self.paragraph.current_group[self._comments_before_blank :]
 
-    def _make_secure_url(self, orig_url, skip_availabilty_check=False, force_https=False):
-        retval = None
-        secure_url = None
+    def _make_secure_url(
+        self, orig_url: str, skip_availabilty_check: bool = False, force_https: bool = False
+    ) -> str:
+        retval: str | None = None
+        secure_url: str | None = None
         if parse.urlparse(orig_url).scheme == '' and force_https:
             secure_url = 'https://' + orig_url
         elif orig_url.startswith('http://'):
@@ -576,7 +592,7 @@ class RpmPreamble(Section):
         if skip_availabilty_check:
             return secure_url if secure_url else orig_url
 
-        response = None
+        response: HTTPResponse | None = None
         try:
             if secure_url and not self.minimal:
                 req = Request(url=secure_url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -594,6 +610,9 @@ class RpmPreamble(Section):
                     except (OSError, HTTPException):
                         if attempt == 2:
                             raise
+                # the retry loop only falls through with a response in
+                # hand; every failure path raises out of it
+                assert response is not None
                 retval = secure_url if response.getcode() == 200 else orig_url
             else:
                 retval = orig_url
@@ -605,14 +624,14 @@ class RpmPreamble(Section):
                 response.close()
         return retval
 
-    def _macro_line(self, line):
+    def _macro_line(self, line: str) -> MacroLine:
         """Tag a %define, %global or one-line condition line with when rpm expands it."""
         oneline = bool(self.reg.re_onelinecond.match(line))
         is_global = bool(self.reg.re_global.match(line)) or (oneline and '%global' in line)
         # a one-line condition is evaluated when parsed, even around %define
         return MacroLine(line, is_global=is_global, is_eager=is_global or oneline)
 
-    def _handle_continued_condition(self, line):
+    def _handle_continued_condition(self, line: str) -> bool:
         """Append a continued %if/%elif line to the open condition. Return True if handled."""
         if not self._condition_continued:
             return False
@@ -624,12 +643,13 @@ class RpmPreamble(Section):
         self.previous_line = line
         return True
 
-    def _handle_multiline(self, line):
+    def _handle_multiline(self, line: str) -> bool:
         """Append to a multiline %define. Return True if handled."""
         if not self.multiline:
             return False
         line = MacroLine(line, is_global=self._multiline_global, is_eager=self._multiline_global)
-        self.paragraph.items['define'][-1].append(line)
+        # the last define bucket element is the open multiline unit
+        cast(Unit, self.paragraph.items['define'][-1]).append(line)
         self.previous_line = line
         # if it is no longer trailed with backslash
         # and all its %{ and %( bodies are closed then stop
@@ -638,7 +658,7 @@ class RpmPreamble(Section):
             self.multiline = False
         return True
 
-    def _handle_if(self, line):
+    def _handle_if(self, line: str) -> bool:
         """Open a new conditional block. Return True if handled."""
         if not (self.reg.re_if.match(line) or self.reg.re_codeblock.match(line)):
             return False
@@ -663,7 +683,7 @@ class RpmPreamble(Section):
         self.previous_line = line
         return True
 
-    def _handle_elif(self, line):
+    def _handle_elif(self, line: str) -> bool:
         """Handle %elif/%else. Return True if handled."""
         if not self.reg.re_else_elif.match(line):
             return False
@@ -675,7 +695,7 @@ class RpmPreamble(Section):
         self.previous_line = line
         return True
 
-    def _handle_multilinecond_start(self, line):
+    def _handle_multilinecond_start(self, line: str) -> bool:
         """Open a %{?cond: block. Return True if handled."""
         if not self.reg.re_multilinecond.match(line):
             return False
@@ -692,7 +712,7 @@ class RpmPreamble(Section):
         self.previous_line = line
         return True
 
-    def _handle_endif(self, line):
+    def _handle_endif(self, line: str) -> bool:
         """Close a conditional block. Return True if handled."""
         if not (
             self.reg.re_endif.match(line)
@@ -712,7 +732,7 @@ class RpmPreamble(Section):
         self.previous_line = line
         return True
 
-    def _split_dep_pragma_entries(self, value):
+    def _split_dep_pragma_entries(self, value: str) -> list[tuple[str, bool]] | None:
         """
         Split a dep pragma value into (entry, qualified) pairs.
 
@@ -724,7 +744,7 @@ class RpmPreamble(Section):
         """
         if '(' in value or ')' in value:
             return None
-        entries = []
+        entries: list[tuple[str, bool]] = []
         pos = 0
         for match in self.reg.re_dep_pragma_entry.finditer(value):
             if value[pos : match.start()].strip(' \t,'):
@@ -735,7 +755,7 @@ class RpmPreamble(Section):
             return None
         return entries or None
 
-    def _handle_dep_pragma(self, line):
+    def _handle_dep_pragma(self, line: str) -> bool:
         """
         Convert a #!BuildRequires:/#!BuildConflicts: pragma to the plain tag. Return True if handled.
 
@@ -762,8 +782,8 @@ class RpmPreamble(Section):
         entries = self._split_dep_pragma_entries(value)
         if not entries:
             return False
-        plain = []
-        qualified = []
+        plain: list[str] = []
+        qualified: list[str] = []
         for text, is_qualified in entries:
             # a conditional macro may expand to nothing, which rpm rejects
             # as an empty tag once the entry is a plain tag, so the entry
@@ -786,7 +806,7 @@ class RpmPreamble(Section):
             self._add_line_value_to(pragma_category, remainder)
         return True
 
-    def _handle_comment(self, line):
+    def _handle_comment(self, line: str) -> bool:
         """Add a comment line to the current group. Return True if handled."""
         if not (
             self.reg.re_comment.match(line)
@@ -802,20 +822,20 @@ class RpmPreamble(Section):
             self._comments_before_blank = len(self.paragraph.current_group)
         return True
 
-    def _handle_url(self, line):
+    def _handle_url(self, line: str) -> bool:
         """Handle URL tag, upgrading to https if reachable. Return True if handled."""
-        if not self.reg.re_url.match(line):
-            return False
         match = self.reg.re_url.match(line)
+        if not match:
+            return False
         secure_url = self._make_secure_url(match.group(1), force_https=True)
         self._add_line_value_to('url', secure_url, key='URL')
         return True
 
-    def _handle_source(self, line):
+    def _handle_source(self, line: str) -> bool:
         """Handle Source tag with pypi and https enhancements. Return True if handled."""
-        if not self.reg.re_source.match(line):
-            return False
         match = self.reg.re_source.match(line)
+        if not match:
+            return False
         source = match.group(2)
         secure_source_available = False
 
@@ -842,11 +862,11 @@ class RpmPreamble(Section):
         self._add_line_value_to('source', source, key=f'Source{match.group(1)}')
         return True
 
-    def _handle_patch(self, line):
+    def _handle_patch(self, line: str) -> bool:
         """Handle Patch tag, numbering unnumbered patches. Return True if handled."""
-        if not self.reg.re_patch.match(line):
-            return False
         match = self.reg.re_patch.match(line)
+        if not match:
+            return False
         number = match.group(2)
         # %prep applies the bare %patch as '%patch -P 0'
         if not number and not match.group(1) and self.options['rename_unnumbered_patch']:
@@ -859,89 +879,89 @@ class RpmPreamble(Section):
         )
         return True
 
-    def _handle_buildoption_phase(self, line):
+    def _handle_buildoption_phase(self, line: str) -> bool:
         """Handle BuildOption tag. Return True if handled."""
-        if not self.reg.re_buildoption_phase.match(line):
-            return False
         match = self.reg.re_buildoption_phase.match(line)
+        if not match:
+            return False
         value = match.group(2)
         self._add_line_value_to('buildoption_phase', value, key=f'BuildOption{match.group(1)}')
         return True
 
-    def _handle_bcond_with(self, line):
+    def _handle_bcond_with(self, line: str) -> bool:
         """Handle %bcond_with line. Return True if handled."""
         if not self.reg.re_bcond_with.match(line):
             return False
         self._add_line_to('bconds', line)
         return True
 
-    def _handle_mingw(self, line):
+    def _handle_mingw(self, line: str) -> bool:
         """Handle mingw define. Return True if handled."""
         if not self.reg.re_mingw.match(line):
             return False
         self._add_line_to('define', line)
         return True
 
-    def _handle_patterndefine(self, line):
+    def _handle_patterndefine(self, line: str) -> bool:
         """Handle pattern define. Return True if handled."""
         if not self.reg.re_patterndefine.match(line):
             return False
         self._add_line_to('define', line)
         return True
 
-    def _handle_patternprovides(self, line):
+    def _handle_patternprovides(self, line: str) -> bool:
         """Handle Provides with pattern macro. Return True if handled."""
-        if not (self.reg.re_provides.match(line) and self.reg.re_patternmacro.search(line)):
-            return False
         match = self.reg.re_provides.match(line)
+        if not match or not self.reg.re_patternmacro.search(line):
+            return False
         self._add_line_value_to('patternprovides', match.group(1), key='Provides')
         return True
 
-    def _handle_patternobsoletes_provides(self, line):
+    def _handle_patternobsoletes_provides(self, line: str) -> bool:
         """Handle Provides with pattern obsolete. Return True if handled."""
-        if not (self.reg.re_provides.match(line) and self.reg.re_patternobsolete.search(line)):
-            return False
         match = self.reg.re_provides.match(line)
+        if not match or not self.reg.re_patternobsolete.search(line):
+            return False
         self._add_line_value_to('patternobsoletes', match.group(1), key='Provides')
         return True
 
-    def _handle_patternrequires(self, line):
+    def _handle_patternrequires(self, line: str) -> bool:
         """Handle Requires with pattern macro. Return True if handled."""
-        if not (self.reg.re_requires.match(line) and self.reg.re_patternmacro.search(line)):
-            return False
         match = self.reg.re_requires.match(line)
+        if not match or not self.reg.re_patternmacro.search(line):
+            return False
         self._add_line_value_to('patternrequires', match.group(1), key='Requires')
         return True
 
-    def _handle_patternrecommends(self, line):
+    def _handle_patternrecommends(self, line: str) -> bool:
         """Handle Recommends with pattern macro. Return True if handled."""
-        if not (self.reg.re_recommends.match(line) and self.reg.re_patternmacro.search(line)):
-            return False
         match = self.reg.re_recommends.match(line)
+        if not match or not self.reg.re_patternmacro.search(line):
+            return False
         self._add_line_value_to('patternrecommends', match.group(1), key='Recommends')
         return True
 
-    def _handle_patternsuggests(self, line):
+    def _handle_patternsuggests(self, line: str) -> bool:
         """Handle Suggests with pattern macro. Return True if handled."""
-        if not (self.reg.re_suggests.match(line) and self.reg.re_patternmacro.search(line)):
-            return False
         match = self.reg.re_suggests.match(line)
+        if not match or not self.reg.re_patternmacro.search(line):
+            return False
         self._add_line_value_to('patternsuggests', match.group(1), key='Suggests')
         return True
 
-    def _handle_patternobsoletes(self, line):
+    def _handle_patternobsoletes(self, line: str) -> bool:
         """Handle Obsoletes with pattern obsolete. Return True if handled."""
-        if not (self.reg.re_obsoletes.match(line) and self.reg.re_patternobsolete.search(line)):
-            return False
         match = self.reg.re_obsoletes.match(line)
+        if not match or not self.reg.re_patternobsolete.search(line):
+            return False
         self._add_line_value_to('patternobsoletes', match.group(1), key='Obsoletes')
         return True
 
-    def _handle_requires_eq(self, line):
+    def _handle_requires_eq(self, line: str) -> bool:
         """Handle Requires with = version. Return True if handled."""
-        if not self.reg.re_requires_eq.match(line):
-            return False
         match = self.reg.re_requires_eq.match(line)
+        if not match:
+            return False
         if match.group(1):
             # if we were wrapped in curly definition we need to remove
             # the trailing curly bracket
@@ -951,11 +971,11 @@ class RpmPreamble(Section):
         self._add_line_value_to('requires_eq', value)
         return True
 
-    def _handle_requires_ge(self, line):
+    def _handle_requires_ge(self, line: str) -> bool:
         """Handle Requires with >= version. Return True if handled."""
-        if not self.reg.re_requires_ge.match(line):
-            return False
         match = self.reg.re_requires_ge.match(line)
+        if not match:
+            return False
         if match.group(1):
             # if we were wrapped in curly definition we need to remove
             # the trailing curly bracket
@@ -965,7 +985,7 @@ class RpmPreamble(Section):
         self._add_line_value_to('requires_ge', value)
         return True
 
-    def _handle_onelinecond_dep(self, line):
+    def _handle_onelinecond_dep(self, line: str) -> bool:
         """Handle one-line conditional dependency. Return True if handled."""
         if not self.reg.re_onelinecond_dep.match(line):
             return False
@@ -975,7 +995,7 @@ class RpmPreamble(Section):
         self._add_line_to('build_conditions', self._macro_line(line))
         return True
 
-    def _handle_define(self, line):
+    def _handle_define(self, line: str) -> bool:
         """Handle %define/%global/%{?cond:...} lines. Return True if handled."""
         if not (
             self.reg.re_define.match(line)
@@ -1002,19 +1022,19 @@ class RpmPreamble(Section):
             self.modname = None if match.group(1).startswith('%') else match.group(1)
         return True
 
-    def _handle_prereq(self, line):
+    def _handle_prereq(self, line: str) -> bool:
         """Handle PreReq tag. Return True if handled."""
-        if not self.reg.re_prereq.match(line):
-            return False
         match = self.reg.re_prereq.match(line)
+        if not match:
+            return False
         self._add_line_value_to('prereq', match.group(1))
         return True
 
-    def _handle_requires(self, line):
+    def _handle_requires(self, line: str) -> bool:
         """Handle Requires tag, replacing pwdutils with shadow. Return True if handled."""
-        if not self.reg.re_requires.match(line):
-            return False
         match = self.reg.re_requires.match(line)
+        if not match:
+            return False
         if match.group(1) == 'pwdutils' and not self.condition and not self.minimal:
             value = 'shadow'
         else:
@@ -1022,11 +1042,11 @@ class RpmPreamble(Section):
         self._add_line_value_to('requires', value, key='Requires')
         return True
 
-    def _handle_requires_phase(self, line):
+    def _handle_requires_phase(self, line: str) -> bool:
         """Handle Requires(phase) tag. Return True if handled."""
-        if not self.reg.re_requires_phase.match(line):
-            return False
         match = self.reg.re_requires_phase.match(line)
+        if not match:
+            return False
         # Put the requires content properly as key for formatting
         if match.group(2) == 'pwdutils' and not self.condition and not self.minimal:
             value = 'shadow'
@@ -1035,28 +1055,28 @@ class RpmPreamble(Section):
         self._add_line_value_to('requires_phase', value, key=f'Requires{match.group(1)}')
         return True
 
-    def _handle_provides(self, line):
+    def _handle_provides(self, line: str) -> bool:
         """Handle Provides tag. Return True if handled."""
-        if not self.reg.re_provides.match(line):
-            return False
         match = self.reg.re_provides.match(line)
+        if not match:
+            return False
         self._add_line_value_to('provides_obsoletes', match.group(1), key='Provides')
         return True
 
-    def _handle_obsoletes(self, line):
+    def _handle_obsoletes(self, line: str) -> bool:
         """Handle Obsoletes tag. Return True if handled."""
-        if not self.reg.re_obsoletes.match(line):
-            return False
         match = self.reg.re_obsoletes.match(line)
+        if not match:
+            return False
         self._add_line_value_to('provides_obsoletes', match.group(1), key='Obsoletes')
         return True
 
-    def _handle_license(self, line):
+    def _handle_license(self, line: str) -> bool:
         """Handle License tag with format conversion. Return True if handled."""
-        if not self.reg.re_license.match(line):
+        match = self.reg.re_license.match(line)
+        if not match:
             return False
         # first convert the license string to proper format and then append
-        match = self.reg.re_license.match(line)
         value = match.groups()[len(match.groups()) - 1]
         value = fix_license(value, self.license_conversions)
         self._has_license = True
@@ -1067,11 +1087,11 @@ class RpmPreamble(Section):
             self._drop_pending_comments()
         return True
 
-    def _handle_release(self, line):
+    def _handle_release(self, line: str) -> bool:
         """Handle Release tag. Return True if handled."""
-        if not self.reg.re_release.match(line):
-            return False
         match = self.reg.re_release.match(line)
+        if not match:
+            return False
         value = match.group(1)
         if re.search(r'[a-zA-Z\s]', value):
             self._add_line_value_to('release', value)
@@ -1079,11 +1099,11 @@ class RpmPreamble(Section):
             self._add_line_value_to('release', '0')
         return True
 
-    def _handle_summary_localized(self, line):
+    def _handle_summary_localized(self, line: str) -> bool:
         """Handle localized Summary tag. Return True if handled."""
-        if not self.reg.re_summary_localized.match(line):
-            return False
         match = self.reg.re_summary_localized.match(line)
+        if not match:
+            return False
         # we need to know what language we need
         language = match.group(1)
         # and what value is there
@@ -1091,9 +1111,10 @@ class RpmPreamble(Section):
         self._add_line_value_to('summary_localized', content, key=f'Summary{language}')
         return True
 
-    def _handle_group(self, line):
+    def _handle_group(self, line: str) -> bool:
         """Handle Group tag with validation. Return True if handled."""
-        if not self.reg.re_group.match(line):
+        match = self.reg.re_group.match(line)
+        if not match:
             return False
         # remove groups if requested
         if not self.minimal and self.remove_groups:
@@ -1101,7 +1122,6 @@ class RpmPreamble(Section):
             return True
 
         # validate (if we have a list of groups)
-        match = self.reg.re_group.match(line)
         value = match.group(1)
         if not self.minimal and self.allowed_groups:
             if (
@@ -1116,11 +1136,11 @@ class RpmPreamble(Section):
         self._add_line_value_to('group', value)
         return True
 
-    def _handle_buildarch(self, line):
+    def _handle_buildarch(self, line: str) -> bool:
         """Handle BuildArch/ExclusiveArch tags. Return True if handled."""
-        if not self.reg.re_buildarch.match(line):
-            return False
         match = self.reg.re_buildarch.match(line)
+        if not match:
+            return False
         value = match.group(2)
         if value.startswith('noarch'):
             self._add_line_value_to('buildarch', value)
@@ -1128,14 +1148,14 @@ class RpmPreamble(Section):
             self._add_line_value_to('exclusivearch', value)
         return True
 
-    def _handle_head_macros(self, line):
+    def _handle_head_macros(self, line: str) -> bool:
         """Handle head macros. Return True if handled."""
         if not self.reg.re_head_macros.match(line):
             return False
         self._add_line_value_to('head', line)
         return True
 
-    def _handle_fallback(self, line):
+    def _handle_fallback(self, line: str) -> bool:
         """Handle remaining categories via table lookup, else misc. Always handles."""
         # Serial: is the obsolete name for Epoch:; rewrite to preserve the value
         # rather than dropping it (rpm >= 4.20 rejects Serial: as unknown tag).
@@ -1170,14 +1190,14 @@ class RpmPreamble(Section):
         self._add_line_to('misc', line)
         return True
 
-    def _handle_empty_line(self, line):
+    def _handle_empty_line(self, line: str) -> bool:
         """Skip empty lines unless keep_space is set. Return True if handled."""
         if self.keep_space or len(line) != 0:
             return False
         self._comments_before_blank = len(self.paragraph.current_group)
         return True
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         """Run over options and add the determined line to proper location."""
         # a } ending a line also closes a %{?cond: block; split it off so sorting keeps it last
         content = line.rstrip()
@@ -1325,17 +1345,18 @@ class RpmPreamble(Section):
         # do not require special attention
         self._handle_fallback(line)
 
-    def output(self, fout, newline=True, new_class=None):
+    def output(self, fout: IO[str], newline: bool = True, new_class: str | None = None) -> None:
         """Dump the results to the output list."""
         lines = self.paragraph.flatten_output(self.subpkglicense and not self._has_license)
         self.lines += lines
-        Section.output(self, fout, newline, new_class)
+        # Section.output only compares the name against 'RpmScriptlets'
+        Section.output(self, fout, newline, new_class or '')
 
 
 class RpmPreambleChunk(RpmPreamble):
     """Preamble lines (%define, %global, %bcond) between sections, not a package header."""
 
-    def output(self, fout, newline=True, new_class=None):
+    def output(self, fout: IO[str], newline: bool = True, new_class: str | None = None) -> None:
         """Dump the results to the output list without a placeholder License."""
         self.lines += self.paragraph.flatten_output(False)
-        Section.output(self, fout, newline, new_class)
+        Section.output(self, fout, newline, new_class or '')
