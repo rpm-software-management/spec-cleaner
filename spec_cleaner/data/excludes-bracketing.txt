@@ -92,9 +92,6 @@ dephell_gensetup
 # makes sense. The snapshot does not carry them as argument-taking
 # macros — several families among them the snapshot does not fully
 # carry — and a few are defined in neither distribution's macro files.
-__id_u
-__ln_s
-__mkdir_p
 cabal_test
 cmake
 cmake_[^\s]*
@@ -124,6 +121,7 @@ python(.?)_build
 qmake
 qmake5
 qmake5_install
+qmake6
 reconfigure_fonts_[^\s]*
 requires_[^\s]*
 yast_(build|check|install)[^\s]*

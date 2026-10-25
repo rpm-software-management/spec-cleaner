@@ -13,17 +13,17 @@ Source0:        %{name}-%{version}.tar.gz
 Test package.
 
 %build
-%__id_u
-%__ln_s foo bar
+id -u
+ln -s foo bar
 xz --format=lzma -d foo.xz
-%__mkdir_p dir
+mkdir -p dir
 gawk '{print $1}' foo
 gcc foo.c
 gcc -E foo.c
 g++ foo.cc
 rsh host true
-%__id_u
-%__mkdir_p dir
+id -u
+mkdir -p dir
 
 %files
 
