@@ -8,6 +8,7 @@ Summary:        Haskell %{pkg_name} library documentation
 License:        MIT
 URL:            https://example.org/%pkg_name
 BuildRequires:  %python_module devel
+Requires:       %{pkg_version}foo
 Requires:       %{typelib} = %{version}
 
 %description

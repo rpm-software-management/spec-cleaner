@@ -220,7 +220,10 @@ EMBRACE_VALUE_POSITIONS = [
         'Summary: Haskell %{pkg_name} library documentation',
         'Summary: Haskell %{pkg_name} library documentation',
     ),
-    # glued to a suffix the use takes no arguments and still unbraces
+    # glued to a word character the suffix would merge into the macro
+    # name of the unbraced form, so the use keeps its braces
+    ('Requires: %{typelib}foo', 'Requires: %{typelib}foo'),
+    # glued to a delimiter the use takes no arguments and still unbraces
     ('Name: ghc-%{pkg_name}', 'Name: ghc-%pkg_name'),
     # closing the line the use takes no arguments and still unbraces
     ('%package -n %{typelib}', '%package -n %typelib'),

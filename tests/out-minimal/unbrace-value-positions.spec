@@ -9,6 +9,7 @@ License:        MIT
 URL:            https://example.org/%{pkg_name}
 BuildRequires:  %python_module devel
 Requires:       %{typelib} = %{version}
+Requires:       %{pkg_version}foo
 
 %description
 Haskell %{pkg_name} library documentation files.
