@@ -222,6 +222,10 @@ class DependencyParser:
     def _is_macro_with_arg(self, chunk):
         """Check whether a chunk invokes a macro that takes arguments."""
         match = re.match(r'%[?]?([A-Za-z0-9_]+)$', chunk)
+        if match is None:
+            # the braced spelling delimits the name, not the invocation:
+            # the arguments, if any, still follow the closing brace
+            match = re.match(r'%\{\??([A-Za-z0-9_]+)\}$', chunk)
         return bool(match) and match.group(1) in self.macros_with_arg
 
     def _is_macro_with_arg_invocation(self):
