@@ -420,11 +420,15 @@ class Regexp:
         # what follows is separated content (whitespace and further
         # tokens) or the closing quote of the value the use sits in, and
         # unbraced rpm would hand that content to the macro as its
-        # arguments; a use glued to a suffix or closing a line takes no
+        # arguments; a word character behind the use would merge into
+        # the macro name instead, so those uses keep their braces too;
+        # a use glued to a delimiter or closing a line takes no
         # arguments in either spelling and is not matched here
         self.re_braced_argument_macro: re.Pattern[str] | None
         if argument_macros:
             names = '|'.join(re.escape(name) for name in argument_macros)
-            self.re_braced_argument_macro = re.compile(r'(?<!%)%{(' + names + r')}(?=\s+\S|["\'])')
+            self.re_braced_argument_macro = re.compile(
+                r'(?<!%)%{(' + names + r')}(?=\w|\s+\S|["\'])'
+            )
         else:
             self.re_braced_argument_macro = None
