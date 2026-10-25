@@ -12,7 +12,7 @@ class RpmPrep(Section):
 
     shell_section = True
 
-    def add(self, line):
+    def add(self, line: str) -> None:
         """Executes the format operations for the Prep phase."""
         line = self._complete_cleanup(line)
         line = self._cleanup_setup(line)
