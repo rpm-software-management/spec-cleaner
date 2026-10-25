@@ -123,7 +123,5 @@ disable_error_code = ["no-untyped-call", "no-untyped-def", "var-annotated"]
 module = "spec_cleaner.rpmpreamble"
 disable_error_code = ["assignment", "no-untyped-call", "no-untyped-def", "union-attr"]
 
-[[tool.mypy.overrides]]
-module = "spec_cleaner.rpmpreambleelements"
-disable_error_code = ["assignment", "no-untyped-call", "no-untyped-def", "operator", "type-arg", "union-attr", "var-annotated"]
+
 

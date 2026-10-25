@@ -362,9 +362,10 @@ def fix_license(value: str, conversions: dict[str, str]) -> str:
 
 
 # a preamble line as the group helpers see it: a plain string (MacroLine
-# included) or a dependency token; a group is a line or a list of lines
+# included) or a dependency token; a group is a line or a list of groups
+# (a define unit is a list of groups, so the nesting is recursive)
 GroupLine: TypeAlias = str | RpmRequiresToken
-GroupItem: TypeAlias = GroupLine | list[GroupLine]
+GroupItem: TypeAlias = GroupLine | list['GroupItem']
 
 
 def sort_uniq(seq: list[GroupItem]) -> list[GroupItem]:
@@ -378,7 +379,7 @@ def sort_uniq(seq: list[GroupItem]) -> list[GroupItem]:
         sequence with sorted order and no duplicates
     """
 
-    def _check_list(x: GroupItem) -> TypeGuard[list[GroupLine]]:
+    def _check_list(x: GroupItem) -> TypeGuard[list[GroupItem]]:
         if isinstance(x, list):
             return True
         else:
@@ -388,9 +389,11 @@ def sort_uniq(seq: list[GroupItem]) -> list[GroupItem]:
     result: list[GroupItem] = []
     for item in seq:
         # We can have list there with comment
-        # So if list found just grab latest in the sublist
+        # So if list found just grab latest in the sublist; the sorted
+        # categories group comment lines with their value line, so the
+        # last member of a group is the value line itself
         if isinstance(item, list):
-            marker: GroupLine = item[-1]
+            marker: GroupLine = cast(GroupLine, item[-1])
         else:
             marker = item
         if marker in seen:

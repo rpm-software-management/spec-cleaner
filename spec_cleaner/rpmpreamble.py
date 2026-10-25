@@ -4,6 +4,7 @@ import logging
 import os.path
 import re
 from http.client import HTTPException
+from typing import cast
 from urllib import parse
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -198,7 +199,8 @@ class RpmPreamble(Section):
         # check if we have just the if (maybe with comments) and its endif
         if len(conditions) == 2:
             opener = conditions[0][-1] if isinstance(conditions[0], list) else conditions[0]
-            if opener.startswith('%if') and self.reg.re_endif.match(conditions[1]):
+            # the second condition element is the %endif line itself
+            if opener.startswith('%if') and self.reg.re_endif.match(cast(str, conditions[1])):
                 self.paragraph.items['conditions'] = []
 
     PYPI_SOURCE_HOSTS = ('pypi.io', 'files.pythonhosted.org', 'pypi.python.org')
