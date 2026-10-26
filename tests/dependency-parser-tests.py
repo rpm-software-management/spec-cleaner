@@ -17,7 +17,7 @@ class TestDependencyParser:
             ('foo >= 1, bar <', '^Unexpected end of dependency string'),
         ],
     )
-    def test_operator_without_version(self, line, message):
+    def test_operator_without_version(self, line: str, message: str) -> None:
         """Test that an operator without a version is an error instead of an endless loop."""
         with pytest.raises(DepParserError, match=message):
             DependencyParser(line)
@@ -32,7 +32,7 @@ class TestDependencyParser:
             ('foo >= 1, < 2', '^found operator where a name is expected'),
         ],
     )
-    def test_operator_where_name_or_version_expected(self, line, message):
+    def test_operator_where_name_or_version_expected(self, line: str, message: str) -> None:
         """Test that an operator in a place rpm would reject is an error, not a nameless token."""
         with pytest.raises(DepParserError, match=message):
             DependencyParser(line)
@@ -49,11 +49,13 @@ class TestDependencyParser:
             ('foo ,%{?bar:>= 1}', [('foo', None, None), ('%{?bar:>= 1}', None, None)]),
         ],
     )
-    def test_conditional_version(self, line, expected):
+    def test_conditional_version(
+        self, line: str, expected: list[tuple[str, str | None, str | None]]
+    ) -> None:
         """Test that a conditional version joins the dependency before it, but not across a comma."""
         assert DependencyParser(line).parsed == expected
 
-    def test_escaped_percent_stays_in_token(self):
+    def test_escaped_percent_stays_in_token(self) -> None:
         """Test that a literal %% is not mistaken for the start of a macro."""
         assert DependencyParser('a%%b').parsed == [('a%%b', None, None)]
 
@@ -94,7 +96,9 @@ class TestDependencyParser:
             ('%otherlib liba', [('%otherlib', None, None), ('liba', None, None)]),
         ],
     )
-    def test_macro_with_arguments(self, line, expected):
+    def test_macro_with_arguments(
+        self, line: str, expected: list[tuple[str, str | None, str | None]]
+    ) -> None:
         """Test that an invocation of a macro that takes arguments stays one dependency."""
         assert DependencyParser(line, macros_with_arg=['selfconflict']).parsed == expected
 
@@ -141,11 +145,13 @@ class TestDependencyParser:
             ),
         ],
     )
-    def test_consecutive_macro_with_arguments(self, line, macros, expected):
+    def test_consecutive_macro_with_arguments(
+        self, line: str, macros: list[str], expected: list[tuple[str, str | None, str | None]]
+    ) -> None:
         """Test that consecutive invocations split, while arguments stay with their invocation."""
         assert DependencyParser(line, macros_with_arg=macros).parsed == expected
 
-    def test_braced_macro_with_arguments(self):
+    def test_braced_macro_with_arguments(self) -> None:
         """Test that a braced macro invocation is one dependency with no name list."""
         assert DependencyParser('%{python_module foo}').parsed == [
             ('%{python_module foo}', None, None)
@@ -188,7 +194,9 @@ class TestDependencyParser:
             ),
         ],
     )
-    def test_unbraced_macro_with_arguments(self, line, macros, expected):
+    def test_unbraced_macro_with_arguments(
+        self, line: str, macros: list[str], expected: list[tuple[str, str | None, str | None]]
+    ) -> None:
         """Test that an unbraced invocation stays one dependency when the macro takes arguments."""
         assert DependencyParser(line, macros_with_arg=macros).parsed == expected
 
@@ -223,6 +231,8 @@ class TestDependencyParser:
             ),
         ],
     )
-    def test_braced_spelling_macro_with_arguments(self, line, macros, expected):
+    def test_braced_spelling_macro_with_arguments(
+        self, line: str, macros: list[str], expected: list[tuple[str, str | None, str | None]]
+    ) -> None:
         """Test that the braced spelling of an invocation parses like the unbraced one."""
         assert DependencyParser(line, macros_with_arg=macros).parsed == expected

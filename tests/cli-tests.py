@@ -4,6 +4,7 @@ import os
 import re
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -26,14 +27,14 @@ Test package.
 
 
 @pytest.fixture
-def specfile(tmp_path):
+def specfile(tmp_path: Path) -> Path:
     """Write a minimal spec file and hand back its path."""
     path = tmp_path / 'cli-test.spec'
     path.write_text(SPEC)
     return path
 
 
-def test_missing_spec_is_refused(capsys, tmp_path):
+def test_missing_spec_is_refused(capsys: pytest.CaptureFixture[str], tmp_path: Path) -> None:
     """Test that a nonexistent spec is refused with a message and a failing exit code."""
     missing = tmp_path / 'nope.spec'
     with pytest.MonkeyPatch.context() as patch:
@@ -42,7 +43,12 @@ def test_missing_spec_is_refused(capsys, tmp_path):
     assert capsys.readouterr().err == f'ERROR: {missing} does not exist.\n'
 
 
-def test_clean_run_exits_zero(capsys, monkeypatch, specfile, tmp_path):
+def test_clean_run_exits_zero(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+    specfile: Path,
+    tmp_path: Path,
+) -> None:
     """Test that a successful run reports success and writes the output file."""
     out = tmp_path / 'out.spec'
     monkeypatch.setattr(sys, 'argv', ['spec-cleaner', '-o', str(out), str(specfile)])
@@ -51,7 +57,7 @@ def test_clean_run_exits_zero(capsys, monkeypatch, specfile, tmp_path):
     assert out.read_text().startswith('Name:           cli-test')
 
 
-def test_output_must_not_be_overwritten(tmp_path, specfile):
+def test_output_must_not_be_overwritten(tmp_path: Path, specfile: Path) -> None:
     """Test that an existing output file is only replaced with --force."""
     out = tmp_path / 'out.spec'
     out.write_text('untouched\n')
@@ -60,7 +66,9 @@ def test_output_must_not_be_overwritten(tmp_path, specfile):
     assert process_args([str(specfile), '-o', str(out), '--force'])['force'] is True
 
 
-def test_output_path_is_expanded(monkeypatch, tmp_path, specfile):
+def test_output_path_is_expanded(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, specfile: Path
+) -> None:
     """Test that a ~ in the output path is expanded before the file is looked up."""
     # the expansion must not depend on what the developer's home holds
     monkeypatch.setenv('HOME', str(tmp_path))
@@ -70,13 +78,13 @@ def test_output_path_is_expanded(monkeypatch, tmp_path, specfile):
 
 
 @pytest.mark.parametrize('argv', [['-d', '-o', 'out'], ['-i', '-o', 'out']])
-def test_output_modes_are_exclusive(argv, specfile):
+def test_output_modes_are_exclusive(argv: list[str], specfile: Path) -> None:
     """Test that diff and inline cannot be combined with an output file."""
     with pytest.raises(SystemExit):
         process_args([str(specfile), *argv])
 
 
-def test_no_arguments_prints_help(capsys):
+def test_no_arguments_prints_help(capsys: pytest.CaptureFixture[str]) -> None:
     """Test that an empty argument list prints the help and exits successfully."""
     with pytest.raises(SystemExit) as exit_info:
         process_args([])
@@ -84,7 +92,7 @@ def test_no_arguments_prints_help(capsys):
     assert '--pkgconfig' in capsys.readouterr().out
 
 
-def test_version_exits_successfully(capsys, specfile):
+def test_version_exits_successfully(capsys: pytest.CaptureFixture[str], specfile: Path) -> None:
     """Test that --version prints the package version and exits successfully."""
     with pytest.raises(SystemExit) as exit_info:
         process_args(['--version', str(specfile)])
@@ -95,13 +103,13 @@ def test_version_exits_successfully(capsys, specfile):
     assert re.fullmatch(r'\d+\.\d+\.\d+', printed)
 
 
-def test_copyright_year_must_be_a_number(specfile):
+def test_copyright_year_must_be_a_number(specfile: Path) -> None:
     """Test that a non-numeric copyright year is rejected by the parser."""
     with pytest.raises(SystemExit):
         process_args([str(specfile), '--copyright-year', 'notayear'])
 
 
-def test_defaults(capsys, specfile):
+def test_defaults(capsys: pytest.CaptureFixture[str], specfile: Path) -> None:
     """Test the defaults that the rest of the tool is built on."""
     options = process_args([str(specfile)])
     assert options['copyright_year'] == datetime.now().year
