@@ -21,9 +21,11 @@ from pathlib import Path
 # which execute from the root). Fix that here rather than in every caller.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from spec_cleaner import RpmSpecCleaner
+from typing import Any
 
-OPTION_PRESETS = {
+from spec_cleaner.rpmcleaner import RpmSpecCleaner
+
+OPTION_PRESETS: dict[str, Any] = {
     'pkgconfig': False,
     'inline': False,
     'diff': False,
@@ -42,7 +44,7 @@ OPTION_PRESETS = {
 MODES = ('normal', 'minimal')
 
 
-def parse_args(argv=None):
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse command-line flags."""
     parser = argparse.ArgumentParser(
         description='Benchmark RpmSpecCleaner on tests/perf-specs/ (JSON to stdout).'
@@ -71,15 +73,15 @@ def parse_args(argv=None):
     return args
 
 
-def load_manifest(manifest):
+def load_manifest(manifest: Path) -> tuple[list[str], list[str]]:
     """
     Collect spec filenames from manifest entry lines in order.
 
     Returns the names plus any non-comment line that did not parse, so a
     typo cannot silently shrink the benchmark.
     """
-    specs = []
-    malformed = []
+    specs: list[str] = []
+    malformed: list[str] = []
     for line in Path(manifest).read_text(encoding='utf-8').splitlines():
         line = line.strip()
         if not line or line.startswith('#'):
@@ -93,7 +95,7 @@ def load_manifest(manifest):
     return specs, malformed
 
 
-def clean_once(spec_path, minimal):
+def clean_once(spec_path: Path, minimal: bool) -> float:
     """Clean one spec once, timing constructor plus run."""
     if minimal:
         mode_options = {'pkgconfig': True, 'minimal': True}
@@ -102,7 +104,7 @@ def clean_once(spec_path, minimal):
     with tempfile.NamedTemporaryFile(suffix='.spec', delete=False) as tmp:
         out_path = tmp.name
     try:
-        full_options = {'specfile': str(spec_path), 'output': out_path}
+        full_options: dict[str, Any] = {'specfile': str(spec_path), 'output': out_path}
         full_options.update(OPTION_PRESETS)
         full_options.update(mode_options)
         start = time.perf_counter()
@@ -113,7 +115,7 @@ def clean_once(spec_path, minimal):
         Path(out_path).unlink(missing_ok=True)
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
     """Run the benchmark and report JSON plus a summary table."""
     args = parse_args(argv)
     if args.mode == 'both':
