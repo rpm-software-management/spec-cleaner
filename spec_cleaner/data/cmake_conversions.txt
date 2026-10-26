@@ -600,6 +600,7 @@ packagekitqt6-devel: packagekitqt6
 palapeli-devel: Pala 
 pam_wrapper: pam_wrapper 
 paraview-devel: paraview 
+pcapplusplus-devel: PcapPlusPlus 
 phonon-qt5-devel: Phonon4Qt5 Phonon4Qt5Experimental 
 phonon-qt6-devel: Phonon4Qt6 Phonon4Qt6Experimental 
 picotool: picotool 
