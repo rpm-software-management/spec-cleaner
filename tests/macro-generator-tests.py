@@ -7,6 +7,8 @@ import hashlib
 import importlib.util
 import struct
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -40,17 +42,20 @@ FILELISTS_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
 MACRO_FILE = '/usr/lib/rpm/macros.d/macros.fixture'
 
 
-def _load_generator():
+def _load_generator() -> ModuleType:
     spec = importlib.util.spec_from_file_location('generate_macro_functions', GENERATOR)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-def _repomd(primary, filelists, algo='sha512', with_checksum=True):
+def _repomd(
+    primary: bytes, filelists: bytes, algo: str = 'sha512', with_checksum: bool = True
+) -> bytes:
     """Build repomd.xml announcing the given archive bytes."""
 
-    def data(dtype, blob, href):
+    def data(dtype: str, blob: bytes, href: str) -> str:
         checksum = ''
         if with_checksum:
             digest = hashlib.new(algo, blob).hexdigest()
@@ -71,8 +76,13 @@ def _repomd(primary, filelists, algo='sha512', with_checksum=True):
 
 
 def _stage(
-    tmp_path, primary, filelists, announced_primary=None, announced_filelists=None, **kwargs
-):
+    tmp_path: Path,
+    primary: bytes,
+    filelists: bytes,
+    announced_primary: bytes | None = None,
+    announced_filelists: bytes | None = None,
+    **kwargs: Any,
+) -> tuple[ModuleType, str]:
     """
     Stage a workdir the generator's fetch cache serves from.
 
@@ -93,7 +103,7 @@ def _stage(
     return gen, str(workdir)
 
 
-def test_verified_archives_parse(tmp_path, capsys):
+def test_verified_archives_parse(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     """Archives matching their repomd.xml records verify and parse normally."""
     gen, workdir = _stage(tmp_path, gzip.compress(PRIMARY_XML), gzip.compress(FILELISTS_XML))
     hrefs, checks, revision = gen.repodata_hrefs(REPO, workdir)
@@ -107,7 +117,7 @@ def test_verified_archives_parse(tmp_path, capsys):
     assert 'Verified' in capsys.readouterr().err
 
 
-def test_repomd_cache_is_keyed_to_the_repo(tmp_path):
+def test_repomd_cache_is_keyed_to_the_repo(tmp_path: Path) -> None:
     """A repomd.xml cached under the plain name (another repo's, or a stale one) is not read."""
     gen, workdir = _stage(tmp_path, gzip.compress(PRIMARY_XML), gzip.compress(FILELISTS_XML))
     (Path(workdir) / 'repomd.xml').write_bytes(b'not xml at all')
@@ -115,7 +125,7 @@ def test_repomd_cache_is_keyed_to_the_repo(tmp_path):
     assert revision == '12345'
 
 
-def test_truncated_archive_aborts(tmp_path, capsys):
+def test_truncated_archive_aborts(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     """An archive cut short still decompresses cleanly but must abort the run."""
     full = gzip.compress(PRIMARY_XML) + gzip.compress(b'<!-- filler -->')
     truncated = gzip.compress(PRIMARY_XML)
@@ -129,7 +139,7 @@ def test_truncated_archive_aborts(tmp_path, capsys):
     assert 'Size mismatch' in capsys.readouterr().err
 
 
-def test_same_size_corruption_aborts(tmp_path, capsys):
+def test_same_size_corruption_aborts(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     """An archive of the announced size with altered bytes fails the checksum."""
     good = gzip.compress(FILELISTS_XML)
     corrupted = bytearray(good)
@@ -143,7 +153,7 @@ def test_same_size_corruption_aborts(tmp_path, capsys):
     assert 'Checksum mismatch' in capsys.readouterr().err
 
 
-def test_missing_checksum_aborts(tmp_path, capsys):
+def test_missing_checksum_aborts(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     """repomd.xml publishing no checksum for a dataset aborts instead of trusting it."""
     gen, workdir = _stage(
         tmp_path,
@@ -157,7 +167,7 @@ def test_missing_checksum_aborts(tmp_path, capsys):
     assert 'no sha256/sha512 checksum' in capsys.readouterr().err
 
 
-def test_sha256_checksum_accepted(tmp_path):
+def test_sha256_checksum_accepted(tmp_path: Path) -> None:
     """A sha256 record verifies when repomd.xml publishes no sha512."""
     gen, workdir = _stage(
         tmp_path, gzip.compress(PRIMARY_XML), gzip.compress(FILELISTS_XML), algo='sha256'
@@ -168,7 +178,7 @@ def test_sha256_checksum_accepted(tmp_path):
     assert owners == {('macropkg', 'noarch'): [MACRO_FILE]}
 
 
-def _cpio_entry(name, body):
+def _cpio_entry(name: str, body: bytes) -> bytes:
     """Build one newc cpio entry holding the given file body."""
     fields = [0, 0o100644, 0, 0, 1, 0, len(body), 0, 0, 0, 0, len(name) + 1, 0]
     out = b'070701' + ''.join(f'{field:08x}' for field in fields).encode()
@@ -179,7 +189,7 @@ def _cpio_entry(name, body):
     return out
 
 
-def _rpm_bytes(files):
+def _rpm_bytes(files: dict[str, bytes]) -> bytes:
     """Build a minimal rpm holding the given {path: body} payload files."""
     header = b'\x8e\xad\xe8\x01' + b'\0' * 4 + struct.pack('>II', 0, 0)
     payload = b''.join(_cpio_entry('./' + path, body) for path, body in sorted(files.items()))
@@ -187,7 +197,7 @@ def _rpm_bytes(files):
     return b'\xed\xab\xee\xdb' + b'\0' * 92 + header + header + payload
 
 
-SELECTION_PACKAGES = [
+SELECTION_PACKAGES: list[tuple[str, str, str, str]] = [
     # (name, arch, macro path, macro defined there)
     ('alpha', 'noarch', '/usr/lib/rpm/macros.d/macros.shared', 'shared_alpha'),
     ('beta', 'noarch', '/usr/lib/rpm/macros.d/macros.shared', 'shared_beta'),
@@ -197,19 +207,19 @@ SELECTION_PACKAGES = [
 ]
 
 
-def _selection_rpms():
+def _selection_rpms() -> dict[str, bytes]:
     """Build the selection fixture rpms: {href: bytes}."""
-    rpms = {}
+    rpms: dict[str, bytes] = {}
     for name, arch, path, macro in SELECTION_PACKAGES:
         body = f'%{macro}(x) body\n'.encode()
         rpms[f'{name}-1.0-1.{arch}.rpm'] = _rpm_bytes({path.lstrip('/'): body})
     return rpms
 
 
-def _selection_repodata(rpms):
+def _selection_repodata(rpms: dict[str, bytes]) -> tuple[bytes, bytes]:
     """Build primary/filelists blobs describing the selection fixture packages."""
-    primary_pkgs = []
-    filelists_pkgs = []
+    primary_pkgs: list[str] = []
+    filelists_pkgs: list[str] = []
     for name, arch, path, _macro in SELECTION_PACKAGES:
         href = f'{name}-1.0-1.{arch}.rpm'
         blob = rpms[href]
@@ -237,7 +247,7 @@ def _selection_repodata(rpms):
     return primary, filelists
 
 
-def _stage_selection(tmp_path):
+def _stage_selection(tmp_path: Path) -> tuple[ModuleType, str]:
     """Stage the selection fixture: repodata plus the rpm payloads in the fetch cache."""
     rpms = _selection_rpms()
     primary, filelists = _selection_repodata(rpms)
@@ -249,7 +259,7 @@ def _stage_selection(tmp_path):
     return gen, workdir
 
 
-def test_every_macro_package_contributes(tmp_path):
+def test_every_macro_package_contributes(tmp_path: Path) -> None:
     """All filelists owners are read: same-path rivals and arch variants alike."""
     gen, workdir = _stage_selection(tmp_path)
     names, revision, binaries, files_seen = gen.repo_macro_names(REPO, workdir)
@@ -262,7 +272,7 @@ def test_every_macro_package_contributes(tmp_path):
     assert files_seen == 4
 
 
-def test_corrupt_rpm_aborts(tmp_path, capsys):
+def test_corrupt_rpm_aborts(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     """An rpm whose bytes differ from the primary record aborts instead of parsing short."""
     gen, workdir = _stage_selection(tmp_path)
     victim = Path(workdir) / 'rpms' / 'alpha-1.0-1.noarch.rpm'
@@ -274,7 +284,9 @@ def test_corrupt_rpm_aborts(tmp_path, capsys):
     assert 'Checksum mismatch' in capsys.readouterr().err
 
 
-def test_owner_without_location_is_skipped_with_a_warning(tmp_path, capsys):
+def test_owner_without_location_is_skipped_with_a_warning(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     """A filelists owner the primary data does not locate is reported, not read."""
     gen = _load_generator()
     owners = {('ghost', 'noarch'): [MACRO_FILE]}
