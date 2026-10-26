@@ -1,11 +1,14 @@
+from collections.abc import Callable
+from typing import Any
+
 import pytest
 
-from spec_cleaner import RpmSpecCleaner
+from spec_cleaner.rpmcleaner import RpmSpecCleaner
 from spec_cleaner.rpmregexp import Regexp
 from spec_cleaner.rpmsection import Section
 
 
-def _section(default_options, defined_macros):
+def _section(default_options: Callable[..., dict[str, Any]], defined_macros: set[str]) -> Section:
     options = RpmSpecCleaner(default_options()).options
     options['defined_macros'] = defined_macros
     return Section(options)
@@ -13,7 +16,7 @@ def _section(default_options, defined_macros):
 
 # The trigger line is spelled in the form only this rule can match, otherwise an earlier
 # rule rewrites it and the guard of this rule becomes unobservable.
-KNOWN_DIR_RULES = [
+KNOWN_DIR_RULES: list[tuple[str, str, tuple[str, ...]]] = [
     ('echo %_exec_prefix', 'echo %{_prefix}', ('_exec_prefix', '_prefix')),
     ('echo /usr', 'echo %{_prefix}', ('_prefix',)),
     ('echo %{_prefix}/bin', 'echo %{_bindir}', ('_prefix', '_exec_prefix', '_bindir')),
@@ -78,13 +81,23 @@ KNOWN_DIR_MACROS = sorted({macro for _, _, macros in KNOWN_DIR_RULES for macro i
 
 
 @pytest.mark.parametrize(('line', 'expected', 'macros'), KNOWN_DIR_RULES)
-def test_rewrite_with_default_macros(default_options, line, expected, macros):
+def test_rewrite_with_default_macros(
+    default_options: Callable[..., dict[str, Any]],
+    line: str,
+    expected: str,
+    macros: tuple[str, ...],
+) -> None:
     """Each rule rewrites its own line while none of the macros it reads is redefined."""
     assert _section(default_options, set()).replace_known_dirs(line) == expected
 
 
 @pytest.mark.parametrize(('line', 'expected', 'macros'), KNOWN_DIR_RULES)
-def test_rewrite_disabled_by_redefined_macro(default_options, line, expected, macros):
+def test_rewrite_disabled_by_redefined_macro(
+    default_options: Callable[..., dict[str, Any]],
+    line: str,
+    expected: str,
+    macros: tuple[str, ...],
+) -> None:
     """Redefining any of the macros a rule reads switches that rule off."""
     # A neighbouring rule may still rewrite the line, so assert on the target replacement
     # being absent rather than on the line staying untouched.
@@ -92,12 +105,12 @@ def test_rewrite_disabled_by_redefined_macro(default_options, line, expected, ma
         assert expected not in _section(default_options, {macro}).replace_known_dirs(line)
 
 
-def test_every_guard_macro_is_covered():
+def test_every_guard_macro_is_covered() -> None:
     """Every macro name in the rules table is exercised as a redefinition."""
     assert len(KNOWN_DIR_MACROS) == 29
 
 
-def _cleaned_line(default_options, minimal, line):
+def _cleaned_line(default_options: Callable[..., dict[str, Any]], minimal: bool, line: str) -> str:
     options = RpmSpecCleaner(default_options(minimal=minimal)).options
     options['defined_macros'] = set()
     section = Section(options)
@@ -123,30 +136,40 @@ MACRO_FORM_UNTOUCHED = [
 
 
 @pytest.mark.parametrize(('line', 'expected'), MACRO_FORM_REWRITES)
-def test_macro_form_rewritten_in_full_mode(default_options, line, expected):
+def test_macro_form_rewritten_in_full_mode(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
     """The full run spells short source/patch forms out to the long form."""
     assert _cleaned_line(default_options, False, line) == expected
 
 
 @pytest.mark.parametrize(('line', 'expected'), MACRO_FORM_REWRITES)
-def test_macro_form_kept_in_minimal_mode(default_options, line, expected):
+def test_macro_form_kept_in_minimal_mode(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
     """The minimal run keeps the source/patch spelling as written."""
     assert _cleaned_line(default_options, True, line) == line
 
 
 @pytest.mark.parametrize('line', MACRO_FORM_UNTOUCHED)
-def test_macro_form_neighbours_untouched(default_options, line):
+def test_macro_form_neighbours_untouched(
+    default_options: Callable[..., dict[str, Any]], line: str
+) -> None:
     """Forms outside the family stay untouched in both modes."""
     for minimal in (False, True):
         assert _cleaned_line(default_options, minimal, line) == line
 
 
-def test_unbraced_source_form_kept_in_minimal_mode(default_options):
+def test_unbraced_source_form_kept_in_minimal_mode(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
     """The unbraced long form is not part of the family and stays as written."""
     assert _cleaned_line(default_options, True, 'cp %SOURCE2 .') == 'cp %SOURCE2 .'
 
 
-def test_version_guard_rewrite_runs_in_both_modes(default_options):
+def test_version_guard_rewrite_runs_in_both_modes(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
     """The %{suse_version} guard insertion changes expansion, so it is no respelling and keeps firing."""
     for minimal in (False, True):
         assert (
@@ -155,19 +178,19 @@ def test_version_guard_rewrite_runs_in_both_modes(default_options):
         )
 
 
-def test_known_dirs_replaced_in_full_run(default_options):
+def test_known_dirs_replaced_in_full_run(default_options: Callable[..., dict[str, Any]]) -> None:
     """The full run rewrites a literal path to its directory macro."""
     line = 'install -D -m 0755 foo /usr/bin/foo'
     assert _cleaned_line(default_options, False, line) == 'install -D -m 0755 foo %{_bindir}/foo'
 
 
-def test_known_dirs_kept_in_minimal_run(default_options):
+def test_known_dirs_kept_in_minimal_run(default_options: Callable[..., dict[str, Any]]) -> None:
     """The minimal run keeps literal paths as written."""
     line = 'install -D -m 0755 foo /usr/bin/foo'
     assert _cleaned_line(default_options, True, line) == line
 
 
-def test_buildroot_replaced_in_minimal_run(default_options):
+def test_buildroot_replaced_in_minimal_run(default_options: Callable[..., dict[str, Any]]) -> None:
     """$RPM_BUILD_ROOT is a variable substitution and is replaced in both modes."""
     line = 'install -D -m 0644 foo.conf $RPM_BUILD_ROOT/usr/share/foo/foo.conf'
     expected = 'install -D -m 0644 foo.conf %{buildroot}/usr/share/foo/foo.conf'
@@ -199,13 +222,17 @@ EMBRACE_INVOCATION_UNTOUCHED = [
 
 
 @pytest.mark.parametrize(('line', 'expected'), EMBRACE_INVOCATION_REWRITES)
-def test_embrace_keeps_invocations_and_braces_bare_names(default_options, line, expected):
+def test_embrace_keeps_invocations_and_braces_bare_names(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
     """Invocations keep their form while bare references around them are braced."""
     assert _cleaned_line(default_options, False, line) == expected
 
 
 @pytest.mark.parametrize('line', EMBRACE_INVOCATION_UNTOUCHED)
-def test_embrace_leaves_invocations_untouched(default_options, line):
+def test_embrace_leaves_invocations_untouched(
+    default_options: Callable[..., dict[str, Any]], line: str
+) -> None:
     """A macro invocation with an argument list is not braced as a plain reference."""
     assert _cleaned_line(default_options, False, line) == line
 
@@ -236,7 +263,9 @@ EMBRACE_VALUE_POSITIONS = [
 
 
 @pytest.mark.parametrize(('line', 'expected'), EMBRACE_VALUE_POSITIONS)
-def test_embrace_value_positions(default_options, line, expected):
+def test_embrace_value_positions(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
     """Braced uses in value positions keep their braces, the rest of the unbracing stays."""
     assert _cleaned_line(default_options, False, line) == expected
 
@@ -257,12 +286,16 @@ EMBRACE_GLUED_KEYWORDS = [
 
 
 @pytest.mark.parametrize(('line', 'expected'), EMBRACE_GLUED_KEYWORDS)
-def test_embrace_glued_keywords(default_options, line, expected):
+def test_embrace_glued_keywords(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
     """Braced uses of plain keywords glued to a word character keep their braces."""
     assert _cleaned_line(default_options, False, line) == expected
 
 
-def test_embrace_leaves_known_macro_function_unbraced(default_options):
+def test_embrace_leaves_known_macro_function_unbraced(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
     """A macro function (an rpm builtin here) keeps its space separated arguments."""
     options = RpmSpecCleaner(default_options()).options
     options['defined_macros'] = set()
@@ -273,7 +306,7 @@ def test_embrace_leaves_known_macro_function_unbraced(default_options):
     assert section.lines[0] == line
 
 
-def test_embrace_skips_lua_body_lines(default_options):
+def test_embrace_skips_lua_body_lines(default_options: Callable[..., dict[str, Any]]) -> None:
     """%-forms inside a multiline %{lua: ... } body are lua text, not macro references."""
     section = _section(default_options, set())
     lines = [
@@ -291,14 +324,16 @@ def test_embrace_skips_lua_body_lines(default_options):
     assert section.lines[-1] == 'Name: %{name}'
 
 
-def test_embrace_skips_single_line_lua_body(default_options):
+def test_embrace_skips_single_line_lua_body(default_options: Callable[..., dict[str, Any]]) -> None:
     """A lua body closed on the same line shields only its own text."""
     section = _section(default_options, set())
     section.add('%global x %{lua: print("%s")} suffix %name')
     assert section.lines[0] == '%global x %{lua: print("%s")} suffix %{name}'
 
 
-def test_embrace_skips_lua_body_shell_expansion(default_options):
+def test_embrace_skips_lua_body_shell_expansion(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
     """A shell expansion with nested parens inside a lua body is left verbatim."""
     section = _section(default_options, set())
     lines = [
@@ -315,7 +350,7 @@ def test_embrace_skips_lua_body_shell_expansion(default_options):
     assert section.lines[-1] == 'Name: %{name}'
 
 
-def test_embrace_skips_lua_space_form(default_options):
+def test_embrace_skips_lua_space_form(default_options: Callable[..., dict[str, Any]]) -> None:
     """In the %lua space form the arguments go to lua; they are lua text, not macro references."""
     section = _section(default_options, set())
     section.add('%global x %lua print("%s")')
@@ -325,7 +360,9 @@ def test_embrace_skips_lua_space_form(default_options):
     assert section.lines[-1] == 'Name: %{name}'
 
 
-def test_embrace_skips_lua_space_form_with_macro_expansion(default_options):
+def test_embrace_skips_lua_space_form_with_macro_expansion(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
     """A %{...} the %lua arguments close does not end their shielding early."""
     line = '%global x %lua print("%{name}") .. "%s"'
     section = _section(default_options, set())
@@ -333,14 +370,18 @@ def test_embrace_skips_lua_space_form_with_macro_expansion(default_options):
     assert section.lines[0] == line
 
 
-def test_embrace_skips_lua_body_with_spaced_colon(default_options):
+def test_embrace_skips_lua_body_with_spaced_colon(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
     """The %{lua : form with whitespace before the colon is dispatched as well."""
     section = _section(default_options, set())
     section.add('%global x %{lua : print("%s")} suffix %name')
     assert section.lines[0] == '%global x %{lua : print("%s")} suffix %{name}'
 
 
-def test_embrace_escaped_percent_lua_is_no_opener(default_options):
+def test_embrace_escaped_percent_lua_is_no_opener(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
     """%% is an escaped percent: %%{lua: is literal text and opens no body."""
     section = _section(default_options, set())
     section.add('echo 100%%{lua: x')
@@ -350,7 +391,9 @@ def test_embrace_escaped_percent_lua_is_no_opener(default_options):
     assert section.lines[-1] == 'cp %{name} %{version}'
 
 
-def test_embrace_lua_opener_in_comment_opens_nothing(default_options):
+def test_embrace_lua_opener_in_comment_opens_nothing(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
     """An opener behind the # boundary braces no comment text and leaks no body state."""
     section = _section(default_options, set())
     section.add('echo %name # %{lua: } %version')
@@ -369,7 +412,9 @@ def test_embrace_lua_opener_in_comment_opens_nothing(default_options):
     assert section.lines[-1] == 'cp %{name} %{version}'
 
 
-def test_vendored_invocation_survives_full_run(default_options, monkeypatch):
+def test_vendored_invocation_survives_full_run(
+    default_options: Callable[..., dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
     """A function from the vendored snapshot keeps its invocation form through the full run."""
     monkeypatch.setattr('spec_cleaner.rpmcleaner.load_macro_functions', lambda: ['lang_package'])
     assert (
@@ -379,7 +424,9 @@ def test_vendored_invocation_survives_full_run(default_options, monkeypatch):
     assert _cleaned_line(default_options, False, '%lang_package foo') == '%lang_package foo'
 
 
-def test_undetected_invocation_is_left_alone_in_full_run(default_options, monkeypatch):
+def test_undetected_invocation_is_left_alone_in_full_run(
+    default_options: Callable[..., dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
     """A function no source reports keeps its invocation form; only bare references are braced."""
     monkeypatch.setattr('spec_cleaner.rpmcleaner.load_macro_functions', lambda: [])
     assert _cleaned_line(default_options, False, '%other_macro(x)') == '%other_macro(x)'
