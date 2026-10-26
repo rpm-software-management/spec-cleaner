@@ -1,4 +1,4 @@
-# Sourced from openSUSE/obs-service-format_spec_file licenses_exceptions.txt, fetched 2026-10-26
+# Sourced from openSUSE/obs-service-format_spec_file licenses_exceptions.txt
 # URL: https://github.com/openSUSE/obs-service-format_spec_file/blob/master/licenses_exceptions.txt
 389-exception
 Asterisk-exception
