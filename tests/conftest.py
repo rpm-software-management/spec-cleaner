@@ -6,11 +6,15 @@ knowledge comes from the vendored snapshot and from the spec under
 test, so the suite runs on machines without the rpm binary.
 """
 
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
+
 import pytest
 
 
 @pytest.fixture
-def default_options(tmp_path):
+def default_options(tmp_path: Path) -> Callable[..., dict[str, Any]]:
     """
     Build the options dict the section tests hand to RpmSpecCleaner.
 
@@ -19,7 +23,7 @@ def default_options(tmp_path):
     """
     specfile = tmp_path / 'test.spec'
     specfile.write_text('Name: test\n')
-    defaults = {
+    defaults: dict[str, Any] = {
         'specfile': str(specfile),
         'output': str(tmp_path / 'out.spec'),
         'pkgconfig': False,

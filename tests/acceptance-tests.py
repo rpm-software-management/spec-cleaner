@@ -7,17 +7,21 @@ In this module we run all the tests to ensure the spec-cleaner is acting sanely.
 import os
 import subprocess
 import sys
+from email.message import Message
 from glob import glob
+from pathlib import Path
 from shutil import copyfile
+from typing import Any, NoReturn
 from unittest import mock
 from urllib.error import HTTPError
 
 import pytest
 
-from spec_cleaner import RpmExceptionError, RpmSpecCleaner
+from spec_cleaner.rpmcleaner import RpmSpecCleaner
+from spec_cleaner.rpmexception import RpmExceptionError
 
 
-def collect_tests(directory):
+def collect_tests(directory: str) -> list[str]:
     """
     Generate a list of tests we are going to use according to what is on hdd.
 
@@ -48,7 +52,7 @@ class TestCompare:
     These output directories are used to help collect and run tests with the same parameters.
     """
 
-    option_presets = {
+    option_presets: dict[str, Any] = {
         'pkgconfig': False,
         'inline': False,
         'diff': False,
@@ -65,19 +69,26 @@ class TestCompare:
     }
 
     @pytest.fixture(scope='function')
-    def tmpfile(self, tmpdir_factory):
+    def tmpfile(self, tmpdir_factory: pytest.TempdirFactory) -> str:
         """Create empty temp folder for each function run to avoid clash in threaded execution."""
         tmpfile = tmpdir_factory.mktemp('run', numbered=True).join('testing.spec')
         return str(tmpfile)
 
-    def _run_individual_test(self, test, compare_dir, infile=None, outfile=None, options=None):
+    def _run_individual_test(
+        self,
+        test: str,
+        compare_dir: str | None,
+        infile: str | None = None,
+        outfile: str | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> None:
         """Run the cleaner as specified and store the output for further comparison."""
         if not infile:
             infile = os.path.join('tests', 'in', test)
 
-        full_options = {'specfile': infile, 'output': outfile}
+        full_options: dict[str, Any] = {'specfile': infile, 'output': outfile}
         full_options.update(self.option_presets)
-        full_options.update(options)
+        full_options.update(options or {})
 
         cleaner = RpmSpecCleaner(full_options)
         cleaner.run()
@@ -85,41 +96,48 @@ class TestCompare:
         if compare_dir:
             compare = os.path.join('tests', compare_dir, test)
             testfile = full_options['inline'] and infile or outfile
-            with open(compare, encoding='utf-8') as ref, open(testfile, encoding='utf-8') as test:
-                assert ref.read() == test.read()
+            assert testfile is not None
+            with open(compare, encoding='utf-8') as ref, open(testfile, encoding='utf-8') as tested:
+                assert ref.read() == tested.read()
 
-    def _compare_and_rerun(self, test, compare_dir, tmpfile, options=None):
+    def _compare_and_rerun(
+        self,
+        test: str,
+        compare_dir: str | None,
+        tmpfile: str,
+        options: dict[str, Any] | None = None,
+    ) -> None:
         self._run_individual_test(test, compare_dir, None, tmpfile, options)
         tmpfile_rerun = tmpfile + '_rerun'
         self._run_individual_test(test, compare_dir, tmpfile, tmpfile_rerun, options)
 
     @pytest.mark.parametrize('test', collect_tests('out'))
-    def test_normal_outputs(self, tmpfile, test):
+    def test_normal_outputs(self, tmpfile: str, test: str) -> None:
         """Run all tests in 'out' directory without any particular spec-cleaner option."""
         self._compare_and_rerun(test, 'out', tmpfile, {'pkgconfig': True})
 
     @pytest.mark.parametrize('test', collect_tests('out-minimal'))
-    def test_minimal_outputs(self, test, tmpfile):
+    def test_minimal_outputs(self, test: str, tmpfile: str) -> None:
         """Run tests in 'out-minimal' directory in a minimal mode."""
         self._compare_and_rerun(test, 'out-minimal', tmpfile, {'pkgconfig': True, 'minimal': True})
 
     @pytest.mark.parametrize('test', collect_tests('keep-space'))
-    def test_keep_space_output(self, tmpfile, test):
+    def test_keep_space_output(self, tmpfile: str, test: str) -> None:
         """Run tests in 'keep-space' directory with '--keep-space' option."""
         self._compare_and_rerun(test, 'keep-space', tmpfile, options={'keep_space': True})
 
     @pytest.mark.webtest
     @pytest.mark.parametrize('test', collect_tests('web'))
-    def test_web_output(self, tmpfile, test):
+    def test_web_output(self, tmpfile: str, test: str) -> None:
         """Run tests in 'web' directory (these tests need an internet connection)."""
         self._compare_and_rerun(test, 'web', tmpfile, {'pkgconfig': True})
 
     @pytest.mark.parametrize('test', ['selinux-macros-args.spec', 'systemd-macros-args.spec'])
-    def test_host_without_macro_packages(self, tmpfile, test):
+    def test_host_without_macro_packages(self, tmpfile: str, test: str) -> None:
         """Test that whitelisted parametric macros stay unbraced when the host does not define them."""
         self._compare_and_rerun(test, 'out', tmpfile, {'pkgconfig': True})
 
-    def test_macro_function_from_vendored_snapshot(self, tmpfile, tmp_path):
+    def test_macro_function_from_vendored_snapshot(self, tmpfile: str, tmp_path: Path) -> None:
         """
         Test that a macro function named by the vendored snapshot keeps its invocation in one dependency.
 
@@ -149,29 +167,33 @@ class TestCompare:
         assert '%{python_module}' not in output
 
     @pytest.mark.parametrize('test', collect_tests('https-probe'))
-    def test_https_probe_success(self, tmpfile, monkeypatch, test):
+    def test_https_probe_success(
+        self, tmpfile: str, monkeypatch: pytest.MonkeyPatch, test: str
+    ) -> None:
         """Run tests in 'https-probe' directory with every https probe succeeding."""
         response = mock.Mock()
         response.getcode.return_value = 200
         monkeypatch.setattr('spec_cleaner.rpmpreamble.urlopen', lambda *args, **kwargs: response)
         self._compare_and_rerun(test, 'https-probe', tmpfile, {'pkgconfig': True})
 
-    def test_https_probe_failure(self, tmpfile, monkeypatch):
+    def test_https_probe_failure(self, tmpfile: str, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that an error escaping the https probe keeps the original url."""
 
-        def reset(*args, **kwargs):
+        def reset(*args: Any, **kwargs: Any) -> NoReturn:
             raise ConnectionResetError
 
         monkeypatch.setattr('spec_cleaner.rpmpreamble.urlopen', reset)
         self._compare_and_rerun('url-probe-failure.spec', 'out', tmpfile, {'pkgconfig': True})
 
-    def test_https_probe_transient_failure(self, tmpfile, monkeypatch):
+    def test_https_probe_transient_failure(
+        self, tmpfile: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that a transient https probe failure is retried before giving up."""
         response = mock.Mock()
         response.getcode.return_value = 200
         attempts = 0
 
-        def flaky(*args, **kwargs):
+        def flaky(*args: Any, **kwargs: Any) -> Any:
             nonlocal attempts
             attempts += 1
             if attempts == 1:
@@ -183,17 +205,19 @@ class TestCompare:
             'url-probe-transient.spec', 'https-probe', tmpfile, {'pkgconfig': True}
         )
 
-    def test_https_probe_transient_server_error(self, tmpfile, monkeypatch):
+    def test_https_probe_transient_server_error(
+        self, tmpfile: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that a 503 https probe response is retried before giving up."""
         response = mock.Mock()
         response.getcode.return_value = 200
         attempts = 0
 
-        def flaky(*args, **kwargs):
+        def flaky(*args: Any, **kwargs: Any) -> Any:
             nonlocal attempts
             attempts += 1
             if attempts == 1:
-                raise HTTPError('https://example.org/', 503, 'Service Unavailable', {}, None)
+                raise HTTPError('https://example.org/', 503, 'Service Unavailable', Message(), None)
             return response
 
         monkeypatch.setattr('spec_cleaner.rpmpreamble.urlopen', flaky)
@@ -201,7 +225,7 @@ class TestCompare:
             'url-probe-transient.spec', 'https-probe', tmpfile, {'pkgconfig': True}
         )
 
-    def test_https_probe_non_200(self, tmpfile, monkeypatch):
+    def test_https_probe_non_200(self, tmpfile: str, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that a 2xx probe response other than 200 keeps the original url."""
         response = mock.Mock()
         response.getcode.return_value = 202
@@ -209,13 +233,13 @@ class TestCompare:
         self._compare_and_rerun('url-probe-non-200.spec', 'out', tmpfile, {'pkgconfig': True})
 
     @pytest.mark.parametrize('test', collect_tests('header'))
-    def test_header_rerun(self, tmpdir, test):
+    def test_header_rerun(self, tmpdir: Any, test: str) -> None:
         """Test that the '--suse-copyright' output does not change when cleaned again."""
         options = {'minimal': True, 'suse_copyright': True}
         # keep the spec name, the header takes the package name from it
         self._compare_and_rerun(test, 'header', str(tmpdir.join(test)), options)
 
-    def test_inline_function(self, tmpfile):
+    def test_inline_function(self, tmpfile: str) -> None:
         """Test an inline option."""
         test = 'bconds.spec'
         infile = os.path.join('tests', 'in', test)
@@ -224,13 +248,13 @@ class TestCompare:
             test, 'out', infile=tmpfile, outfile='', options={'pkgconfig': True, 'inline': True}
         )
 
-    def test_inline_failure_keeps_spec(self, tmpfile, monkeypatch):
+    def test_inline_failure_keeps_spec(self, tmpfile: str, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that a failing inline run leaves the spec file untouched."""
         test = 'bconds.spec'
         infile = os.path.join('tests', 'in', test)
         copyfile(infile, tmpfile)
 
-        def fail(*args):
+        def fail(*args: Any) -> NoReturn:
             raise RpmExceptionError('simulated failure')
 
         monkeypatch.setattr(RpmSpecCleaner, '_detect_new_section', fail)
@@ -241,7 +265,7 @@ class TestCompare:
         with open(infile, encoding='utf-8') as ref, open(tmpfile, encoding='utf-8') as result:
             assert ref.read() == result.read()
 
-    def test_diff_function(self, tmpfile):
+    def test_diff_function(self, tmpfile: str) -> None:
         """Test passing an incorrect '--diff_prog' option."""
         test = 'bconds.spec'
         with pytest.raises(RpmExceptionError):
@@ -249,7 +273,7 @@ class TestCompare:
                 test, None, outfile='', options={'diff': True, 'diff_prog': 'error'}
             )
 
-    def test_unicode(self, tmpfile):
+    def test_unicode(self, tmpfile: str) -> None:
         """Test encoding."""
         test = 'perl-Text-Unidecode.spec'
         testpath = os.path.join('tests', 'unicode', test)
@@ -258,7 +282,7 @@ class TestCompare:
                 test, None, infile=testpath, outfile='', options={'minimal': False}
             )
 
-    def test_utf8_in_non_utf8_locale(self, tmpfile):
+    def test_utf8_in_non_utf8_locale(self, tmpfile: str) -> None:
         """Test that a UTF-8 spec is read and written as UTF-8 whatever the locale charset is."""
         test = 'utf8-content.spec'
         infile = os.path.join('tests', 'in', test)
@@ -287,6 +311,8 @@ class TestCompare:
             ('no-curlification.spec', 'no-curlification', {'no_curlification': True}),
         ],
     )
-    def test_single_output(self, tmpfile, test, compare_dir, options):
+    def test_single_output(
+        self, tmpfile: str, test: str, compare_dir: str, options: dict[str, Any]
+    ) -> None:
         """Test various spec-cleaner options."""
         self._compare_and_rerun(test, compare_dir, tmpfile, options)

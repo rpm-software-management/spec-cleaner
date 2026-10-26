@@ -15,7 +15,7 @@ class RpmRequiresToken:
     BuildRequires:    boringpackage >=         5.2.8
     """
 
-    comments: str | None = None
+    comments: list[str] | None = None
     trailing_comment: str | None = None
 
     def __init__(

@@ -50,6 +50,7 @@ import tempfile
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import date
+from typing import IO, Any, TypeAlias, cast
 
 DEFAULT_REPO = 'https://download.opensuse.org/tumbleweed/repo/oss/'
 DEFAULT_FEDORA_REPO = (
@@ -79,8 +80,19 @@ BUILTIN_RE = re.compile(r'^-[0-9]+[:=]\s(\w+)[ \t]+<builtin>[ \t]*$')
 
 BUILTINS_MARKER = '# rpm builtins'
 
+# (algorithm, checksum, size) as published for one repodata dataset
+ChecksumRecord: TypeAlias = 'tuple[str | None, str | None, int | None]'
+# (algorithm, checksum) as published for one package in the primary data
+PackageChecksum: TypeAlias = 'tuple[str | None, str | None]'
+# package identity -> the macro files it installs
+Owners: TypeAlias = 'dict[tuple[str | None, str | None], list[str]]'
+# package identity -> (location href, package size, package checksum)
+Locations: TypeAlias = 'dict[tuple[str | None, str | None], tuple[str, int, PackageChecksum]]'
+# (name, arch, macro files, location href, package size, package checksum)
+Binary: TypeAlias = 'tuple[str | None, str | None, list[str], str, int, PackageChecksum]'
 
-def fetch(url, dest):
+
+def fetch(url: str, dest: str) -> str:
     """Download a URL to a local path, unless it is already there."""
     if not os.path.exists(dest):
         print(f'fetch {url}', file=sys.stderr)
@@ -88,29 +100,31 @@ def fetch(url, dest):
     return dest
 
 
-def open_metadata(path):
+def open_metadata(path: str) -> IO[bytes]:
     """Open a downloaded repodata file, whatever its compression."""
     if path.endswith('.zst'):
         proc = subprocess.Popen(['zstd', '-dc', path], stdout=subprocess.PIPE)
+        assert proc.stdout is not None
         return proc.stdout
     if path.endswith('.gz'):
-        return gzip.open(path, 'rb')
+        return cast('IO[bytes]', gzip.open(path, 'rb'))
     return open(path, 'rb')
 
 
-def checksum_record(data):
+def checksum_record(data: ET.Element) -> ChecksumRecord:
     """Return the (algorithm, checksum, size) repomd.xml publishes for one data element."""
-    by_type = {}
+    by_type: dict[str, str] = {}
     for el in data.findall(R_TAG + 'checksum'):
-        if el.text:
-            by_type[el.get('type')] = el.text.strip()
+        ctype = el.get('type')
+        if el.text and ctype:
+            by_type[ctype] = el.text.strip()
     algo = next((a for a in ('sha512', 'sha256') if a in by_type), None)
     size_el = data.find(R_TAG + 'size')
     size = int(size_el.text) if size_el is not None and size_el.text else None
-    return algo, by_type.get(algo), size
+    return algo, by_type.get(algo) if algo is not None else None, size
 
 
-def _file_digest(path, algo):
+def _file_digest(path: str, algo: str) -> tuple[str, int]:
     """Return the (hexdigest, size) of a local file under one algorithm."""
     digest = hashlib.new(algo)
     total = 0
@@ -121,7 +135,7 @@ def _file_digest(path, algo):
     return digest.hexdigest(), total
 
 
-def verify_archive(path, href, record, repo):
+def verify_archive(path: str, href: str, record: ChecksumRecord, repo: str) -> None:
     """
     Verify a downloaded repodata archive against its repomd.xml record.
 
@@ -154,7 +168,7 @@ def verify_archive(path, href, record, repo):
     print(f'Verified {href} against the {algo} checksum in repomd.xml', file=sys.stderr)
 
 
-def verify_package(path, href, checksum, size):
+def verify_package(path: str, href: str, checksum: PackageChecksum, size: int) -> None:
     """
     Verify a downloaded rpm against the record the primary data publishes.
 
@@ -182,7 +196,7 @@ def verify_package(path, href, checksum, size):
         sys.exit(1)
 
 
-def repomd_cache_name(repo):
+def repomd_cache_name(repo: str) -> str:
     """
     Name of the workdir cache file for one repository's repomd.xml.
 
@@ -193,28 +207,37 @@ def repomd_cache_name(repo):
     return 'repomd-' + hashlib.sha256(repo.encode()).hexdigest()[:16] + '.xml'
 
 
-def repodata_hrefs(repo, workdir):
+def repodata_hrefs(
+    repo: str, workdir: str
+) -> tuple[dict[str, str], dict[str, ChecksumRecord], str]:
     """Read repomd.xml; return the data hrefs, their verification records, the revision."""
     repomd = fetch(repo + 'repodata/repomd.xml', os.path.join(workdir, repomd_cache_name(repo)))
     tree = ET.parse(repomd)
-    hrefs = {}
-    checks = {}
+    hrefs: dict[str, str] = {}
+    checks: dict[str, ChecksumRecord] = {}
     for data in tree.getroot().iter(R_TAG + 'data'):
-        hrefs[data.get('type')] = data.find(R_TAG + 'location').get('href')
-        checks[data.get('type')] = checksum_record(data)
+        dtype = data.get('type')
+        location = data.find(R_TAG + 'location')
+        href = location.get('href') if location is not None else None
+        assert dtype is not None and href is not None
+        hrefs[dtype] = href
+        checks[dtype] = checksum_record(data)
     rev_el = tree.getroot().find(R_TAG + 'revision')
-    return hrefs, checks, rev_el.text if rev_el is not None else 'unknown'
+    revision = rev_el.text if rev_el is not None else None
+    return hrefs, checks, revision if revision else 'unknown'
 
 
-def macro_packages(repo, workdir, hrefs, checks):
+def macro_packages(
+    repo: str, workdir: str, hrefs: dict[str, str], checks: dict[str, ChecksumRecord]
+) -> Owners:
     """Map package identity -> [macro file paths] from the filelists."""
     path = fetch(
         repo + hrefs['filelists'], os.path.join(workdir, os.path.basename(hrefs['filelists']))
     )
     verify_archive(path, hrefs['filelists'], checks.get('filelists', (None, None, None)), repo)
-    owners = {}
+    owners: Owners = {}
     with open_metadata(path) as fh:
-        pkg = None
+        pkg: tuple[str | None, str | None] | None = None
         for event, el in ET.iterparse(fh, events=('start', 'end')):
             if el.tag == F_TAG + 'package':
                 if event == 'start':
@@ -229,19 +252,21 @@ def macro_packages(repo, workdir, hrefs, checks):
     return owners
 
 
-def package_locations(repo, workdir, hrefs, checks):
+def package_locations(
+    repo: str, workdir: str, hrefs: dict[str, str], checks: dict[str, ChecksumRecord]
+) -> Locations:
     """Map (name, arch) -> (location href, package size, package checksum) from the primary data."""
     path = fetch(repo + hrefs['primary'], os.path.join(workdir, os.path.basename(hrefs['primary'])))
     verify_archive(path, hrefs['primary'], checks.get('primary', (None, None, None)), repo)
-    locations = {}
+    locations: Locations = {}
     with open_metadata(path) as fh:
-        cur = None
+        cur: dict[str, Any] | None = None
         for event, el in ET.iterparse(fh, events=('start', 'end')):
             if el.tag == C_TAG + 'package':
                 if event == 'start':
                     cur = {}
                 else:
-                    if cur.get('name') and cur.get('location'):
+                    if cur is not None and cur.get('name') and cur.get('location'):
                         locations[(cur['name'], cur.get('arch'))] = (
                             cur['location'],
                             cur.get('size', 0),
@@ -265,7 +290,7 @@ def package_locations(repo, workdir, hrefs, checks):
     return locations
 
 
-def all_binaries(owners, locations):
+def all_binaries(owners: Owners, locations: Locations) -> list[Binary]:
     """
     Every binary the filelists show installing macro files, in a stable order.
 
@@ -277,7 +302,7 @@ def all_binaries(owners, locations):
     architecture variant stands in for its siblings, whose macro files
     can differ just as well.
     """
-    binaries = []
+    binaries: list[Binary] = []
     for (name, arch), files in sorted(owners.items()):
         loc = locations.get((name, arch))
         if loc is None:
@@ -291,15 +316,16 @@ def all_binaries(owners, locations):
     return binaries
 
 
-def _header_end(data, offset):
+def _header_end(data: bytes, offset: int) -> int:
     """Skip one rpm header starting at offset; return the offset past it."""
     if data[offset : offset + 3] != b'\x8e\xad\xe8':
         raise ValueError('bad rpm header magic')
-    nindex, hsize = struct.unpack('>II', data[offset + 8 : offset + 16])
+    counts: tuple[int, int] = struct.unpack('>II', data[offset + 8 : offset + 16])
+    nindex, hsize = counts
     return offset + 16 + nindex * 16 + hsize
 
 
-def rpm_payload(data):
+def rpm_payload(data: bytes) -> bytes:
     """Return the (decompressed) cpio payload of an rpm package."""
     if data[:4] != b'\xed\xab\xee\xdb':
         raise ValueError('not an rpm package')
@@ -320,10 +346,10 @@ def rpm_payload(data):
     return payload
 
 
-def extract_files(data, wanted):
+def extract_files(data: bytes, wanted: list[str]) -> dict[str, bytes]:
     """Extract the wanted paths from a cpio (newc) payload in memory."""
-    wanted = {p.lstrip('/') for p in wanted}
-    found = {}
+    wanted_set = {p.lstrip('/') for p in wanted}
+    found: dict[str, bytes] = {}
     pos = 0
     while pos + 110 <= len(data):
         if data[pos : pos + 6] != b'070701':
@@ -335,13 +361,13 @@ def extract_files(data, wanted):
         body_start = (name_start + namesize + 3) & ~3
         if name == 'TRAILER!!!':
             break
-        if name.lstrip('./') in wanted:
+        if name.lstrip('./') in wanted_set:
             found[name.lstrip('./')] = data[body_start : body_start + filesize]
         pos = (body_start + filesize + 3) & ~3
     return found
 
 
-def strip_lua(text):
+def strip_lua(text: str) -> str:
     """
     Remove %{lua: ...} spans from a macro body.
 
@@ -349,7 +375,7 @@ def strip_lua(text):
     not a reference to the macro's argument vector (the __python3 body,
     a gsub pattern, is the canonical example).
     """
-    out = []
+    out: list[str] = []
     i = 0
     while True:
         j = text.find('%{lua:', i)
@@ -370,7 +396,7 @@ def strip_lua(text):
         i = k + 1
 
 
-def parse_macro_text(text, into):
+def parse_macro_text(text: str, into: set[str]) -> None:
     """Collect argument-taking macro names defined in one macro file."""
     lines = text.splitlines()
     i = 0
@@ -392,7 +418,7 @@ def parse_macro_text(text, into):
             into.add(name)
 
 
-def collect_macro_names(repo, workdir, binaries):
+def collect_macro_names(repo: str, workdir: str, binaries: list[Binary]) -> tuple[set[str], int]:
     """
     Download the given packages of one repository; collect their macro names.
 
@@ -402,8 +428,8 @@ def collect_macro_names(repo, workdir, binaries):
     copies of a macro file, and a second copy could only produce the
     names the first one produced.
     """
-    names = set()
-    seen_contents = set()
+    names: set[str] = set()
+    seen_contents: set[bytes] = set()
     files_seen = 0
     for _name, _arch, files, href, size, checksum in binaries:
         dest = os.path.join(workdir, 'rpms', os.path.basename(href))
@@ -423,7 +449,7 @@ def collect_macro_names(repo, workdir, binaries):
     return names, files_seen
 
 
-def repo_macro_names(repo, workdir):
+def repo_macro_names(repo: str, workdir: str) -> tuple[set[str], str, int, int]:
     """Run the full enumeration over one repository; return its names and revision."""
     hrefs, checks, revision = repodata_hrefs(repo, workdir)
     owners = macro_packages(repo, workdir, hrefs, checks)
@@ -433,15 +459,17 @@ def repo_macro_names(repo, workdir):
     return names, revision, len(binaries), files_seen
 
 
-def builtin_macros():
+def builtin_macros() -> set[str]:
     """Collect the builtin macro names from the local rpm --showrc."""
     out = subprocess.run(['rpm', '--showrc'], capture_output=True, text=True, check=True).stdout
     return {m.group(1) for line in out.splitlines() if (m := BUILTIN_RE.match(line))}
 
 
-def read_existing(path):
+def read_existing(path: str | None) -> tuple[set[str], set[str]]:
     """Read the distro names and builtin section of an existing output."""
-    distro, builtins, section = set(), set(), None
+    distro: set[str] = set()
+    builtins: set[str] = set()
+    section: set[str] | None = None
     if not path or not os.path.exists(path):
         return distro, builtins
     for line in open(path, encoding='utf-8'):
@@ -453,7 +481,7 @@ def read_existing(path):
     return distro, builtins
 
 
-def main():
+def main() -> None:
     """Generate the snapshot: parse the repository, write the name list."""
     ap = argparse.ArgumentParser()
     ap.add_argument('--repo', default=DEFAULT_REPO)
@@ -478,7 +506,7 @@ def main():
     os.makedirs(args.workdir, exist_ok=True)
     names, revision, binaries, files_seen = repo_macro_names(args.repo, args.workdir)
 
-    fedora_revision = None
+    fedora_revision: str | None = None
     fedora_binaries = 0
     if args.fedora_repo:
         fedora_workdir = os.path.join(args.workdir, 'fedora')

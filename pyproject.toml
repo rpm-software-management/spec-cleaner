@@ -109,3 +109,5 @@ also_copy = ["pytest.ini", "generate-licenses-for-rpmlint.py"]
 pytest_add_cli_args = ["-n0", "--no-cov", "-p", "no:cacheprovider"]
 pytest_add_cli_args_test_selection = ["-m", "not webtest"]
 
+[tool.mypy]
+strict = true

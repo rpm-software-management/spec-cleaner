@@ -1,6 +1,8 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import re
+from collections.abc import Callable, Iterable
+from typing import TypeAlias, TypeGuard, TypeVar, cast
 
 from .fileutils import open_datafile, open_stringio_spec, stat_datafile
 from .rpmexception import RpmExceptionError
@@ -14,7 +16,10 @@ from .rpmrequirestoken import RpmRequiresToken
 # are stored: a missing file still raises fresh on every call, exactly
 # as before. Callers get a top-level copy, so sharing the cache cannot
 # alias a list or dict one cleaner later rues.
-_read_cache: dict = {}
+_read_cache: dict[tuple[str, tuple[str, int, int]], list[str] | dict[str, str]] = {}
+
+# the value a data-file loader produces: a list of lines or a mapping
+_LoadedData = TypeVar('_LoadedData', list[str], dict[str, str])
 
 
 def clear_read_caches() -> None:
@@ -82,7 +87,7 @@ def strip_lua_bodies(text: str) -> str:
         index = pos + 1
 
 
-def _cached_datafile(name: str, loader):
+def _cached_datafile(name: str, loader: Callable[[], _LoadedData]) -> _LoadedData:
     """
     Run a data-file loader once per file identity, then replay the result.
 
@@ -102,7 +107,8 @@ def _cached_datafile(name: str, loader):
     if key not in _read_cache:
         _read_cache[key] = loader()
     cached = _read_cache[key]
-    return dict(cached) if isinstance(cached, dict) else list(cached)
+    # the cache replays the loader's own type; only the copy is untyped
+    return cast(_LoadedData, dict(cached) if isinstance(cached, dict) else list(cached))
 
 
 def load_keywords_whitelist() -> list[str]:
@@ -116,7 +122,7 @@ def load_keywords_whitelist() -> list[str]:
         A list of such keywords.
     """
 
-    def load():
+    def load() -> list[str]:
         with open_datafile(BRACKETING_EXCLUDES) as f:
             return [line.rstrip('\n') for line in f if line.strip() and not line.startswith('#')]
 
@@ -136,7 +142,7 @@ def load_macro_functions() -> list[str]:
         A list of macro names that take arguments.
     """
 
-    def load():
+    def load() -> list[str]:
         with open_datafile(MACRO_FUNCTIONS) as f:
             return [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
@@ -209,7 +215,7 @@ def find_bracketing_macrofuncs(spec: str) -> list[str]:
     return macrofuncs
 
 
-def read_conversion_changes(conversion_file):
+def read_conversion_changes(conversion_file: str) -> dict[str, str]:
     """
     Read up the conversion file for the replacements.
 
@@ -220,8 +226,8 @@ def read_conversion_changes(conversion_file):
         A dictionary with old -> new values for conversion
     """
 
-    def load():
-        conversions = {}
+    def load() -> dict[str, str]:
+        conversions: dict[str, list[str]] = {}
         with open_datafile(conversion_file) as f:
             # the values are split by  ': '
             for number, line in enumerate(f, 1):
@@ -242,22 +248,22 @@ def read_conversion_changes(conversion_file):
     return _cached_datafile(conversion_file, load)
 
 
-def read_tex_changes():
+def read_tex_changes() -> dict[str, str]:
     """Read up the tex conversion types."""
     return read_conversion_changes(TEX_CONVERSIONS)
 
 
-def read_pkgconfig_changes():
+def read_pkgconfig_changes() -> dict[str, str]:
     """Read up the pkgconfig conversion types."""
     return read_conversion_changes(PKGCONFIG_CONVERSIONS)
 
 
-def read_perl_changes():
+def read_perl_changes() -> dict[str, str]:
     """Read up the perl conversion types."""
     return read_conversion_changes(PERL_CONVERSIONS)
 
 
-def read_cmake_changes():
+def read_cmake_changes() -> dict[str, str]:
     """Read up the cmake conversion types."""
     return read_conversion_changes(CMAKE_CONVERSIONS)
 
@@ -277,7 +283,7 @@ def read_licenses_changes() -> dict[str, str]:
 
     """
 
-    def load():
+    def load() -> dict[str, str]:
         with open_datafile(LICENSES_CHANGES) as f:
             return {
                 old: correct
@@ -289,7 +295,7 @@ def read_licenses_changes() -> dict[str, str]:
     return _cached_datafile(LICENSES_CHANGES, load)
 
 
-def read_group_changes():
+def read_group_changes() -> list[str]:
     """
     Read data for allowed groups.
 
@@ -297,7 +303,7 @@ def read_group_changes():
         A list with allowed groups
     """
 
-    def load():
+    def load() -> list[str]:
         with open_datafile(GROUPS_LIST) as f:
             next(f)  # header starts with link where we find the groups
             return [line.rstrip('\n') for line in f]
@@ -305,7 +311,7 @@ def read_group_changes():
     return _cached_datafile(GROUPS_LIST, load)
 
 
-def fix_license(value, conversions):
+def fix_license(value: str, conversions: dict[str, str]) -> str:
     """
     Fix license string to match up current SPDX format.
 
@@ -355,7 +361,14 @@ def fix_license(value, conversions):
     return s
 
 
-def sort_uniq(seq):
+# a preamble line as the group helpers see it: a plain string (MacroLine
+# included) or a dependency token; a group is a line or a list of groups
+# (a define unit is a list of groups, so the nesting is recursive)
+GroupLine: TypeAlias = str | RpmRequiresToken
+GroupItem: TypeAlias = GroupLine | list['GroupItem']
+
+
+def sort_uniq(seq: list[GroupItem]) -> list[GroupItem]:
     """
     Sort sequence.
 
@@ -366,20 +379,23 @@ def sort_uniq(seq):
         sequence with sorted order and no duplicates
     """
 
-    def _check_list(x):
+    def _check_list(x: GroupItem) -> TypeGuard[list[GroupItem]]:
         if isinstance(x, list):
             return True
         else:
             return False
 
-    seen = {}
-    result = []
+    seen: dict[GroupLine, int] = {}
+    result: list[GroupItem] = []
     for item in seq:
-        marker = item
         # We can have list there with comment
-        # So if list found just grab latest in the sublist
-        if _check_list(marker):
-            marker = marker[-1]
+        # So if list found just grab latest in the sublist; the sorted
+        # categories group comment lines with their value line, so the
+        # last member of a group is the value line itself
+        if isinstance(item, list):
+            marker: GroupLine = cast(GroupLine, item[-1])
+        else:
+            marker = item
         if marker in seen:
             # Not a list, no comment to preserve
             if not _check_list(item):
@@ -410,12 +426,12 @@ def sort_uniq(seq):
     return result
 
 
-def add_group(group):
+def add_group(group: GroupItem) -> list[GroupLine]:
     """Flatten the lines of the group from sublits to one simple list."""
     if isinstance(group, str):
         return [group]
     elif isinstance(group, RpmRequiresToken):
-        items = []
+        items: list[GroupLine] = []
         if group.comments:
             items += group.comments
         items.append(group)
@@ -461,7 +477,7 @@ def open_macro_bodies(line: str, depth: tuple[int, int] = (0, 0)) -> tuple[int, 
     return braces, parens
 
 
-def find_pkgconfig_statement(elements):
+def find_pkgconfig_statement(elements: Iterable[GroupLine]) -> bool:
     """
     Find pkgconfig() statement.
 
@@ -479,7 +495,7 @@ def find_pkgconfig_statement(elements):
     return False
 
 
-def find_pkgconfig_declaration(elements):
+def find_pkgconfig_declaration(elements: Iterable[GroupLine]) -> bool:
     """
     Find if there is direct pkgconfig dependency in the paragraph.
 

@@ -10,3 +10,4 @@ repos:
     rev: 'v2.4.0'
     hooks:
     - id: mypy
+      additional_dependencies: [pytest, python-rpm-spec]

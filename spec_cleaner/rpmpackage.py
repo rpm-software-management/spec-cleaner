@@ -1,5 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+from typing import Any
+
 from .rpmpreamble import RpmPreamble
 from .rpmsection import Section
 
@@ -11,14 +13,14 @@ class RpmPackage(RpmPreamble):
     We handle subpackage case as the normal preamble.
     """
 
-    def __init__(self, options):
+    def __init__(self, options: dict[str, Any]) -> None:
         """Initialize the subpackage preamble."""
         RpmPreamble.__init__(self, options)
         # -lang packages whose supplements key on this subpackage, from its %package -n name
-        self._lang_package = set()
+        self._lang_package: set[str] = set()
         self.paragraph.lang_package = self._lang_package
 
-    def start_subparagraph(self):
+    def start_subparagraph(self) -> None:
         """Start a nested paragraph, pruning only this subpackage's -lang Recommends."""
         RpmPreamble.start_subparagraph(self)
         self.paragraph.lang_package = self._lang_package

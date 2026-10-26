@@ -1,23 +1,44 @@
 #!/usr/bin/env python
 
+from pathlib import Path
+
 import pytest
 
-from spec_cleaner import RpmSpecCleaner
-from spec_cleaner.rpmhelpers import add_group
+from spec_cleaner.rpmcleaner import RpmSpecCleaner
+from spec_cleaner.rpmhelpers import GroupLine, add_group
 from spec_cleaner.rpmpreamble import RpmPreamble
+from spec_cleaner.rpmrequirestoken import RpmRequiresToken
 
 
-def kinds(line):
+def kinds(line: GroupLine) -> str:
     """Spell the tags of the line: g for global, c for condition, e for eager."""
     tags = (('g', 'is_global'), ('c', 'is_cond'), ('e', 'is_eager'))
     return ''.join(tag for tag, attr in tags if getattr(line, attr, False))
+
+
+def token_names(tokens: list[GroupLine]) -> list[str]:
+    """Names of the parsed dependency tokens."""
+    names = []
+    for token in tokens:
+        assert isinstance(token, RpmRequiresToken)
+        names.append(token.name)
+    return names
+
+
+def token_triples(tokens: list[GroupLine]) -> list[tuple[str, str | None, str | None]]:
+    """(name, operator, version) triples of the parsed dependency tokens."""
+    triples = []
+    for token in tokens:
+        assert isinstance(token, RpmRequiresToken)
+        triples.append((token.name, token.operator, token.version))
+    return triples
 
 
 class TestRpmPreamble:
     """We run few tests to ensure the preamble records the define units while parsing."""
 
     @pytest.fixture
-    def preamble(self, tmp_path):
+    def preamble(self, tmp_path: Path) -> RpmPreamble:
         """Create a preamble section with the options of a default run."""
         specfile = tmp_path / 'test.spec'
         specfile.write_text('Name: test\n')
@@ -41,7 +62,7 @@ class TestRpmPreamble:
         return RpmPreamble(RpmSpecCleaner(options).options)
 
     @pytest.fixture
-    def minimal_preamble(self, tmp_path):
+    def minimal_preamble(self, tmp_path: Path) -> RpmPreamble:
         """Create a preamble section with the options of a minimal run."""
         specfile = tmp_path / 'test.spec'
         specfile.write_text('Name: test\n')
@@ -65,7 +86,7 @@ class TestRpmPreamble:
         return RpmPreamble(RpmSpecCleaner(options).options)
 
     @staticmethod
-    def units(preamble, *lines):
+    def units(preamble: RpmPreamble, *lines: str) -> list[list[tuple[str, str]]]:
         """Add the lines and list the define units as (line, tags) pairs."""
         for line in lines:
             preamble.add(line)
@@ -74,14 +95,14 @@ class TestRpmPreamble:
             for unit in preamble.paragraph.items['define']
         ]
 
-    def test_single_lines(self, preamble):
+    def test_single_lines(self, preamble: RpmPreamble) -> None:
         """Test that each define line is a unit and only a %global is expanded when parsed."""
         assert self.units(preamble, '%define a 1', '# b', '%global b 2') == [
             [('%define a 1', '')],
             [('# b', ''), ('%global b 2', 'ge')],
         ]
 
-    def test_multiline_macros(self, preamble):
+    def test_multiline_macros(self, preamble: RpmPreamble) -> None:
         """Test that a multiline macro is one unit tagged as its first line."""
         lines = (
             '%global a \\',
@@ -100,7 +121,7 @@ class TestRpmPreamble:
             [('%global d %{expand:%{x}}', 'ge')],
         ]
 
-    def test_open_macro_bodies(self, preamble):
+    def test_open_macro_bodies(self, preamble: RpmPreamble) -> None:
         """Test that a macro continues while a lua or shell body is open, as rpm joins the lines."""
         lines = ('%define a %{lua:', 'print("{}")', '}', '%global b %(echo 1 |', 'tr 1 2)')
         assert self.units(preamble, *lines, '%define c 1') == [
@@ -109,14 +130,14 @@ class TestRpmPreamble:
             [('%define c 1', '')],
         ]
 
-    def test_oneline_conditions(self, preamble):
+    def test_oneline_conditions(self, preamble: RpmPreamble) -> None:
         """Test that a one-line condition is expanded when parsed, even around %define."""
         assert self.units(preamble, '%{?with_a:%define a 1}', '%{?with_b:%global b 1}') == [
             [('%{?with_a:%define a 1}', 'e')],
             [('%{?with_b:%global b 1}', 'ge')],
         ]
 
-    def test_condition_block(self, preamble):
+    def test_condition_block(self, preamble: RpmPreamble) -> None:
         """Test that a %if block is one unit, continued conditions included."""
         lines = ('%if 0%{?a} || \\', '0%{?b}', '%define x 1', '%elif 0%{?c} || \\', '0%{?d}')
         assert self.units(preamble, *lines, '%define x 2', '%endif') == [
@@ -131,13 +152,13 @@ class TestRpmPreamble:
             ]
         ]
 
-    def test_multiline_condition_block(self, preamble):
+    def test_multiline_condition_block(self, preamble: RpmPreamble) -> None:
         """Test that a %{?cond: block is one unit, split at its closing brace."""
         assert self.units(preamble, '%{?with_a:', '%global b 1}') == [
             [('%{?with_a:', 'ce'), ('%global b 1', 'ge'), ('}', '')]
         ]
 
-    def test_nested_block(self, preamble):
+    def test_nested_block(self, preamble: RpmPreamble) -> None:
         """Test that the lines of a nested block keep their tags in the outer unit."""
         lines = ('%if 0%{?a}', '%if 0%{?b}', '%global c 1', '%endif', '%endif')
         assert self.units(preamble, *lines) == [
@@ -150,7 +171,7 @@ class TestRpmPreamble:
             ]
         ]
 
-    def test_block_lines_outside_define(self, preamble):
+    def test_block_lines_outside_define(self, preamble: RpmPreamble) -> None:
         """Test that block lines placed outside the defines keep their tags."""
         lines = ('%if 0%{?a}', '%define x 1', '%{?with_b:BuildRequires:  b}')
         assert self.units(preamble, *lines, '%global kernel_module_v 1', '%endif') == [
@@ -163,7 +184,7 @@ class TestRpmPreamble:
             ]
         ]
 
-    def test_tail_macro_before_block(self, preamble):
+    def test_tail_macro_before_block(self, preamble: RpmPreamble) -> None:
         """Test that a tail macro kept in a block is a unit apart from the nested block after it."""
         lines = ('%if 0%{?a}', '%python_subpackages', '%if 0%{?b}', '%define x 1', '%endif')
         assert self.units(preamble, *lines) == [
@@ -171,12 +192,12 @@ class TestRpmPreamble:
             [('%if 0%{?b}', 'ce'), ('%define x 1', ''), ('%endif', '')],
         ]
 
-    def test_pruned_block(self, preamble):
+    def test_pruned_block(self, preamble: RpmPreamble) -> None:
         """Test that a block pruned as empty adds no unit."""
         lines = ('%if 0%{?a}', '%if 0%{?b}', '%define x 1', '%endif', '%else', '%if 0%{?c}')
         assert self.units(preamble, *lines, '%endif') == []
 
-    def test_late_global_units(self, preamble):
+    def test_late_global_units(self, preamble: RpmPreamble) -> None:
         """Test the flags of the units reading the tags or the bconds."""
         lines = (
             '%bcond_with foo',
@@ -201,7 +222,7 @@ class TestRpmPreamble:
             (False, True),
         ]
 
-    def test_late_global_units_conditions(self, preamble):
+    def test_late_global_units_conditions(self, preamble: RpmPreamble) -> None:
         """Test that conditions and one-line conditions pass on what they read."""
         lines = (
             '%bcond_with foo',
@@ -220,7 +241,7 @@ class TestRpmPreamble:
             (False, True),
         ]
 
-    def test_late_global_units_tail_macro(self, preamble):
+    def test_late_global_units_tail_macro(self, preamble: RpmPreamble) -> None:
         """Test that a unit invoking a section-generating macro is late."""
         lines = (
             '%if %{with python}',
@@ -237,7 +258,7 @@ class TestRpmPreamble:
             (False, False),
         ]
 
-    def test_dep_pragma_entries(self, preamble):
+    def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries
         assert split('foo bar >= 1.0') == [('foo', False), ('bar >= 1.0', False)]
@@ -253,7 +274,7 @@ class TestRpmPreamble:
         assert split('foo\rbar') is None
         assert split('foo\r') is None
 
-    def test_dep_pragma_normalization(self, preamble):
+    def test_dep_pragma_normalization(self, preamble: RpmPreamble) -> None:
         """Test that dep pragmas convert to the plain tags and qualified entries stay pragmas."""
         preamble.add('#!BuildRequires: foo [x86_64] bar >= 1.0')
         preamble.add('#!BuildConflicts: oldthing')
@@ -269,7 +290,7 @@ class TestRpmPreamble:
         assert [str(item) for item in items['buildconflicts']] == ['BuildConflicts: oldthing']
         assert items['buildconflicts_pragma'] == []
 
-    def test_dep_pragma_conditional_entries(self, preamble):
+    def test_dep_pragma_conditional_entries(self, preamble: RpmPreamble) -> None:
         """Test that entries with conditional macros stay pragmas while plain entries convert."""
         preamble.add('#!BuildRequires: %{?with_x:condpkg}')
         preamble.add('#!BuildRequires: %{!?with_x:condpkg}')
@@ -287,7 +308,7 @@ class TestRpmPreamble:
             '#!BuildConflicts: %{?with_x:oldpkg}'
         ]
 
-    def test_dep_pragma_unbraced_conditional_entries(self, preamble):
+    def test_dep_pragma_unbraced_conditional_entries(self, preamble: RpmPreamble) -> None:
         """Test that entries with unbraced conditional macros stay pragmas."""
         preamble.add('#!BuildRequires: %?foo')
         preamble.add('#!BuildRequires: %!?foo')
@@ -305,7 +326,7 @@ class TestRpmPreamble:
             '#!BuildConflicts: %?oldpkg'
         ]
 
-    def test_dep_pragma_comment_on_both_split_lines(self, preamble):
+    def test_dep_pragma_comment_on_both_split_lines(self, preamble: RpmPreamble) -> None:
         """Test that a trailing comment is kept on both lines of a plain+qualified split."""
         preamble.add('#!BuildConflicts: mixold mixq [i586] # legacy combo')
         preamble.add('#!BuildRequires: plainpkg %?bar # needed sometimes')
@@ -323,7 +344,7 @@ class TestRpmPreamble:
             '#!BuildRequires: %?bar # needed sometimes'
         ]
 
-    def test_dep_pragma_malformed_entries(self, preamble):
+    def test_dep_pragma_malformed_entries(self, preamble: RpmPreamble) -> None:
         """Test that malformed dep pragma values do not split into tags rpm rejects."""
         split = preamble._split_dep_pragma_entries
         # a version relation after a qualifier is not an entry of its own:
@@ -340,7 +361,9 @@ class TestRpmPreamble:
             '#!BuildRequires: nospace[x86_64]',
         ]
 
-    def test_pragma_values_kept_whole_in_minimal_mode(self, preamble, minimal_preamble):
+    def test_pragma_values_kept_whole_in_minimal_mode(
+        self, preamble: RpmPreamble, minimal_preamble: RpmPreamble
+    ) -> None:
         """Test that a minimal run keeps pragma values whole while a full run splits them."""
         fix = minimal_preamble._fix_list_of_packages
         assert fix('foo >= 1.0 bar', 'buildrequires_pragma') == ['foo >= 1.0 bar']
@@ -353,14 +376,14 @@ class TestRpmPreamble:
         full = preamble._fix_list_of_packages
         assert full('qualified [i586] other', 'buildrequires_pragma') == ['qualified [i586] other']
         tokens = full('foo >= 1.0 bar', 'buildrequires_pragma')
-        assert [(token.name, token.operator, token.version) for token in tokens] == [
+        assert token_triples(tokens) == [
             ('foo', '>=', '1.0'),
             ('bar', None, None),
         ]
         tokens = full('zeta alpha beta gamma', 'buildignores')
-        assert [token.name for token in tokens] == ['zeta', 'alpha', 'beta', 'gamma']
+        assert token_names(tokens) == ['zeta', 'alpha', 'beta', 'gamma']
 
-    def test_empty_macros_with_arg(self, preamble):
+    def test_empty_macros_with_arg(self, preamble: RpmPreamble) -> None:
         """Test that an empty macro set parses an invocation as separate dependencies."""
         options = dict(preamble.options)
         options['macros_with_arg'] = []
@@ -368,52 +391,52 @@ class TestRpmPreamble:
         # without a known macro the parser cannot tell the braced form is
         # an invocation, so it and its argument stay separate dependencies
         tokens = empty._fix_list_of_packages('%{python_module} devel', 'buildrequires')
-        assert [token.name for token in tokens] == ['%{python_module}', 'devel']
+        assert token_names(tokens) == ['%{python_module}', 'devel']
         # with the macro known the parser recognises the invocation in
         # the braced spelling as written, no unbracing needed
         tokens = preamble._fix_list_of_packages('%{python_module} devel', 'buildrequires')
-        assert [token.name for token in tokens] == ['%{python_module} devel']
+        assert token_names(tokens) == ['%{python_module} devel']
         # a version relation after a braced use is a relation, not an
         # argument of the macro (gh#500)
         tokens = preamble._fix_list_of_packages('%{typelib} = %{version}', 'requires')
-        assert [(token.name, token.operator, token.version) for token in tokens] == [
+        assert token_triples(tokens) == [
             ('%{typelib}', '=', '%{version}'),
         ]
         # a braced use that closes the value captures nothing and
         # unbraces like any other macro name
         tokens = preamble._fix_list_of_packages('foo >= %{pkg_version}', 'requires')
-        assert [(token.name, token.operator, token.version) for token in tokens] == [
+        assert token_triples(tokens) == [
             ('foo', '>=', '%pkg_version'),
         ]
         # plain values parse the same with and without the macro set
         for section in (preamble, empty):
             tokens = section._fix_list_of_packages('foo >= 1.0 bar', 'buildrequires')
-            assert [(token.name, token.operator, token.version) for token in tokens] == [
+            assert token_triples(tokens) == [
                 ('foo', '>=', '1.0'),
                 ('bar', None, None),
             ]
 
-    def test_glued_macro_with_arg(self, preamble):
+    def test_glued_macro_with_arg(self, preamble: RpmPreamble) -> None:
         """Test that a use glued to a word character keeps its braces."""
         # unbraced, the suffix would merge into the macro name and rpm
         # would read a different macro, so the braced form stays
         for line in ('%{pkg_version}foo', '%{typelib}foo'):
             tokens = preamble._fix_list_of_packages(line, 'requires')
-            assert [(token.name, token.operator, token.version) for token in tokens] == [
+            assert token_triples(tokens) == [
                 (line, None, None),
             ]
         # a relation behind a glued use is still the dependency's own
         tokens = preamble._fix_list_of_packages('%{typelib}foo >= 1.0', 'requires')
-        assert [(token.name, token.operator, token.version) for token in tokens] == [
+        assert token_triples(tokens) == [
             ('%{typelib}foo', '>=', '1.0'),
         ]
         tokens = preamble._fix_list_of_packages('foo >= %{pkg_version}foo', 'requires')
-        assert [(token.name, token.operator, token.version) for token in tokens] == [
+        assert token_triples(tokens) == [
             ('foo', '>=', '%{pkg_version}foo'),
         ]
         # each glued use in a list keeps its braces
         tokens = preamble._fix_list_of_packages('%{typelib}foo, bar', 'requires')
-        assert [(token.name, token.operator, token.version) for token in tokens] == [
+        assert token_triples(tokens) == [
             ('%{typelib}foo', None, None),
             ('bar', None, None),
         ]
@@ -426,11 +449,11 @@ class TestRpmPreamble:
             ('%{pkg_version}', '%pkg_version'),
         ):
             tokens = preamble._fix_list_of_packages(line, 'requires')
-            assert [(token.name, token.operator, token.version) for token in tokens] == [
+            assert token_triples(tokens) == [
                 (name, None, None),
             ]
         tokens = preamble._fix_list_of_packages('%{pkg_version}, foo', 'requires')
-        assert [(token.name, token.operator, token.version) for token in tokens] == [
+        assert token_triples(tokens) == [
             ('%pkg_version', None, None),
             ('foo', None, None),
         ]
@@ -440,7 +463,7 @@ class TestRpmPreambleOrder:
     """We run few tests to ensure minimal mode keeps the preamble order."""
 
     @pytest.fixture(params=[False, True], ids=['full', 'minimal'])
-    def preamble_mode(self, tmp_path, request):
+    def preamble_mode(self, tmp_path: Path, request: pytest.FixtureRequest) -> RpmPreamble:
         """Create a preamble section, in a full and in a minimal run."""
         specfile = tmp_path / 'test.spec'
         specfile.write_text('Name: test\n')
@@ -463,7 +486,7 @@ class TestRpmPreambleOrder:
         }
         return RpmPreamble(RpmSpecCleaner(options).options)
 
-    SCRAMBLED = [
+    SCRAMBLED: list[str] = [
         'Requires:       zzz-package',
         '%define mydef 1',
         'Name:           scramble',
@@ -480,18 +503,18 @@ class TestRpmPreambleOrder:
     ]
 
     @staticmethod
-    def _flatten(preamble, lines):
+    def _flatten(preamble: RpmPreamble, lines: list[str]) -> list[str]:
         for line in lines:
             preamble.add(line)
         return preamble.paragraph.flatten_output()
 
-    def test_preserves_source_order(self, preamble_mode):
+    def test_preserves_source_order(self, preamble_mode: RpmPreamble) -> None:
         """Test that minimal mode emits the preamble in source order."""
         if not preamble_mode.minimal:
             pytest.skip('source order is a minimal mode property')
         assert self._flatten(preamble_mode, self.SCRAMBLED) == self.SCRAMBLED
 
-    def test_full_mode_reorders(self, preamble_mode):
+    def test_full_mode_reorders(self, preamble_mode: RpmPreamble) -> None:
         """Test that a full run still emits the canonical category order."""
         if preamble_mode.minimal:
             pytest.skip('canonical order is a full run property')
@@ -511,7 +534,7 @@ class TestRpmPreambleOrder:
             'Requires:       zzz-package',
         ]
 
-    def test_minimal_block_below_name_stays(self, preamble_mode):
+    def test_minimal_block_below_name_stays(self, preamble_mode: RpmPreamble) -> None:
         """Test that a block defining subpackages stays below the Name tag."""
         if not preamble_mode.minimal:
             pytest.skip('source order is a minimal mode property')

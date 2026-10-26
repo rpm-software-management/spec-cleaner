@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import os
-from typing import IO
+from typing import IO, Any
 
 from .rpmsection import Section
 
@@ -15,14 +15,14 @@ class RpmCopyright(Section):
     that are still relevant. Everything else is ignored.
     """
 
-    def __init__(self, options):
+    def __init__(self, options: dict[str, Any]) -> None:
         """Initialize default variables."""
         Section.__init__(self, options)
         self.suse_copyright = options['suse_copyright']
         self.year = options['copyright_year']
-        self.copyrights = []
-        self.buildrules = []
-        self.directives = []
+        self.copyrights: list[str] = []
+        self.buildrules: list[str] = []
+        self.directives: list[str] = []
         self.distro_copyright = f'# Copyright (c) {self.year} SUSE LLC and contributors'
         self.vimmodeline = ''
         self.header_seen = False
@@ -30,7 +30,7 @@ class RpmCopyright(Section):
         # recognize year-led continuation lines (boo#1194504).
         self._prev_was_copyright = False
 
-    def _add_pkg_header(self):
+    def _add_pkg_header(self) -> None:
         """Add specfile name to the Copyright section."""
         specname = os.path.splitext(os.path.basename(self.spec))[0]
         self.lines.append(
@@ -39,14 +39,14 @@ class RpmCopyright(Section):
 #"""
         )
 
-    def _add_copyright(self):
+    def _add_copyright(self) -> None:
         """Add SUSE copyright information to the Copyright section."""
         self.lines.append(self.distro_copyright)
 
         for i in self.copyrights:
             self.lines.append(i)
 
-    def _add_default_license(self):
+    def _add_default_license(self) -> None:
         """Add default license text to the Copyright section."""
         self.lines.append(
             """#
@@ -138,7 +138,7 @@ class RpmCopyright(Section):
             # anything not in our rules gets tossed out
             return
 
-    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = ''):
+    def output(self, fout: IO[str], newline: bool = True, new_class_name: str = '') -> None:
         """Manage printing of the Copyright section."""
         if self.suse_copyright:
             self._add_modelines()

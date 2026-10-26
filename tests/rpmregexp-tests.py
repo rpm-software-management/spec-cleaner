@@ -8,7 +8,7 @@ from spec_cleaner.rpmregexp import Regexp
 class TestRegexp:
     """We run few tests to ensure the regular expressions stay fast."""
 
-    def test_long_rm_line(self):
+    def test_long_rm_line(self) -> None:
         """Test that a long rm line without buildroot does not backtrack exponentially."""
         line = 'rm -rf ' + ' '.join(f'dir{i}' for i in range(20))
         start = time.perf_counter()
@@ -16,7 +16,7 @@ class TestRegexp:
         assert not Regexp.re_rm.search(line)
         assert time.perf_counter() - start < 1
 
-    def test_unbrace_keywords_case(self):
+    def test_unbrace_keywords_case(self) -> None:
         """Test that section names unbrace in any case but other keywords only exactly."""
         reg = Regexp(['description', 'docdir', 'patch[0-9]*'])
         line = '%{Description} %{patch1} %{PATCH1} %{docdir} %{DOCDIR}'
@@ -24,7 +24,7 @@ class TestRegexp:
             '%Description %patch1 %{PATCH1} %docdir %{DOCDIR}'
         )
 
-    def test_unbrace_keywords_glued(self):
+    def test_unbrace_keywords_glued(self) -> None:
         """Test that a use glued to a word character keeps its braces."""
         reg = Regexp(['description', 'docdir', 'patch[0-9]*'])
         unbrace = reg.re_unbrace_keywords.sub
@@ -38,9 +38,10 @@ class TestRegexp:
         assert unbrace(r'%\1', '%{patch0}-p1') == '%patch0-p1'
         assert unbrace(r'%\1', '%{docdir}') == '%docdir'
 
-    def test_braced_argument_macro_contexts(self):
+    def test_braced_argument_macro_contexts(self) -> None:
         """Test that only value-position uses of an argument-taking macro match."""
         reg = Regexp(['typelib'], ['typelib'])
+        assert reg.re_braced_argument_macro is not None
         shielded = reg.re_braced_argument_macro.search
         # the following tokens belong to the surrounding grammar
         assert shielded('Requires: %{typelib} = %{version}')

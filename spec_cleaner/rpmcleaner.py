@@ -452,9 +452,7 @@ class RpmSpecCleaner:
 
     def _is_multiline_active(self) -> bool:
         """Check if the current section has an active multiline value. Return True if so."""
-        # mypy: we need to ignore type check here because mypy cannot detect that we are checking the existence of
-        # the 'multiline' attribute before accessing it
-        return hasattr(self.current_section, 'multiline') and self.current_section.multiline  # type: ignore
+        return hasattr(self.current_section, 'multiline') and self.current_section.multiline
 
     def _is_clean_codeblock_end(self, line: str) -> bool:
         """Check if the line ends a codeblock in the dropped %clean body. Return True if so."""
@@ -525,7 +523,7 @@ class RpmSpecCleaner:
                         # existence of the 'end_subparagraph' attribute before accessing it
                         # close every open nested level, not just the innermost one
                         while self.current_section._oldstore:  # type: ignore
-                            self.current_section.end_subparagraph(unclosed=True)  # type: ignore
+                            self.current_section.end_subparagraph(unclosed=True)
                 return newclass
         return None
 
