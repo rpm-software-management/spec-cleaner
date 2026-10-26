@@ -9,7 +9,7 @@ from urllib import parse
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-import pyrpm.spec  # type: ignore[import-untyped]
+import pyrpm.spec  # type: ignore[import-untyped, unused-ignore]
 
 from .dependency_parser import DependencyParser, DepParserError
 from .rpmexception import NoMatchExceptionError
