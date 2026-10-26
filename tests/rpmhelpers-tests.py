@@ -208,7 +208,7 @@ class TestRpmhelpers:
             rpmhelpers,
             'open_datafile',
             lambda name: StringIO(
-                '# SPDX license list 3.29.0, fetched 2026-09-28\n0BSD\t0BSD\nMIT\tMIT\n'
+                '# SPDX license list 3.29.0\n0BSD\t0BSD\nMIT\tMIT\n'
             ),
         )
         assert rpmhelpers.read_licenses_changes() == {'0BSD': '0BSD', 'MIT': 'MIT'}
