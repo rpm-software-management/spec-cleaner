@@ -256,9 +256,6 @@ EMBRACE_VALUE_POSITIONS = [
     ('%package -n %{typelib}', '%package -n %typelib'),
     # an invocation in the space form keeps its form
     ('%python_module devel', '%python_module devel'),
-    # in command position the tokens behind a braced use are its own
-    # arguments, so the use unbraces and the arguments bind to it
-    ('%{ldconfig_scriptlets} -n foo', '%ldconfig_scriptlets -n foo'),
 ]
 
 
@@ -267,6 +264,29 @@ def test_embrace_value_positions(
     default_options: Callable[..., dict[str, Any]], line: str, expected: str
 ) -> None:
     """Braced uses in value positions keep their braces, the rest of the unbracing stays."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
+EMBRACE_COMMAND_POSITIONS = [
+    # rpm passes no arguments to a braced use in command position
+    # either: the tokens behind it stay on the command line the macro
+    # expands to, while unbraced they would go to the macro's option
+    # parser ('Unknown option - in cargo_build()')
+    ('%{cargo_build} --locked -p foo', '%{cargo_build} --locked -p foo'),
+    ('%{cargo_test} -p foo', '%{cargo_test} -p foo'),
+    ('%{ldconfig_scriptlets} -n foo', '%{ldconfig_scriptlets} -n foo'),
+    # the same holds in the body of a conditional macro
+    ('%{?with_check:%{cargo_test} -p foo}', '%{?with_check:%{cargo_test} -p foo}'),
+    # closing the line the use takes no arguments and still unbraces
+    ('%{cargo_build}', '%cargo_build'),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_COMMAND_POSITIONS)
+def test_embrace_command_positions(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
+    """Braced uses in command position keep their braces when tokens follow them."""
     assert _cleaned_line(default_options, False, line) == expected
 
 
