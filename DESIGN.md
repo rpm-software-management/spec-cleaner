@@ -90,15 +90,13 @@ debugging "works on my machine" differences:
   it would break the build. A name the snapshot does not carry yet can
   be added to `excludes-bracketing.txt` to keep it braceless until the
   snapshot picks it up.
-  A braced use of a parametric name keeps its braces where the tokens
-  behind it belong to the surrounding grammar — a dependency's version
-  relation, a `%files` option, plain prose — because the unbraced form
-  hands those tokens to the macro as its arguments. A use of any
+  A braced use of a parametric name keeps its braces where tokens
+  follow it — a dependency's version relation, a `%files` option, plain
+  prose, options for the command the macro runs as in
+  `%{cargo_build} --locked` — because the unbraced form hands those
+  tokens to the macro as its arguments. A use of any
   listed name glued to a word character keeps its braces, as the
-  unbraced form would merge the suffix into the macro name. A use in command
-  position or opening the body of a conditional macro is an invocation
-  whose arguments follow it, and it unbraces as the rest of the list
-  does.
+  unbraced form would merge the suffix into the macro name.
 - **`RpmPreamble` is the complex core.** It handles multi-line
   `%define`/`%global` bodies and continued `%if` lines, conditional
   blocks, and dependency tokenization via `DependencyParser`; subpackage

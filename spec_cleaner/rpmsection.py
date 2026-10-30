@@ -92,10 +92,6 @@ _RE_LUA_OPENER = re.compile(r'(?<!%)%\{lua\s*:|(?<!%)%lua(?=\s)')
 # Section.embrace_macros; the index refers to that call's shield list
 _RE_SHIELDED = re.compile(r'\x00(\d+)\x00')
 
-# a conditional macro opener at the very end of a line prefix: a braced
-# use right behind it opens the conditional's body
-_RE_CONDITIONAL_BODY = re.compile(r'%\{!?\?[^}:]*:\Z')
-
 
 def _lua_body_prefix(text: str, depth: int) -> tuple[str, str, int]:
     """
@@ -404,26 +400,19 @@ class Section:
         # rest of the line as the invocation's argument string, so the
         # braces are what keeps the tokens in the surrounding grammar
         # (a dependency's version relation, a %files option, plain
-        # prose). The shielded uses are swapped for placeholders before
-        # the substitutions below and restored afterwards; uses that
-        # were unbraced in the input are not shielded, so the space
-        # form of an invocation keeps its form.
+        # prose, options for the command the macro runs as in
+        # '%{cargo_build} --locked'). The shielded uses are swapped for
+        # placeholders before the substitutions below and restored
+        # afterwards; uses that were unbraced in the input are not
+        # shielded, so the space form of an invocation keeps its form.
         shielded: list[str] = []
-        text = sp[0]
 
         def shield(match: re.Match[str]) -> str:
-            # a use in command position (first on the line) or opening
-            # the body of a conditional macro is an invocation whose
-            # arguments are the tokens that follow it, so it is not
-            # shielded and the unbracing proceeds for it
-            prefix = text[: match.start()]
-            if not prefix.strip() or _RE_CONDITIONAL_BODY.search(prefix):
-                return match.group(0)
             shielded.append(match.group(0))
             return f'\x00{len(shielded) - 1}\x00'
 
-        if self.reg.re_braced_argument_macro is not None and '%{' in text:
-            sp[0] = self.reg.re_braced_argument_macro.sub(shield, text)
+        if self.reg.re_braced_argument_macro is not None and '%{' in sp[0]:
+            sp[0] = self.reg.re_braced_argument_macro.sub(shield, sp[0])
 
         # so, for now, put braces around everything, what looks like macro,
         previous = sp[0]
