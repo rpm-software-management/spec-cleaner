@@ -96,7 +96,10 @@ debugging "works on my machine" differences:
   `%{cargo_build} --locked` — because the unbraced form hands those
   tokens to the macro as its arguments. A use of any
   listed name glued to a word character keeps its braces, as the
-  unbraced form would merge the suffix into the macro name.
+  unbraced form would merge the suffix into the macro name, and so
+  does a use followed by the closing quote of the value it sits in.
+  A use glued to a delimiter or closing a line takes no arguments in
+  either spelling and does not keep its braces.
 - **`RpmPreamble` is the complex core.** It handles multi-line
   `%define`/`%global` bodies and continued `%if` lines, conditional
   blocks, and dependency tokenization via `DependencyParser`; subpackage
