@@ -373,7 +373,12 @@ class RpmSpecCleaner:
         """
         # This is seriously ugly but can't think of cleaner way FIXME
         if not isinstance(self.current_section, (RpmPreamble, RpmPackage)):
-            if any(re.match(line) for re in [self.reg.re_bcond_with, self.reg.re_debugpkg]):
+            # %bcond_with/%bcond_without/%debug_package are legal anywhere
+            # before use, so inside a body section they stay in that section;
+            # only a preamble-position occurrence starts a preamble chunk
+            if not isinstance(
+                self.current_section, (*BODY_SECTIONS, RpmClean, RpmChangelog)
+            ) and any(re.match(line) for re in [self.reg.re_bcond_with, self.reg.re_debugpkg]):
                 return True
 
             # We can have locally defined variables in phases
