@@ -564,6 +564,62 @@ class TestRpmPreambleOrder:
             'Requires:       zzz-package',
         ]
 
+    def test_onelinecond_dep_without_closing_brace(self, preamble_mode: RpmPreamble) -> None:
+        """Test that a conditional dep opener without } keeps the following lines inside the block."""
+        lines = ['%{?with_foo: BuildRequires: bar', 'Requires: baz', '}']
+        assert self._flatten(preamble_mode, lines) == [
+            '%{?with_foo: BuildRequires: bar',
+            'Requires:       baz',
+            '}',
+        ]
+
+    def test_onelinecond_dep_commented_opener(self, preamble_mode: RpmPreamble) -> None:
+        """Test that an opener with only a trailing comment opens the block as well."""
+        lines = ['%{?with_foo: # comment', 'BuildRequires: bar', '}']
+        assert self._flatten(preamble_mode, lines) == [
+            '%{?with_foo: # comment',
+            'BuildRequires:  bar',
+            '}',
+        ]
+
+    def test_onelinecond_dep_comment_open_brace(self, preamble_mode: RpmPreamble) -> None:
+        """Test that a `{` in a trailing comment does not turn a closed one-liner into a block."""
+        lines = ['%{?with_foo: BuildRequires: bar} # {', 'Requires: baz']
+        if preamble_mode.minimal:
+            assert self._flatten(preamble_mode, lines) == [
+                '%{?with_foo: BuildRequires: bar} # {',
+                'Requires:       baz',
+            ]
+        else:
+            assert self._flatten(preamble_mode, lines) == [
+                'Requires:       baz',
+                '%{?with_foo: BuildRequires: bar} # {',
+            ]
+        assert not preamble_mode.condition
+
+    def test_onelinecond_dep_comment_close_brace(self, preamble_mode: RpmPreamble) -> None:
+        """Test that a `}` in a trailing comment does not close an opener without a brace."""
+        lines = ['%{?with_foo: BuildRequires: bar # }', 'Requires: baz', '}']
+        assert self._flatten(preamble_mode, lines) == [
+            '%{?with_foo: BuildRequires: bar # }',
+            'Requires:       baz',
+            '}',
+        ]
+        assert not preamble_mode.condition
+
+    def test_onelinecond_dep_inner_macro_brace_closed(self, preamble_mode: RpmPreamble) -> None:
+        """Test that a brace closing only an inner macro still leaves a closed one-liner."""
+        assert self._flatten(
+            preamble_mode, ['%{?with_foo: BuildRequires: %{bar}}']
+        ) == ['%{?with_foo: BuildRequires: %{bar}}']
+        assert not preamble_mode.condition
+
+    def test_onelinecond_dep_inner_macro_brace_open(self, preamble_mode: RpmPreamble) -> None:
+        """Test that a brace closing only an inner macro does not close the conditional."""
+        assert self._flatten(
+            preamble_mode, ['%{?with_foo: BuildRequires: %{bar}', '}']
+        ) == ['%{?with_foo: BuildRequires: %{bar}', '}']
+
     def test_minimal_block_below_name_stays(self, preamble_mode: RpmPreamble) -> None:
         """Test that a block defining subpackages stays below the Name tag."""
         if not preamble_mode.minimal:
