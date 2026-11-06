@@ -8,6 +8,7 @@ import pytest
 from spec_cleaner.rpmcleaner import RpmSpecCleaner
 from spec_cleaner.rpmhelpers import GroupItem
 from spec_cleaner.rpmpreambleelements import RpmPreambleElements
+from spec_cleaner.rpmrequirestoken import RpmRequiresToken
 
 
 @pytest.fixture
@@ -27,6 +28,54 @@ class TestRpmPreambleElements:
         assert elements._sort_helper_key('Source1: b.tar.gz') == 1
         assert elements._sort_helper_key('Source2: b.tar.gz') == 2
 
+    def test_sort_helper_key_ignores_trailing_comment(self, elements: RpmPreambleElements) -> None:
+        """A trailing comment mentioning perl()/pattern() must not change the sort class."""
+        plain = RpmRequiresToken('foo', None, None, 'Requires: ')
+        plain.trailing_comment = '# uses perl(Bar)'
+        assert elements._sort_helper_key(plain) == '1Requires: foo # uses perl(Bar)'
+        patterned = RpmRequiresToken('zzz', None, None, 'Requires: ')
+        patterned.trailing_comment = '# see pattern() docs'
+        assert elements._sort_helper_key(patterned) == '1Requires: zzz # see pattern() docs'
+        brackety = RpmRequiresToken('perl(Bar)', None, None, 'Requires: ')
+        assert elements._sort_helper_key(brackety) == '2Requires: perl(Bar)'
+
+    def test_sort_helper_key_ignores_trailing_comment_on_strings(
+        self, elements: RpmPreambleElements
+    ) -> None:
+        """A trailing comment must not change the sort class of a string-kept line either."""
+        rpm_call = "Requires: zzz %(rpm -q --queryformat '%{VERSION}' glibc) # uses perl(Bar)"
+        assert elements._sort_helper_key(rpm_call) == '1' + rpm_call
+        plain = 'Requires: zzz # uses perl(Bar)'
+        assert elements._sort_helper_key(plain) == '1Requires: zzz # uses perl(Bar)'
+        patterned = 'Requires: zzz # see pattern() docs'
+        assert elements._sort_helper_key(patterned) == '1Requires: zzz # see pattern() docs'
+        grouped: GroupItem = ['# c', 'Requires: zzz # uses perl(Bar)']
+        assert elements._sort_helper_key(grouped) == '1Requires: zzz # uses perl(Bar)'
+        rpm_call_dnl = (
+            "Requires: zzz %(rpm -q --queryformat '%{VERSION}' glibc) %dnl uses perl(Bar)"
+        )
+        assert elements._sort_helper_key(rpm_call_dnl) == '1' + rpm_call_dnl
+        plain_dnl = 'Requires: zzz %dnl uses perl(Bar)'
+        assert elements._sort_helper_key(plain_dnl) == '1Requires: zzz %dnl uses perl(Bar)'
+
+    def test_strip_trailing_comment(self) -> None:
+        """The trailing-comment strip handles %dnl, # and plain values."""
+        strip = RpmPreambleElements._strip_trailing_comment
+        assert strip('Requires: zzz %dnl uses perl(Bar)') == 'Requires: zzz'
+        assert strip('Requires: zzz # uses perl(Bar)') == 'Requires: zzz'
+        assert strip('# full-line comment') == ''
+        assert strip('Requires: zzz') == 'Requires: zzz'
+
+    def test_sort_helper_key_group_ending_in_token(self, elements: RpmPreambleElements) -> None:
+        """A group ending in a token sorts by the token, ignoring its trailing comment."""
+        plain = RpmRequiresToken('zzz', None, None, 'Requires: ')
+        plain.trailing_comment = '# uses perl(Bar)'
+        grouped: GroupItem = ['# pinned, see perl(Bar) docs', plain]
+        assert elements._sort_helper_key(grouped) == '1Requires: zzz # uses perl(Bar)'
+        brackety = RpmRequiresToken('perl(Bar)', None, None, 'Requires: ')
+        grouped_brackety: GroupItem = ['# c', brackety]
+        assert elements._sort_helper_key(grouped_brackety) == '2Requires: perl(Bar)'
+
     def test_is_own_lang_package(self, elements: RpmPreambleElements) -> None:
         """Test that only the -lang subpackage of the main package is recognized."""
         elements.lang_package = {'%{name}-lang'}
@@ -34,6 +83,22 @@ class TestRpmPreambleElements:
         assert elements._is_own_lang_package('%name-lang', None) is True
         assert elements._is_own_lang_package('other-lang', 'foo') is False
         assert elements._is_own_lang_package('foo', 'foo') is False
+
+    def test_prune_lang_recommends_string_multi_dep(self, elements: RpmPreambleElements) -> None:
+        """A string-kept Recommends is dropped only when it is a single dep."""
+        elements.lang_package = {'%{name}-lang'}
+        elements.items['name'] = ['Name: foo']
+        elements.items['recommends'] = [
+            'Recommends: %{name}-lang',
+            "Recommends: %{name}-lang %(rpm -q --queryformat '%{VERSION}' glibc)",
+            'Recommends: %{name}-lang >= 1.0',
+            'Recommends: %{name}-lang other',
+        ]
+        elements._prune_lang_recommends()
+        assert elements.items['recommends'] == [
+            "Recommends: %{name}-lang %(rpm -q --queryformat '%{VERSION}' glibc)",
+            'Recommends: %{name}-lang other',
+        ]
 
     def test_remove_duplicates_plain_lines(self, elements: RpmPreambleElements) -> None:
         """Test that identical plain lines deduplicate and merge comments."""

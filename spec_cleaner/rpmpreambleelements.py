@@ -333,6 +333,22 @@ class RpmPreambleElements:
         ]
         return min(known) if known else None
 
+    @staticmethod
+    def _strip_trailing_comment(value: str) -> str:
+        """
+        Return the value without a trailing %dnl or # comment.
+
+        Mirrors RpmPreamble._split_trailing_comment (kept separate: that
+        class imports this module, so reusing it here would be circular).
+        """
+        dnl_idx = value.find('%dnl')
+        if dnl_idx >= 0:
+            return value[:dnl_idx].strip()
+        for i, ch in enumerate(value):
+            if ch == '#' and (i == 0 or value[i - 1] in ' \t'):
+                return value[:i].strip()
+        return value
+
     def _sort_helper_key(self, a: GroupItem) -> int | str:
         key: int | str
         if isinstance(a, str) or isinstance(a, RpmRequiresToken):
@@ -343,18 +359,37 @@ class RpmPreambleElements:
         else:
             raise RpmExceptionError(f'Unknown type during sort: {a}')
 
+        # A trailing comment is not part of the dependency, so the
+        # brackety/pattern checks below must not see it: a comment
+        # mentioning perl(...) would otherwise sort a plain dep last,
+        # and one mentioning pattern() would sort it first. The returned
+        # key keeps the full line; only the classification is comment-free.
+        check_key = key
+        token = a if isinstance(a, RpmRequiresToken) else None
+        if token is None and isinstance(a, list) and isinstance(a[-1], RpmRequiresToken):
+            token = a[-1]
+        if token is not None and token.trailing_comment:
+            # str(token) ends in ' ' + trailing_comment
+            check_key = str(check_key)[: -len(token.trailing_comment)].rstrip()
+        elif token is None:
+            # A plain-string item (or a group ending in one) carries its
+            # trailing comment inline on the line, so strip it with the
+            # same rule RpmPreamble._split_trailing_comment uses (reusing
+            # that helper directly would be a circular import).
+            check_key = self._strip_trailing_comment(str(check_key))
+
         # Special case is the category grouping where we have to get the number in
         # after the value
-        match = self.reg.re_source.match(key)
+        match = self.reg.re_source.match(check_key)
         if match:
             value = match.group(1)
             if not value:
                 value = '1'
             key = int(value)
         # Put brackety ()-style deps at the end of the list, after all other
-        elif self.reg.re_brackety_requires.search(key):
+        elif self.reg.re_brackety_requires.search(check_key):
             key = '2' + key
-        elif self.reg.re_patternmacro.search(key):
+        elif self.reg.re_patternmacro.search(check_key):
             key = '0' + key
         else:
             key = '1' + key
@@ -530,7 +565,13 @@ class RpmPreambleElements:
                         match = True
                         break
                     # new one specifies version
-                    if not item.version and element.version:
+                    # (not for Provides/Obsoletes/Conflicts, where unversioned means every version)
+                    if (
+                        not item.version
+                        and element.version
+                        # tokens in a paragraph always carry their category prefix
+                        and not item.prefix.startswith(('Provides', 'Obsoletes', 'Conflicts'))  # type: ignore[union-attr]
+                    ):
                         if item.comments:
                             if element.comments:
                                 element.comments += item.comments
@@ -541,12 +582,12 @@ class RpmPreambleElements:
                         break
                     # existing one specifies version, the new one is subsumed
                     # by it no matter in which order they were written
-                    # (not for Provides/Obsoletes, where unversioned means every version)
+                    # (not for Provides/Obsoletes/Conflicts, where unversioned means every version)
                     if (
                         item.version
                         and not element.version
                         # tokens in a paragraph always carry their category prefix
-                        and not item.prefix.startswith(('Provides', 'Obsoletes'))  # type: ignore[union-attr]
+                        and not item.prefix.startswith(('Provides', 'Obsoletes', 'Conflicts'))  # type: ignore[union-attr]
                     ):
                         if element.comments:
                             item.comments = (item.comments or []) + element.comments
@@ -644,8 +685,18 @@ class RpmPreambleElements:
                     dep_name = item.name
                 elif isinstance(item, str) and not item.startswith('#'):
                     match = self.reg.re_recommends.match(item)
-                    if match and match.group(1).split():
-                        dep_name = match.group(1).split()[0]
+                    if match:
+                        # a line kept whole as one string (an rpm call, or
+                        # a value the parser rejected) may hold several
+                        # deps, so drop it only when it is a single one
+                        # (a name, or a name with operator and version);
+                        # otherwise the other deps on the line would go
+                        # with it
+                        words = match.group(1).split()
+                        if len(words) == 1 or (
+                            len(words) == 3 and words[1] in ('<', '<=', '=', '==', '>=', '>')
+                        ):
+                            dep_name = words[0]
                 if dep_name and self._is_own_lang_package(dep_name, package_name):
                     redundant = True
                     break
