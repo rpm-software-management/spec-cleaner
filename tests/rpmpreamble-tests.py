@@ -369,13 +369,26 @@ class TestRpmPreamble:
         assert split('foo [x86_64] >= 1.0') is None
         # a bracket glued to the name is the entry's qualifier
         assert split('nospace[x86_64]') == [('nospace[x86_64]', True)]
+        # only the operators the dependency parser accepts split an
+        # entry; the rest keep the value a pragma instead of becoming
+        # a tag carrying an operator rpm rejects (<> and >> pass
+        # through verbatim, so they would be emitted as-is)
+        assert split('foo <> 1.0') is None
+        assert split('foo >> 1.0') is None
+        assert split('foo << 1.0') is None
+        assert split('foo === 1.0') is None
+        assert split('foo => 1.0') == [('foo => 1.0', False)]
+        assert split('foo =< 1.0') == [('foo =< 1.0', False)]
+        assert split('foo == 1.0') == [('foo == 1.0', False)]
         preamble.add('#!BuildRequires: foo [x86_64] >= 1.0')
         preamble.add('#!BuildRequires: nospace[x86_64]')
+        preamble.add('#!BuildRequires: foo <> 1.0')
         items = preamble.paragraph.items
         assert items['buildrequires'] == []
         assert [str(item) for item in items['buildrequires_pragma']] == [
             '#!BuildRequires: foo [x86_64] >= 1.0',
             '#!BuildRequires: nospace[x86_64]',
+            '#!BuildRequires: foo <> 1.0',
         ]
 
     def test_pragma_values_kept_whole_in_minimal_mode(
