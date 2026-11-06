@@ -722,11 +722,12 @@ class RpmPreamble(Section):
         )
 
     def _is_block_closer_line(self, line: str) -> bool:
-        """Whether the line closes a conditional block instead of continuing a dependency."""
+        """Whether the line closes a conditional or codeblock instead of continuing a dependency."""
         return bool(
             self.reg.re_endmultilinecond.match(line)
             or self.reg.re_endif.match(line)
             or self.reg.re_else_elif.match(line)
+            or self.reg.re_endcodeblock.match(line)
         )
 
     def _is_dep_continuation_break_line(self, line: str) -> bool:
