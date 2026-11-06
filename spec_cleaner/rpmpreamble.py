@@ -1151,10 +1151,12 @@ class RpmPreamble(Section):
         match = self.reg.re_requires.match(line)
         if not match:
             return False
-        if match.group(1) == 'pwdutils' and not self.condition and not self.minimal:
-            value = 'shadow'
-        else:
-            value = match.group(1)
+        value = match.group(1)
+        if not self.condition and not self.minimal:
+            # replace the pwdutils token wherever it appears in the list,
+            # not only when it is the whole value; the boundaries keep
+            # longer names such as pwdutils-util and %{pwdutils} intact
+            value = re.sub(r'(?<![\w\-%.{?!])pwdutils(?![\w\-.])', 'shadow', value)
         self._add_line_value_to('requires', value, key='Requires')
         return True
 
@@ -1164,10 +1166,12 @@ class RpmPreamble(Section):
         if not match:
             return False
         # Put the requires content properly as key for formatting
-        if match.group(2) == 'pwdutils' and not self.condition and not self.minimal:
-            value = 'shadow'
-        else:
-            value = match.group(2)
+        value = match.group(2)
+        if not self.condition and not self.minimal:
+            # replace the pwdutils token wherever it appears in the list,
+            # not only when it is the whole value; the boundaries keep
+            # longer names such as pwdutils-util and %{pwdutils} intact
+            value = re.sub(r'(?<![\w\-%.{?!])pwdutils(?![\w\-.])', 'shadow', value)
         self._add_line_value_to('requires_phase', value, key=f'Requires{match.group(1)}')
         return True
 
