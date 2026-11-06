@@ -87,21 +87,71 @@ class RpmCheck(Section):
         # from the arguments after it: the leading assignments (group 1)
         # are kept verbatim
         match = self.reg.re_make_build.match(line)
-        args_group = 3
         if match is None and env_safe:
             match = self.reg.re_make_build_env.match(line)
-            args_group = 2
         if match:
-            # the arguments are group 3 of re_make_build and group 2 of
-            # re_make_build_env
-            args = match.group(args_group)
-            # remove smp flags (with all preceding whitespace, not just one space)
-            args = self.reg.re_smp_mflags_ws.sub('', args)
-            # remove verbosity (with all preceding whitespace)
-            args = self.reg.re_verbose_ws.sub('', args)
-            args = self.reg.re_verbose_long_ws.sub('', args)
+            # the arguments are the last group of either pattern: group 3
+            # of re_make_build and group 2 of re_make_build_env; every
+            # group participates, so lastindex is always set
+            lastindex = match.lastindex
+            assert lastindex is not None
+            args = self._strip_make_args(match.group(lastindex))
             line = match.group(1) + '%make_build' + args
         return line
+
+    def _strip_make_args(self, args: str) -> str:
+        """
+        Strip %make_build-covered flags from the matched make call only.
+
+        Flag cleanup stops at the next real shell command boundary, so
+        an assignment belonging to a later command ('make check;
+        V=1 ./verify') is preserved verbatim. A boundary inside quotes
+        or after a backslash is not a boundary.
+
+        Args:
+            args: The arguments after the %make_build macro.
+
+        Return:
+            The arguments with flags stripped up to the first boundary.
+        """
+        boundary = self._first_shell_separator(args)
+        if boundary is None:
+            head, tail = args, ''
+        else:
+            head, tail = args[:boundary], args[boundary:]
+        # remove smp flags (with all preceding whitespace, not just one space)
+        head = self.reg.re_smp_mflags_ws.sub('', head)
+        # remove verbosity (with all preceding whitespace)
+        head = self.reg.re_verbose_ws.sub('', head)
+        head = self.reg.re_verbose_long_ws.sub('', head)
+        return head + tail
+
+    @staticmethod
+    def _first_shell_separator(line: str) -> int | None:
+        """
+        Index of the first unquoted, unescaped ';', '&' or '|'.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The index of the first real shell command boundary, or None.
+        """
+        quote = None
+        escaped = False
+        for index, char in enumerate(line):
+            if escaped:
+                escaped = False
+            elif char == '\\' and quote != "'":
+                escaped = True
+            elif quote:
+                if char == quote:
+                    quote = None
+            elif char in ('"', "'"):
+                quote = char
+            elif char in (';', '&', '|'):
+                return index
+        return None
 
     @staticmethod
     def _has_shell_separator(line: str) -> bool:
@@ -114,18 +164,4 @@ class RpmCheck(Section):
         Return:
             True if the line contains an unquoted ';', '&' or '|'.
         """
-        quote = None
-        escaped = False
-        for char in line:
-            if escaped:
-                escaped = False
-            elif char == '\\' and quote != "'":
-                escaped = True
-            elif quote:
-                if char == quote:
-                    quote = None
-            elif char in ('"', "'"):
-                quote = char
-            elif char in (';', '&', '|'):
-                return True
-        return False
+        return RpmCheck._first_shell_separator(line) is not None

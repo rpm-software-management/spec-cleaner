@@ -3,6 +3,7 @@ from typing import Any
 
 import pytest
 
+from spec_cleaner.rpmcheck import RpmCheck
 from spec_cleaner.rpmcleaner import RpmSpecCleaner
 from spec_cleaner.rpmregexp import Regexp
 from spec_cleaner.rpmsection import Section
@@ -108,6 +109,38 @@ def test_rewrite_disabled_by_redefined_macro(
 def test_every_guard_macro_is_covered() -> None:
     """Every macro name in the rules table is exercised as a redefinition."""
     assert len(KNOWN_DIR_MACROS) == 29
+
+
+def _check(default_options: Callable[..., dict[str, Any]]) -> RpmCheck:
+    options = RpmSpecCleaner(default_options()).options
+    options['defined_macros'] = set()
+    return RpmCheck(options)
+
+
+def test_replace_make_stops_flag_cleanup_at_command_boundary(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """Test that flag cleanup stops at the next shell command boundary."""
+    replace_make = _check(default_options)._replace_make
+    # an assignment belonging to a later command survives verbatim
+    assert (
+        replace_make('cd tests && make check; V=1 ./verify')
+        == 'cd tests && %make_build check; V=1 ./verify'
+    )
+    assert (
+        replace_make('make check %{?_smp_mflags}; V=1 ./verify')
+        == '%make_build check; V=1 ./verify'
+    )
+    assert (
+        replace_make('cd tests && make check && V=1 ./verify')
+        == 'cd tests && %make_build check && V=1 ./verify'
+    )
+    assert replace_make('make check; VERBOSE=1 ./verify') == '%make_build check; VERBOSE=1 ./verify'
+    # flags of the make call itself are still stripped
+    assert replace_make('make check V=1') == '%make_build check'
+    assert replace_make('make check %{?_smp_mflags}') == '%make_build check'
+    # a separator inside quotes is not a boundary
+    assert replace_make('make check FOO="a;b" V=1') == '%make_build check FOO="a;b"'
 
 
 def _cleaned_line(default_options: Callable[..., dict[str, Any]], minimal: bool, line: str) -> str:
