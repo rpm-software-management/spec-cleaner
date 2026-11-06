@@ -729,6 +729,27 @@ class RpmPreamble(Section):
             or self.reg.re_else_elif.match(line)
         )
 
+    def _is_dep_continuation_break_line(self, line: str) -> bool:
+        """
+        Whether the line starts a new statement instead of continuing a dependency.
+
+        A backslash-continued dependency only joins a bare fragment: a plain
+        dependency name, version relation or macro expansion. A line opening
+        a new tag, conditional, codeblock or macro definition is a statement
+        of its own; joining it would swallow the statement and invent a
+        bogus dependency (e.g. `Requires: bar` becomes `BuildRequires:
+        Requires:`).
+        """
+        return bool(
+            self._is_dep_tag_line(line)
+            or self.reg.re_if.match(line)
+            or self.reg.re_codeblock.match(line)
+            or self.reg.re_define.match(line)
+            or self.reg.re_global.match(line)
+            or self.reg.re_bcond_with.match(line)
+            or self.reg.re_preamble_tag.match(line)
+        )
+
     def _flush_dep_continuation(self) -> None:
         """Feed a still-open backslash-continued dependency line through add()."""
         if self._dep_continuation is not None:
@@ -1424,11 +1445,13 @@ class RpmPreamble(Section):
         # line continuing a %define or a %if expression is not mistaken
         # for a dependency line.
         if self._dep_continuation is not None:
-            if self._is_block_closer_line(line):
-                # A block closer ends the continued dependency first:
-                # joining it onto the pending line would swallow the
-                # closer and invent a bogus dependency (e.g. a lone }
-                # becomes `BuildRequires: }`), leaving the block open.
+            if self._is_block_closer_line(line) or self._is_dep_continuation_break_line(line):
+                # A block closer or a line starting a new statement ends
+                # the continued dependency first: joining it onto the
+                # pending line would swallow the statement and invent a
+                # bogus dependency (e.g. a lone } becomes
+                # `BuildRequires: }`, `Requires: bar` becomes
+                # `BuildRequires: Requires:`).
                 self._flush_dep_continuation()
             else:
                 line = self._dep_continuation + line
