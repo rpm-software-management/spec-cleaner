@@ -1283,7 +1283,12 @@ class RpmPreamble(Section):
                 # instead of matching first group as there is only one,
                 # take the last group (including "whole match" if no groups present)
                 # (so I can have more advanced regexp for RPM tags)
-                self._add_line_value_to(category, match.group(len(match.groups())))
+                # the tail macros regex has no groups, so group(0) is only
+                # the matched prefix: keep the whole line instead, as the
+                # sibling head macros do, or arguments and trailing
+                # comments would be lost
+                value = line if category == 'tail' else match.group(len(match.groups()))
+                self._add_line_value_to(category, value)
                 return True
 
         self._add_line_to('misc', line)
