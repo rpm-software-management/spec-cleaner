@@ -363,9 +363,7 @@ class TestRpmPreamble:
             '%endif',
         ]
 
-    def test_prune_empty_condition_keeps_pragma_body(
-        self, minimal_preamble: RpmPreamble
-    ) -> None:
+    def test_prune_empty_condition_keeps_pragma_body(self, minimal_preamble: RpmPreamble) -> None:
         """Test that a condition with only pragma lines is not pruned as empty."""
         lines = [
             '%if %{with bootstrap}',
@@ -605,9 +603,7 @@ class TestRpmPreamble:
         assert [str(item) for item in items['buildrequires']] == [
             'BuildRequires:  plainpkg # needed sometimes'
         ]
-        assert [str(item) for item in items['buildrequires_pragma']] == [
-            '#!BuildRequires: %?bar'
-        ]
+        assert [str(item) for item in items['buildrequires_pragma']] == ['#!BuildRequires: %?bar']
 
     def test_dep_pragma_comment_stays_when_no_plain_line(self, preamble: RpmPreamble) -> None:
         """Test that a trailing comment stays on the pragma line when nothing converts."""
@@ -869,16 +865,17 @@ class TestRpmPreambleOrder:
 
     def test_onelinecond_dep_inner_macro_brace_closed(self, preamble_mode: RpmPreamble) -> None:
         """Test that a brace closing only an inner macro still leaves a closed one-liner."""
-        assert self._flatten(
-            preamble_mode, ['%{?with_foo: BuildRequires: %{bar}}']
-        ) == ['%{?with_foo: BuildRequires: %{bar}}']
+        assert self._flatten(preamble_mode, ['%{?with_foo: BuildRequires: %{bar}}']) == [
+            '%{?with_foo: BuildRequires: %{bar}}'
+        ]
         assert not preamble_mode.condition
 
     def test_onelinecond_dep_inner_macro_brace_open(self, preamble_mode: RpmPreamble) -> None:
         """Test that a brace closing only an inner macro does not close the conditional."""
-        assert self._flatten(
-            preamble_mode, ['%{?with_foo: BuildRequires: %{bar}', '}']
-        ) == ['%{?with_foo: BuildRequires: %{bar}', '}']
+        assert self._flatten(preamble_mode, ['%{?with_foo: BuildRequires: %{bar}', '}']) == [
+            '%{?with_foo: BuildRequires: %{bar}',
+            '}',
+        ]
 
     def test_minimal_block_below_name_stays(self, preamble_mode: RpmPreamble) -> None:
         """Test that a block defining subpackages stays below the Name tag."""
