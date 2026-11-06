@@ -77,3 +77,19 @@ class TestRegexp:
         assert prep('%prep -n foo -c')
         assert not prep('%prep foo')
         assert not prep('%preparation')
+
+    def test_global_order_sensitive_spellings(self) -> None:
+        """Test that ?/!/parameterised tag-macro spellings count as order sensitive."""
+        sensitive = Regexp.re_global_order_sensitive.search
+        assert sensitive('%global mydir %{name}-data')
+        assert sensitive('%global mydir %{?name}-data')
+        assert sensitive('%global mydir %{!name:foo}-data')
+        assert sensitive('%global mydir %{name:foo}-data')
+        assert sensitive('%global mydir %name-data')
+        assert sensitive('%global mydir %{?version}-data')
+        assert sensitive('%global mydir %{!release:1}-data')
+        assert sensitive('%global mydir %{epoch:0}-data')
+        assert not sensitive('%global mydir %{names}-data')
+        assert not sensitive('%global mydir %{name2}-data')
+        assert not sensitive('%global mydir %names-data')
+        assert not sensitive('%global mydir %{foo}-data')
