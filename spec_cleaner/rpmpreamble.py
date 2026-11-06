@@ -260,8 +260,9 @@ class RpmPreamble(Section):
         if not parsed.scheme:
             return url
 
-        # not pypi location
-        if parsed.netloc not in self.PYPI_SOURCE_HOSTS:
+        # not pypi location; compare the hostname, not the netloc, so a
+        # port or userinfo on the host does not hide a PyPI URL
+        if parsed.hostname not in self.PYPI_SOURCE_HOSTS:
             return url
 
         # hashed download url, its first directory is not a package type
