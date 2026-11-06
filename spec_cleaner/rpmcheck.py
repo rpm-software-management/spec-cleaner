@@ -66,7 +66,11 @@ class RpmCheck(Section):
         call ends there. Assignments after a separator
         ('cd tests && CFLAGS="-O2" make ...') are rewritten instead:
         the make call follows the separator, so the first-call-wins
-        rule applies as for a plain midline make call.
+        rule applies as for a plain midline make call. A midline match
+        only rewrites when the line has a real (unquoted, unescaped)
+        separator: a separator inside quotes ('echo "a; make all"')
+        is not a command boundary, so the make there stays an echo
+        argument.
 
         Args:
             line: A string representing a line to process.
@@ -79,7 +83,13 @@ class RpmCheck(Section):
             return line
         # find all make calls and replace them with %make_build
         env_safe = not self._has_shell_separator(line)
-        if self.reg.re_make.match(line):
+        make_match = self.reg.re_make.match(line)
+        # a separator-led match only rewrites when the line has a real
+        # separator; a plain line-start match (an all-whitespace prefix)
+        # needs none
+        if make_match is not None and (
+            make_match.group(1).strip() == '' or self._has_shell_separator(line)
+        ):
             line = self.reg.re_make.sub(r'\1%make_build\3', line)
         elif env_safe and self.reg.re_make_env.match(line):
             line = self.reg.re_make_env.sub(r'\1%make_build\2', line)

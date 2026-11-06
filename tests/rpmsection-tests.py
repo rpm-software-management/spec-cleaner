@@ -141,6 +141,10 @@ def test_replace_make_stops_flag_cleanup_at_command_boundary(
     assert replace_make('make check %{?_smp_mflags}') == '%make_build check'
     # a separator inside quotes is not a boundary
     assert replace_make('make check FOO="a;b" V=1') == '%make_build check FOO="a;b"'
+    # a make inside quotes is never rewritten, even when the line has
+    # a real separator later on
+    assert replace_make('echo "a; make all"') == 'echo "a; make all"'
+    assert replace_make('echo "a; make all"; make check') == 'echo "a; make all"; %make_build check'
 
 
 def _cleaned_line(default_options: Callable[..., dict[str, Any]], minimal: bool, line: str) -> str:
