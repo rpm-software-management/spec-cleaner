@@ -323,8 +323,16 @@ class Regexp:
     #   # Copyright (c) 2022 SUSE LLC
     #   # 2022 William Brown
     # Only meaningful right after a copyright notice; the remainder is
-    # group 1 for normalization.
-    re_copyright_continuation = re.compile(r'^#\s*(\d{4}\b.*)')
+    # group 1 for normalization. The year range may be spaced
+    # ('2022 - 2024'), and the holder may start with any Unicode letter:
+    # group 2 is its first character, and the caller checks it with
+    # str.isupper(): re has no Unicode uppercase class, and an
+    # ASCII-only [A-Z] would drop holders such as Čech.
+    re_copyright_continuation = re.compile(r'^#\s*(\d{4}(?:\s*-\s*\d{4})?,?\s+([^\W\d_]).*)')
+    # A year-led comment line. RpmCopyright.add uses it to tell whether a
+    # line that failed the holder test above still belongs to the
+    # copyright block, instead of ending it.
+    re_copyright_year_led = re.compile(r'^#\s*\d{4}\b')
     # The words a SUSE copyright holder line consists of: the copyright
     # boilerplate plus the holder wordings, current ('SUSE LLC and
     # contributors') and legacy ('SUSE LINUX Products GmbH', 'SUSE Linux

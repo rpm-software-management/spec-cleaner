@@ -112,9 +112,23 @@ class RpmCopyright(Section):
             #   # 2022 William Brown
             # (boo#1194504)
             copyright_match = self.reg.re_copyright_continuation.match(line)
+            if copyright_match and not copyright_match.group(2).isupper():
+                # The holder must start with an uppercase letter: a
+                # lowercase-initial line is prose-shaped and undecidable
+                # by case alone ('was a good year' starts lowercase
+                # too), so it is dropped, but it does not end the block
+                # (see below).
+                copyright_match = None
         # A SUSE copyright line still counts as a copyright for continuation
         # purposes even though it is dropped itself.
-        self._prev_was_copyright = bool(copyright_match)
+        if copyright_match:
+            self._prev_was_copyright = True
+        elif not self.reg.re_copyright_year_led.match(line):
+            # Any other line ends the copyright block. A year-led line
+            # that failed the holder test is dropped but leaves the block
+            # open, so a following holder line still counts as a
+            # continuation instead of being dropped along with it.
+            self._prev_was_copyright = False
         if copyright_match and not self._is_suse_copyright(line):
             # always normalize to the canonical '# Copyright (c) ...' form;
             # a copyright notice must never be silently dropped (boo#1194504)
