@@ -258,6 +258,23 @@ class TestRpmPreamble:
             (False, False),
         ]
 
+    def test_late_global_units_tail_macro_conditional(self, preamble: RpmPreamble) -> None:
+        """Test that the conditional tail-macro spelling is late too."""
+        lines = (
+            '%if %{with python}',
+            '%define python_subpackage_only 1',
+            '%{?python_subpackages}',
+            '%endif',
+            '%define plain 1',
+        )
+        self.units(preamble, *lines)
+        paragraph = preamble.paragraph
+        flagged = paragraph._late_global_units(paragraph.items['define'], paragraph._bcond_macros())
+        assert [(late, after_bconds) for _, late, after_bconds in flagged] == [
+            (True, True),
+            (False, False),
+        ]
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries
