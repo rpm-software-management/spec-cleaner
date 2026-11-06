@@ -61,6 +61,9 @@ class RpmPreamble(Section):
         self._multiline_global = False
         # A backslash-continued dependency line waiting for its next line
         self._dep_continuation: str | None = None
+        # Trailing comment split off a backslash-continued dependency line,
+        # re-attached once the continuation joins or flushes
+        self._dep_continuation_comment: str | None = None
         # Are we inside of conditional or not
         self.condition = False
         # Does the %if/%elif condition continue on the next line (ending with \)
@@ -760,6 +763,9 @@ class RpmPreamble(Section):
         """Feed a still-open backslash-continued dependency line through add()."""
         if self._dep_continuation is not None:
             pending, self._dep_continuation = self._dep_continuation, None
+            comment, self._dep_continuation_comment = self._dep_continuation_comment, None
+            if comment:
+                pending = f'{pending} {comment}'
             self.add(pending)
 
     def _handle_continued_condition(self, line: str) -> bool:
@@ -1462,8 +1468,18 @@ class RpmPreamble(Section):
             else:
                 line = self._dep_continuation + line
                 self._dep_continuation = None
-        if line.endswith('\\') and self._is_dep_tag_line(line):
-            self._dep_continuation = line[:-1]
+                if self._dep_continuation_comment:
+                    line = f'{line} {self._dep_continuation_comment}'
+                    self._dep_continuation_comment = None
+        # A backslash inside a trailing comment is comment text, not a
+        # continuation: judge it on the code part only (as _replace_pwdutils
+        # does), or the next line joins into the comment and is lost
+        # (`BuildRequires: foo # comment \` + `bar` became
+        # `BuildRequires: foo # comment bar`).
+        code_line, trailing_comment = self._split_trailing_comment(line)
+        if code_line.endswith('\\') and self._is_dep_tag_line(line):
+            self._dep_continuation = code_line[:-1]
+            self._dep_continuation_comment = trailing_comment
             return
 
         # if the line is empty, just skip it, unless keep_space is true
