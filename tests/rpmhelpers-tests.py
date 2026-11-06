@@ -256,12 +256,20 @@ class TestRpmhelpers:
             ('foo-pkgconfig', False),
             ('%{?with_x}python3-pkgconfig', False),
             ('%{?a:%{?b:%{c}}}pkgconfig', True),
+            ('%(echo x)pkgconfig', True),
+            ('%%pkgconfig', False),
+            ('%{?with_xpkgconfig', False),
         ],
     )
     def test_find_pkgconfig_declaration(self, name: str, declaration: bool) -> None:
         """Test that a pkgconfig build dependency is spotted, bracketed or not."""
         elements = [RpmRequiresToken(name, None, None, 'BuildRequires:')]
         assert rpmhelpers.find_pkgconfig_declaration(elements) is declaration
+
+    def test_strip_leading_macros_stops_on_unstrippable_input(self) -> None:
+        """Test that an unbalanced body and a non-macro % are left alone."""
+        assert rpmhelpers._strip_leading_macros('%{?with_xpkgconfig') == '%{?with_xpkgconfig'
+        assert rpmhelpers._strip_leading_macros('%%pkgconfig') == '%%pkgconfig'
 
     def test_sort_uniq_merges_duplicate_sources(self) -> None:
         """Test that duplicates merge and no following line is dropped."""
