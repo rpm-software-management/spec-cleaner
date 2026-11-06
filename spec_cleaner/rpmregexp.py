@@ -373,7 +373,7 @@ class Regexp:
 
     # rpmfiles
     re_man_compression = re.compile(r'(\.\d)(\.?\*|\.gz|%{?ext_man}?)$')
-    re_info_compression = re.compile(r'\.info(\.\*|\.gz|%{?ext_info}?)$')
+    re_info_compression = re.compile(r'\.info(\.?\*|\.gz|%{?ext_info}?)$')
     re_defattr = re.compile(r'^\s*%defattr\s*\(\s*-\s*,\s*root\s*,\s*root\s*(,\s*-\s*)?\)\s*')
     re_doclicense = re.compile(r'(\S+)?(LICEN(S|C)E|COPYING)(\*|\.(\*|\S+))?($|\s)', re.IGNORECASE)
     re_file_qualifier = re.compile(
