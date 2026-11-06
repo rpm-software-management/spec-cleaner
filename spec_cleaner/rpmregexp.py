@@ -174,7 +174,7 @@ class Regexp:
     # that rpm only defines while parsing the preamble tags (Name, Version,
     # Release, Epoch) must not be hoisted above those tags (#239)
     re_global_order_sensitive = re.compile(
-        r'%(?:\{(name|version|release|epoch)\}|(name|version|release|epoch)(?![\w]))',
+        r'%(?:\{(?:[!?]*)(name|version|release|epoch)(?=[}:])|(name|version|release|epoch)(?![\w]))',
         re.IGNORECASE,
     )
     # names of the macros a line references and of the ones it defines
