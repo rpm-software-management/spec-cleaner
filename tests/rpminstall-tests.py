@@ -23,6 +23,16 @@ class TestRpmInstall:
         line = 'rm foo %{buildroot}%{_libdir}/*.la'
         assert install._replace_remove_la(line) == line
 
+    def test_clean_drop_keeps_comment_line(self, install: RpmInstall) -> None:
+        """A comment mentioning the buildroot cleanup is kept."""
+        install.add('# cleanup: rm -rf %{buildroot}')
+        assert install.lines == ['# cleanup: rm -rf %{buildroot}']
+
+    def test_clean_drop_removes_real_command(self, install: RpmInstall) -> None:
+        """A real buildroot wipe is still dropped."""
+        install.add('rm -rf %{buildroot}')
+        assert install.lines == []
+
     def test_remove_la_rewrites_a_la_only_line(self, install: RpmInstall) -> None:
         """Test that an rm line with nothing but .la globs becomes the canonical find."""
         assert (

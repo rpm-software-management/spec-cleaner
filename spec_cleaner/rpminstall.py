@@ -17,8 +17,9 @@ class RpmInstall(Section):
         """Process one line of the %install section."""
         line = self._complete_cleanup(line)
 
-        # we do not want to cleanup buildroot, it is already clean
-        if self.reg.re_clean.search(line):
+        # we do not want to cleanup buildroot, it is already clean;
+        # a comment merely mentioning the cleanup is kept
+        if self.reg.re_clean.search(line) and not line.lstrip().startswith('#'):
             return
 
         line = self.reg.re_jobs.sub(' %{?_smp_mflags}', line)
