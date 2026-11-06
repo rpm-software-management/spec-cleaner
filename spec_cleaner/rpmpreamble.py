@@ -59,6 +59,8 @@ class RpmPreamble(Section):
         self._open_bodies = (0, 0)
         # Is the multiline macro a %global, expanded while parsing
         self._multiline_global = False
+        # A backslash-continued dependency line waiting for its next line
+        self._dep_continuation: str | None = None
         # Are we inside of conditional or not
         self.condition = False
         # Does the %if/%elif condition continue on the next line (ending with \)
@@ -630,6 +632,45 @@ class RpmPreamble(Section):
         is_global = bool(self.reg.re_global.match(line)) or (oneline and '%global' in line)
         # a one-line condition is evaluated when parsed, even around %define
         return MacroLine(line, is_global=is_global, is_eager=is_global or oneline)
+
+    def _is_dep_tag_line(self, line: str) -> bool:
+        """Whether the line opens a dependency tag that may continue on the next line."""
+        return any(
+            regexp.match(line)
+            for regexp in (
+                self.reg.re_buildrequires,
+                self.reg.re_buildconflicts,
+                self.reg.re_prereq,
+                self.reg.re_requires,
+                self.reg.re_requires_phase,
+                self.reg.re_requires_eq,
+                self.reg.re_requires_ge,
+                self.reg.re_recommends,
+                self.reg.re_suggests,
+                self.reg.re_enhances,
+                self.reg.re_supplements,
+                self.reg.re_conflicts,
+                self.reg.re_provides,
+                self.reg.re_obsoletes,
+                self.reg.re_buildrequires_pragma,
+                self.reg.re_buildconflicts_pragma,
+                self.reg.re_buildignores,
+            )
+        )
+
+    def _is_block_closer_line(self, line: str) -> bool:
+        """Whether the line closes a conditional block instead of continuing a dependency."""
+        return bool(
+            self.reg.re_endmultilinecond.match(line)
+            or self.reg.re_endif.match(line)
+            or self.reg.re_else_elif.match(line)
+        )
+
+    def _flush_dep_continuation(self) -> None:
+        """Feed a still-open backslash-continued dependency line through add()."""
+        if self._dep_continuation is not None:
+            pending, self._dep_continuation = self._dep_continuation, None
+            self.add(pending)
 
     def _handle_continued_condition(self, line: str) -> bool:
         """Append a continued %if/%elif line to the open condition. Return True if handled."""
@@ -1226,6 +1267,26 @@ class RpmPreamble(Section):
         if self._handle_multiline(line):
             return
 
+        # A backslash-continued dependency line joins its next physical
+        # line, as rpm joins them before parsing; without the join the
+        # continuation lands in misc and the backslash glues the wrong line.
+        # This runs after the define/condition continuation handlers, so a
+        # line continuing a %define or a %if expression is not mistaken
+        # for a dependency line.
+        if self._dep_continuation is not None:
+            if self._is_block_closer_line(line):
+                # A block closer ends the continued dependency first:
+                # joining it onto the pending line would swallow the
+                # closer and invent a bogus dependency (e.g. a lone }
+                # becomes `BuildRequires: }`), leaving the block open.
+                self._flush_dep_continuation()
+            else:
+                line = self._dep_continuation + line
+                self._dep_continuation = None
+        if line.endswith('\\') and self._is_dep_tag_line(line):
+            self._dep_continuation = line[:-1]
+            return
+
         # if the line is empty, just skip it, unless keep_space is true
         if self._handle_empty_line(line):
             return
@@ -1347,6 +1408,7 @@ class RpmPreamble(Section):
 
     def output(self, fout: IO[str], newline: bool = True, new_class: str | None = None) -> None:
         """Dump the results to the output list."""
+        self._flush_dep_continuation()
         lines = self.paragraph.flatten_output(self.subpkglicense and not self._has_license)
         self.lines += lines
         # Section.output only compares the name against 'RpmScriptlets'
@@ -1358,5 +1420,6 @@ class RpmPreambleChunk(RpmPreamble):
 
     def output(self, fout: IO[str], newline: bool = True, new_class: str | None = None) -> None:
         """Dump the results to the output list without a placeholder License."""
+        self._flush_dep_continuation()
         self.lines += self.paragraph.flatten_output(False)
         Section.output(self, fout, newline, new_class or '')
