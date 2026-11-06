@@ -685,8 +685,18 @@ class RpmPreambleElements:
                     dep_name = item.name
                 elif isinstance(item, str) and not item.startswith('#'):
                     match = self.reg.re_recommends.match(item)
-                    if match and match.group(1).split():
-                        dep_name = match.group(1).split()[0]
+                    if match:
+                        # a line kept whole as one string (an rpm call, or
+                        # a value the parser rejected) may hold several
+                        # deps, so drop it only when it is a single one
+                        # (a name, or a name with operator and version);
+                        # otherwise the other deps on the line would go
+                        # with it
+                        words = match.group(1).split()
+                        if len(words) == 1 or (
+                            len(words) == 3 and words[1] in ('<', '<=', '=', '==', '>=', '>')
+                        ):
+                            dep_name = words[0]
                 if dep_name and self._is_own_lang_package(dep_name, package_name):
                     redundant = True
                     break

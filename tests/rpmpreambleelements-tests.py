@@ -60,6 +60,22 @@ class TestRpmPreambleElements:
         assert elements._is_own_lang_package('other-lang', 'foo') is False
         assert elements._is_own_lang_package('foo', 'foo') is False
 
+    def test_prune_lang_recommends_string_multi_dep(self, elements: RpmPreambleElements) -> None:
+        """A string-kept Recommends is dropped only when it is a single dep."""
+        elements.lang_package = {'%{name}-lang'}
+        elements.items['name'] = ['Name: foo']
+        elements.items['recommends'] = [
+            'Recommends: %{name}-lang',
+            "Recommends: %{name}-lang %(rpm -q --queryformat '%{VERSION}' glibc)",
+            'Recommends: %{name}-lang >= 1.0',
+            'Recommends: %{name}-lang other',
+        ]
+        elements._prune_lang_recommends()
+        assert elements.items['recommends'] == [
+            "Recommends: %{name}-lang %(rpm -q --queryformat '%{VERSION}' glibc)",
+            'Recommends: %{name}-lang other',
+        ]
+
     def test_remove_duplicates_plain_lines(self, elements: RpmPreambleElements) -> None:
         """Test that identical plain lines deduplicate and merge comments."""
         lines: list[GroupItem] = [
