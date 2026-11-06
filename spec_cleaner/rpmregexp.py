@@ -92,9 +92,7 @@ class Regexp:
     # so a bogus %if<word> typo (e.g. %iffy, %ifdef) is not a condition;
     # the %ifpython<N> / %ifpypy<N> flavor shortcuts of python-rpm-macros
     # are conditionals too (they expand to %if), so they stay matched
-    re_if = re.compile(
-        r'^\s*%{?if(?:arch|narch|os|nos|python\d*|pypy\d*)?(?:\s|$)', re.IGNORECASE
-    )
+    re_if = re.compile(r'^\s*%{?if(?:arch|narch|os|nos|python\d*|pypy\d*)?(?:\s|$)', re.IGNORECASE)
     re_codeblock = re.compile(
         r'^\s*((### COMMON-([a-zA-Z0-9]+)-BEGIN ###|# MANUAL BEGIN|# SECTION)(\s.*|)|# MANUAL)$'
     )

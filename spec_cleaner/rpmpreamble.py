@@ -1254,16 +1254,10 @@ class RpmPreamble(Section):
         value = match.group(1)
         if not self.minimal and self.allowed_groups:
             if (
-                (
-                    # no previous line yet (first line) means no FIXME is present
-                    self.previous_line is None
-                    or (
-                        self.previous_line
-                        and not self.previous_line.startswith('# FIXME')
-                    )
-                )
-                and value not in self.allowed_groups
-            ):
+                # no previous line yet (first line) means no FIXME is present
+                self.previous_line is None
+                or (self.previous_line and not self.previous_line.startswith('# FIXME'))
+            ) and value not in self.allowed_groups:
                 self.paragraph.current_group.append(
                     '# FIXME: use correct group or remove it,'
                     ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"'
