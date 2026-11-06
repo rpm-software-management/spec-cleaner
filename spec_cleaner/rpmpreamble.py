@@ -1361,8 +1361,10 @@ class RpmPreamble(Section):
             return
 
         # A backslash-continued dependency line joins its next physical
-        # line, as rpm joins them before parsing; without the join the
-        # continuation lands in misc and the backslash glues the wrong line.
+        # line. The trailing backslash is invalid: rpm (4.20.1, 6.1.0)
+        # hard-errors on it, so the join consumes it and preserves the
+        # author's evident intent. Without the join the continuation
+        # lands in misc and the backslash glues the wrong line.
         # This runs after the define/condition continuation handlers, so a
         # line continuing a %define or a %if expression is not mistaken
         # for a dependency line.
