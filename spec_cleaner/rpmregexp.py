@@ -87,8 +87,13 @@ class Regexp:
 
     # rpmpreamble
     # WARNING: keep in sync with rpmcleaner Section change detection
+    # only the real conditional directives: %if, %ifarch, %ifnarch,
+    # %ifos, %ifnos, each followed by whitespace or the end of the line,
+    # so a bogus %if<word> typo (e.g. %iffy, %ifdef) is not a condition;
+    # the %ifpython<N> / %ifpypy<N> flavor shortcuts of python-rpm-macros
+    # are conditionals too (they expand to %if), so they stay matched
     re_if = re.compile(
-        r'^\s*(?:%{?if\s|%{?ifarch\s|%{?ifnarch\s|%{?if\S*}?(\s.*|)$)', re.IGNORECASE
+        r'^\s*%{?if(?:arch|narch|os|nos|python\d*|pypy\d*)?(?:\s|$)', re.IGNORECASE
     )
     re_codeblock = re.compile(
         r'^\s*((### COMMON-([a-zA-Z0-9]+)-BEGIN ###|# MANUAL BEGIN|# SECTION)(\s.*|)|# MANUAL)$'
