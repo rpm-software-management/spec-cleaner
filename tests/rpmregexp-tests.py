@@ -125,6 +125,18 @@ class TestRegexp:
         # prose and lookalikes stay untouched (see make-env-prefix.spec)
         assert not make('echo make all')
         assert not make('echo "make all"')
+        # a separator inside quotes or after a backslash is not a
+        # command boundary, so make there stays an echo argument
+        assert not make("echo 'run; make V=1 check'")
+        assert not make('echo "run; make V=1 check"')
+        assert not make(r'echo foo\; make check')
+        assert not make("echo 'run && make check'")
+        assert not make('echo "run || make check"')
+        # ... but a real separator after a quoted part still counts,
+        # as do several real commands before make
+        assert make("echo 'x' ; make check")
+        assert make('echo "x" && make check')
+        assert make('cd tests; cd src && make check')
         assert not make('grep -n make Makefile.in')
         assert not make('FOO=bar make all')
         assert not make('makefile: all')
@@ -165,6 +177,17 @@ class TestRegexp:
         assert not make('cd tests && %make_build check')
         assert not make('cd tests && %make_build || make check')
         assert not make('cd tests && %make_build || CFLAGS="-O2" make check')
+
+    def test_make_prefix_no_exponential_backtracking(self) -> None:
+        """Test that a long separator-led line without make stays fast."""
+        line = 'echo ' + '; '.join(f'foo{i}' for i in range(60)) + '; make check'
+        start = time.perf_counter()
+        assert Regexp.re_make.match(line)
+        assert time.perf_counter() - start < 1
+        line = 'echo ' + '; '.join(f'foo{i}' for i in range(60)) + '; done'
+        start = time.perf_counter()
+        assert not Regexp.re_make.match(line)
+        assert time.perf_counter() - start < 1
 
     def test_tail_macros_conditional_and_glued(self) -> None:
         """Test that the conditional spelling counts as a tail macro and glued names do not."""

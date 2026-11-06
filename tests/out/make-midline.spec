@@ -20,6 +20,11 @@ cd tests && %make_build check
 cd tests && CFLAGS="-O2" %make_build check
 cd tests && CFLAGS="-O2" %make_build check
 echo make all
+echo 'run; make V=1 check'
+echo "run; make V=1 check"
+echo foo\; make check
+echo 'x' ; %make_build check
+cd tests; cd src && %make_build check
 
 %files
 %{_bindir}/make-midline
