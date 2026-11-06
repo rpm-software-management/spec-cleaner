@@ -322,6 +322,62 @@ class TestRpmPreamble:
             '%endif',
         ]
 
+    def test_prune_empty_condition_comment_only(self, preamble: RpmPreamble) -> None:
+        """Test that a condition with only a comment body is pruned."""
+        for line in ['%if 0%{?a}', '# just a comment', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == []
+
+    def test_prune_empty_condition_elif_only(self, preamble: RpmPreamble) -> None:
+        """Test that a condition with only an elif branch is pruned."""
+        for line in ['%if 0%{?a}', '%elif 0%{?b}', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == []
+
+    def test_prune_empty_condition_else_only(self, preamble: RpmPreamble) -> None:
+        """Test that a condition with only an else branch is pruned."""
+        for line in ['%if 0%{?a}', '%else', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == []
+
+    def test_prune_empty_condition_elif_comment(self, preamble: RpmPreamble) -> None:
+        """Test that a condition with only an elif branch and a comment is pruned."""
+        for line in ['%if 0%{?a}', '%elif 0%{?b}', '# c', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == []
+
+    def test_prune_empty_condition_comment_before_elif(self, preamble: RpmPreamble) -> None:
+        """Test that a comment attached to the elif line does not save the block."""
+        for line in ['%if 0%{?a}', '# c', '%elif 0%{?b}', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == []
+
+    def test_prune_empty_condition_keeps_real_body(self, preamble: RpmPreamble) -> None:
+        """Test that a condition with a real dependency in a branch is kept."""
+        for line in ['%if 0%{?a}', '%elif 0%{?b}', 'BuildRequires: x', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == [
+            '%if 0%{?a}',
+            '%elif 0%{?b}',
+            'BuildRequires:  x',
+            '%endif',
+        ]
+
+    def test_prune_empty_condition_keeps_pragma_body(
+        self, minimal_preamble: RpmPreamble
+    ) -> None:
+        """Test that a condition with only pragma lines is not pruned as empty."""
+        lines = [
+            '%if %{with bootstrap}',
+            '#!BuildRequires: foo',
+            '%else',
+            '#!BuildRequires: bar',
+            '%endif',
+        ]
+        for line in lines:
+            minimal_preamble.add(line)
+        assert minimal_preamble.paragraph.flatten_output() == lines
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries

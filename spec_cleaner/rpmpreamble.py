@@ -210,18 +210,35 @@ class RpmPreamble(Section):
             ):
                 self.paragraph.items['conditions'] = []
 
+    @staticmethod
+    def _is_comment_line(line: str) -> bool:
+        """Whether the line is a plain comment (pragma #! lines are content)."""
+        return line.startswith('#') and not line.startswith('#!')
+
     def _prune_empty_condition(self) -> None:
         """Remove empty conditions."""
         conditions = self.paragraph.items['conditions']
         # check if we have just the if (maybe with comments) and its endif
-        if len(conditions) == 2:
-            # a condition element is a line or a group ending in the line
-            opener = cast(
-                str, conditions[0][-1] if isinstance(conditions[0], list) else conditions[0]
-            )
-            # the second condition element is the %endif line itself
-            if opener.startswith('%if') and self.reg.re_endif.match(cast(str, conditions[1])):
-                self.paragraph.items['conditions'] = []
+        if len(conditions) < 2:
+            return
+        # a condition element is a line or a group ending in the line
+        opener = conditions[0][-1] if isinstance(conditions[0], list) else conditions[0]
+        # the last condition element is the %endif line itself
+        closer = conditions[-1][-1] if isinstance(conditions[-1], list) else conditions[-1]
+        if not str(opener).startswith('%if') or not self.reg.re_endif.match(str(closer)):
+            return
+        for element in conditions[1:-1]:
+            lines = element if isinstance(element, list) else [element]
+            if not lines:
+                continue
+            *leading, last = [str(item) for item in lines]
+            # leading lines of a middle element must be comments or blank
+            if not all(not line or self._is_comment_line(line) for line in leading):
+                return
+            # the element itself must be a comment, blank, or an %elif/%else line
+            if last and not self._is_comment_line(last) and not self.reg.re_else_elif.match(last):
+                return
+        self.paragraph.items['conditions'] = []
 
     PYPI_SOURCE_HOSTS = ('pypi.io', 'files.pythonhosted.org', 'pypi.python.org')
 
