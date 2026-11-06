@@ -198,6 +198,10 @@ class Regexp:
     # names of the macros a line references and of the ones it defines
     re_macro_reference = re.compile(r'%\{?[!?]*(\w+)')
     re_macro_definition = re.compile(r'%(?:global|define)\s+(\w+)', re.IGNORECASE)
+    # a kernel_module macro: kernel_module itself, or a name carrying it
+    # as a whole underscore-separated component, eg. kernel_module_ver
+    # or suse_kernel_module_package
+    re_kernel_module_macro = re.compile(r'(?:^|_)kernel_module(?:_|$)')
     # %{with foo} and %{without foo} read the with_foo switch of a bcond
     re_bcond_reference = re.compile(r'%\{with(?:out)?\s+(\w+)\}')
     # Special bracketed deps dection
