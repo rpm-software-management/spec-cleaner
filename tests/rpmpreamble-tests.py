@@ -480,6 +480,49 @@ class TestRpmPreamble:
             '%endif',
         ]
 
+    def test_group_fixme_on_first_line(self, preamble: RpmPreamble) -> None:
+        """Test that an invalid Group on the first preamble line gets a FIXME."""
+        preamble.add('Group: Bogus/Group')
+        assert preamble.paragraph.items['group'] == [
+            [
+                '# FIXME: use correct group or remove it,'
+                ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"',
+                'Group:          Bogus/Group',
+            ]
+        ]
+
+    def test_group_fixme_after_name(self, preamble: RpmPreamble) -> None:
+        """Test that an invalid Group after another tag gets a FIXME."""
+        preamble.add('Name: test')
+        preamble.add('Group: Bogus/Group')
+        assert preamble.paragraph.items['group'] == [
+            [
+                '# FIXME: use correct group or remove it,'
+                ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"',
+                'Group:          Bogus/Group',
+            ]
+        ]
+
+    def test_group_fixme_not_duplicated(self, preamble: RpmPreamble) -> None:
+        """Test that a FIXME already above an invalid Group is not added again."""
+        preamble.add(
+            '# FIXME: use correct group or remove it,'
+            ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"'
+        )
+        preamble.add('Group: Bogus/Group')
+        assert preamble.paragraph.items['group'] == [
+            [
+                '# FIXME: use correct group or remove it,'
+                ' see "https://en.opensuse.org/openSUSE:Package_group_guidelines"',
+                'Group:          Bogus/Group',
+            ]
+        ]
+
+    def test_group_valid_no_fixme(self, preamble: RpmPreamble) -> None:
+        """Test that a valid Group gets no FIXME."""
+        preamble.add('Group: System/Libraries')
+        assert preamble.paragraph.items['group'] == ['Group:          System/Libraries']
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries
