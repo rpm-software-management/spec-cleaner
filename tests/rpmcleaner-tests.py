@@ -282,6 +282,32 @@ def test_ldconfig_half(line: str, expected: tuple[str, str] | None) -> None:
     assert RpmSpecCleaner._ldconfig_half(line) == expected
 
 
+def test_ldconfig_pairing_keeps_mixed_spellings(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A bare-name half and a '-n NAME' half name different packages and do not merge."""
+    cleaner = RpmSpecCleaner(default_options())
+    lines = [
+        '%post foo -p /sbin/ldconfig',
+        '%postun -n foo -p /sbin/ldconfig',
+        '',
+        '%post -n bar -p /sbin/ldconfig',
+        '%postun bar -p /sbin/ldconfig',
+        '',
+        '%post baz -p /sbin/ldconfig',
+        '%postun baz -p /sbin/ldconfig',
+    ]
+    assert cleaner._pair_ldconfig_scriptlets(lines) == [
+        '%post foo -p /sbin/ldconfig',
+        '%postun -n foo -p /sbin/ldconfig',
+        '',
+        '%post -n bar -p /sbin/ldconfig',
+        '%postun bar -p /sbin/ldconfig',
+        '',
+        '%ldconfig_scriptlets baz',
+    ]
+
+
 @pytest.mark.parametrize(
     'lines, expected',
     [
