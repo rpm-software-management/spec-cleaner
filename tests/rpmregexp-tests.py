@@ -211,6 +211,16 @@ class TestRegexp:
         assert not Regexp.re_make.match(line)
         assert time.perf_counter() - start < 1
 
+    def test_make_separator_no_superlinear_backtracking(self) -> None:
+        """Test that a long run of && separators stays fast."""
+        line = '&&' * 14 + ' done'
+        start = time.perf_counter()
+        assert not Regexp.re_make.search(line)
+        assert time.perf_counter() - start < 1
+        start = time.perf_counter()
+        assert not Regexp.re_make_build.search(line)
+        assert time.perf_counter() - start < 1
+
     def test_tail_macros_conditional_and_glued(self) -> None:
         """Test that the conditional spelling counts as a tail macro and glued names do not."""
         tail = Regexp.re_tail_macros.match

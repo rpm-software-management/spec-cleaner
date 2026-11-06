@@ -227,8 +227,11 @@ class Regexp:
     # separator, a quote or a backslash.
     _make_text_unit = r"(?:'[^']*'|\"(?:[^\"\\]|\\.)*\"|\\.|[^;&|'\"\\])"
     # A shell command separator: '&&' and '||' match as one, since
-    # '&' and '|' cannot be consumed as text.
-    _make_separator = r'(?:&&|\|\||[;&|])'
+    # '&' and '|' cannot be consumed as text. A lone '&' or '|' only
+    # matches when not followed by the same character, so a run of
+    # '&' splits exactly one way instead of backtracking superlinearly
+    # over every '&&' vs '&' partition.
+    _make_separator = r'(?:&&|\|\||;|&(?![&])|\|(?![|]))'
     # 'make' led by another shell command (after ;, & or |) or invoked
     # by an absolute or %{_bindir} path, e.g. 'cd tests && make check'
     # or '/usr/bin/make check' (which _complete_cleanup rewrites to
