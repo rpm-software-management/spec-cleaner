@@ -50,7 +50,7 @@ class Regexp:
     # section macros
     re_spec_package = re.compile(r'^%package(\s+|$)', re.IGNORECASE)
     re_spec_description = re.compile(r'^%description(\s+|$)', re.IGNORECASE)
-    re_spec_prep = re.compile(r'^%prep(\s+-[ap])?\s*$', re.IGNORECASE)
+    re_spec_prep = re.compile(r'^%prep(?:\s+-[ab]\s*\S*|\s+-n\s*\S+|\s+-[cDTp])*\s*$', re.IGNORECASE)
     re_spec_build = re.compile(r'^%build(\s+-[ap])?\s*$', re.IGNORECASE)
     re_spec_install = re.compile(r'^%install(\s+-[ap])?\s*$', re.IGNORECASE)
     re_spec_clean = re.compile(r'^%clean(\s+-[ap])?\s*$', re.IGNORECASE)
