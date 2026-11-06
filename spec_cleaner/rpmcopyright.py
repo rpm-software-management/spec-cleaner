@@ -133,21 +133,28 @@ class RpmCopyright(Section):
             # always normalize to the canonical '# Copyright (c) ...' form;
             # a copyright notice must never be silently dropped (boo#1194504)
             line = f'# Copyright (c) {copyright_match.group(1)}'
-            self.copyrights.append(line)
+            if line not in self.copyrights:
+                self.copyrights.append(line)
         elif self.reg.re_rootforbuild.match(line):
-            self.buildrules.append('# needsrootforbuild')
+            if '# needsrootforbuild' not in self.buildrules:
+                self.buildrules.append('# needsrootforbuild')
         elif self.reg.re_binariesforbuild.match(line):
-            self.buildrules.append('# needsbinariesforbuild')
+            if '# needsbinariesforbuild' not in self.buildrules:
+                self.buildrules.append('# needsbinariesforbuild')
         elif self.reg.re_nodebuginfo.match(line):
-            self.buildrules.append('# nodebuginfo')
+            if '# nodebuginfo' not in self.buildrules:
+                self.buildrules.append('# nodebuginfo')
         elif self.reg.re_icecream.match(line):
-            self.buildrules.append('# icecream')
+            if '# icecream' not in self.buildrules:
+                self.buildrules.append('# icecream')
         elif self.reg.re_vimmodeline.match(line):
             self.vimmodeline = line
         elif self.reg.re_sslcerts.match(line):
-            self.buildrules.append('# needssslcertforbuild')
+            if '# needssslcertforbuild' not in self.buildrules:
+                self.buildrules.append('# needssslcertforbuild')
         elif line.startswith('#!'):
-            self.directives.append(line)
+            if line not in self.directives:
+                self.directives.append(line)
         else:
             # anything not in our rules gets tossed out
             return
