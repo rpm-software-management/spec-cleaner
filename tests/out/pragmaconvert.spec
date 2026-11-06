@@ -24,10 +24,10 @@ BuildRequires:  zsh
 #!BuildRequires: qualified [x86_64]
 #!BuildRequires: qualonly [aarch64] # only there
 #!BuildRequires: zeta [ppc64]
-BuildConflicts: mixold # legacy combo
+BuildConflicts: mixold
 BuildConflicts: oldthing
 BuildConflicts: rpmlint-mini < 2.9
-#!BuildConflicts: mixq [i586]
+#!BuildConflicts: mixq [i586] # legacy combo
 #!BuildIgnore:  neverconvert
 %if %{with bootstrap}
 BuildRequires:  stringtemplate4-bootstrap

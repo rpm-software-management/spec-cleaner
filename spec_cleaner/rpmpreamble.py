@@ -917,17 +917,18 @@ class RpmPreamble(Section):
                 plain.append(text)
         if plain:
             converted = ' '.join(plain)
-            if trailing_comment:
+            # the trailing comment belongs to the whole line: keep it on
+            # the plain line only when nothing stays a pragma, or a
+            # converted plain entry dropped as a duplicate takes the
+            # comment with it and the surviving pragma loses it
+            if trailing_comment and not qualified:
                 converted = f'{converted} {trailing_comment}'
             self._add_line_value_to(category, converted)
         if qualified:
             # a qualified entry has no plain rpm form: it stays a pragma
             # entry and takes the pragma category, which keeps it whole
             remainder = ' '.join(qualified)
-            # the trailing comment belongs to the whole line: it is already
-            # on the converted plain line above, so only keep it here when
-            # there is no plain line to carry it
-            if trailing_comment and not plain:
+            if trailing_comment:
                 remainder = f'{remainder} {trailing_comment}'
             self._add_line_value_to(pragma_category, remainder)
         return True
