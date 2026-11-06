@@ -1124,9 +1124,11 @@ class RpmPreamble(Section):
         self._open_bodies = open_macro_bodies(line)
         if line.endswith('\\') or any(self._open_bodies):
             self.multiline = True
-        # if we are kernel and not multiline we need to be at bottom, so
-        # lets use misc section, otherwise go for define
-        if not self.multiline and line.find('kernel_module') >= 0:
+        # a kernel_module define stays at the bottom of the preamble, and
+        # so does a line referencing one: an eager %global reading such a
+        # macro must not be hoisted above its definition. A bare mention
+        # of the text in a value is not a reference, so it stays put.
+        if not self.multiline and self._is_kernel_module_line(line):
             self._add_line_to('misc', line)
         else:
             self._add_line_to('define', line)
@@ -1137,6 +1139,12 @@ class RpmPreamble(Section):
             # a macro value cannot be put into the url path
             self.modname = None if match.group(1).startswith('%') else match.group(1)
         return True
+
+    def _is_kernel_module_line(self, line: str) -> bool:
+        """Whether the line defines or references a kernel_module macro."""
+        names = self.reg.re_macro_definition.findall(line)
+        names += self.reg.re_macro_reference.findall(line)
+        return any(self.reg.re_kernel_module_macro.search(name) for name in names)
 
     def _handle_prereq(self, line: str) -> bool:
         """Handle PreReq tag. Return True if handled."""
