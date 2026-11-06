@@ -6,10 +6,12 @@ class RpmBaseExceptionError(Exception):
 
     def __init__(self, args: str | tuple[str, ...] = ()) -> None:
         """Initialise class."""
+        # Callers pass a single message string: keep it as one args entry
+        # instead of unpacking it into characters.
+        if isinstance(args, str):
+            args = (args,)
         super().__init__(*args)
-        # callers pass a single message string, which is stored as-is;
-        # typeshed types Exception.args as a tuple, hence the ignore
-        self.args = args  # type: ignore[assignment]
+        self.args = args
 
     def __str__(self) -> str:
         """Format string representation."""
