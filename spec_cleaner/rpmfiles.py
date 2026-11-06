@@ -130,8 +130,10 @@ class RpmFiles(Section):
             if self.spec:
                 # remove full path
                 name = Path(self.spec).name
-                # remove .spec
-                name = name[0 : -len('.spec')]
+                # remove .spec, but only when the name actually has it:
+                # chopping unconditionally mangles a bare file name
+                if name.endswith('.spec'):
+                    name = name[0 : -len('.spec')]
                 # remove python prefix if exists
                 prefix_match = self.reg.re_python_package_name.match(name)
                 if prefix_match:

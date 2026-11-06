@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -34,6 +35,26 @@ class TestRpmFiles:
         files.spec = ''
         assert files._expand_python_sitelib('%{python_sitelib}/*') == (
             '%{python_sitelib}/%{name}\n%{python_sitelib}/%{name}-%{version}*-info'
+        )
+
+    def test_set_man_compression_info_bare_glob(self, files: RpmFiles) -> None:
+        """An .info* glob gets the info extension macro like .info.* does."""
+        assert files._set_man_compression('%{_infodir}/foo.info*') == (
+            '%{_infodir}/foo.info%{?ext_info}'
+        )
+
+    def test_python_sitelib_name_without_spec_suffix(self, files: RpmFiles, tmp_path: Path) -> None:
+        """A spec file name without a .spec suffix is not chopped."""
+        files.spec = str(tmp_path / 'python-PyYAML')
+        assert files._expand_python_sitelib('%{python_sitelib}/*') == (
+            '%{python_sitelib}/PyYAML\n%{python_sitelib}/PyYAML-%{version}*-info'
+        )
+
+    def test_python_sitelib_name_with_spec_suffix(self, files: RpmFiles, tmp_path: Path) -> None:
+        """A spec file name ending in .spec still loses the suffix."""
+        files.spec = str(tmp_path / 'python-PyYAML.spec')
+        assert files._expand_python_sitelib('%{python_sitelib}/*') == (
+            '%{python_sitelib}/PyYAML\n%{python_sitelib}/PyYAML-%{version}*-info'
         )
 
     def test_remove_doc_on_man_only_pages(self) -> None:
