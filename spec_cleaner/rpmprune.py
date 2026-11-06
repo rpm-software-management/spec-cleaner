@@ -28,7 +28,11 @@ class RpmClean(Section):
     def output(self, fout: IO[str], newline: bool = True, new_class_name: str = '') -> None:
         """Output only the open conditions and trailing comments, they belong to the next section."""
         opened: list[list[str]] = []
-        comments: list[str] = []
+        # a trailing comment is a (line, detached) pair: detached when its
+        # cluster starts after a blank line, so it reads as a note about
+        # the next section rather than about the dropped body line above it
+        comments: list[tuple[str, bool]] = []
+        detached = False
         for line in self.lines:
             if self.reg.re_if.match(line):
                 opened.append([line])
@@ -36,16 +40,30 @@ class RpmClean(Section):
                 opened[-1].append(line)
             elif opened and self.reg.re_endif.match(line):
                 opened.pop()
-            if line.startswith('#') and not (
+            # an indented comment is a comment too; it is kept only when
+            # it trails the dropped body, like a column-0 comment
+            if line.lstrip().startswith('#') and not (
                 self.reg.re_codeblock.match(line) or self.reg.re_endcodeblock.match(line)
             ):
-                comments.append(line)
+                comments.append((line, detached))
+            elif line == '':
+                # a blank line after an attached comment separates that
+                # comment from the next section; a detached comment stays
+                comments = [
+                    (comment, is_detached) for comment, is_detached in comments if is_detached
+                ]
+                detached = True
             else:
                 comments = []
-        # a blank line or the end of the file separates the comments from what follows
-        if new_class_name in ('', 'Section'):
+                detached = False
+        # the end of the file separates the comments from what follows;
+        # a conditional breakout after %clean keeps only the detached
+        # comments, an attached comment there is part of the dropped body
+        if new_class_name == '':
             comments = []
-        for line in chain(*opened, comments):
+        elif new_class_name == 'Section':
+            comments = [(comment, is_detached) for comment, is_detached in comments if is_detached]
+        for line in chain(*opened, (comment for comment, _ in comments)):
             fout.write(line + '\n')
 
 
