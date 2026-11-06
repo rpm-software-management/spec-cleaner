@@ -56,7 +56,13 @@ class RpmPrep(Section):
             The processed line.
         """
         if self.reg.re_dephell_setup.match(line):
-            line = '%dephell_gensetup'
+            # %dephell_gensetup generates setup.py from pyproject.toml,
+            # so only rewrite a conversion in that direction; a reverse
+            # conversion or custom file names must be left alone
+            if re.search(
+                r'--from(?:=|\s+)["\']?(?:\./)?pyproject\.toml["\']?(?:\s|$)', line
+            ) and re.search(r'--to(?:=|\s+)["\']?(?:\./)?setup\.py["\']?(?:\s|$)', line):
+                line = '%dephell_gensetup'
 
         return line
 
