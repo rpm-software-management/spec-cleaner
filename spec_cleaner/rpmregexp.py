@@ -183,7 +183,7 @@ class Regexp:
     # %{with foo} and %{without foo} read the with_foo switch of a bcond
     re_bcond_reference = re.compile(r'%\{with(?:out)?\s+(\w+)\}')
     # Special bracketed deps dection
-    re_brackety_requires = re.compile(r'(pkgconfig|cmake|perl|tex|rubygem)\(')
+    re_brackety_requires = re.compile(r'\b(python[\d.]*dist|font|metainfo|pkgconfig|cmake|perl|tex|rubygem)\(')
     re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')
     # packageand(pkg1:pkg2) only; a ':' inside an operand makes longer forms ambiguous to split
     re_packageand = re.compile(r'^packageand\(\s*([^:\s]+)\s*:\s*([^:\s]+)\s*\)\s*$')
