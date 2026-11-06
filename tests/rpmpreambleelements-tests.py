@@ -51,6 +51,30 @@ class TestRpmPreambleElements:
         assert elements._sort_helper_key(patterned) == '1Requires: zzz # see pattern() docs'
         grouped: GroupItem = ['# c', 'Requires: zzz # uses perl(Bar)']
         assert elements._sort_helper_key(grouped) == '1Requires: zzz # uses perl(Bar)'
+        rpm_call_dnl = (
+            "Requires: zzz %(rpm -q --queryformat '%{VERSION}' glibc) %dnl uses perl(Bar)"
+        )
+        assert elements._sort_helper_key(rpm_call_dnl) == '1' + rpm_call_dnl
+        plain_dnl = 'Requires: zzz %dnl uses perl(Bar)'
+        assert elements._sort_helper_key(plain_dnl) == '1Requires: zzz %dnl uses perl(Bar)'
+
+    def test_strip_trailing_comment(self) -> None:
+        """The trailing-comment strip handles %dnl, # and plain values."""
+        strip = RpmPreambleElements._strip_trailing_comment
+        assert strip('Requires: zzz %dnl uses perl(Bar)') == 'Requires: zzz'
+        assert strip('Requires: zzz # uses perl(Bar)') == 'Requires: zzz'
+        assert strip('# full-line comment') == ''
+        assert strip('Requires: zzz') == 'Requires: zzz'
+
+    def test_sort_helper_key_group_ending_in_token(self, elements: RpmPreambleElements) -> None:
+        """A group ending in a token sorts by the token, ignoring its trailing comment."""
+        plain = RpmRequiresToken('zzz', None, None, 'Requires: ')
+        plain.trailing_comment = '# uses perl(Bar)'
+        grouped: GroupItem = ['# pinned, see perl(Bar) docs', plain]
+        assert elements._sort_helper_key(grouped) == '1Requires: zzz # uses perl(Bar)'
+        brackety = RpmRequiresToken('perl(Bar)', None, None, 'Requires: ')
+        grouped_brackety: GroupItem = ['# c', brackety]
+        assert elements._sort_helper_key(grouped_brackety) == '2Requires: perl(Bar)'
 
     def test_is_own_lang_package(self, elements: RpmPreambleElements) -> None:
         """Test that only the -lang subpackage of the main package is recognized."""
