@@ -78,7 +78,6 @@ def test_output_directory_is_refused(tmp_path: Path, specfile: Path) -> None:
 
 def test_output_to_directory_reports_error(
     capsys: pytest.CaptureFixture[str],
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     specfile: Path,
 ) -> None:
@@ -107,7 +106,6 @@ def test_output_parent_that_is_a_file_is_refused(tmp_path: Path, specfile: Path)
 
 def test_output_to_missing_directory_reports_error(
     capsys: pytest.CaptureFixture[str],
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     specfile: Path,
 ) -> None:
@@ -121,7 +119,6 @@ def test_output_to_missing_directory_reports_error(
 
 def test_output_to_file_parent_reports_error(
     capsys: pytest.CaptureFixture[str],
-    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     specfile: Path,
 ) -> None:
