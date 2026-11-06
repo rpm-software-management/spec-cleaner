@@ -31,23 +31,33 @@ class RpmBuild(RpmCheck):
         # if the line itself is comment then we do not add any fixme on top of them
         if self.reg.re_comment.match(line):
             return
-        # an echo command on its own never invokes a build tool, and a
-        # tool word inside quotes is prose, not an invocation: match
-        # against the line with quoted spans removed. A line joining
-        # further commands still gets checked, e.g. 'echo done; cmake .'
-        if re.match(r'\s*echo(\s|$)', line) and not self._has_shell_separator(line):
-            return
-        match_line = ''.join(text for text, quoted in self._split_quoted(line) if not quoted)
+        # An echo command never invokes a build tool, and a tool word
+        # inside quotes is prose, not an invocation: check each shell
+        # command on its own, skipping echo-led segments, so 'echo foo;
+        # echo cmake' stays quiet while 'echo done; cmake .' still
+        # gets flagged. The tool order is the old whole-line order, so
+        # a line mixing tools keeps its previous message.
+        segments = [
+            segment
+            for segment in self._split_shell_commands(line)
+            if not re.match(r'\s*echo(\s|$)', segment)
+        ]
+        match_segments = [
+            ''.join(text for text, quoted in self._split_quoted(segment) if not quoted)
+            for segment in segments
+        ]
         # otherwise process the fixes
-        if self.reg.re_configure.match(match_line):
-            msg = '# FIXME: you should use the %%configure macro'
-        elif self.reg.re_cmake.match(match_line):
-            msg = '# FIXME: you should use the %%cmake macros'
-        elif self.reg.re_meson.match(match_line):
-            msg = '# FIXME: you should use the %%meson macros'
-        elif self.reg.re_qmake5.match(match_line):
-            msg = '# FIXME: you should use the %%qmake5 macro'
-        else:
+        msg = None
+        for pattern, message in (
+            (self.reg.re_configure, '# FIXME: you should use the %%configure macro'),
+            (self.reg.re_cmake, '# FIXME: you should use the %%cmake macros'),
+            (self.reg.re_meson, '# FIXME: you should use the %%meson macros'),
+            (self.reg.re_qmake5, '# FIXME: you should use the %%qmake5 macro'),
+        ):
+            if any(pattern.match(segment) for segment in match_segments):
+                msg = message
+                break
+        if msg is None:
             return
 
         position = len(self.lines)

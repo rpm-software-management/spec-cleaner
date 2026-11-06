@@ -7,5 +7,8 @@ echo done && ./configure --prefix=/usr
 cmake -DCMAKE_BUILD_TYPE=Release .
 meson setup build
 qmake-qt5 foo.pro
+echo foo; echo cmake
+echo hi && echo cmake .
+echo ./configure --help; echo done
 
 %changelog
