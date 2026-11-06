@@ -192,6 +192,17 @@ class TestRpmhelpers:
         with pytest.raises(RpmExceptionError, match='Line 2'):
             rpmhelpers.read_conversion_changes('probe_conversions.txt')
 
+    def test_read_licenses_changes_reports_a_malformed_line(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that a line without the tab separator is reported instead of unpacked."""
+        rpmhelpers.clear_read_caches()
+        monkeypatch.setattr(
+            rpmhelpers, 'open_datafile', lambda name: StringIO('0BSD\t0BSD\nbroken\n')
+        )
+        with pytest.raises(RpmExceptionError, match='Line 2'):
+            rpmhelpers.read_licenses_changes()
+
     def test_add_group_names_the_type_it_cannot_flatten(self) -> None:
         """Test that the guard reports the offending type."""
         with pytest.raises(RpmExceptionError, match="<class 'int'>"):

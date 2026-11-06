@@ -284,13 +284,20 @@ def read_licenses_changes() -> dict[str, str]:
     """
 
     def load() -> dict[str, str]:
+        conversions: dict[str, str] = {}
         with open_datafile(LICENSES_CHANGES) as f:
-            return {
-                old: correct
-                for correct, old in (
-                    line.rstrip('\n').split('\t') for line in f if not line.startswith('#')
-                )
-            }
+            # the fields are split by a tab
+            for number, line in enumerate(f, 1):
+                if line.startswith('#'):
+                    continue
+                fields = line.rstrip('\n').split('\t')
+                if len(fields) != 2:
+                    raise RpmExceptionError(
+                        f'Line {number} of {LICENSES_CHANGES} is not a two-field tab-separated row: {line.rstrip()!r}'
+                    )
+                correct, old = fields
+                conversions[old] = correct
+        return conversions
 
     return _cached_datafile(LICENSES_CHANGES, load)
 
