@@ -26,6 +26,10 @@ class TestDependencyParser:
         'line, message',
         [
             ('foo >= < 1', '^found operator after operator'),
+            ('foo >>= 1.0', '^found operator after operator'),
+            ('foo >< 1.0', '^found operator after operator'),
+            ('foo =>= 1.0', '^found operator after operator'),
+            ('foo <== 1.0', '^found operator after operator'),
             ('foo >=1<2', '^found operator after version'),
             ('>= 1', '^found operator when name expected'),
             ('foo >= 1 < 2', '^found operator where a name is expected'),
@@ -36,6 +40,10 @@ class TestDependencyParser:
         """Test that an operator in a place rpm would reject is an error, not a nameless token."""
         with pytest.raises(DepParserError, match=message):
             DependencyParser(line)
+
+    def test_double_equals_operator_still_parses(self) -> None:
+        """Test that '==' keeps parsing: the token formatter normalises it to '='."""
+        assert DependencyParser('foo == 1.0').parsed == [('foo', '==', '1.0')]
 
     @pytest.mark.parametrize(
         'line, expected',
