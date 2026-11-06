@@ -165,3 +165,14 @@ class TestRegexp:
         assert not make('cd tests && %make_build check')
         assert not make('cd tests && %make_build || make check')
         assert not make('cd tests && %make_build || CFLAGS="-O2" make check')
+
+    def test_tail_macros_conditional_and_glued(self) -> None:
+        """Test that the conditional spelling counts as a tail macro and glued names do not."""
+        tail = Regexp.re_tail_macros.match
+        assert tail('%python_subpackages')
+        assert tail('%{python_subpackages}')
+        assert tail('%{?python_subpackages}')
+        assert tail('%python_subpackages -a foo')
+        assert tail('%{?python_subpackages} -a foo')
+        assert not tail('%python_subpackagesfoo')
+        assert not tail('%{python_subpackages}foo')
