@@ -686,6 +686,8 @@ class RpmSpecCleaner:
 
         Both have to be one-line scriptlets in the same conditional branch, and the second one
         must not follow a comment of its own; the merged line takes the place of the first one.
+        The halves must spell the package identically: a bare name is relative to the main
+        package, '-n NAME' is absolute.
         A package that has %ldconfig_scriptlets elsewhere, eg for another distribution, keeps
         its explicit scriptlets.
 
@@ -695,8 +697,10 @@ class RpmSpecCleaner:
         Returns:
             The list of lines with the pairs merged.
         """
-        # the bare name and the '-n NAME' spelling name the same package,
-        # so compare both spellings in one canonical form
+        # a %ldconfig_scriptlets use elsewhere blocks pairing when it
+        # could name the same package, so compare uses in canonical
+        # form: blocking a merge only ever leaves the explicit
+        # scriptlets alone
         used = {package for line in lines if (package := self._ldconfig_use(line)) is not None}
         waiting: dict[tuple[tuple[int, ...], str], tuple[int, str]] = {}
         merged: dict[int, str] = {}
@@ -723,7 +727,12 @@ class RpmSpecCleaner:
             package = self._ldconfig_package(half[1]) if half else ''
             if not half or package in used or not self._is_lone_scriptlet(lines, i):
                 continue
-            key = (tuple(branches), package)
+            # the pair itself must spell the package identically: a
+            # bare name is relative to the main package while '-n NAME'
+            # names it absolutely, so '%post foo' (demo-foo) and
+            # '%postun -n foo' (foo) are different packages and must
+            # not merge
+            key = (tuple(branches), half[1])
             if key not in waiting:
                 waiting[key] = (i, half[0])
             elif waiting[key][1] != half[0] and not lines[i - 1].startswith('#'):
