@@ -982,6 +982,30 @@ class TestRpmPreambleOrder:
         ]
         assert not preamble_mode.condition
 
+    def test_split_trailing_comment_dnl_inside_macro_body(self) -> None:
+        """Test that a %dnl inside a %{...} body is body text, not the trailing comment."""
+        value, comment = RpmPreamble._split_trailing_comment('foo %{bar %dnl} baz %dnl comment')
+        assert value == 'foo %{bar %dnl} baz'
+        assert comment == '%dnl comment'
+
+    def test_multilinecond_balanced_brace_line_is_not_opener(
+        self, preamble_mode: RpmPreamble
+    ) -> None:
+        """Test that a re_multilinecond-matching line with balanced braces does not open a block."""
+        lines = ['%{foo}bar?baz:', 'Requires: baz']
+        if preamble_mode.minimal:
+            # minimal mode preserves source order
+            assert self._flatten(preamble_mode, lines) == [
+                '%{foo}bar?baz:',
+                'Requires:       baz',
+            ]
+        else:
+            assert self._flatten(preamble_mode, lines) == [
+                'Requires:       baz',
+                '%{foo}bar?baz:',
+            ]
+        assert not preamble_mode.condition
+
     def test_onelinecond_dep_inner_macro_brace_closed(self, preamble_mode: RpmPreamble) -> None:
         """Test that a brace closing only an inner macro still leaves a closed one-liner."""
         assert self._flatten(preamble_mode, ['%{?with_foo: BuildRequires: %{bar}}']) == [
