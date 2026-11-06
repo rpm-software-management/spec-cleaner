@@ -241,6 +241,10 @@ class TestRpmhelpers:
             ('pkgconfig %{?v:>= 1}', True),
             ('%{?with_x}pkgconfig', True),
             ('pkgconfig-x11', False),
+            ('python3-pkgconfig', False),
+            ('foo-pkgconfig', False),
+            ('%{?with_x}python3-pkgconfig', False),
+            ('%{?a:%{?b:%{c}}}pkgconfig', True),
         ],
     )
     def test_find_pkgconfig_declaration(self, name: str, declaration: bool) -> None:

@@ -497,6 +497,37 @@ def find_pkgconfig_statement(elements: Iterable[GroupLine]) -> bool:
     return False
 
 
+def _strip_leading_macros(name: str) -> str:
+    """
+    Strip leading macro prefixes from a dependency name.
+
+    A prefix is a %{...} body (braces counted, so arbitrarily nested
+    conditionals such as %{?a:%{?b:%{c}}} are a single prefix), a bare
+    %name macro, or a %(shell) macro. Stops at the first character that
+    starts no prefix, or on an unbalanced %{ body.
+    """
+    while name.startswith('%'):
+        if name.startswith('%{'):
+            depth = 0
+            for _index, char in enumerate(name):
+                if char == '{':
+                    depth += 1
+                elif char == '}':
+                    depth -= 1
+                    if depth == 0:
+                        break
+            else:
+                return name
+            name = name[_index + 1 :]
+        elif match := re.match(r'%[A-Za-z0-9_?]+', name):
+            name = name[match.end() :]
+        elif match := re.match(r'%\([^)]*\)', name):
+            name = name[match.end() :]
+        else:
+            return name
+    return name
+
+
 def find_pkgconfig_declaration(elements: Iterable[GroupLine]) -> bool:
     """
     Find if there is direct pkgconfig dependency in the paragraph.
@@ -509,6 +540,11 @@ def find_pkgconfig_declaration(elements: Iterable[GroupLine]) -> bool:
     """
     for i in elements:
         if isinstance(i, RpmRequiresToken):
-            if 'pkgconfig ' in i.name or i.name.endswith('pkgconfig'):
+            # the bare package name, optionally preceded by a conditional
+            # macro (e.g. %{?with_x}pkgconfig) or followed by a conditional
+            # version (e.g. pkgconfig %{?v:>= 1}); a name that merely ends
+            # in pkgconfig (python3-pkgconfig) is a different package
+            rest = _strip_leading_macros(i.name.strip()).lstrip()
+            if re.fullmatch(r'pkgconfig(?:\s.*)?', rest):
                 return True
     return False
