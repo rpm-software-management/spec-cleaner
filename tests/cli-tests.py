@@ -67,6 +67,52 @@ def test_output_must_not_be_overwritten(tmp_path: Path, specfile: Path) -> None:
     assert process_args([str(specfile), '-o', str(out), '--force'])['force'] is True
 
 
+def test_output_parent_directory_must_exist(tmp_path: Path, specfile: Path) -> None:
+    """Test that an output path under a nonexistent directory is refused."""
+    out = tmp_path / 'no-such-dir' / 'out.spec'
+    with pytest.raises(RpmWrongArgsError, match='does not exist.'):
+        process_args([str(specfile), '-o', str(out)])
+
+
+def test_output_parent_that_is_a_file_is_refused(tmp_path: Path, specfile: Path) -> None:
+    """Test that an output path under a regular file is refused as not a directory."""
+    blocker = tmp_path / 'existing-file'
+    blocker.write_text('')
+    out = blocker / 'out.spec'
+    with pytest.raises(RpmWrongArgsError, match='is not a directory.'):
+        process_args([str(specfile), '-o', str(out)])
+
+
+def test_output_to_missing_directory_reports_error(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    specfile: Path,
+) -> None:
+    """Test that a run to a missing output directory fails cleanly, without a traceback."""
+    out = tmp_path / 'no-such-dir' / 'out.spec'
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(sys, 'argv', ['spec-cleaner', '-o', str(out), str(specfile)])
+        assert main() == 1
+    assert capsys.readouterr().err == f'ERROR: {tmp_path / "no-such-dir"} does not exist.\n'
+
+
+def test_output_to_file_parent_reports_error(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    specfile: Path,
+) -> None:
+    """Test that a run to an output path under a regular file fails cleanly."""
+    blocker = tmp_path / 'existing-file'
+    blocker.write_text('')
+    out = blocker / 'out.spec'
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(sys, 'argv', ['spec-cleaner', '-o', str(out), str(specfile)])
+        assert main() == 1
+    assert capsys.readouterr().err == f'ERROR: {blocker} is not a directory.\n'
+
+
 def test_output_path_is_expanded(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, specfile: Path
 ) -> None:

@@ -158,6 +158,11 @@ def process_args(argv: list[str]) -> dict[str, Any]:
         options.output = os.path.expanduser(options.output)
         if not options.force and os.path.exists(options.output):
             raise RpmWrongArgsError(f'{options.output} already exists.')
+        parent = os.path.dirname(options.output) or '.'
+        if not os.path.isdir(parent):
+            if os.path.exists(parent):
+                raise RpmWrongArgsError(f'{parent} is not a directory.')
+            raise RpmWrongArgsError(f'{parent} does not exist.')
 
     # convert options to dict
     options_dict = vars(options)
