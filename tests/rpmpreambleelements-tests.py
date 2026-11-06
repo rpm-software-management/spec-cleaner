@@ -8,6 +8,7 @@ import pytest
 from spec_cleaner.rpmcleaner import RpmSpecCleaner
 from spec_cleaner.rpmhelpers import GroupItem
 from spec_cleaner.rpmpreambleelements import RpmPreambleElements
+from spec_cleaner.rpmrequirestoken import RpmRequiresToken
 
 
 @pytest.fixture
@@ -26,6 +27,30 @@ class TestRpmPreambleElements:
         assert elements._sort_helper_key('Source: a.tar.gz') == 1
         assert elements._sort_helper_key('Source1: b.tar.gz') == 1
         assert elements._sort_helper_key('Source2: b.tar.gz') == 2
+
+    def test_sort_helper_key_ignores_trailing_comment(self, elements: RpmPreambleElements) -> None:
+        """A trailing comment mentioning perl()/pattern() must not change the sort class."""
+        plain = RpmRequiresToken('foo', None, None, 'Requires: ')
+        plain.trailing_comment = '# uses perl(Bar)'
+        assert elements._sort_helper_key(plain) == '1Requires: foo # uses perl(Bar)'
+        patterned = RpmRequiresToken('zzz', None, None, 'Requires: ')
+        patterned.trailing_comment = '# see pattern() docs'
+        assert elements._sort_helper_key(patterned) == '1Requires: zzz # see pattern() docs'
+        brackety = RpmRequiresToken('perl(Bar)', None, None, 'Requires: ')
+        assert elements._sort_helper_key(brackety) == '2Requires: perl(Bar)'
+
+    def test_sort_helper_key_ignores_trailing_comment_on_strings(
+        self, elements: RpmPreambleElements
+    ) -> None:
+        """A trailing comment must not change the sort class of a string-kept line either."""
+        rpm_call = "Requires: zzz %(rpm -q --queryformat '%{VERSION}' glibc) # uses perl(Bar)"
+        assert elements._sort_helper_key(rpm_call) == '1' + rpm_call
+        plain = 'Requires: zzz # uses perl(Bar)'
+        assert elements._sort_helper_key(plain) == '1Requires: zzz # uses perl(Bar)'
+        patterned = 'Requires: zzz # see pattern() docs'
+        assert elements._sort_helper_key(patterned) == '1Requires: zzz # see pattern() docs'
+        grouped: GroupItem = ['# c', 'Requires: zzz # uses perl(Bar)']
+        assert elements._sort_helper_key(grouped) == '1Requires: zzz # uses perl(Bar)'
 
     def test_is_own_lang_package(self, elements: RpmPreambleElements) -> None:
         """Test that only the -lang subpackage of the main package is recognized."""

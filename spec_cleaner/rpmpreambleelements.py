@@ -333,6 +333,22 @@ class RpmPreambleElements:
         ]
         return min(known) if known else None
 
+    @staticmethod
+    def _strip_trailing_comment(value: str) -> str:
+        """
+        Return the value without a trailing %dnl or # comment.
+
+        Mirrors RpmPreamble._split_trailing_comment (kept separate: that
+        class imports this module, so reusing it here would be circular).
+        """
+        dnl_idx = value.find('%dnl')
+        if dnl_idx >= 0:
+            return value[:dnl_idx].strip()
+        for i, ch in enumerate(value):
+            if ch == '#' and (i == 0 or value[i - 1] in ' \t'):
+                return value[:i].strip()
+        return value
+
     def _sort_helper_key(self, a: GroupItem) -> int | str:
         key: int | str
         if isinstance(a, str) or isinstance(a, RpmRequiresToken):
@@ -343,18 +359,37 @@ class RpmPreambleElements:
         else:
             raise RpmExceptionError(f'Unknown type during sort: {a}')
 
+        # A trailing comment is not part of the dependency, so the
+        # brackety/pattern checks below must not see it: a comment
+        # mentioning perl(...) would otherwise sort a plain dep last,
+        # and one mentioning pattern() would sort it first. The returned
+        # key keeps the full line; only the classification is comment-free.
+        check_key = key
+        token = a if isinstance(a, RpmRequiresToken) else None
+        if token is None and isinstance(a, list) and isinstance(a[-1], RpmRequiresToken):
+            token = a[-1]
+        if token is not None and token.trailing_comment:
+            # str(token) ends in ' ' + trailing_comment
+            check_key = str(check_key)[: -len(token.trailing_comment)].rstrip()
+        elif token is None:
+            # A plain-string item (or a group ending in one) carries its
+            # trailing comment inline on the line, so strip it with the
+            # same rule RpmPreamble._split_trailing_comment uses (reusing
+            # that helper directly would be a circular import).
+            check_key = self._strip_trailing_comment(str(check_key))
+
         # Special case is the category grouping where we have to get the number in
         # after the value
-        match = self.reg.re_source.match(key)
+        match = self.reg.re_source.match(check_key)
         if match:
             value = match.group(1)
             if not value:
                 value = '1'
             key = int(value)
         # Put brackety ()-style deps at the end of the list, after all other
-        elif self.reg.re_brackety_requires.search(key):
+        elif self.reg.re_brackety_requires.search(check_key):
             key = '2' + key
-        elif self.reg.re_patternmacro.search(key):
+        elif self.reg.re_patternmacro.search(check_key):
             key = '0' + key
         else:
             key = '1' + key
