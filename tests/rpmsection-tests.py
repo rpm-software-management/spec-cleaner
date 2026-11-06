@@ -538,6 +538,42 @@ OPTFLAGS_QUOTED_USES = [
         "echo 'CFLAGS=${RPM_OPT_FLAGS}'",
         "echo 'CFLAGS=%{optflags}'",
     ),
+    # flags may precede the variable in the assignment value
+    (
+        "echo 'CFLAGS=-fPIC $RPM_OPT_FLAGS' >> config.mk",
+        "echo 'CFLAGS=-fPIC %{optflags}' >> config.mk",
+    ),
+    (
+        "echo 'CFLAGS=-fPIC ${RPM_OPT_FLAGS}' >> config.mk",
+        "echo 'CFLAGS=-fPIC %{optflags}' >> config.mk",
+    ),
+    (
+        "echo 'CFLAGS = -fPIC $RPM_OPT_FLAGS' >> config.mk",
+        "echo 'CFLAGS = -fPIC %{optflags}' >> config.mk",
+    ),
+    # a second variable in the same assignment value is rewritten too
+    (
+        "echo 'CFLAGS=-fPIC $RPM_OPT_FLAGS ${RPM_OPT_FLAGS}'",
+        "echo 'CFLAGS=-fPIC %{optflags} %{optflags}'",
+    ),
+    # a comparison after the flags still excludes the variable
+    (
+        "echo 'CFLAGS=-fPIC a == $RPM_OPT_FLAGS'",
+        "echo 'CFLAGS=-fPIC a == $RPM_OPT_FLAGS'",
+    ),
+    (
+        "echo 'CFLAGS=-fPIC x != $RPM_OPT_FLAGS'",
+        "echo 'CFLAGS=-fPIC x != $RPM_OPT_FLAGS'",
+    ),
+    # a doubled comparison operator is still no assignment
+    (
+        "echo 'a === $RPM_OPT_FLAGS'",
+        "echo 'a === $RPM_OPT_FLAGS'",
+    ),
+    (
+        "echo 'a !== $RPM_OPT_FLAGS'",
+        "echo 'a !== $RPM_OPT_FLAGS'",
+    ),
 ]
 
 

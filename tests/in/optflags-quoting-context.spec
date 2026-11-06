@@ -3,6 +3,7 @@ cat > config.mk <<EOF
 CFLAGS = $RPM_OPT_FLAGS -fPIC
 EOF
 echo 'CFLAGS=$RPM_OPT_FLAGS -fPIC' >> config.mk
+echo 'CFLAGS=-fPIC $RPM_OPT_FLAGS' >> config.mk
 sed -i 's|^CFLAGS = .*|CFLAGS = $RPM_OPT_FLAGS -fPIC|' Makefile
 echo "it's" CFLAGS=$RPM_OPT_FLAGS ./build.sh
 CXXFLAGS+=$RPM_OPT_FLAGS ./build.sh

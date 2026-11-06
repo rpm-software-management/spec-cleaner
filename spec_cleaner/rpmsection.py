@@ -97,6 +97,9 @@ _RE_SHIELDED = re.compile(r'\x00(\d+)\x00')
 # unlike an unquoted heredoc
 _RE_QUOTED_HEREDOC = re.compile(r"<<-?\s*(?:'([^'\s]+)'|\"([^\"\s]+)\"|\\([^\s;&|]+))")
 
+# a lone '=' that assigns, not one inside '==', '!=', '>=' or '<='
+_RE_ASSIGNMENT_EQ = re.compile(r'(?<![=!<>])=(?!=)')
+
 
 def _lua_body_prefix(text: str, depth: int) -> tuple[str, str, int]:
     """
@@ -500,15 +503,27 @@ class Section:
         """Replace $RPM_OPT_FLAGS inside one quoted segment of a line."""
         if part.startswith('"'):
             return self.reg.re_optflags.sub('%{optflags}', part)
-        # single quotes: only an assignment value, 'NAME=$RPM_OPT_FLAGS'
-        # or 'NAME = $RPM_OPT_FLAGS'; a bare use stays literal text, and
-        # the '=' inside '==', '!=', '>=' or '<=' is a comparison, never
-        # an assignment, so it is left alone too
-        return re.sub(
-            r'(?<![=!<>])(=\s*)(?!=)\$(?:RPM_OPT_FLAGS\b|\{RPM_OPT_FLAGS\})',
-            r'\1%{optflags}',
-            part,
-        )
+
+        # single quotes: only an assignment value, 'NAME=<value>'; the
+        # variable need not sit directly after the '=', flags may precede
+        # it ('NAME=-fPIC $RPM_OPT_FLAGS'). A bare use stays literal text,
+        # and the '=' inside '==', '!=', '>=' or '<=' is a comparison,
+        # never an assignment, so a variable after one is left alone too
+        def _rewrite(match: re.Match[str]) -> str:
+            before = part[: match.start()]
+            # the assignment the variable belongs to is the lone '='
+            # after the last comparison or command separator; search
+            # from the cut with pos, not on a slice, so the lookbehind
+            # still sees the character before it ('===' is no assignment)
+            cut = max(
+                (m.end() for m in re.finditer(r'==|!=|>=|<=|[;&|]', before)),
+                default=0,
+            )
+            if _RE_ASSIGNMENT_EQ.search(before, cut):
+                return '%{optflags}'
+            return match.group(0)
+
+        return self.reg.re_optflags.sub(_rewrite, part)
 
     def replace_python_expand(self, line: str) -> str:
         """
