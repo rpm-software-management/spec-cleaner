@@ -671,16 +671,25 @@ class TestRpmPreamble:
         preamble.add('#!BuildConflicts: mixold mixq [i586] # legacy combo')
         preamble.add('#!BuildRequires: plainpkg %?bar # needed sometimes')
         items = preamble.paragraph.items
-        assert [str(item) for item in items['buildconflicts']] == [
-            'BuildConflicts: mixold # legacy combo'
-        ]
+        # the comment stays with the qualified pragma: a converted plain
+        # entry may be dropped as a duplicate, and the comment with it
+        assert [str(item) for item in items['buildconflicts']] == ['BuildConflicts: mixold']
         assert [str(item) for item in items['buildconflicts_pragma']] == [
-            '#!BuildConflicts: mixq [i586]'
+            '#!BuildConflicts: mixq [i586] # legacy combo'
         ]
-        assert [str(item) for item in items['buildrequires']] == [
-            'BuildRequires:  plainpkg # needed sometimes'
+        assert [str(item) for item in items['buildrequires']] == ['BuildRequires:  plainpkg']
+        assert [str(item) for item in items['buildrequires_pragma']] == [
+            '#!BuildRequires: %?bar # needed sometimes'
         ]
-        assert [str(item) for item in items['buildrequires_pragma']] == ['#!BuildRequires: %?bar']
+
+    def test_dep_pragma_comment_survives_duplicate_plain(self, preamble: RpmPreamble) -> None:
+        """Test that a split pragma comment stays on the surviving qualified entry."""
+        preamble.add('BuildRequires: foo')
+        preamble.add('#!BuildRequires: foo bar [x86_64] # explanation')
+        assert preamble.paragraph.flatten_output() == [
+            'BuildRequires:  foo',
+            '#!BuildRequires: bar [x86_64] # explanation',
+        ]
 
     def test_dep_pragma_comment_stays_when_no_plain_line(self, preamble: RpmPreamble) -> None:
         """Test that a trailing comment stays on the pragma line when nothing converts."""
