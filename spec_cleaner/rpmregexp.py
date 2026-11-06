@@ -220,6 +220,14 @@ class Regexp:
     # containing the word make is never matched
     _make_env_value = r'(?:[^\s"\'\\;&|]+|"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\')'
     _make_env_prefix = r'(?:[A-Za-z_][A-Za-z0-9_]*=' + _make_env_value + r'\s+)+'
+    # One unit of shell text that cannot contain a real (unquoted,
+    # unescaped) command separator: a single- or double-quoted string,
+    # an escaped character, or any other single character except a
+    # separator, a quote or a backslash.
+    _make_text_unit = r"(?:'[^']*'|\"(?:[^\"\\]|\\.)*\"|\\.|[^;&|'\"\\])"
+    # A shell command separator: '&&' and '||' match as one, since
+    # '&' and '|' cannot be consumed as text.
+    _make_separator = r'(?:&&|\|\||[;&|])'
     # 'make' led by another shell command (after ;, & or |) or invoked
     # by an absolute or %{_bindir} path, e.g. 'cd tests && make check'
     # or '/usr/bin/make check' (which _complete_cleanup rewrites to
@@ -228,23 +236,35 @@ class Regexp:
     # to keep, 2 the path to drop, 3 the arguments. The plain start
     # alternative comes first so the first make call in the line wins
     # ('make ... || make' converts the first one, as before). The
-    # separator-led prefix never spans an earlier '%make_build', so a
-    # line already converted ('%make_build || make') is left alone
-    # and the transform stays idempotent. A separator-led make may
-    # itself be led by assignments ('cd tests && CFLAGS="-O2" make
-    # check'); those stay in group 1 and are kept verbatim. Assignments
-    # at the start of the line still match only re_make_env, so
-    # 'FOO=bar make all' does not match here. The path also accepts
-    # the conditional '%{?_bindir}' spelling.
+    # separator-led prefix is one or more (text, separator) segments,
+    # matched lazily so the first make call after a separator wins,
+    # so only a separator outside quotes and escapes counts: 'make'
+    # inside quotes or after an escaped separator ("echo 'run; make
+    # ...'", 'echo foo\; make ...') never matches, while several real
+    # commands before it do ('cd tests; cd src && make check'). The
+    # segments never span an earlier '%make_build', so a line already
+    # converted ('%make_build || make') is left alone and the transform
+    # stays idempotent. A separator-led make may itself be led by
+    # assignments ('cd tests && CFLAGS="-O2" make check'); those stay
+    # in group 1 and are kept verbatim. Assignments at the start of the
+    # line still match only re_make_env, so 'FOO=bar make all' does not
+    # match here. The path also accepts the conditional '%{?_bindir}'
+    # spelling.
+    # The whitespace after the last separator is consumed once, after
+    # the repetition: a trailing '\s*' inside the segments would let
+    # the spaces after a separator be split between segments many ways
+    # and backtrack exponentially on long lines.
+    _make_sep_prefix = (
+        r'(?:(?:(?!%make_build)' + _make_text_unit + r')*?' + _make_separator + r')+?\s*'
+    )
+    _make_build_sep_prefix = r'(?:' + _make_text_unit + r'*?' + _make_separator + r')+?\s*'
     re_make = re.compile(
-        r'((?:\s*|(?:(?!%make_build).)*?[;&|]\s*(?:'
-        + _make_env_prefix
-        + r')?))((?:(?:/usr)?/bin/|%{?\??_?bindir}?/)?)make(\s.*|)$'
+        r'((?:\s*|' + _make_sep_prefix + r'(?:' + _make_env_prefix + r')?))'
+        r'((?:(?:/usr)?/bin/|%{?\??_?bindir}?/)?)make(\s.*|)$'
     )
     re_make_build = re.compile(
-        r'((?:\s*|.*?[;&|]\s*(?:'
-        + _make_env_prefix
-        + r')?))((?:(?:/usr)?/bin/|%{?\??_?bindir}?/)?)%make_build(\s.*|)$'
+        r'((?:\s*|' + _make_build_sep_prefix + r'(?:' + _make_env_prefix + r')?))'
+        r'((?:(?:/usr)?/bin/|%{?\??_?bindir}?/)?)%make_build(\s.*|)$'
     )
     re_make_env = re.compile(r'^(\s*' + _make_env_prefix + r')make(\s.*|)$')
     re_make_build_env = re.compile(r'^(\s*' + _make_env_prefix + r')%make_build(\s.*|)$')

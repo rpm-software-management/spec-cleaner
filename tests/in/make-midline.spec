@@ -20,6 +20,11 @@ cd tests && make check %{?_smp_mflags}
 cd tests && CFLAGS="-O2" make check
 cd tests && CFLAGS="-O2" make check %{?_smp_mflags}
 echo make all
+echo 'run; make V=1 check'
+echo "run; make V=1 check"
+echo foo\; make check
+echo 'x' ; make check
+cd tests; cd src && make check
 
 %files
 %{_bindir}/make-midline
