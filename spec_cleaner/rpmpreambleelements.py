@@ -530,7 +530,13 @@ class RpmPreambleElements:
                         match = True
                         break
                     # new one specifies version
-                    if not item.version and element.version:
+                    # (not for Provides/Obsoletes/Conflicts, where unversioned means every version)
+                    if (
+                        not item.version
+                        and element.version
+                        # tokens in a paragraph always carry their category prefix
+                        and not item.prefix.startswith(('Provides', 'Obsoletes', 'Conflicts'))  # type: ignore[union-attr]
+                    ):
                         if item.comments:
                             if element.comments:
                                 element.comments += item.comments
@@ -541,12 +547,12 @@ class RpmPreambleElements:
                         break
                     # existing one specifies version, the new one is subsumed
                     # by it no matter in which order they were written
-                    # (not for Provides/Obsoletes, where unversioned means every version)
+                    # (not for Provides/Obsoletes/Conflicts, where unversioned means every version)
                     if (
                         item.version
                         and not element.version
                         # tokens in a paragraph always carry their category prefix
-                        and not item.prefix.startswith(('Provides', 'Obsoletes'))  # type: ignore[union-attr]
+                        and not item.prefix.startswith(('Provides', 'Obsoletes', 'Conflicts'))  # type: ignore[union-attr]
                     ):
                         if element.comments:
                             item.comments = (item.comments or []) + element.comments
