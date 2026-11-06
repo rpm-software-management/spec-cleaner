@@ -1,5 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+import re
+
 # We basically extend rpmcheck
 from .rpmcheck import RpmCheck
 
@@ -29,14 +31,20 @@ class RpmBuild(RpmCheck):
         # if the line itself is comment then we do not add any fixme on top of them
         if self.reg.re_comment.match(line):
             return
+        # an echo line never invokes a build tool, and a tool word inside
+        # quotes is prose, not an invocation: match against the line with
+        # quoted spans removed
+        if re.match(r'\s*echo(\s|$)', line):
+            return
+        match_line = ''.join(text for text, quoted in self._split_quoted(line) if not quoted)
         # otherwise process the fixes
-        if self.reg.re_configure.match(line):
+        if self.reg.re_configure.match(match_line):
             msg = '# FIXME: you should use the %%configure macro'
-        elif self.reg.re_cmake.match(line):
+        elif self.reg.re_cmake.match(match_line):
             msg = '# FIXME: you should use the %%cmake macros'
-        elif self.reg.re_meson.match(line):
+        elif self.reg.re_meson.match(match_line):
             msg = '# FIXME: you should use the %%meson macros'
-        elif self.reg.re_qmake5.match(line):
+        elif self.reg.re_qmake5.match(match_line):
             msg = '# FIXME: you should use the %%qmake5 macro'
         else:
             return
