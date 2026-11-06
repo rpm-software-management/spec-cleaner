@@ -382,6 +382,10 @@ class Regexp:
 
     # rpmfiles
     re_man_compression = re.compile(r'(\.\d)(\.?\*|\.gz|%{?ext_man}?)$')
+    # Group 1 is the matched suffix: '.*', '.gz', an ext_info macro, or
+    # a bare '*' glob. The caller keeps the wildcard for the bare form:
+    # '.info*' also matches split volumes such as foo.info-1.gz, which
+    # '.info%{?ext_info}' would not.
     re_info_compression = re.compile(r'\.info(\.?\*|\.gz|%{?ext_info}?)$')
     re_defattr = re.compile(r'^\s*%defattr\s*\(\s*-\s*,\s*root\s*,\s*root\s*(,\s*-\s*)?\)\s*')
     re_doclicense = re.compile(r'(\S+)?(LICEN(S|C)E|COPYING)(\*|\.(\*|\S+))?($|\s)', re.IGNORECASE)

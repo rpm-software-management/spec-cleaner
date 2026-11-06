@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import fnmatch
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -38,8 +39,29 @@ class TestRpmFiles:
         )
 
     def test_set_man_compression_info_bare_glob(self, files: RpmFiles) -> None:
-        """An .info* glob gets the info extension macro like .info.* does."""
+        """An .info* glob keeps its wildcard when it gains the info extension macro."""
         assert files._set_man_compression('%{_infodir}/foo.info*') == (
+            '%{_infodir}/foo.info*%{?ext_info}'
+        )
+
+    def test_set_man_compression_info_bare_glob_keeps_split_volumes(self, files: RpmFiles) -> None:
+        """A converted .info* glob still matches split Info volumes."""
+        converted = files._set_man_compression('%{_infodir}/foo.info*')
+        assert converted == '%{_infodir}/foo.info*%{?ext_info}'
+        pattern = converted.replace('%{_infodir}/', '').replace('%{?ext_info}', '.gz')
+        assert fnmatch.fnmatchcase('foo.info.gz', pattern)
+        assert fnmatch.fnmatchcase('foo.info-1.gz', pattern)
+        assert fnmatch.fnmatchcase('foo.info-2.gz', pattern)
+        unset = converted.replace('%{_infodir}/', '').replace('%{?ext_info}', '')
+        assert fnmatch.fnmatchcase('foo.info', unset)
+        assert fnmatch.fnmatchcase('foo.info-1.gz', unset)
+
+    def test_set_man_compression_info_dotted_forms(self, files: RpmFiles) -> None:
+        """The .info.* and .info.gz forms still convert without a wildcard."""
+        assert files._set_man_compression('%{_infodir}/foo.info.*') == (
+            '%{_infodir}/foo.info%{?ext_info}'
+        )
+        assert files._set_man_compression('%{_infodir}/foo.info.gz') == (
             '%{_infodir}/foo.info%{?ext_info}'
         )
 

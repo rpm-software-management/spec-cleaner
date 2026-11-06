@@ -1,6 +1,6 @@
 %files
-%{_infodir}/make.info%{?ext_info}
-%{_infodir}/*.info%{?ext_info}
+%{_infodir}/make.info*%{?ext_info}
+%{_infodir}/*.info*%{?ext_info}
 %{_infodir}/%{name}.info%{?ext_info}
 %{_infodir}/%{name}.info%{?ext_info}
 %{_mandir}/man1/bzip2.*

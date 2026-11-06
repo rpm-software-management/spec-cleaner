@@ -80,7 +80,16 @@ class RpmFiles(Section):
         if line.startswith('%{_mandir}'):
             line = self.reg.re_man_compression.sub(r'\1%{?ext_man}', line)
         if line.startswith('%{_infodir}'):
-            line = self.reg.re_info_compression.sub('.info%{?ext_info}', line)
+            # A bare .info* glob also matches split volumes
+            # (foo.info-1.gz, foo.info-2.gz), so it keeps its wildcard:
+            # .info*%{?ext_info} still matches them once ext_info is
+            # set, and expands back to .info* when it is not.
+            line = self.reg.re_info_compression.sub(
+                lambda match: (
+                    '.info*%{?ext_info}' if match.group(1) == '*' else '.info%{?ext_info}'
+                ),
+                line,
+            )
         return line
 
     def _move_license_from_doc(self, line: str) -> str:
