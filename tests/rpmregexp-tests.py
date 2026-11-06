@@ -146,6 +146,8 @@ class TestRegexp:
         # command boundary, so make there stays an echo argument
         assert not make("echo 'run; make V=1 check'")
         assert not make('echo "run; make V=1 check"')
+        assert not make('echo "a; make all"')
+        assert not make('echo "a; make"')
         assert not make(r'echo foo\; make check')
         assert not make("echo 'run && make check'")
         assert not make('echo "run || make check"')
@@ -153,6 +155,9 @@ class TestRegexp:
         # as do several real commands before make
         assert make("echo 'x' ; make check")
         assert make('echo "x" && make check')
+        # a quoted make before a real separator stays quoted; only the
+        # real command after it converts
+        assert make('echo "a; make all"; make check')
         assert make('cd tests; cd src && make check')
         assert not make('grep -n make Makefile.in')
         assert not make('FOO=bar make all')

@@ -26,6 +26,8 @@ echo foo\; make check
 echo 'x' ; make check
 cd tests; cd src && make check
 cd tests && make check; V=1 ./verify
+echo "a; make all"
+echo "a; make all"; make check
 make check V=1; ./verify
 
 %files
