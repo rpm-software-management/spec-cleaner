@@ -116,25 +116,35 @@ class RpmCheck(Section):
         Flag cleanup stops at the next real shell command boundary, so
         an assignment belonging to a later command ('make check;
         V=1 ./verify') is preserved verbatim. A boundary inside quotes
-        or after a backslash is not a boundary.
+        or after a backslash is not a boundary. Only unquoted arguments
+        are stripped: a flag inside quotes is a value handed to the
+        command, e.g. 'TEST_OPTS="--jobs %{?_smp_mflags}"': deleting it
+        changes what the test runner receives, so only standalone
+        arguments are stripped (with all preceding whitespace, not just
+        one space).
 
         Args:
             args: The arguments after the %make_build macro.
 
         Return:
-            The arguments with flags stripped up to the first boundary.
+            The arguments with flags stripped up to the first boundary,
+            quoted arguments left untouched.
         """
         boundary = self._first_shell_separator(args)
         if boundary is None:
             head, tail = args, ''
         else:
             head, tail = args[:boundary], args[boundary:]
-        # remove smp flags (with all preceding whitespace, not just one space)
-        head = self.reg.re_smp_mflags_ws.sub('', head)
-        # remove verbosity (with all preceding whitespace)
-        head = self.reg.re_verbose_ws.sub('', head)
-        head = self.reg.re_verbose_long_ws.sub('', head)
-        return head + tail
+        # strip flags from unquoted spans of the head only; a flag
+        # inside quotes is a value handed to the command
+        stripped = []
+        for text, quoted in self._split_quoted(head):
+            if not quoted:
+                text = self.reg.re_smp_mflags_ws.sub('', text)
+                text = self.reg.re_verbose_ws.sub('', text)
+                text = self.reg.re_verbose_long_ws.sub('', text)
+            stripped.append(text)
+        return ''.join(stripped) + tail
 
     @staticmethod
     def _first_shell_separator(line: str) -> int | None:
@@ -162,6 +172,49 @@ class RpmCheck(Section):
             elif char in (';', '&', '|'):
                 return index
         return None
+
+    @staticmethod
+    def _split_quoted(args: str) -> list[tuple[str, bool]]:
+        """
+        Split arguments into quoted and unquoted spans.
+
+        The quote characters themselves stay in the quoted spans; an
+        unterminated quote runs to the end of the line.
+
+        Args:
+            args: The arguments to split.
+
+        Return:
+            A list of (text, quoted) spans in order.
+        """
+        spans: list[tuple[str, bool]] = []
+        buf: list[str] = []
+        quote: str | None = None
+        escaped = False
+        for char in args:
+            if escaped:
+                buf.append(char)
+                escaped = False
+            elif char == '\\' and quote != "'":
+                buf.append(char)
+                escaped = True
+            elif quote:
+                buf.append(char)
+                if char == quote:
+                    spans.append((''.join(buf), True))
+                    buf = []
+                    quote = None
+            elif char in ('"', "'"):
+                if buf:
+                    spans.append((''.join(buf), False))
+                    buf = []
+                buf.append(char)
+                quote = char
+            else:
+                buf.append(char)
+        if buf:
+            spans.append((''.join(buf), quote is not None))
+        return spans
 
     @staticmethod
     def _has_shell_separator(line: str) -> bool:
