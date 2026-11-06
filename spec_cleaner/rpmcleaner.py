@@ -621,6 +621,29 @@ class RpmSpecCleaner:
             return None
         return args[0].lower(), ' '.join(package)
 
+    @staticmethod
+    def _ldconfig_package(argument: str) -> str:
+        """Return a %ldconfig_scriptlets package argument in canonical form."""
+        return argument[3:] if argument.startswith('-n ') else argument
+
+    def _ldconfig_use(self, line: str) -> str | None:
+        """
+        Return the package a %ldconfig_scriptlets use names, or None.
+
+        The macro takes its arguments inside the braces too,
+        '%{ldconfig_scriptlets -n NAME}', so the opening brace alone
+        does not end the token; the closing brace rides on the last
+        argument and is stripped from it.
+        """
+        args = line.split()
+        if not args:
+            return None
+        if args[0] in ('%ldconfig_scriptlets', '%{ldconfig_scriptlets}'):
+            return self._ldconfig_package(' '.join(args[1:]))
+        if args[0] == '%{ldconfig_scriptlets' and args[-1].endswith('}'):
+            return self._ldconfig_package(' '.join(args[1:-1] + [args[-1][:-1]]))
+        return None
+
     def _starts_section(self, line: str) -> bool:
         """Check if the line is a section header."""
         return any(regexp.match(line) for regexp, _ in self.section_starts)
@@ -663,10 +686,9 @@ class RpmSpecCleaner:
         Returns:
             The list of lines with the pairs merged.
         """
-        macro = ('%ldconfig_scriptlets', '%{ldconfig_scriptlets}')
-        used = {
-            ' '.join(args[1:]) for args in map(str.split, lines) if args[:1] and args[0] in macro
-        }
+        # the bare name and the '-n NAME' spelling name the same package,
+        # so compare both spellings in one canonical form
+        used = {package for line in lines if (package := self._ldconfig_use(line)) is not None}
         waiting: dict[tuple[tuple[int, ...], str], tuple[int, str]] = {}
         merged: dict[int, str] = {}
         dropped: set[int] = set()
@@ -689,9 +711,10 @@ class RpmSpecCleaner:
                 # it has in that position; the merged line is then a
                 # fixed point of a following run
                 half = (half[0], self.options['reg'].re_unbrace_keywords.sub(r'%\1', half[1]))
-            if not half or half[1] in used or not self._is_lone_scriptlet(lines, i):
+            package = self._ldconfig_package(half[1]) if half else ''
+            if not half or package in used or not self._is_lone_scriptlet(lines, i):
                 continue
-            key = (tuple(branches), half[1])
+            key = (tuple(branches), package)
             if key not in waiting:
                 waiting[key] = (i, half[0])
             elif waiting[key][1] != half[0] and not lines[i - 1].startswith('#'):
