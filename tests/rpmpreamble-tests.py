@@ -460,6 +460,31 @@ class TestRpmPreamble:
             'Requires:       shadow >= 1.0'
         ]
 
+    def test_requires_pwdutils_only_exact_name(self, preamble: RpmPreamble) -> None:
+        """Test that only a dependency named pwdutils becomes shadow."""
+        preamble.add('Requires: bundled(pwdutils)')
+        preamble.add('Requires: foo = pwdutils')
+        preamble.add('Requires: /usr/bin/pwdutils')
+        preamble.add('Requires: pwdutils-util')
+        preamble.add('Requires: %{pwdutils}')
+        preamble.add('Requires: pwdutils # keep me')
+        assert [str(item) for item in preamble.paragraph.items['requires']] == [
+            'Requires:       bundled(pwdutils)',
+            'Requires:       foo = pwdutils',
+            'Requires:       %{_bindir}/pwdutils',
+            'Requires:       pwdutils-util',
+            'Requires:       %{pwdutils}',
+            'Requires:       shadow # keep me',
+        ]
+
+    def test_requires_phase_pwdutils_only_exact_name(self, preamble: RpmPreamble) -> None:
+        """Test that a phased Requires renames only a pwdutils token."""
+        preamble.add('Requires(post): bundled(pwdutils) pwdutils')
+        assert [str(item) for item in preamble.paragraph.items['requires_phase']] == [
+            'Requires(post): bundled(pwdutils)',
+            'Requires(post): shadow',
+        ]
+
     def test_bogus_if_word_is_not_a_condition(self, preamble: RpmPreamble) -> None:
         """Test that a bogus %if<word> line does not open a conditional block."""
         preamble.add('%iffy bar')

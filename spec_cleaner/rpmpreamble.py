@@ -1173,6 +1173,32 @@ class RpmPreamble(Section):
         self._add_line_value_to('prereq', match.group(1))
         return True
 
+    def _replace_pwdutils(self, value: str) -> str:
+        """Replace a dependency named pwdutils with shadow in a Requires value."""
+        # Only a parsed dependency token whose name equals pwdutils is a
+        # dependency on the pwdutils package: bundled(pwdutils) is a
+        # bundled capability, a pwdutils version is a version, and a
+        # /pwdutils path is a file dependency. A value that does not
+        # parse stays as it is instead of being rewritten blindly.
+        dependencies, trailing_comment = self._split_trailing_comment(value)
+        try:
+            tokens = DependencyParser(dependencies, self.macros_with_arg).flat_out()
+        except (DepParserError, NoMatchExceptionError):
+            return value
+        if not tokens:
+            return value
+        renamed: list[str] = []
+        for token in tokens:
+            name = 'shadow' if token.name == 'pwdutils' else token.name
+            if token.operator and token.version:
+                renamed.append(f'{name} {token.operator} {token.version}')
+            else:
+                renamed.append(name)
+        value = ' '.join(renamed)
+        if trailing_comment:
+            value = f'{value} {trailing_comment}'
+        return value
+
     def _handle_requires(self, line: str) -> bool:
         """Handle Requires tag, replacing pwdutils with shadow. Return True if handled."""
         match = self.reg.re_requires.match(line)
@@ -1180,10 +1206,7 @@ class RpmPreamble(Section):
             return False
         value = match.group(1)
         if not self.condition and not self.minimal:
-            # replace the pwdutils token wherever it appears in the list,
-            # not only when it is the whole value; the boundaries keep
-            # longer names such as pwdutils-util and %{pwdutils} intact
-            value = re.sub(r'(?<![\w\-%.{?!])pwdutils(?![\w\-.])', 'shadow', value)
+            value = self._replace_pwdutils(value)
         self._add_line_value_to('requires', value, key='Requires')
         return True
 
@@ -1195,10 +1218,7 @@ class RpmPreamble(Section):
         # Put the requires content properly as key for formatting
         value = match.group(2)
         if not self.condition and not self.minimal:
-            # replace the pwdutils token wherever it appears in the list,
-            # not only when it is the whole value; the boundaries keep
-            # longer names such as pwdutils-util and %{pwdutils} intact
-            value = re.sub(r'(?<![\w\-%.{?!])pwdutils(?![\w\-.])', 'shadow', value)
+            value = self._replace_pwdutils(value)
         self._add_line_value_to('requires_phase', value, key=f'Requires{match.group(1)}')
         return True
 
