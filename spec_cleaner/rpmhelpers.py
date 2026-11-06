@@ -333,9 +333,10 @@ def fix_license(value: str, conversions: dict[str, str]) -> str:
     if whole in conversions:
         return conversions[whole]
     value = re_license_semicolon.sub(' and ', value)
-    # split using 'or', 'and' and parenthesis, ignore empty strings
+    # split using 'or', 'and' and parenthesis, ignore empty strings; the
+    # separators match in any case, so 'And'/'Or' split like 'and'/'or'
     licenses = []
-    for a in re.split(r'(\(|\)| and | AND | OR | or (?!later)|;)', value):
+    for a in re.split(r'(\(|\)| and | or (?!later)|;)', value, flags=re.IGNORECASE):
         if a != '':
             licenses.append(a)
     if not licenses:
@@ -343,21 +344,22 @@ def fix_license(value: str, conversions: dict[str, str]) -> str:
 
     for index, my_license in enumerate(licenses):
         my_license = ' '.join(my_license.split())
+        # a separator token in any case is the same separator
+        if my_license.lower() in ('and', 'or'):
+            my_license = my_license.lower()
         my_license = my_license.replace('ORlater', 'or later')
         my_license = my_license.replace('ORsim', 'or similar')
         if my_license in conversions:
             my_license = conversions[my_license]
         licenses[index] = my_license
 
-    # create back new string with replaced licenses
-    s = (
-        ' '.join(licenses)
-        .replace('( ', '(')
-        .replace(' )', ')')
-        .replace(' and ', ' AND ')
-        .replace(' or ', ' OR ')
-        .replace(' with ', ' WITH ')
-    )
+    # create back new string with replaced licenses; the 'and'/'or'
+    # normalisation is case-insensitive, so an unsplit 'or later' phrase
+    # in any case ends up spelled like the lowercase one
+    s = ' '.join(licenses).replace('( ', '(').replace(' )', ')')
+    s = re.sub(r' and ', ' AND ', s, flags=re.IGNORECASE)
+    s = re.sub(r' or ', ' OR ', s, flags=re.IGNORECASE)
+    s = s.replace(' with ', ' WITH ')
     return s
 
 

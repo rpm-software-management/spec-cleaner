@@ -125,6 +125,21 @@ class TestRpmhelpers:
         """Test that the two non-SPDX suffixes rpm accepts are spelled out."""
         assert rpmhelpers.fix_license(value, rpmhelpers.read_licenses_changes()) == expected
 
+    @pytest.mark.parametrize(
+        'value, expected',
+        [
+            ('MIT And GPL-2.0', 'MIT AND GPL-2.0'),
+            ('MIT aNd GPL-2.0', 'MIT AND GPL-2.0'),
+            ('MIT Or GPL-2.0', 'MIT OR GPL-2.0'),
+            ('MIT oR GPL-2.0', 'MIT OR GPL-2.0'),
+            ('GPL-2.0 Or later', 'GPL-2.0 OR later'),
+            ('(MIT And GPL-2.0)', '(MIT AND GPL-2.0)'),
+        ],
+    )
+    def test_fix_license_normalises_mixed_case_separators(self, value: str, expected: str) -> None:
+        """Test that And/Or in any case normalise to SPDX AND/OR, like lowercase does."""
+        assert rpmhelpers.fix_license(value, {}) == expected
+
     def test_fix_license_empty_value(self) -> None:
         """Test that an empty license stays empty instead of joining a None."""
         assert rpmhelpers.fix_license('', {}) == ''
