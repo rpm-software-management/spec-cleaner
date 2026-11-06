@@ -2,6 +2,7 @@
 
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -118,3 +119,17 @@ def test_defaults(capsys: pytest.CaptureFixture[str], specfile: Path) -> None:
     with pytest.raises(SystemExit):
         process_args(['--help', str(specfile)])
     assert '(default:' in capsys.readouterr().out
+
+
+def test_direct_main_module_execution(tmp_path: Path) -> None:
+    """Running spec_cleaner/__main__.py directly works from any directory."""
+    main_py = Path(__file__).resolve().parent.parent / 'spec_cleaner' / '__main__.py'
+    result = subprocess.run(
+        [sys.executable, str(main_py), '--help'],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert 'usage:' in result.stdout
