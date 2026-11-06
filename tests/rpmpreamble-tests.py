@@ -455,6 +455,13 @@ class TestRpmPreamble:
             '%requires_eq    foo = %{version}'
         ]
 
+    def test_requires_pwdutils_versioned(self, preamble: RpmPreamble) -> None:
+        """Test that pwdutils with a version relation is replaced by shadow too."""
+        preamble.add('Requires: pwdutils >= 1.0')
+        assert [str(item) for item in preamble.paragraph.items['requires']] == [
+            'Requires:       shadow >= 1.0'
+        ]
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries
