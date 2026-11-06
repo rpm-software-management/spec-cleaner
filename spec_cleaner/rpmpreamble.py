@@ -736,10 +736,8 @@ class RpmPreamble(Section):
         self.previous_line = line
         return True
 
-    def _handle_multilinecond_start(self, line: str) -> bool:
-        """Open a %{?cond: block. Return True if handled."""
-        if not self.reg.re_multilinecond.match(line):
-            return False
+    def _open_multilinecond(self, line: str) -> None:
+        """Open a %{?cond: block as a condition, keeping the deps inside it."""
         # Multi-line %{?cond: block is an abbreviated %if cond block,
         # parse it as a condition so the dependencies inside keep it.
         self._add_line_to('conditions', MacroLine(line, is_cond=True, is_eager=True))
@@ -751,6 +749,12 @@ class RpmPreamble(Section):
         self._condition_define = False
         self.start_subparagraph()
         self.previous_line = line
+
+    def _handle_multilinecond_start(self, line: str) -> bool:
+        """Open a %{?cond: block. Return True if handled."""
+        if not self.reg.re_multilinecond.match(line):
+            return False
+        self._open_multilinecond(line)
         return True
 
     def _handle_endif(self, line: str) -> bool:
@@ -1030,6 +1034,17 @@ class RpmPreamble(Section):
         """Handle one-line conditional dependency. Return True if handled."""
         if not self.reg.re_onelinecond_dep.match(line):
             return False
+        # Without a closing brace the line is the opener of a multi-line
+        # conditional block, not a one-liner: the following lines belong
+        # to the conditional until its closing brace. A brace that only
+        # closes an inner macro does not count as the closing brace.
+        # Braces in a trailing comment are not part of the line: a `# {`
+        # must not turn a closed one-liner into a block opener, and a
+        # `# }` must not close an opener that has no closing brace.
+        code_line, _ = self._split_trailing_comment(line)
+        if code_line.count('{') > code_line.count('}'):
+            self._open_multilinecond(line)
+            return True
         # One-line conditional dependency (%{?cond:BuildRequires: ...}) is
         # an abbreviated %if cond ... %endif block, keep it with the
         # other conditions instead of the defines at the top.
