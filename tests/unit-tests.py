@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import copy
+import pickle
 from collections.abc import Callable, Iterable
 from typing import Any
 
@@ -7,6 +9,7 @@ import pytest
 
 from spec_cleaner.rpmcleaner import RpmSpecCleaner
 from spec_cleaner.rpmcopyright import RpmCopyright
+from spec_cleaner.rpmexception import RpmExceptionError, RpmWrongArgsError
 from spec_cleaner.rpmpreamble import RpmPreamble
 from spec_cleaner.rpmprune import RpmClean
 from spec_cleaner.rpmrequirestoken import RpmRequiresToken
@@ -625,3 +628,31 @@ class TestSuseCopyrightRecognition:
         """A line naming SUSE and another holder stays a third-party copyright."""
         section.add('# Copyright (c) 2020 SUSE LLC, IBM')
         assert section.copyrights == ['# Copyright (c) 2020 SUSE LLC, IBM']
+
+
+class TestRpmBaseExceptionError:
+    """A single message string stays one args entry and survives pickle/copy."""
+
+    def test_message_string_is_one_arg(self) -> None:
+        """A message string is stored as one entry, not unpacked into characters."""
+        err = RpmWrongArgsError('foo does not exist.')
+        assert err.args == ('foo does not exist.',)
+        assert str(err) == 'foo does not exist.'
+
+    def test_no_args(self) -> None:
+        """No message leaves args empty."""
+        assert RpmWrongArgsError().args == ()
+
+    def test_tuple_args_kept(self) -> None:
+        """A tuple of messages is kept as-is."""
+        assert RpmExceptionError(('a', 'b')).args == ('a', 'b')
+
+    def test_pickle_round_trip(self) -> None:
+        """The exception survives a pickle round-trip."""
+        err = RpmWrongArgsError('foo does not exist.')
+        assert pickle.loads(pickle.dumps(err)).args == err.args
+
+    def test_copy(self) -> None:
+        """The exception survives copy.copy."""
+        err = RpmWrongArgsError('foo does not exist.')
+        assert copy.copy(err).args == err.args
