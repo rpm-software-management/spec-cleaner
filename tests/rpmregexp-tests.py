@@ -63,26 +63,43 @@ class TestRegexp:
         assert Regexp(['typelib']).re_braced_argument_macro is None
 
     def test_spec_prep_options(self) -> None:
-        """Test that %prep with classic options is recognised as a section."""
+        """Test that %prep with append/prepend options is recognised as a section."""
         prep = Regexp.re_spec_prep.match
         assert prep('%prep')
         assert prep('%prep -a')
         assert prep('%prep -p')
         assert prep('%prep -a 1')
-        assert prep('%prep -n foo-1.0')
-        assert prep('%prep -c')
-        assert prep('%prep -T')
-        assert prep('%prep -D')
-        assert prep('%prep -b 2')
-        assert prep('%prep -n foo -c')
-        assert prep('%prep -a1')
-        assert prep('%prep -b2')
-        assert prep('%prep -nfoo-1.0')
-        assert prep('%prep -a1 -nfoo -c')
+        assert prep('%prep -p 1')
+        assert prep('%prep -p /bin/sh')
+        assert prep('%prep -a 1 -a 2')
+        assert prep('%prep -p 1 -p 2')
+        # '%setup' options are not '%prep' options: rpm rejects them
+        assert not prep('%prep -n foo-1.0')
+        assert not prep('%prep -nfoo-1.0')
+        assert not prep('%prep -n foo -c')
+        assert not prep('%prep -c')
+        assert not prep('%prep -T')
+        assert not prep('%prep -D')
+        assert not prep('%prep -b 2')
+        # attached arguments and mixed append/prepend are rejected by rpm
+        assert not prep('%prep -a1')
+        assert not prep('%prep -p1')
+        assert not prep('%prep -a 1 -p 2')
         assert not prep('%prep -a -x')
         assert not prep('%prep -n -c')
         assert not prep('%prep foo')
         assert not prep('%preparation')
+
+    def test_spec_prep_no_exponential_backtracking(self) -> None:
+        """Test that long %prep option lines stay fast to match and reject."""
+        line = '%prep' + ' -a 1' * 40
+        start = time.perf_counter()
+        assert Regexp.re_spec_prep.match(line)
+        assert time.perf_counter() - start < 1
+        line = '%prep' + ' -a' * 40 + ' -x'
+        start = time.perf_counter()
+        assert not Regexp.re_spec_prep.match(line)
+        assert time.perf_counter() - start < 1
 
     def test_global_order_sensitive_spellings(self) -> None:
         """Test that ?/!/parameterised tag-macro spellings count as order sensitive."""

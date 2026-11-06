@@ -50,17 +50,18 @@ class Regexp:
     # section macros
     re_spec_package = re.compile(r'^%package(\s+|$)', re.IGNORECASE)
     re_spec_description = re.compile(r'^%description(\s+|$)', re.IGNORECASE)
-    # each option is one whitespace-separated token whose argument, when
-    # present, never starts with '-': the argument can never be mistaken
-    # for the next option, so the repeated group has no ambiguous split
-    # and cannot backtrack exponentially (CodeQL flagged the previous
-    # form, whose trailing '\s*' let whitespace be split many ways).
-    # An argument may also attach directly to its option ('-a1',
-    # '-nfoo-1.0'), as popt-style short options allow; the attached
-    # and separate spellings are disjoint on their first character,
-    # so the token still splits only one way.
+    # '%prep' takes only the build-scriptlet append/prepend options
+    # '-a' and '-p' (rpm >= 4.20): each takes one optional argument
+    # that never starts with '-', and the same option may repeat
+    # ('-a 1 -a 2'); append and prepend cannot mix. The '-n'/'-c'/
+    # '-T'/'-D'/'-b' options belong to '%setup', not '%prep': rpm
+    # rejects them here ('Bad %prep option'). An attached argument
+    # ('-a1') is likewise rejected by rpm, so only the separate
+    # spelling matches. Each option splits only one way (its argument
+    # cannot start with '-'), so the repeated group has no ambiguous
+    # split and cannot backtrack exponentially.
     re_spec_prep = re.compile(
-        r'^%prep(?:\s+-(?:[ab](?:[^- \t]\S*|\s+[^- \t]\S*)?|n(?:[^- \t]\S*|\s+[^- \t]\S*)|[cDTp]))*\s*$',
+        r'^%prep(?:(?:\s+-a(?:\s+[^- \t]\S*)?)*|(?:\s+-p(?:\s+[^- \t]\S*)?)*)\s*$',
         re.IGNORECASE,
     )
     re_spec_build = re.compile(r'^%build(\s+-[ap])?\s*$', re.IGNORECASE)
