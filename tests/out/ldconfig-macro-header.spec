@@ -5,6 +5,7 @@
 
 %post
 /sbin/ldconfig || :
+/sbin/ldconfig || :
 
 %files
 %{_libdir}/libfoo.so.1
