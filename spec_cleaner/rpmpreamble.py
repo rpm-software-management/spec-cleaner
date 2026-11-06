@@ -745,6 +745,7 @@ class RpmPreamble(Section):
             self._is_dep_tag_line(line)
             or self.reg.re_if.match(line)
             or self.reg.re_codeblock.match(line)
+            or self.reg.re_multilinecond.match(line)
             or self.reg.re_define.match(line)
             or self.reg.re_global.match(line)
             or self.reg.re_bcond_with.match(line)
