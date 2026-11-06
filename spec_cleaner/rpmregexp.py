@@ -323,12 +323,13 @@ class Regexp:
     #   # Copyright (c) 2022 SUSE LLC
     #   # 2022 William Brown
     # Only meaningful right after a copyright notice; the remainder is
-    # group 1 for normalization. The year range may be spaced
-    # ('2022 - 2024'), and the holder may start with any Unicode letter:
-    # group 2 is its first character, and the caller checks it with
-    # str.isupper(): re has no Unicode uppercase class, and an
-    # ASCII-only [A-Z] would drop holders such as Čech.
-    re_copyright_continuation = re.compile(r'^#\s*(\d{4}(?:\s*-\s*\d{4})?,?\s+([^\W\d_]).*)')
+    # group 1 for normalization. The year part may be a list
+    # ('2018, 2020') or a range, spaced or not ('2022 - 2024'), and
+    # group 2 is the holder text after the years: the caller decides
+    # whether its first word looks like a holder name.
+    re_copyright_continuation = re.compile(
+        r'^#\s*(\d{4}(?:\s*-\s*\d{4})?(?:\s*,\s*\d{4}(?:\s*-\s*\d{4})?)*,?\s+(\S.*))'
+    )
     # A year-led comment line. RpmCopyright.add uses it to tell whether a
     # line that failed the holder test above still belongs to the
     # copyright block, instead of ending it.

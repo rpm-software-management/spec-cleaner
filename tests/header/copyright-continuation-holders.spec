@@ -6,8 +6,12 @@
 # Copyright (c) 2022 Čech
 # Copyright (c) 2022 - 2024 Jane Doe
 # Copyright (c) 2022 William Brown
+# Copyright (c) 2022 openSUSE contributors
 # Copyright (c) 2022 Jane Doe
 # Copyright (c) 2022 Émile Zola
+# Copyright (c) 2018, 2020 Jane Doe
+# Copyright (c) 2022 3M
+# Copyright (c) 2022 王小明
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed

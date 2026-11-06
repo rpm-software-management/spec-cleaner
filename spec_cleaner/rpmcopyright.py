@@ -89,6 +89,20 @@ class RpmCopyright(Section):
         remainder = self.reg.re_suse_copyright_boilerplate.sub('', line)
         return not remainder
 
+    @staticmethod
+    def _looks_like_holder(text: str) -> bool:
+        """
+        Decide whether the holder text looks like a holder name.
+
+        The first word counts when it contains a letter that is not
+        lowercase: an uppercase initial ('Jane'), a numeric-initial
+        holder ('3M'), a camelCase name ('openSUSE'), or an uncased
+        script ('王小明'). An all-lowercase first word ('was a good
+        year') is prose and does not count.
+        """
+        word = text.split(None, 1)[0]
+        return any(char.isalpha() and not char.islower() for char in word)
+
     def add(self, line: str) -> None:
         """
         Run the cleanup of the line.
@@ -112,12 +126,10 @@ class RpmCopyright(Section):
             #   # 2022 William Brown
             # (boo#1194504)
             copyright_match = self.reg.re_copyright_continuation.match(line)
-            if copyright_match and not copyright_match.group(2).isupper():
-                # The holder must start with an uppercase letter: a
-                # lowercase-initial line is prose-shaped and undecidable
-                # by case alone ('was a good year' starts lowercase
-                # too), so it is dropped, but it does not end the block
-                # (see below).
+            if copyright_match and not self._looks_like_holder(copyright_match.group(2)):
+                # The first word must look like a holder name: prose
+                # ('was a good year') is dropped, but it does not end
+                # the block (see below).
                 copyright_match = None
         # A SUSE copyright line still counts as a copyright for continuation
         # purposes even though it is dropped itself.

@@ -6,3 +6,6 @@
 # 2022 Jane Doe
 # 2022 was a good year for this package
 # 2022 Émile Zola
+# 2018, 2020 Jane Doe
+# 2022 3M
+# 2022 王小明
