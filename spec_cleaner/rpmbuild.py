@@ -31,10 +31,11 @@ class RpmBuild(RpmCheck):
         # if the line itself is comment then we do not add any fixme on top of them
         if self.reg.re_comment.match(line):
             return
-        # an echo line never invokes a build tool, and a tool word inside
-        # quotes is prose, not an invocation: match against the line with
-        # quoted spans removed
-        if re.match(r'\s*echo(\s|$)', line):
+        # an echo command on its own never invokes a build tool, and a
+        # tool word inside quotes is prose, not an invocation: match
+        # against the line with quoted spans removed. A line joining
+        # further commands still gets checked, e.g. 'echo done; cmake .'
+        if re.match(r'\s*echo(\s|$)', line) and not self._has_shell_separator(line):
             return
         match_line = ''.join(text for text, quoted in self._split_quoted(line) if not quoted)
         # otherwise process the fixes
