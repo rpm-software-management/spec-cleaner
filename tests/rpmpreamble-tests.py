@@ -310,6 +310,18 @@ class TestRpmPreamble:
             '%endif',
         ]
 
+    def test_mismatched_closers_do_not_crash(self, preamble: RpmPreamble) -> None:
+        """Test that a %endif closing a multiline conditional block keeps the stray }."""
+        for line in ['%{?with_foo:', 'BuildRequires: bar', '%endif', '}']:
+            preamble.add(line)
+        # the stray } lands in misc, which flattens ahead of the block
+        assert preamble.paragraph.flatten_output() == [
+            '}',
+            '%{?with_foo:',
+            'BuildRequires:  bar',
+            '%endif',
+        ]
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries

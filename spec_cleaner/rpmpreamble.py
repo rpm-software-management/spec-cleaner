@@ -317,6 +317,10 @@ class RpmPreamble(Section):
         next section header goes after everything else, as its %endif follows
         that section.
         """
+        if not self._oldstore:
+            # A closer with no open block (mismatched closers): keep the
+            # lines where they are instead of crashing on the empty stack.
+            return
         nested = len(self._oldstore) > 0
         self._track_condition_flags()
         sub_has_bconds, sub_has_defines = self._get_sub_block_flags()
@@ -780,6 +784,15 @@ class RpmPreamble(Section):
             return False
         # A lone } closes a multi-line %{?cond: block.
         if self.reg.re_endmultilinecond.match(line):
+            self._multilinecond_depth -= 1
+        elif (
+            self.reg.re_endif.match(line)
+            and self._multilinecond_depth > 0
+            and len(self._oldstore) == 1
+        ):
+            # A %endif closing the only open block closes the multi-line
+            # %{?cond: block itself: the lone } that follows it is stray
+            # content, not another closer.
             self._multilinecond_depth -= 1
         self._add_line_to('conditions', line)
         # Set conditions to false only if we are
