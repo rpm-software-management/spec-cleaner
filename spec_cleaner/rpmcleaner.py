@@ -549,15 +549,17 @@ class RpmSpecCleaner:
         return None
 
     def _is_clean_section_end(self, line: str) -> bool:
-        """Check if we end the %clean section on a blank line followed by non-command. Return True if so."""
-        # If we are in clean section and a blank line is followed by
-        # anything but a command we need to stop deleting
-        # This avoids deleting %if before %files section
+        """Check if we end the %clean section on a blank line followed by a conditional opener. Return True if so."""
+        # Only a conditional opener after a blank line ends the dropped
+        # %clean body here. Section headers, conditional closers and
+        # codeblock ends are handled before this is reached, and a comment
+        # or any other macro line after a blank is still %clean body to
+        # drop, not the start of the next section. This avoids deleting
+        # %if before %files section.
         return (
             isinstance(self.current_section, RpmClean)
             and self.current_section.previous_line == ''
-            and line.lstrip().startswith(('%', '#'))
-            and not line.lstrip().startswith(('%__', '%{__'))
+            and bool(self.reg.re_if.match(line))
         )
 
     def _check_for_newline(self, detected_class: type[Section] | None, line: str) -> bool:

@@ -1,5 +1,4 @@
-   # an indented comment ends the clean section
-
+   # an indented comment is kept above the next section
 %post
 echo installed
 

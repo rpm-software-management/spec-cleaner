@@ -90,11 +90,16 @@ class TestDetectNewSection:
         assert result is None
 
     def test_is_clean_section_end_true(self, cleaner: RpmSpecCleaner) -> None:
-        """Clean section ends on blank line followed by % or #."""
+        """Clean section ends on blank line followed by a conditional opener."""
         cleaner.current_section = RpmClean(cleaner.options)
         cleaner.current_section.previous_line = ''
-        assert cleaner._is_clean_section_end('%files') is True
-        assert cleaner._is_clean_section_end('# comment') is True
+        assert cleaner._is_clean_section_end('%if %{with foo}') is True
+        assert cleaner._is_clean_section_end('%ifarch x86_64') is True
+        # a section header ends the section elsewhere, not here, and a
+        # comment or any other macro line is still %clean body to drop
+        assert cleaner._is_clean_section_end('%files') is False
+        assert cleaner._is_clean_section_end('# comment') is False
+        assert cleaner._is_clean_section_end('%__rm') is False
 
     def test_is_clean_section_end_false_dunder(self, cleaner: RpmSpecCleaner) -> None:
         """Clean section does not end on dunder macros."""
