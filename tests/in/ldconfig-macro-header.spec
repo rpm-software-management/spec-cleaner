@@ -7,6 +7,7 @@ make install
 
 %post
 %run_ldconfig || :
+%{?run_ldconfig} || :
 
 %files
 %{_libdir}/libfoo.so.1

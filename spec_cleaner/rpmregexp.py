@@ -349,7 +349,7 @@ class Regexp:
     re_python_package_name = re.compile(r'^python\d*-(.*)')
 
     # rpmscriptlets
-    re_ldconfig = re.compile(r'(^|(.*\s)?)%{?run_ldconfig}?(\s.*|)$', re.IGNORECASE)
+    re_ldconfig = re.compile(r'(^|(.*\s)?)%{?\??run_ldconfig}?(\s.*|)$', re.IGNORECASE)
     # patches/sources
     re_ptch = re.compile(r'%{P:(\d+)}')
     re_src = re.compile(r'%{S:(\d+)}')
