@@ -145,6 +145,10 @@ class Regexp:
     re_copyright = re.compile(r'^\s*Copyright:\s*(.*)', re.IGNORECASE)
     re_serial = re.compile(r'^\s*Serial:\s*(.*)', re.IGNORECASE)
     re_packager = re.compile(r'^\s*Packager:\s*(.*)', re.IGNORECASE)
+    # any `Tag:` preamble line (Name, Version, URL, Source, ...): a line
+    # starting a new tag is a statement of its own, never a dependency
+    # fragment continuing a backslash-continued dependency line
+    re_preamble_tag = re.compile(r'^\s*[A-Za-z][\w.-]*(\(\S+\))?:', re.IGNORECASE)
     re_define = re.compile(r'^\s*%define\s*(.*)', re.IGNORECASE)
     re_global = re.compile(r'^\s*%global\s*(.*)', re.IGNORECASE)
     # %lang_package macro invocation; generates Supplements for the -lang
