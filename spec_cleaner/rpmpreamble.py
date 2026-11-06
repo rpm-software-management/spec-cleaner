@@ -461,8 +461,19 @@ class RpmPreamble(Section):
     def _split_trailing_comment(value: str) -> tuple[str, str | None]:
         # Separate trailing %dnl or # comments before dependency parsing.
         # They are not part of the dependency and would crash the parser.
+        # A # or %dnl only starts a comment outside every %{...} and
+        # %(...) body: inside a macro body it is body text, and the
+        # wrapper's closing brace still closes the wrapper. Judge the
+        # closure on the code before the comment, or a closed one-liner
+        # such as %{?with_foo: # comment} looks like an open block.
         trailing_comment: str | None = None
-        dnl_idx = value.find('%dnl')
+        dnl_idx = -1
+        index = value.find('%dnl')
+        while index >= 0:
+            if open_macro_bodies(value[:index]) == (0, 0):
+                dnl_idx = index
+                break
+            index = value.find('%dnl', index + 1)
         if dnl_idx >= 0:
             trailing_comment = value[dnl_idx:].strip()
             value = value[:dnl_idx].strip()
@@ -471,8 +482,9 @@ class RpmPreamble(Section):
             for i, ch in enumerate(value):
                 if ch == '#':
                     if i == 0 or value[i - 1] in ' \t':
-                        hash_idx = i
-                        break
+                        if open_macro_bodies(value[:i]) == (0, 0):
+                            hash_idx = i
+                            break
             if hash_idx >= 0:
                 trailing_comment = value[hash_idx:].strip()
                 value = value[:hash_idx].strip()
@@ -788,6 +800,12 @@ class RpmPreamble(Section):
     def _handle_multilinecond_start(self, line: str) -> bool:
         """Open a %{?cond: block. Return True if handled."""
         if not self.reg.re_multilinecond.match(line):
+            return False
+        # A closing brace on the line closes the wrapper: the line is a
+        # closed one-liner, not a block opener. Judge the closure on the
+        # code alone, or a # inside the wrapper hides its brace.
+        code_line, _ = self._split_trailing_comment(line)
+        if not open_macro_bodies(code_line)[0]:
             return False
         self._open_multilinecond(line)
         return True

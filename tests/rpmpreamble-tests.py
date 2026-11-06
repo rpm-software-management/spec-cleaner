@@ -854,12 +854,45 @@ class TestRpmPreambleOrder:
         assert not preamble_mode.condition
 
     def test_onelinecond_dep_comment_close_brace(self, preamble_mode: RpmPreamble) -> None:
-        """Test that a `}` in a trailing comment does not close an opener without a brace."""
+        """Test that a `}` after a # inside the wrapper closes the one-liner."""
         lines = ['%{?with_foo: BuildRequires: bar # }', 'Requires: baz', '}']
+        # the # is inside the %{...} body, so rpm closes the wrapper at
+        # the } (rpm 6.1.0: the line expands to ` BuildRequires: bar # `);
+        # the following Requires is outside the conditional, and the
+        # trailing } is stray content, not a block closer
+        if preamble_mode.minimal:
+            assert self._flatten(preamble_mode, lines) == [
+                '%{?with_foo: BuildRequires: bar # }',
+                'Requires:       baz',
+                '}',
+            ]
+        else:
+            assert self._flatten(preamble_mode, lines) == [
+                'Requires:       baz',
+                '}',
+                '%{?with_foo: BuildRequires: bar # }',
+            ]
+        assert not preamble_mode.condition
+
+    def test_multilinecond_closed_wrapper_comment(self, preamble_mode: RpmPreamble) -> None:
+        """Test that a closed %{?cond: # comment} line does not open a block."""
+        lines = ['%if 0', '%{?with_foo: # comment}', '%endif', 'Requires: bbb']
+        # the } closes the wrapper, so the %endif still closes the %if 0
+        # block and the unconditional Requires stays outside it
         assert self._flatten(preamble_mode, lines) == [
-            '%{?with_foo: BuildRequires: bar # }',
+            '%if 0',
+            '%{?with_foo: # comment}',
+            '%endif',
+            'Requires:       bbb',
+        ]
+        assert not preamble_mode.condition
+
+    def test_multilinecond_closed_wrapper_is_oneliner(self, preamble_mode: RpmPreamble) -> None:
+        """Test that a closed %{?cond: # comment} line stays a one-liner."""
+        lines = ['%{?with_foo: # comment}', 'Requires: baz']
+        assert self._flatten(preamble_mode, lines) == [
+            '%{?with_foo: # comment}',
             'Requires:       baz',
-            '}',
         ]
         assert not preamble_mode.condition
 

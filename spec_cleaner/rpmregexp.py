@@ -182,7 +182,9 @@ class Regexp:
     )
     # opener of a multi-line conditional block, eg. %{?with_foo:
     # (no closing } on the line); an abbreviated %if with_foo block
-    re_multilinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:\s*(?:#.*)?$')
+    # a trailing # comment holds no closing brace: a } in it closes the
+    # wrapper, so the line is a closed one-liner, not a block opener
+    re_multilinecond = re.compile(r'^\s*%{!?[^?]*\?[^:]+:\s*(?:#[^}]*)?$')
     # closing brace of a multi-line conditional block
     re_endmultilinecond = re.compile(r'^\s*}\s*$')
 

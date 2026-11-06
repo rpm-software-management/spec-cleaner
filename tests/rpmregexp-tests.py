@@ -43,6 +43,21 @@ class TestRegexp:
         ):
             assert not Regexp.re_if.match(line), line
 
+    def test_re_multilinecond_closed_wrapper(self) -> None:
+        """Test that a # comment holding the closing brace does not open a block."""
+        for line in (
+            '%{?with_foo: # comment}',
+            '%{?with_foo: # }',
+            '%{!?with_foo: # comment}',
+        ):
+            assert not Regexp.re_multilinecond.match(line), line
+        for line in (
+            '%{?with_foo:',
+            '%{?with_foo: # comment',
+            '%{!?with_foo: # note',
+        ):
+            assert Regexp.re_multilinecond.match(line), line
+
     def test_unbrace_keywords_case(self) -> None:
         """Test that section names unbrace in any case but other keywords only exactly."""
         reg = Regexp(['description', 'docdir', 'patch[0-9]*'])
