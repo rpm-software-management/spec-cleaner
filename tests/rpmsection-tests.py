@@ -237,6 +237,24 @@ def test_embrace_leaves_invocations_untouched(
     assert _cleaned_line(default_options, False, line) == line
 
 
+# gh#321: macros inside a python_module invocation are its arguments,
+# so they are not braced even when the invocation starts the line.
+@pytest.mark.parametrize(
+    'line',
+    [
+        '%{python_module %name}',
+        '%{?python_module %name}',
+        '%python_module %name',
+        '%{prefixed_python_module %name}',
+    ],
+)
+def test_python_module_line_start_not_embraced(
+    default_options: Callable[..., dict[str, Any]], line: str
+) -> None:
+    """A python_module invocation at the start of the line keeps its macros unbraced."""
+    assert _cleaned_line(default_options, False, line) == line
+
+
 EMBRACE_VALUE_POSITIONS = [
     # a braced use of an argument-taking macro keeps its braces where
     # the following tokens belong to the surrounding grammar: unbraced,

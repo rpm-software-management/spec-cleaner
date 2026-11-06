@@ -270,7 +270,7 @@ class Regexp:
         r'(^%\{?python_expand\s+(?:\w+=\S*\s+)*|[;&|(]\s*)python(?=\s)'
         r'|(?<=\s)python(?=\s+(?:-|\S*\.py\b))'
     )
-    re_python_module = re.compile(r'.*\s%{(prefixed_)?python_module\s.*}')
+    re_python_module = re.compile(r'(?:.*\s)?%{?\??(prefixed_)?python_module\s.*')
 
     # rpmcopyright
     re_copyright_string = re.compile(r'^#\s*Copyright\ \(c\)\s*(.*)', re.IGNORECASE)
