@@ -67,6 +67,28 @@ def test_output_must_not_be_overwritten(tmp_path: Path, specfile: Path) -> None:
     assert process_args([str(specfile), '-o', str(out), '--force'])['force'] is True
 
 
+def test_output_directory_is_refused(tmp_path: Path, specfile: Path) -> None:
+    """Test that an existing directory is refused as output, even with --force."""
+    with pytest.raises(RpmWrongArgsError, match='is a directory.'):
+        process_args([str(specfile), '-o', str(tmp_path), '--force'])
+    # without --force the pre-existing guard still fires first
+    with pytest.raises(RpmWrongArgsError, match='already exists.'):
+        process_args([str(specfile), '-o', str(tmp_path)])
+
+
+def test_output_to_directory_reports_error(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    specfile: Path,
+) -> None:
+    """Test that a run to a directory output fails cleanly, without a traceback."""
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(sys, 'argv', ['spec-cleaner', '-o', str(tmp_path), '--force', str(specfile)])
+        assert main() == 1
+    assert capsys.readouterr().err == f'ERROR: {tmp_path} is a directory.\n'
+
+
 def test_output_parent_directory_must_exist(tmp_path: Path, specfile: Path) -> None:
     """Test that an output path under a nonexistent directory is refused."""
     out = tmp_path / 'no-such-dir' / 'out.spec'
