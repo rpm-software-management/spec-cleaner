@@ -25,6 +25,8 @@ echo "run; make V=1 check"
 echo foo\; make check
 echo 'x' ; %make_build check
 cd tests; cd src && %make_build check
+cd tests && %make_build check; V=1 ./verify
+%make_build check; ./verify
 
 %files
 %{_bindir}/make-midline
