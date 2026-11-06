@@ -1053,12 +1053,19 @@ class RpmPreamble(Section):
         match = self.reg.re_requires_eq.match(line)
         if not match:
             return False
-        if match.group(1):
+        # A trailing comment is not part of the value: judge the wrapper
+        # brace on the code alone, or a comment after a closed wrapper
+        # hides the brace and a brace in the comment unbalances the test.
+        value, trailing_comment = self._split_trailing_comment(match.group(2))
+        code_line, _ = self._split_trailing_comment(line)
+        if match.group(1) and value.endswith('}') and code_line.count('{') == code_line.count('}'):
             # if we were wrapped in curly definition we need to remove
-            # the trailing curly bracket
-            value = match.group(2)[:-1]
-        else:
-            value = match.group(2)
+            # the trailing curly bracket; only strip it when the wrapper
+            # is actually closed, or a macro at the end of an unclosed
+            # value would lose its own brace
+            value = value[:-1]
+        if trailing_comment is not None:
+            value = f'{value} {trailing_comment}'
         self._add_line_value_to('requires_eq', value)
         return True
 
@@ -1067,12 +1074,19 @@ class RpmPreamble(Section):
         match = self.reg.re_requires_ge.match(line)
         if not match:
             return False
-        if match.group(1):
+        # A trailing comment is not part of the value: judge the wrapper
+        # brace on the code alone, or a comment after a closed wrapper
+        # hides the brace and a brace in the comment unbalances the test.
+        value, trailing_comment = self._split_trailing_comment(match.group(2))
+        code_line, _ = self._split_trailing_comment(line)
+        if match.group(1) and value.endswith('}') and code_line.count('{') == code_line.count('}'):
             # if we were wrapped in curly definition we need to remove
-            # the trailing curly bracket
-            value = match.group(2)[:-1]
-        else:
-            value = match.group(2)
+            # the trailing curly bracket; only strip it when the wrapper
+            # is actually closed, or a macro at the end of an unclosed
+            # value would lose its own brace
+            value = value[:-1]
+        if trailing_comment is not None:
+            value = f'{value} {trailing_comment}'
         self._add_line_value_to('requires_ge', value)
         return True
 

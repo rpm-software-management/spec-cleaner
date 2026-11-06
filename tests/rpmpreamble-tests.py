@@ -392,6 +392,69 @@ class TestRpmPreamble:
             '%python_subpackages # keep me'
         ]
 
+    def test_requires_eq_unclosed_keeps_version(self, preamble: RpmPreamble) -> None:
+        """Test that an unclosed requires_eq wrapper does not eat the last version character."""
+        preamble.add('%{?requires_eq: %requires_eq foo = 1.0')
+        assert [str(item) for item in preamble.paragraph.items['requires_eq']] == [
+            '%requires_eq    foo = 1.0'
+        ]
+
+    def test_requires_ge_unclosed_keeps_version(self, preamble: RpmPreamble) -> None:
+        """Test that an unclosed requires_ge wrapper does not eat the last version character."""
+        preamble.add('%{?requires_ge: %requires_ge foo >= 1.0')
+        assert [str(item) for item in preamble.paragraph.items['requires_ge']] == [
+            '%requires_ge    foo >= 1.0'
+        ]
+
+    def test_requires_eq_closed_strips_brace(self, preamble: RpmPreamble) -> None:
+        """Test that a closed requires_eq wrapper still loses its closing brace."""
+        preamble.add('%{?requires_eq: %requires_eq foo = 1.0}')
+        assert [str(item) for item in preamble.paragraph.items['requires_eq']] == [
+            '%requires_eq    foo = 1.0'
+        ]
+
+    def test_requires_eq_closed_with_trailing_comment(self, preamble: RpmPreamble) -> None:
+        """Test that a closed requires_eq wrapper with a trailing comment still loses its brace."""
+        preamble.add('%{?requires_eq: %requires_eq foo = 1.0} # note')
+        assert [str(item) for item in preamble.paragraph.items['requires_eq']] == [
+            '%requires_eq    foo = 1.0 # note'
+        ]
+
+    def test_requires_ge_closed_with_comment_brace(self, preamble: RpmPreamble) -> None:
+        """Test that a brace in a trailing comment does not hide a closed requires_ge wrapper."""
+        preamble.add('%{?requires_ge: %requires_ge foo >= 1.0} # {')
+        assert [str(item) for item in preamble.paragraph.items['requires_ge']] == [
+            '%requires_ge    foo >= 1.0 # {'
+        ]
+
+    def test_requires_eq_unclosed_with_trailing_comment(self, preamble: RpmPreamble) -> None:
+        """Test that an unclosed requires_eq wrapper with a trailing comment keeps its version."""
+        preamble.add('%{?requires_eq: %requires_eq foo = 1.0 # note')
+        assert [str(item) for item in preamble.paragraph.items['requires_eq']] == [
+            '%requires_eq    foo = 1.0 # note'
+        ]
+
+    def test_requires_eq_closed_macro_with_trailing_comment(self, preamble: RpmPreamble) -> None:
+        """Test that a closed wrapper ending in a macro strips only the wrapper brace with a comment."""
+        preamble.add('%{?requires_eq: %requires_eq foo = %{version}} # note')
+        assert [str(item) for item in preamble.paragraph.items['requires_eq']] == [
+            '%requires_eq    foo = %{version} # note'
+        ]
+
+    def test_requires_eq_unclosed_macro_value(self, preamble: RpmPreamble) -> None:
+        """Test that an unclosed wrapper ending in a macro keeps the macro brace."""
+        preamble.add('%{?requires_eq: %requires_eq foo = %{version}')
+        assert [str(item) for item in preamble.paragraph.items['requires_eq']] == [
+            '%requires_eq    foo = %{version}'
+        ]
+
+    def test_requires_eq_closed_macro_value(self, preamble: RpmPreamble) -> None:
+        """Test that a closed wrapper ending in a macro strips only the wrapper brace."""
+        preamble.add('%{?requires_eq: %requires_eq foo = %{version}}')
+        assert [str(item) for item in preamble.paragraph.items['requires_eq']] == [
+            '%requires_eq    foo = %{version}'
+        ]
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries
