@@ -40,6 +40,8 @@ This script cleans spec file according to some arbitrary style guide. The
 results it produces should always be checked by someone since it is not and
 will never be perfect.
 
+%debug_package
+
 %prep
 %setup -q -n %{name}-%{name}-%{version}
 
