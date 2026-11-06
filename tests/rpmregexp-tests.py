@@ -61,3 +61,19 @@ class TestRegexp:
         assert not shielded('echo %%{typelib} = 1')
         # without argument-taking names nothing is shielded
         assert Regexp(['typelib']).re_braced_argument_macro is None
+
+    def test_spec_prep_options(self) -> None:
+        """Test that %prep with classic options is recognised as a section."""
+        prep = Regexp.re_spec_prep.match
+        assert prep('%prep')
+        assert prep('%prep -a')
+        assert prep('%prep -p')
+        assert prep('%prep -a 1')
+        assert prep('%prep -n foo-1.0')
+        assert prep('%prep -c')
+        assert prep('%prep -T')
+        assert prep('%prep -D')
+        assert prep('%prep -b 2')
+        assert prep('%prep -n foo -c')
+        assert not prep('%prep foo')
+        assert not prep('%preparation')
