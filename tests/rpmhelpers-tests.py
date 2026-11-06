@@ -125,6 +125,21 @@ class TestRpmhelpers:
         """Test that the two non-SPDX suffixes rpm accepts are spelled out."""
         assert rpmhelpers.fix_license(value, rpmhelpers.read_licenses_changes()) == expected
 
+    @pytest.mark.parametrize(
+        'value, expected',
+        [
+            ('MIT And GPL-2.0', 'MIT AND GPL-2.0'),
+            ('MIT aNd GPL-2.0', 'MIT AND GPL-2.0'),
+            ('MIT Or GPL-2.0', 'MIT OR GPL-2.0'),
+            ('MIT oR GPL-2.0', 'MIT OR GPL-2.0'),
+            ('GPL-2.0 Or later', 'GPL-2.0 OR later'),
+            ('(MIT And GPL-2.0)', '(MIT AND GPL-2.0)'),
+        ],
+    )
+    def test_fix_license_normalises_mixed_case_separators(self, value: str, expected: str) -> None:
+        """Test that And/Or in any case normalise to SPDX AND/OR, like lowercase does."""
+        assert rpmhelpers.fix_license(value, {}) == expected
+
     def test_fix_license_empty_value(self) -> None:
         """Test that an empty license stays empty instead of joining a None."""
         assert rpmhelpers.fix_license('', {}) == ''
@@ -177,6 +192,17 @@ class TestRpmhelpers:
         with pytest.raises(RpmExceptionError, match='Line 2'):
             rpmhelpers.read_conversion_changes('probe_conversions.txt')
 
+    def test_read_licenses_changes_reports_a_malformed_line(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that a line without the tab separator is reported instead of unpacked."""
+        rpmhelpers.clear_read_caches()
+        monkeypatch.setattr(
+            rpmhelpers, 'open_datafile', lambda name: StringIO('0BSD\t0BSD\nbroken\n')
+        )
+        with pytest.raises(RpmExceptionError, match='Line 2'):
+            rpmhelpers.read_licenses_changes()
+
     def test_add_group_names_the_type_it_cannot_flatten(self) -> None:
         """Test that the guard reports the offending type."""
         with pytest.raises(RpmExceptionError, match="<class 'int'>"):
@@ -226,12 +252,24 @@ class TestRpmhelpers:
             ('pkgconfig %{?v:>= 1}', True),
             ('%{?with_x}pkgconfig', True),
             ('pkgconfig-x11', False),
+            ('python3-pkgconfig', False),
+            ('foo-pkgconfig', False),
+            ('%{?with_x}python3-pkgconfig', False),
+            ('%{?a:%{?b:%{c}}}pkgconfig', True),
+            ('%(echo x)pkgconfig', True),
+            ('%%pkgconfig', False),
+            ('%{?with_xpkgconfig', False),
         ],
     )
     def test_find_pkgconfig_declaration(self, name: str, declaration: bool) -> None:
         """Test that a pkgconfig build dependency is spotted, bracketed or not."""
         elements = [RpmRequiresToken(name, None, None, 'BuildRequires:')]
         assert rpmhelpers.find_pkgconfig_declaration(elements) is declaration
+
+    def test_strip_leading_macros_stops_on_unstrippable_input(self) -> None:
+        """Test that an unbalanced body and a non-macro % are left alone."""
+        assert rpmhelpers._strip_leading_macros('%{?with_xpkgconfig') == '%{?with_xpkgconfig'
+        assert rpmhelpers._strip_leading_macros('%%pkgconfig') == '%%pkgconfig'
 
     def test_sort_uniq_merges_duplicate_sources(self) -> None:
         """Test that duplicates merge and no following line is dropped."""

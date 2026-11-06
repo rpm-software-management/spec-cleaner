@@ -287,7 +287,13 @@ class DependencyParser:
         elif self.next_type == 'space':
             self.space = True
         elif self.next_type == 'operator':
-            if self.space:
+            # a second operator chunk is invalid whether or not a space
+            # separates it from the first; unspaced it would otherwise be
+            # silently appended to the token ('>>=', '><', '=>=', '<==')
+            # and no later formatting repairs such an operator. The one
+            # exception is '==', which the token formatter normalises
+            # to '=' (see providesobsoletes.spec).
+            if self.space or ''.join(self.token) + self.next != '==':
                 raise DepParserError('found operator after operator')
 
         self.token.append(self.next)

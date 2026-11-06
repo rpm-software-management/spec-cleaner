@@ -284,13 +284,20 @@ def read_licenses_changes() -> dict[str, str]:
     """
 
     def load() -> dict[str, str]:
+        conversions: dict[str, str] = {}
         with open_datafile(LICENSES_CHANGES) as f:
-            return {
-                old: correct
-                for correct, old in (
-                    line.rstrip('\n').split('\t') for line in f if not line.startswith('#')
-                )
-            }
+            # the fields are split by a tab
+            for number, line in enumerate(f, 1):
+                if line.startswith('#'):
+                    continue
+                fields = line.rstrip('\n').split('\t')
+                if len(fields) != 2:
+                    raise RpmExceptionError(
+                        f'Line {number} of {LICENSES_CHANGES} is not a two-field tab-separated row: {line.rstrip()!r}'
+                    )
+                correct, old = fields
+                conversions[old] = correct
+        return conversions
 
     return _cached_datafile(LICENSES_CHANGES, load)
 
@@ -333,9 +340,10 @@ def fix_license(value: str, conversions: dict[str, str]) -> str:
     if whole in conversions:
         return conversions[whole]
     value = re_license_semicolon.sub(' and ', value)
-    # split using 'or', 'and' and parenthesis, ignore empty strings
+    # split using 'or', 'and' and parenthesis, ignore empty strings; the
+    # separators match in any case, so 'And'/'Or' split like 'and'/'or'
     licenses = []
-    for a in re.split(r'(\(|\)| and | AND | OR | or (?!later)|;)', value):
+    for a in re.split(r'(\(|\)| and | or (?!later)|;)', value, flags=re.IGNORECASE):
         if a != '':
             licenses.append(a)
     if not licenses:
@@ -343,21 +351,22 @@ def fix_license(value: str, conversions: dict[str, str]) -> str:
 
     for index, my_license in enumerate(licenses):
         my_license = ' '.join(my_license.split())
+        # a separator token in any case is the same separator
+        if my_license.lower() in ('and', 'or'):
+            my_license = my_license.lower()
         my_license = my_license.replace('ORlater', 'or later')
         my_license = my_license.replace('ORsim', 'or similar')
         if my_license in conversions:
             my_license = conversions[my_license]
         licenses[index] = my_license
 
-    # create back new string with replaced licenses
-    s = (
-        ' '.join(licenses)
-        .replace('( ', '(')
-        .replace(' )', ')')
-        .replace(' and ', ' AND ')
-        .replace(' or ', ' OR ')
-        .replace(' with ', ' WITH ')
-    )
+    # create back new string with replaced licenses; the 'and'/'or'
+    # normalisation is case-insensitive, so an unsplit 'or later' phrase
+    # in any case ends up spelled like the lowercase one
+    s = ' '.join(licenses).replace('( ', '(').replace(' )', ')')
+    s = re.sub(r' and ', ' AND ', s, flags=re.IGNORECASE)
+    s = re.sub(r' or ', ' OR ', s, flags=re.IGNORECASE)
+    s = s.replace(' with ', ' WITH ')
     return s
 
 
@@ -495,6 +504,37 @@ def find_pkgconfig_statement(elements: Iterable[GroupLine]) -> bool:
     return False
 
 
+def _strip_leading_macros(name: str) -> str:
+    """
+    Strip leading macro prefixes from a dependency name.
+
+    A prefix is a %{...} body (braces counted, so arbitrarily nested
+    conditionals such as %{?a:%{?b:%{c}}} are a single prefix), a bare
+    %name macro, or a %(shell) macro. Stops at the first character that
+    starts no prefix, or on an unbalanced %{ body.
+    """
+    while name.startswith('%'):
+        if name.startswith('%{'):
+            depth = 0
+            for _index, char in enumerate(name):
+                if char == '{':
+                    depth += 1
+                elif char == '}':
+                    depth -= 1
+                    if depth == 0:
+                        break
+            else:
+                return name
+            name = name[_index + 1 :]
+        elif match := re.match(r'%[A-Za-z0-9_?]+', name):
+            name = name[match.end() :]
+        elif match := re.match(r'%\([^)]*\)', name):
+            name = name[match.end() :]
+        else:
+            return name
+    return name
+
+
 def find_pkgconfig_declaration(elements: Iterable[GroupLine]) -> bool:
     """
     Find if there is direct pkgconfig dependency in the paragraph.
@@ -507,6 +547,11 @@ def find_pkgconfig_declaration(elements: Iterable[GroupLine]) -> bool:
     """
     for i in elements:
         if isinstance(i, RpmRequiresToken):
-            if 'pkgconfig ' in i.name or i.name.endswith('pkgconfig'):
+            # the bare package name, optionally preceded by a conditional
+            # macro (e.g. %{?with_x}pkgconfig) or followed by a conditional
+            # version (e.g. pkgconfig %{?v:>= 1}); a name that merely ends
+            # in pkgconfig (python3-pkgconfig) is a different package
+            rest = _strip_leading_macros(i.name.strip()).lstrip()
+            if re.fullmatch(r'pkgconfig(?:\s.*)?', rest):
                 return True
     return False
