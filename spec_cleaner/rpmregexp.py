@@ -50,7 +50,19 @@ class Regexp:
     # section macros
     re_spec_package = re.compile(r'^%package(\s+|$)', re.IGNORECASE)
     re_spec_description = re.compile(r'^%description(\s+|$)', re.IGNORECASE)
-    re_spec_prep = re.compile(r'^%prep(?:\s+-[ab]\s*\S*|\s+-n\s*\S+|\s+-[cDTp])*\s*$', re.IGNORECASE)
+    # each option is one whitespace-separated token whose argument, when
+    # present, never starts with '-': the argument can never be mistaken
+    # for the next option, so the repeated group has no ambiguous split
+    # and cannot backtrack exponentially (CodeQL flagged the previous
+    # form, whose trailing '\s*' let whitespace be split many ways).
+    # An argument may also attach directly to its option ('-a1',
+    # '-nfoo-1.0'), as popt-style short options allow; the attached
+    # and separate spellings are disjoint on their first character,
+    # so the token still splits only one way.
+    re_spec_prep = re.compile(
+        r'^%prep(?:\s+-(?:[ab](?:[^- \t]\S*|\s+[^- \t]\S*)?|n(?:[^- \t]\S*|\s+[^- \t]\S*)|[cDTp]))*\s*$',
+        re.IGNORECASE,
+    )
     re_spec_build = re.compile(r'^%build(\s+-[ap])?\s*$', re.IGNORECASE)
     re_spec_install = re.compile(r'^%install(\s+-[ap])?\s*$', re.IGNORECASE)
     re_spec_clean = re.compile(r'^%clean(\s+-[ap])?\s*$', re.IGNORECASE)
@@ -183,7 +195,9 @@ class Regexp:
     # %{with foo} and %{without foo} read the with_foo switch of a bcond
     re_bcond_reference = re.compile(r'%\{with(?:out)?\s+(\w+)\}')
     # Special bracketed deps dection
-    re_brackety_requires = re.compile(r'\b(python[\d.]*dist|font|metainfo|pkgconfig|cmake|perl|tex|rubygem)\(')
+    re_brackety_requires = re.compile(
+        r'\b(python[\d.]*dist|font|metainfo|pkgconfig|cmake|perl|tex|rubygem)\('
+    )
     re_version_separator = re.compile(r'(\S+)((\s*[<>=\s]+)(\S+))*')
     # packageand(pkg1:pkg2) only; a ':' inside an operand makes longer forms ambiguous to split
     re_packageand = re.compile(r'^packageand\(\s*([^:\s]+)\s*:\s*([^:\s]+)\s*\)\s*$')

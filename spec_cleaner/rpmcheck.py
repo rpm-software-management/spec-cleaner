@@ -87,12 +87,14 @@ class RpmCheck(Section):
         # from the arguments after it: the leading assignments (group 1)
         # are kept verbatim
         match = self.reg.re_make_build.match(line)
+        args_group = 3
         if match is None and env_safe:
             match = self.reg.re_make_build_env.match(line)
+            args_group = 2
         if match:
-            # the arguments are the last group in both shapes:
-            # group 3 of re_make_build, group 2 of re_make_build_env
-            args = match.group(match.lastindex)
+            # the arguments are group 3 of re_make_build and group 2 of
+            # re_make_build_env
+            args = match.group(args_group)
             # remove smp flags (with all preceding whitespace, not just one space)
             args = self.reg.re_smp_mflags_ws.sub('', args)
             # remove verbosity (with all preceding whitespace)

@@ -76,38 +76,23 @@ class TestRpmPreambleElements:
         grouped_brackety: GroupItem = ['# c', brackety]
         assert elements._sort_helper_key(grouped_brackety) == '2Requires: perl(Bar)'
 
-    def test_sort_helper_key_brackety_requires_last(
-        self, elements: RpmPreambleElements
-    ) -> None:
+    def test_sort_helper_key_brackety_requires_last(self, elements: RpmPreambleElements) -> None:
         """Test that generated bracketed deps sort last and glued names do not."""
         assert (
             elements._sort_helper_key('Requires: python3.11dist(foo)')
             == '2Requires: python3.11dist(foo)'
         )
         assert (
-            elements._sort_helper_key('Requires: python3dist(foo)')
-            == '2Requires: python3dist(foo)'
+            elements._sort_helper_key('Requires: python3dist(foo)') == '2Requires: python3dist(foo)'
         )
-        assert (
-            elements._sort_helper_key('Requires: font(foo)')
-            == '2Requires: font(foo)'
-        )
-        assert (
-            elements._sort_helper_key('Requires: metainfo(foo)')
-            == '2Requires: metainfo(foo)'
-        )
-        assert (
-            elements._sort_helper_key('Requires: pkgconfig(foo)')
-            == '2Requires: pkgconfig(foo)'
-        )
+        assert elements._sort_helper_key('Requires: font(foo)') == '2Requires: font(foo)'
+        assert elements._sort_helper_key('Requires: metainfo(foo)') == '2Requires: metainfo(foo)'
+        assert elements._sort_helper_key('Requires: pkgconfig(foo)') == '2Requires: pkgconfig(foo)'
         assert (
             elements._sort_helper_key('Requires: foopkgconfig(foo)')
             == '1Requires: foopkgconfig(foo)'
         )
-        assert (
-            elements._sort_helper_key('Requires: plainpkg')
-            == '1Requires: plainpkg'
-        )
+        assert elements._sort_helper_key('Requires: plainpkg') == '1Requires: plainpkg'
 
     def test_is_own_lang_package(self, elements: RpmPreambleElements) -> None:
         """Test that only the -lang subpackage of the main package is recognized."""
