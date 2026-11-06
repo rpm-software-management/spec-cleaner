@@ -275,6 +275,41 @@ class TestRpmPreamble:
             (False, False),
         ]
 
+    def test_prune_ppc_condition_prunes_intended(self, preamble: RpmPreamble) -> None:
+        """Test that a ppc64 %ifarch block with an Obsoletes body is pruned."""
+        for line in ['# bug437293', '%ifarch ppc64', 'Obsoletes: libcap-64bit', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == []
+
+    def test_prune_ppc_condition_prunes_commented_body(self, preamble: RpmPreamble) -> None:
+        """Test that an Obsoletes body with a trailing comment is still pruned."""
+        lines = ['# bug437293', '%ifarch ppc64', 'Obsoletes: libcap-64bit # note', '%endif']
+        for line in lines:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == []
+
+    def test_prune_ppc_condition_keeps_non_ppc(self, preamble: RpmPreamble) -> None:
+        """Test that a block under a non-ppc condition is kept even with a 64bit body."""
+        for line in ['# bug437293', '%if %{with foo}', 'Requires: bar-64bit', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == [
+            '# bug437293',
+            '%if %{with foo}',
+            'Requires:       bar-64bit',
+            '%endif',
+        ]
+
+    def test_prune_ppc_condition_keeps_non_obsoletes(self, preamble: RpmPreamble) -> None:
+        """Test that a ppc64 block whose body is not an Obsoletes line is kept."""
+        for line in ['# bug437293', '%ifarch ppc64', '%bcond_with 64bit', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == [
+            '# bug437293',
+            '%ifarch ppc64',
+            '%bcond_with 64bit',
+            '%endif',
+        ]
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries

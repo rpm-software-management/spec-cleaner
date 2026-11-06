@@ -1,5 +1,5 @@
-# A pruned ppc64 block holding a bcond is placed without error
-Name:           bcond-pruned-ppc-block
+# A ppc64 block holding a bcond is kept and placed without error
+Name:           bcond-kept-ppc-block
 Version:        1.0
 Release:        0
 Summary:        Test

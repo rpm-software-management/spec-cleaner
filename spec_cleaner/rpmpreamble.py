@@ -187,15 +187,28 @@ class RpmPreamble(Section):
 
     def _prune_ppc_condition(self) -> None:
         """Check if we have ppc64 obsolete and delete it."""
+        conditions = self.paragraph.items['conditions']
         if (
             not self.minimal
-            and len(self.paragraph.items['conditions']) == 3
-            and isinstance(self.paragraph.items['conditions'][0], list)
-            and self.paragraph.items['conditions'][0][0] == '# bug437293'
-            # the second condition element is the %if line itself
-            and cast(str, self.paragraph.items['conditions'][1]).endswith('64bit')
+            and len(conditions) == 3
+            and isinstance(conditions[0], list)
+            and conditions[0][0] == '# bug437293'
         ):
-            self.paragraph.items['conditions'] = []
+            # the opener is the last line of the comment group: it must be
+            # a ppc64 %ifarch, or any block under the comment would be pruned
+            opener = cast(str, conditions[0][-1])
+            # the body is the second condition element, maybe with its own comments
+            body = conditions[1]
+            body_line = cast(str, body[-1] if isinstance(body, list) else body)
+            if (
+                re.match(r'^\s*%{?ifarch\b', opener, re.IGNORECASE)
+                and re.search(r'\bppc64\b', opener, re.IGNORECASE)
+                and str(body_line).lower().startswith('obsoletes:')
+                # a trailing comment is not part of the body: judge the
+                # 64bit suffix on the code alone
+                and self._split_trailing_comment(str(body_line))[0].endswith('64bit')
+            ):
+                self.paragraph.items['conditions'] = []
 
     def _prune_empty_condition(self) -> None:
         """Remove empty conditions."""
