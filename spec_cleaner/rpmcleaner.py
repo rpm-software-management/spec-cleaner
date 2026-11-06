@@ -324,6 +324,9 @@ class RpmSpecCleaner:
         depth = 0
         first_conditional = False
         in_macro_def = False
+        # only License tags in preamble/package-header context count;
+        # a 'License:' line in a section body is prose, not a tag
+        in_body_section = False
         for line in self.fin:
             stripped = line.rstrip('\n').rstrip('\r')
             # Skip License tags inside multiline macro definitions: they
@@ -340,11 +343,17 @@ class RpmSpecCleaner:
                 if not stripped.endswith('\\'):
                     in_macro_def = False
                 continue
+            # a section header switches context; a %package header is
+            # still header context, every other section is body context
+            for regexp, section_class in self.section_starts:
+                if regexp.match(stripped):
+                    in_body_section = section_class is not RpmPackage
+                    break
             if self.reg.re_if.match(line):
                 depth += 1
             elif self.reg.re_endif.match(line):
                 depth -= 1
-            elif self.reg.re_license.match(line):
+            elif not in_body_section and self.reg.re_license.match(line):
                 line = line.rstrip('\n')
                 line = line.rstrip('\r')
                 line = line.rstrip()
