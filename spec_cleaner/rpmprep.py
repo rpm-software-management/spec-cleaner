@@ -1,5 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
+import re
+
 from .rpmsection import Section
 
 
@@ -70,9 +72,11 @@ class RpmPrep(Section):
         Return:
             The line with pretty patchlines.
         """
-        # -p0 is default
+        # -p0 is default, but only as a standalone token: a blind
+        # substring replace would also eat '-p01' (strip level 1,
+        # patch 0) or a '-b' suffix containing '-p0'
         if line.startswith('%patch'):
-            line = line.replace('-p0', '')
+            line = re.sub(r'(?<!\S)-p0(?!\S)', '', line)
         # %patch without a patch number was %patch0 before, convert to %patch0 for the reges
         if (line.startswith('%patch ') or line == '%patch') and not self._has_patch_number(line):
             line = line.replace('%patch', '%patch0')
