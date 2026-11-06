@@ -75,6 +75,12 @@ class TestRegexp:
         assert prep('%prep -D')
         assert prep('%prep -b 2')
         assert prep('%prep -n foo -c')
+        assert prep('%prep -a1')
+        assert prep('%prep -b2')
+        assert prep('%prep -nfoo-1.0')
+        assert prep('%prep -a1 -nfoo -c')
+        assert not prep('%prep -a -x')
+        assert not prep('%prep -n -c')
         assert not prep('%prep foo')
         assert not prep('%preparation')
 
@@ -93,3 +99,69 @@ class TestRegexp:
         assert not sensitive('%global mydir %{name2}-data')
         assert not sensitive('%global mydir %names-data')
         assert not sensitive('%global mydir %{foo}-data')
+
+    def test_make_midline_and_path(self) -> None:
+        """Test that make after another command or with a path matches."""
+        make = Regexp.re_make.match
+        assert make('make check')
+        assert make('  make check')
+        assert make('cd tests && make check')
+        assert make('cd tests; make check')
+        assert make('make all | tee build.log')
+        assert make('/usr/bin/make check')
+        assert make('/bin/make check')
+        assert make('%{_bindir}/make check')
+        assert make('%{bindir}/make check')
+        assert make('%bindir/make check')
+        assert make('cd tests && /usr/bin/make check')
+        assert make('%{?_bindir}/make check')
+        assert make('%?bindir/make check')
+        assert make('%?_bindir/make check')
+        assert make('%{?bindir}/make check')
+        # separator-led make may itself be led by assignments
+        assert make('cd tests && CFLAGS="-O2" make check')
+        assert make("cd tests && CC=gcc CFLAGS='-O2 -g' make check")
+        assert make('cd tests && CFLAGS="-O2" %{_bindir}/make check')
+        # prose and lookalikes stay untouched (see make-env-prefix.spec)
+        assert not make('echo make all')
+        assert not make('echo "make all"')
+        assert not make('grep -n make Makefile.in')
+        assert not make('FOO=bar make all')
+        assert not make('makefile: all')
+        assert not make('cmake check')
+        assert not make('xmake check')
+        # the %make_build form matches the same prefix shapes
+        build = Regexp.re_make_build.match
+        assert build('%make_build check')
+        assert build('cd tests && %make_build check')
+        assert build('%{_bindir}/%make_build check')
+        assert build('%{?_bindir}/%make_build check')
+        assert build('cd tests && CFLAGS="-O2" %make_build check')
+        assert not build('echo %make_build check')
+
+    def test_make_first_call_wins(self) -> None:
+        """Test that the first make call in a line is the one matched."""
+        match = Regexp.re_make.match('make %{?_smp_mflags} || make')
+        assert match is not None
+        assert match.group(1) == ''
+        assert match.group(2) == ''
+        assert match.group(3) == ' %{?_smp_mflags} || make'
+        match = Regexp.re_make.match('cd tests && make check; make test')
+        assert match is not None
+        assert match.group(1) == 'cd tests && '
+        assert match.group(2) == ''
+        assert match.group(3) == ' check; make test'
+        match = Regexp.re_make.match('/usr/bin/make check')
+        assert match is not None
+        assert match.group(1) == ''
+        assert match.group(2) == '/usr/bin/'
+        assert match.group(3) == ' check'
+
+    def test_make_already_converted_stays(self) -> None:
+        """Test that a line whose first make is already %make_build is left alone."""
+        make = Regexp.re_make.match
+        assert not make('%make_build || make')
+        assert not make('%make_build check')
+        assert not make('cd tests && %make_build check')
+        assert not make('cd tests && %make_build || make check')
+        assert not make('cd tests && %make_build || CFLAGS="-O2" make check')

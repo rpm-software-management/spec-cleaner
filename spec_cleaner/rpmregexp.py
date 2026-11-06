@@ -200,14 +200,38 @@ class Regexp:
 
     # rpmbuild
     re_jobs = re.compile(r'%{?(_smp_mflags|\?_smp_flags|\?jobs:\s*-j\s*%(jobs|{jobs}))}?')
-    re_make = re.compile(r'(^\s*)make(\s.*|)$')
-    re_make_build = re.compile(r'(^\s*)%make_build(\s.*|)$')
     # 'make' call led by shell variable assignments, e.g.
     # 'CFLAGS="%{optflags}" make V=1 target'; the assignments have to be
     # plain NAME=value words (no spaces around '=') so that random text
     # containing the word make is never matched
     _make_env_value = r'(?:[^\s"\'\\;&|]+|"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\')'
     _make_env_prefix = r'(?:[A-Za-z_][A-Za-z0-9_]*=' + _make_env_value + r'\s+)+'
+    # 'make' led by another shell command (after ;, & or |) or invoked
+    # by an absolute or %{_bindir} path, e.g. 'cd tests && make check'
+    # or '/usr/bin/make check' (which _complete_cleanup rewrites to
+    # '%{_bindir}/make check' first); prose mentioning make
+    # ('echo make all') still does not match. Groups: 1 is the prefix
+    # to keep, 2 the path to drop, 3 the arguments. The plain start
+    # alternative comes first so the first make call in the line wins
+    # ('make ... || make' converts the first one, as before). The
+    # separator-led prefix never spans an earlier '%make_build', so a
+    # line already converted ('%make_build || make') is left alone
+    # and the transform stays idempotent. A separator-led make may
+    # itself be led by assignments ('cd tests && CFLAGS="-O2" make
+    # check'); those stay in group 1 and are kept verbatim. Assignments
+    # at the start of the line still match only re_make_env, so
+    # 'FOO=bar make all' does not match here. The path also accepts
+    # the conditional '%{?_bindir}' spelling.
+    re_make = re.compile(
+        r'((?:\s*|(?:(?!%make_build).)*?[;&|]\s*(?:'
+        + _make_env_prefix
+        + r')?))((?:(?:/usr)?/bin/|%{?\??_?bindir}?/)?)make(\s.*|)$'
+    )
+    re_make_build = re.compile(
+        r'((?:\s*|.*?[;&|]\s*(?:'
+        + _make_env_prefix
+        + r')?))((?:(?:/usr)?/bin/|%{?\??_?bindir}?/)?)%make_build(\s.*|)$'
+    )
     re_make_env = re.compile(r'^(\s*' + _make_env_prefix + r')make(\s.*|)$')
     re_make_build_env = re.compile(r'^(\s*' + _make_env_prefix + r')%make_build(\s.*|)$')
     # whitespace-inclusive variants for stripping flags already covered by %make_build

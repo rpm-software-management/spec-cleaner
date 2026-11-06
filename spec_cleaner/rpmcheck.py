@@ -60,9 +60,13 @@ class RpmCheck(Section):
 
         The call may be led by shell variable assignments, e.g.
         'CFLAGS="%{optflags}" make V=1 ...'; the assignments are kept
-        intact and only the 'make' word itself is replaced. Lines that
-        join commands with ';', '&' or '|' are not rewritten when led
-        by assignments: we cannot tell where the 'make' call ends there.
+        intact and only the 'make' word itself is replaced. A line led
+        by assignments at its start is not rewritten when it joins
+        commands with ';', '&' or '|': we cannot tell where the 'make'
+        call ends there. Assignments after a separator
+        ('cd tests && CFLAGS="-O2" make ...') are rewritten instead:
+        the make call follows the separator, so the first-call-wins
+        rule applies as for a plain midline make call.
 
         Args:
             line: A string representing a line to process.
@@ -76,7 +80,7 @@ class RpmCheck(Section):
         # find all make calls and replace them with %make_build
         env_safe = not self._has_shell_separator(line)
         if self.reg.re_make.match(line):
-            line = self.reg.re_make.sub(r'\1%make_build\2', line)
+            line = self.reg.re_make.sub(r'\1%make_build\3', line)
         elif env_safe and self.reg.re_make_env.match(line):
             line = self.reg.re_make_env.sub(r'\1%make_build\2', line)
         # remove the options that are part of %make_build macro, but only
@@ -86,7 +90,9 @@ class RpmCheck(Section):
         if match is None and env_safe:
             match = self.reg.re_make_build_env.match(line)
         if match:
-            args = match.group(2)
+            # the arguments are the last group in both shapes:
+            # group 3 of re_make_build, group 2 of re_make_build_env
+            args = match.group(match.lastindex)
             # remove smp flags (with all preceding whitespace, not just one space)
             args = self.reg.re_smp_mflags_ws.sub('', args)
             # remove verbosity (with all preceding whitespace)
