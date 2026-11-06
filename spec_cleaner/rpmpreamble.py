@@ -889,7 +889,10 @@ class RpmPreamble(Section):
             # a qualified entry has no plain rpm form: it stays a pragma
             # entry and takes the pragma category, which keeps it whole
             remainder = ' '.join(qualified)
-            if trailing_comment:
+            # the trailing comment belongs to the whole line: it is already
+            # on the converted plain line above, so only keep it here when
+            # there is no plain line to carry it
+            if trailing_comment and not plain:
                 remainder = f'{remainder} {trailing_comment}'
             self._add_line_value_to(pragma_category, remainder)
         return True

@@ -460,8 +460,8 @@ class TestRpmPreamble:
             '#!BuildConflicts: %?oldpkg'
         ]
 
-    def test_dep_pragma_comment_on_both_split_lines(self, preamble: RpmPreamble) -> None:
-        """Test that a trailing comment is kept on both lines of a plain+qualified split."""
+    def test_dep_pragma_comment_on_one_split_line(self, preamble: RpmPreamble) -> None:
+        """Test that a trailing comment is attached once on a plain+qualified split."""
         preamble.add('#!BuildConflicts: mixold mixq [i586] # legacy combo')
         preamble.add('#!BuildRequires: plainpkg %?bar # needed sometimes')
         items = preamble.paragraph.items
@@ -469,13 +469,25 @@ class TestRpmPreamble:
             'BuildConflicts: mixold # legacy combo'
         ]
         assert [str(item) for item in items['buildconflicts_pragma']] == [
-            '#!BuildConflicts: mixq [i586] # legacy combo'
+            '#!BuildConflicts: mixq [i586]'
         ]
         assert [str(item) for item in items['buildrequires']] == [
             'BuildRequires:  plainpkg # needed sometimes'
         ]
         assert [str(item) for item in items['buildrequires_pragma']] == [
-            '#!BuildRequires: %?bar # needed sometimes'
+            '#!BuildRequires: %?bar'
+        ]
+
+    def test_dep_pragma_comment_stays_when_no_plain_line(self, preamble: RpmPreamble) -> None:
+        """Test that a trailing comment stays on the pragma line when nothing converts."""
+        preamble.add('#!BuildRequires: onlyq [x86_64] # keep this')
+        preamble.add('#!BuildRequires: plainonly # plain note')
+        items = preamble.paragraph.items
+        assert [str(item) for item in items['buildrequires']] == [
+            'BuildRequires:  plainonly # plain note'
+        ]
+        assert [str(item) for item in items['buildrequires_pragma']] == [
+            '#!BuildRequires: onlyq [x86_64] # keep this'
         ]
 
     def test_dep_pragma_malformed_entries(self, preamble: RpmPreamble) -> None:
