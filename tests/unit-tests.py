@@ -617,6 +617,33 @@ class TestSuseCopyrightRecognition:
         section.add('# Copyright (c) 2020 SUSE LLC, IBM')
         assert section.copyrights == ['# Copyright (c) 2020 SUSE LLC, IBM']
 
+    @pytest.mark.parametrize(
+        'line',
+        [
+            '# 2018, 2020 Jane Doe',
+            '# 2018, 2020, 2022 Jane Doe',
+            '# 2018-2020, 2022 Jane Doe',
+            '# 2022 3M',
+            '# 2022 王小明',
+            '# 2022 openSUSE contributors',
+        ],
+    )
+    def test_add_keeps_holder_continuation(self, section: RpmCopyright, line: str) -> None:
+        """Year lists, numeric-initial, camelCase and uncased holders are kept."""
+        section.add('# Copyright (c) 2022 Foo Bar')
+        section.add(line)
+        assert section.copyrights[-1] == f'# Copyright (c) {line[2:]}'
+
+    def test_add_drops_prose_continuation(self, section: RpmCopyright) -> None:
+        """A lowercase-led prose line is dropped but leaves the block open."""
+        section.add('# Copyright (c) 2022 Foo Bar')
+        section.add('# 2022 was a good year for this package')
+        section.add('# 2022 Jane Doe')
+        assert section.copyrights == [
+            '# Copyright (c) 2022 Foo Bar',
+            '# Copyright (c) 2022 Jane Doe',
+        ]
+
 
 class TestRpmBaseExceptionError:
     """A single message string stays one args entry and survives pickle/copy."""
