@@ -1,6 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 import os
+import stat
 import sys
 import sysconfig
 from io import StringIO
@@ -47,10 +48,15 @@ def stat_datafile(name: str) -> tuple[str, int, int] | None:
     """
     for path in datafile_paths(name):
         try:
-            stat = os.stat(path)
+            st = os.stat(path)
         except OSError:
             continue
-        return (os.path.realpath(path), stat.st_mtime_ns, stat.st_size)
+        # open_datafile skips non-files (opening a directory fails),
+        # so a directory shadowing the name must not count as a hit
+        # here either, or the cache would key on the wrong identity
+        if not stat.S_ISREG(st.st_mode):
+            continue
+        return (os.path.realpath(path), st.st_mtime_ns, st.st_size)
     return None
 
 

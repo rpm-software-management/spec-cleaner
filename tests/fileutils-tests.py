@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from spec_cleaner.fileutils import open_datafile, open_stringio_spec
+from spec_cleaner.fileutils import open_datafile, open_stringio_spec, stat_datafile
 from spec_cleaner.rpmexception import RpmExceptionError
 
 
@@ -116,6 +116,36 @@ class TestFileutils:
         monkeypatch.setenv('HOME', str(tmp_path))
         with pytest.raises(RpmExceptionError, match='probe.txt'):
             open_datafile('probe.txt')
+
+    def test_stat_datafile_skips_a_directory(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that a directory shadowing a data file name is not a hit."""
+        share = tmp_path / '.local' / 'share' / 'spec-cleaner'
+        share.mkdir(parents=True)
+        (share / 'probe.txt').mkdir()
+        monkeypatch.setenv('HOME', str(tmp_path))
+        assert stat_datafile('probe.txt') is None
+
+    def test_stat_datafile_falls_through_a_directory_to_the_real_file(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that stat_datafile finds the real file behind a shadowing directory."""
+        shadow = tmp_path / 'shadow'
+        shadow.mkdir()
+        (shadow / 'probe.txt').mkdir()
+        real = tmp_path / 'real'
+        real.mkdir()
+        (real / 'probe.txt').write_text('PROBE\n')
+        monkeypatch.setattr(
+            'spec_cleaner.fileutils.datafile_paths',
+            lambda name: (str(shadow / name), str(real / name)),
+        )
+        identity = stat_datafile('probe.txt')
+        assert identity is not None
+        assert identity[0] == os.path.realpath(str(real / 'probe.txt'))
+        assert identity[1] == (real / 'probe.txt').stat().st_mtime_ns
+        assert identity[2] == (real / 'probe.txt').stat().st_size
 
     def test_open_stringio_spec_is_utf8(self, tmp_path: Path, c_locale: None) -> None:
         """Test that a spec is read as UTF-8 whatever the locale says."""
