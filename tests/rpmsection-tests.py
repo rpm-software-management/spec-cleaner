@@ -451,3 +451,90 @@ def test_undetected_invocation_is_left_alone_in_full_run(
     monkeypatch.setattr('spec_cleaner.rpmcleaner.load_macro_functions', lambda: [])
     assert _cleaned_line(default_options, False, '%other_macro(x)') == '%other_macro(x)'
     assert _cleaned_line(default_options, False, 'echo %frobnicate') == 'echo %{frobnicate}'
+
+
+OPTFLAGS_QUOTED_USES = [
+    # a bare use inside single quotes is literal text, not the flags
+    ("echo '$RPM_OPT_FLAGS'", "echo '$RPM_OPT_FLAGS'"),
+    # inside double quotes the shell expands it, so it is rewritten
+    ('echo "$RPM_OPT_FLAGS"', 'echo "%{optflags}"'),
+    # an assignment value inside single quotes is the template form
+    # the quoting fixtures pin, so it is rewritten
+    (
+        "echo 'CFLAGS=$RPM_OPT_FLAGS -fPIC' >> config.mk",
+        "echo 'CFLAGS=%{optflags} -fPIC' >> config.mk",
+    ),
+    (
+        "sed -i 's|^CFLAGS = .*|CFLAGS = $RPM_OPT_FLAGS -fPIC|' Makefile",
+        "sed -i 's|^CFLAGS = .*|CFLAGS = %{optflags} -fPIC|' Makefile",
+    ),
+    # an unquoted bare use is rewritten
+    ('echo $RPM_OPT_FLAGS', 'echo %{optflags}'),
+    # a comparison operator inside single quotes is literal text: the
+    # shell expands neither side, so the '=' inside '==', '!=', '>=' or
+    # '<=' is not an assignment and is left alone
+    ("echo 'a == $RPM_OPT_FLAGS'", "echo 'a == $RPM_OPT_FLAGS'"),
+    ("echo 'x != $RPM_OPT_FLAGS'", "echo 'x != $RPM_OPT_FLAGS'"),
+    ("echo 'y >= $RPM_OPT_FLAGS'", "echo 'y >= $RPM_OPT_FLAGS'"),
+    ("echo 'z <= $RPM_OPT_FLAGS'", "echo 'z <= $RPM_OPT_FLAGS'"),
+    ("echo 'a == ${RPM_OPT_FLAGS}'", "echo 'a == ${RPM_OPT_FLAGS}'"),
+    # a lone '=' stays an assignment value and is still rewritten
+    (
+        "echo 'CFLAGS=${RPM_OPT_FLAGS}'",
+        "echo 'CFLAGS=%{optflags}'",
+    ),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), OPTFLAGS_QUOTED_USES)
+def test_replace_optflags_respects_quoting(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
+    """$RPM_OPT_FLAGS is rewritten only where the shell would expand it."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
+def test_replace_optflags_skips_quoted_heredoc_body(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A quoted heredoc delimiter suppresses expansion in its body."""
+    section = _section(default_options, set())
+    lines = [
+        "cat > script.sh <<'EOF'",
+        'CFLAGS=$RPM_OPT_FLAGS',
+        'EOF',
+        'cat > config.mk <<EOF',
+        'CFLAGS = $RPM_OPT_FLAGS -fPIC',
+        'EOF',
+    ]
+    for line in lines:
+        section.add(line)
+    assert section.lines == [
+        "cat > script.sh <<'EOF'",
+        'CFLAGS=$RPM_OPT_FLAGS',
+        'EOF',
+        'cat > config.mk <<EOF',
+        'CFLAGS = %{optflags} -fPIC',
+        'EOF',
+    ]
+
+
+def test_replace_optflags_ignores_heredoc_opener_inside_quotes(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A heredoc spelling inside double quotes starts no heredoc body."""
+    section = _section(default_options, set())
+    lines = [
+        'echo "usage: cat <<\'EOF\'"',
+        'CFLAGS=$RPM_OPT_FLAGS',
+        'CXXFLAGS=$RPM_OPT_FLAGS',
+        'EOF',
+    ]
+    for line in lines:
+        section.add(line)
+    assert section.lines == [
+        'echo "usage: cat <<\'EOF\'"',
+        'CFLAGS="%{optflags}"',
+        'CXXFLAGS="%{optflags}"',
+        'EOF',
+    ]

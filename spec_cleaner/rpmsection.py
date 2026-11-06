@@ -92,6 +92,11 @@ _RE_LUA_OPENER = re.compile(r'(?<!%)%\{lua\s*:|(?<!%)%lua(?=\s)')
 # Section.embrace_macros; the index refers to that call's shield list
 _RE_SHIELDED = re.compile(r'\x00(\d+)\x00')
 
+# the opener of a heredoc whose delimiter is quoted ('EOF', "EOF" or
+# \EOF); the shell does not expand anything in such a heredoc body,
+# unlike an unquoted heredoc
+_RE_QUOTED_HEREDOC = re.compile(r"<<-?\s*(?:'([^'\s]+)'|\"([^\"\s]+)\"|\\([^\s;&|]+))")
+
 
 def _lua_body_prefix(text: str, depth: int) -> tuple[str, str, int]:
     """
@@ -181,6 +186,9 @@ class Section:
         self._condition_counter: int = 0
         # %{ brace depth of a lua macro body left open by previous lines
         self._lua_depth: int = 0
+        # delimiter of a quoted heredoc body left open by previous lines,
+        # or None when not inside one
+        self._quoted_heredoc: str | None = None
 
     def _complete_cleanup(self, line: str) -> str:
         """
@@ -455,6 +463,24 @@ class Section:
         Returns:
             The processed line.
         """
+        # a quoted heredoc delimiter suppresses expansion in its body,
+        # so $RPM_OPT_FLAGS there is literal text; track the body even
+        # on lines without the variable, as the delimiter line has none
+        if self._quoted_heredoc is not None:
+            if line.strip() == self._quoted_heredoc:
+                self._quoted_heredoc = None
+            return line
+        # a quoted heredoc opener counts only when the '<<' sits outside
+        # quotes: '<<' inside a quoted usage string starts no heredoc body
+        quoted = [
+            (match.start(), match.end())
+            for match in re.finditer(r'\"(?:[^\"\\]|\\.)*\"?|\'[^\']*\'?', line)
+        ]
+        for opener in _RE_QUOTED_HEREDOC.finditer(line):
+            if any(start <= opener.start() < end for start, end in quoted):
+                continue
+            self._quoted_heredoc = opener.group(1) or opener.group(2) or opener.group(3)
+            break
         # both substitutions below need $RPM_OPT_FLAGS; without it the
         # split/join round-trips, so skip the whole dance
         if '$' not in line or 'RPM_OPT_FLAGS' not in line:
@@ -462,9 +488,27 @@ class Section:
         # quote bare assignments outside quotes so the flags stay one shell word
         parts = re.split(r'("(?:[^"\\]|\\.)*"?|\'[^\']*\'?)', line)
         parts[::2] = [self.reg.re_optflags_quotes.sub('="%{optflags}"', p) for p in parts[::2]]
-        line = ''.join(parts)
-        line = self.reg.re_optflags.sub('%{optflags}', line)
-        return line
+        parts[::2] = [self.reg.re_optflags.sub('%{optflags}', p) for p in parts[::2]]
+        # inside double quotes the variable is expanded by the shell, so
+        # it is rewritten; inside single quotes it is literal text,
+        # rewritten only as an assignment value, the template form the
+        # quoting fixtures pin (echo 'CFLAGS=$RPM_OPT_FLAGS ...' >> config.mk)
+        parts[1::2] = [self._replace_optflags_in_quotes(p) for p in parts[1::2]]
+        return ''.join(parts)
+
+    def _replace_optflags_in_quotes(self, part: str) -> str:
+        """Replace $RPM_OPT_FLAGS inside one quoted segment of a line."""
+        if part.startswith('"'):
+            return self.reg.re_optflags.sub('%{optflags}', part)
+        # single quotes: only an assignment value, 'NAME=$RPM_OPT_FLAGS'
+        # or 'NAME = $RPM_OPT_FLAGS'; a bare use stays literal text, and
+        # the '=' inside '==', '!=', '>=' or '<=' is a comparison, never
+        # an assignment, so it is left alone too
+        return re.sub(
+            r'(?<![=!<>])(=\s*)(?!=)\$(?:RPM_OPT_FLAGS\b|\{RPM_OPT_FLAGS\})',
+            r'\1%{optflags}',
+            part,
+        )
 
     def replace_python_expand(self, line: str) -> str:
         """
