@@ -16,6 +16,33 @@ class TestRegexp:
         assert not Regexp.re_rm.search(line)
         assert time.perf_counter() - start < 1
 
+    def test_re_if_only_real_directives(self) -> None:
+        """Test that re_if matches only the real conditional directives."""
+        for line in (
+            '%if 0%{?suse_version}',
+            '%ifarch x86_64',
+            '%ifnarch ppc64',
+            '%ifos linux',
+            '%ifnos linux',
+            '%if',
+            '%{if 0%{?a}}',
+            '%ifpython2',
+            '%ifpython3',
+            '%ifpython311',
+            '%ifpypy3',
+        ):
+            assert Regexp.re_if.match(line), line
+        for line in (
+            '%iffy bar',
+            '%ifdef foo',
+            '%if0',
+            '%if(0)',
+            '%ifxyz',
+            '%ifarchx',
+            '%ifpythonx',
+        ):
+            assert not Regexp.re_if.match(line), line
+
     def test_unbrace_keywords_case(self) -> None:
         """Test that section names unbrace in any case but other keywords only exactly."""
         reg = Regexp(['description', 'docdir', 'patch[0-9]*'])

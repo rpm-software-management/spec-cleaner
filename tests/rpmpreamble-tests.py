@@ -462,6 +462,24 @@ class TestRpmPreamble:
             'Requires:       shadow >= 1.0'
         ]
 
+    def test_bogus_if_word_is_not_a_condition(self, preamble: RpmPreamble) -> None:
+        """Test that a bogus %if<word> line does not open a conditional block."""
+        preamble.add('%iffy bar')
+        assert not preamble.condition
+        preamble.add('%ifdef foo')
+        assert not preamble.condition
+
+    def test_bogus_if_word_does_not_reorder(self, preamble: RpmPreamble) -> None:
+        """Test that a bogus %if<word> block does not hoist following lines above it."""
+        for line in ['%iffy bar', 'BuildRequires: zzz', '%endif', 'BuildRequires: aaa']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == [
+            'BuildRequires:  aaa',
+            'BuildRequires:  zzz',
+            '%iffy bar',
+            '%endif',
+        ]
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries
