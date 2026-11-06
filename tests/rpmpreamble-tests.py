@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -327,6 +329,56 @@ class TestRpmPreamble:
         for line in ['%if 0%{?a}', '# just a comment', '%endif']:
             preamble.add(line)
         assert preamble.paragraph.flatten_output() == []
+
+    def test_prune_empty_condition_keeps_macro_comment(self, preamble: RpmPreamble) -> None:
+        """Test that a comment-only condition with an RPM macro is kept."""
+        for line in ['%if 1', '# %{error:stop build}', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == [
+            '%if 1',
+            '# %{error:stop build}',
+            '%endif',
+        ]
+
+    def test_prune_empty_condition_keeps_define_comment(self, preamble: RpmPreamble) -> None:
+        """Test that a comment-only condition defining a macro is kept."""
+        for line in ['%if 1', '# %define guard 1', '%endif']:
+            preamble.add(line)
+        assert preamble.paragraph.flatten_output() == [
+            '%if 1',
+            '# %define guard 1',
+            '%endif',
+        ]
+
+    @pytest.mark.skipif(shutil.which('rpmspec') is None, reason='rpmspec not installed')
+    def test_prune_empty_condition_keeps_macro_comment_rpm_parse(
+        self, preamble: RpmPreamble, tmp_path: Path
+    ) -> None:
+        """Test that the cleaned spec still fails rpm parsing like the original."""
+        lines = ['%if 1', '# %{error:stop build}', '%endif']
+        for line in lines:
+            preamble.add(line)
+        cleaned = preamble.paragraph.flatten_output()
+        assert cleaned == lines
+        header = (
+            'Name:           probe\nVersion:        1.0\nRelease:        0\n'
+            'Summary:        probe\nLicense:        MIT\n'
+        )
+        footer = '\n%description\nprobe\n'
+        original = tmp_path / 'original.spec'
+        original.write_text(header + '\n'.join(lines) + footer)
+        cleaned_spec = tmp_path / 'cleaned.spec'
+        cleaned_spec.write_text(header + '\n'.join(cleaned) + footer)
+        # the guard macro fires in both specs: pruning it would let the
+        # cleaned spec parse
+        original_rc = subprocess.run(
+            ['rpmspec', '-P', str(original)], capture_output=True
+        ).returncode
+        cleaned_rc = subprocess.run(
+            ['rpmspec', '-P', str(cleaned_spec)], capture_output=True
+        ).returncode
+        assert original_rc != 0
+        assert cleaned_rc != 0
 
     def test_prune_empty_condition_elif_only(self, preamble: RpmPreamble) -> None:
         """Test that a condition with only an elif branch is pruned."""

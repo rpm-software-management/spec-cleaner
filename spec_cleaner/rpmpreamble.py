@@ -215,6 +215,12 @@ class RpmPreamble(Section):
         """Whether the line is a plain comment (pragma #! lines are content)."""
         return line.startswith('#') and not line.startswith('#!')
 
+    def _has_macro_invocation(self, line: str) -> bool:
+        """Whether the line invokes an RPM macro, definitions included."""
+        # %% is an escaped percent, not a macro invocation
+        line = line.replace('%%', '')
+        return bool(self.reg.re_macro_reference.search(line) or '%(' in line)
+
     def _prune_empty_condition(self) -> None:
         """Remove empty conditions."""
         conditions = self.paragraph.items['conditions']
@@ -227,6 +233,16 @@ class RpmPreamble(Section):
         closer = conditions[-1][-1] if isinstance(conditions[-1], list) else conditions[-1]
         if not str(opener).startswith('%if') or not self.reg.re_endif.match(str(closer)):
             return
+        # a comment carrying an RPM macro invocation is not inert: rpm
+        # expands macros inside comments, so %{error:...}, a %define or
+        # a %(shell) expansion there still takes effect and the block
+        # must stay, comments above the opener included
+        for element in conditions:
+            lines = element if isinstance(element, list) else [element]
+            for line in lines:
+                line = str(line)
+                if self._is_comment_line(line) and self._has_macro_invocation(line):
+                    return
         for element in conditions[1:-1]:
             lines = element if isinstance(element, list) else [element]
             if not lines:
