@@ -174,6 +174,32 @@ class RpmCheck(Section):
         return None
 
     @staticmethod
+    def _split_shell_commands(line: str) -> list[str]:
+        """
+        Split a line into shell commands on unquoted, unescaped separators.
+
+        The boundaries are the ones _first_shell_separator finds, so a
+        separator inside quotes or after a backslash stays inside its
+        segment; '&&' and '||' leave an empty segment between the two
+        characters, which matches no tool pattern.
+
+        Args:
+            line: A string representing a line to process.
+
+        Return:
+            The command segments in order; separators are dropped.
+        """
+        segments: list[str] = []
+        rest = line
+        while True:
+            boundary = RpmCheck._first_shell_separator(rest)
+            if boundary is None:
+                segments.append(rest)
+                return segments
+            segments.append(rest[:boundary])
+            rest = rest[boundary + 1 :]
+
+    @staticmethod
     def _split_quoted(args: str) -> list[tuple[str, bool]]:
         """
         Split arguments into quoted and unquoted spans.
