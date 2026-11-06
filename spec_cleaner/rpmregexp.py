@@ -319,7 +319,7 @@ class Regexp:
     re_clean = re.compile(r'(^|[\s;&|(])rm\s+[-\w ]*"?(%{buildroot}|\$b)"?$')
     re_install = re.compile(
         r'{0}*(%{{makeinstall}}|make{0}+install){0}*$'.format(
-            r'(DESTDIR=%{buildroot}|%{\?_smp_mflags}|\s|V=1|VERBOSE=1|-j\d+)'
+            r'(DESTDIR="?%{buildroot}"?|%{\?_smp_mflags}|\s|V=1|VERBOSE=1|-j\s*\d+)'
         )
     )
     re_rm = re.compile(r'rm\s+[-\w ]*"?(%{buildroot}|\$b)"?/?"?%{_lib(dir)?}.*\*\.la;?$')
