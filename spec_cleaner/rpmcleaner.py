@@ -563,18 +563,21 @@ class RpmSpecCleaner:
         return None
 
     def _is_clean_section_end(self, line: str) -> bool:
-        """Check if we end the %clean section on a blank line followed by a conditional opener. Return True if so."""
-        # Only a conditional opener after a blank line ends the dropped
-        # %clean body here. Section headers, conditional closers and
-        # codeblock ends are handled before this is reached, and a comment
-        # or any other macro line after a blank is still %clean body to
-        # drop, not the start of the next section. This avoids deleting
-        # %if before %files section.
-        return (
-            isinstance(self.current_section, RpmClean)
-            and self.current_section.previous_line == ''
-            and bool(self.reg.re_if.match(line))
-        )
+        """Check if we end the %clean section on a blank line followed by a conditional opener or a section-generating macro. Return True if so."""
+        # Only a conditional opener or a section-generating macro after a
+        # blank line ends the dropped %clean body here. Section headers,
+        # conditional closers and codeblock ends are handled before this
+        # is reached, and a comment or any other macro line after a blank
+        # is still %clean body to drop, not the start of the next section.
+        # This avoids deleting %if before %files section. A
+        # %ldconfig_scriptlets line expands to %post/%postun sections, so
+        # it belongs to what follows the %clean body.
+        if (
+            not isinstance(self.current_section, RpmClean)
+            or self.current_section.previous_line != ''
+        ):
+            return False
+        return bool(self.reg.re_if.match(line)) or self._ldconfig_use(line) is not None
 
     def _check_for_newline(self, detected_class: type[Section] | None, line: str) -> bool:
         """

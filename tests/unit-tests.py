@@ -100,6 +100,12 @@ class TestDetectNewSection:
         assert cleaner._is_clean_section_end('%files') is False
         assert cleaner._is_clean_section_end('# comment') is False
         assert cleaner._is_clean_section_end('%__rm') is False
+        assert cleaner._is_clean_section_end('rm -rf /tmp/cleanleak') is False
+        # a section-generating macro ends the section: it expands to
+        # %post/%postun, so it belongs to what follows the %clean body
+        assert cleaner._is_clean_section_end('%ldconfig_scriptlets -n libdemo1') is True
+        assert cleaner._is_clean_section_end('%{ldconfig_scriptlets -n libdemo1}') is True
+        assert cleaner._is_clean_section_end('%ldconfig_scriptlets') is True
 
     def test_is_clean_section_end_false_dunder(self, cleaner: RpmSpecCleaner) -> None:
         """Clean section does not end on dunder macros."""
@@ -113,6 +119,7 @@ class TestDetectNewSection:
         cleaner.current_section = RpmClean(cleaner.options)
         cleaner.current_section.previous_line = 'rm -rf %{buildroot}'
         assert cleaner._is_clean_section_end('%files') is False
+        assert cleaner._is_clean_section_end('%ldconfig_scriptlets -n libdemo1') is False
 
     def test_is_clean_section_end_wrong_section(self, cleaner: RpmSpecCleaner) -> None:
         """No clean section end when not in RpmClean."""
