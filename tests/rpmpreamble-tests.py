@@ -378,6 +378,20 @@ class TestRpmPreamble:
             minimal_preamble.add(line)
         assert minimal_preamble.paragraph.flatten_output() == lines
 
+    def test_tail_macro_keeps_arguments(self, preamble: RpmPreamble) -> None:
+        """Test that a tail macro keeps its arguments instead of only the macro name."""
+        preamble.add('%python_subpackages -a foo')
+        assert [str(item) for item in preamble.paragraph.items['tail']] == [
+            '%python_subpackages -a foo'
+        ]
+
+    def test_tail_macro_keeps_trailing_comment(self, preamble: RpmPreamble) -> None:
+        """Test that a tail macro keeps its trailing comment instead of dropping it."""
+        preamble.add('%python_subpackages # keep me')
+        assert [str(item) for item in preamble.paragraph.items['tail']] == [
+            '%python_subpackages # keep me'
+        ]
+
     def test_dep_pragma_entries(self, preamble: RpmPreamble) -> None:
         """Test that a dep pragma value splits into entries and marks the qualified ones."""
         split = preamble._split_dep_pragma_entries
