@@ -184,6 +184,11 @@ class Regexp:
         r'(?:\([^)]*\))?\s*:',
         re.IGNORECASE,
     )
+    # one-line conditional wrapping a %define/%global, eg. %{?foo:%define bar}
+    re_onelinecond_define = re.compile(
+        r'^\s*%{!?[^?]*\?[^:]+:\s*%(define|global)\b',
+        re.IGNORECASE,
+    )
     # opener of a multi-line conditional block, eg. %{?with_foo:
     # (no closing } on the line); an abbreviated %if with_foo block
     # a trailing # comment holds no closing brace: a } in it closes the

@@ -485,6 +485,8 @@ class RpmPreamble(Section):
         # wrapper's closing brace still closes the wrapper. Judge the
         # closure on the code before the comment, or a closed one-liner
         # such as %{?with_foo: # comment} looks like an open block.
+        # The comment starts at the earlier marker, and a leading #! is
+        # a dep pragma marker, not a comment.
         trailing_comment: str | None = None
         dnl_idx = -1
         index = value.find('%dnl')
@@ -493,20 +495,27 @@ class RpmPreamble(Section):
                 dnl_idx = index
                 break
             index = value.find('%dnl', index + 1)
-        if dnl_idx >= 0:
+        # the comment starts at whichever marker comes first: a %dnl inside
+        # a # comment is comment text, and a # after %dnl is inside it
+        end = dnl_idx if dnl_idx >= 0 else len(value)
+        hash_idx = -1
+        for i in range(end):
+            if value[i] != '#':
+                continue
+            if i == 0 and value.lower().startswith(
+                ('#!buildrequires:', '#!buildconflicts:', '#!buildignore:')
+            ):
+                continue
+            if i == 0 or value[i - 1] in ' \t':
+                if open_macro_bodies(value[:i]) == (0, 0):
+                    hash_idx = i
+                    break
+        if hash_idx >= 0:
+            trailing_comment = value[hash_idx:].strip()
+            value = value[:hash_idx].strip()
+        elif dnl_idx >= 0:
             trailing_comment = value[dnl_idx:].strip()
             value = value[:dnl_idx].strip()
-        else:
-            hash_idx = -1
-            for i, ch in enumerate(value):
-                if ch == '#':
-                    if i == 0 or value[i - 1] in ' \t':
-                        if open_macro_bodies(value[:i]) == (0, 0):
-                            hash_idx = i
-                            break
-            if hash_idx >= 0:
-                trailing_comment = value[hash_idx:].strip()
-                value = value[:hash_idx].strip()
         return value, trailing_comment
 
     @staticmethod
@@ -749,7 +758,8 @@ class RpmPreamble(Section):
             or self.reg.re_if.match(line)
             or self.reg.re_codeblock.match(line)
             or self.reg.re_multilinecond.match(line)
-            or self.reg.re_onelinecond.match(line)
+            or self.reg.re_onelinecond_dep.match(line)
+            or self.reg.re_onelinecond_define.match(line)
             or self.reg.re_tail_macros.match(line)
             or self.reg.re_head_macros.match(line)
             or self.reg.re_lang_package.match(line)
@@ -1225,11 +1235,8 @@ class RpmPreamble(Section):
 
     def _replace_pwdutils(self, value: str) -> str:
         """Replace a dependency named pwdutils with shadow in a Requires value."""
-        # Only a parsed dependency token whose name equals pwdutils is a
-        # dependency on the pwdutils package: bundled(pwdutils) is a
-        # bundled capability, a pwdutils version is a version, and a
-        # /pwdutils path is a file dependency. A value that does not
-        # parse stays as it is instead of being rewritten blindly.
+        # Rename only a dependency token named pwdutils; other forms
+        # (bundled capability, version, path) are not the package.
         dependencies, trailing_comment = self._split_trailing_comment(value)
         try:
             tokens = DependencyParser(dependencies, self.macros_with_arg).flat_out()
@@ -1448,39 +1455,42 @@ class RpmPreamble(Section):
         if self._handle_multiline(line):
             return
 
-        # A backslash-continued dependency line joins its next physical
-        # line. The trailing backslash is invalid: rpm (4.20.1, 6.1.0)
-        # hard-errors on it, so the join consumes it and preserves the
-        # author's evident intent. Without the join the continuation
-        # lands in misc and the backslash glues the wrong line.
-        # This runs after the define/condition continuation handlers, so a
-        # line continuing a %define or a %if expression is not mistaken
+        # Join a backslash-continued dependency with its next line; the
+        # backslash is invalid rpm, so the join consumes it. Runs after the
+        # define/condition handlers, so those continuations are not mistaken
         # for a dependency line.
         if self._dep_continuation is not None:
             if self._is_block_closer_line(line) or self._is_dep_continuation_break_line(line):
-                # A block closer or a line starting a new statement ends
-                # the continued dependency first: joining it onto the
-                # pending line would swallow the statement and invent a
-                # bogus dependency (e.g. a lone } becomes
-                # `BuildRequires: }`, `Requires: bar` becomes
-                # `BuildRequires: Requires:`).
+                # A closer or a new statement ends the continued dependency
+                # first: joining it would swallow the statement.
                 self._flush_dep_continuation()
             else:
-                line = self._dep_continuation + line
+                code_line, trailing_comment = self._split_trailing_comment(line)
+                if not code_line:
+                    # A comment-only line keeps the continuation open; its
+                    # comment is carried and the fragment still follows.
+                    if trailing_comment:
+                        carried = self._dep_continuation_comment
+                        self._dep_continuation_comment = (
+                            f'{carried} {trailing_comment}' if carried else trailing_comment
+                        )
+                    return
+                # Join with a space when neither side has whitespace at the seam.
+                sep = '' if self._dep_continuation[-1:].isspace() else ' '
+                line = f'{self._dep_continuation}{sep}{code_line}'
                 self._dep_continuation = None
-                if self._dep_continuation_comment:
-                    line = f'{line} {self._dep_continuation_comment}'
-                    self._dep_continuation_comment = None
-        # A backslash inside a trailing comment is comment text, not a
-        # continuation: judge it on the code part only (as _replace_pwdutils
-        # does), or the next line joins into the comment and is lost
-        # (`BuildRequires: foo # comment \` + `bar` became
-        # `BuildRequires: foo # comment bar`).
-        code_line, trailing_comment = self._split_trailing_comment(line)
-        if code_line.endswith('\\') and self._is_dep_tag_line(line):
-            self._dep_continuation = code_line[:-1]
-            self._dep_continuation_comment = trailing_comment
-            return
+                comments = [c for c in (self._dep_continuation_comment, trailing_comment) if c]
+                self._dep_continuation_comment = None
+                if comments:
+                    line = f'{line} {" ".join(comments)}'
+        # Judge a trailing backslash on the code part only; inside a comment
+        # it is comment text. Skip the split when the line has no backslash.
+        if '\\' in line:
+            code_line, trailing_comment = self._split_trailing_comment(line)
+            if code_line.endswith('\\') and self._is_dep_tag_line(line):
+                self._dep_continuation = code_line[:-1]
+                self._dep_continuation_comment = trailing_comment
+                return
 
         # if the line is empty, just skip it, unless keep_space is true
         if self._handle_empty_line(line):
@@ -1601,10 +1611,14 @@ class RpmPreamble(Section):
         # do not require special attention
         self._handle_fallback(line)
 
+    def _needs_license_placeholder(self) -> bool:
+        """Whether flatten_output should insert a placeholder License."""
+        return self.subpkglicense and not self._has_license
+
     def output(self, fout: IO[str], newline: bool = True, new_class: str | None = None) -> None:
         """Dump the results to the output list."""
         self._flush_dep_continuation()
-        lines = self.paragraph.flatten_output(self.subpkglicense and not self._has_license)
+        lines = self.paragraph.flatten_output(self._needs_license_placeholder())
         self.lines += lines
         # Section.output only compares the name against 'RpmScriptlets'
         Section.output(self, fout, newline, new_class or '')
@@ -1613,8 +1627,6 @@ class RpmPreamble(Section):
 class RpmPreambleChunk(RpmPreamble):
     """Preamble lines (%define, %global, %bcond) between sections, not a package header."""
 
-    def output(self, fout: IO[str], newline: bool = True, new_class: str | None = None) -> None:
-        """Dump the results to the output list without a placeholder License."""
-        self._flush_dep_continuation()
-        self.lines += self.paragraph.flatten_output(False)
-        Section.output(self, fout, newline, new_class or '')
+    def _needs_license_placeholder(self) -> bool:
+        """A chunk never takes a placeholder License."""
+        return False

@@ -830,6 +830,197 @@ class TestRpmPreamble:
             ('foo', None, None),
         ]
 
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            # a bare fragment joins, with a space when neither side has one
+            (
+                ['BuildRequires: foo\\', 'bar'],
+                ['BuildRequires:  bar', 'BuildRequires:  foo'],
+            ),
+            (
+                ['BuildRequires: foo \\', 'bar'],
+                ['BuildRequires:  bar', 'BuildRequires:  foo'],
+            ),
+            # a fragment ending in a backslash continues again
+            (
+                ['BuildRequires: foo \\', 'bar \\', 'baz'],
+                ['BuildRequires:  bar', 'BuildRequires:  baz', 'BuildRequires:  foo'],
+            ),
+            # a comment-only line keeps the continuation open; its comment is carried
+            (
+                ['BuildRequires: foo \\', '# note', 'bar'],
+                ['BuildRequires:  bar # note', 'BuildRequires:  foo'],
+            ),
+            (
+                ['BuildRequires: foo \\', '# n1', '# n2', 'bar'],
+                ['BuildRequires:  bar # n1 # n2', 'BuildRequires:  foo'],
+            ),
+            # a comment-only line before a break flushes with the comment attached
+            (
+                ['BuildRequires: foo \\', '# note', 'Requires: bar'],
+                ['BuildRequires:  foo # note', 'Requires:       bar'],
+            ),
+            # a comment-only line at the end flushes with the comment attached
+            (['BuildRequires: foo \\', '# note'], ['BuildRequires:  foo # note']),
+            # a plain one-line conditional is a macro fragment, so it joins
+            (
+                ['BuildRequires: foo \\', '%{?foo:bar}'],
+                ['BuildRequires:  %{?foo:bar}', 'BuildRequires:  foo'],
+            ),
+            # a one-line conditional carrying a dependency breaks instead
+            (
+                ['BuildRequires: foo \\', '%{?with_bar:Requires: baz}'],
+                ['BuildRequires:  foo', '%{?with_bar:Requires: baz}'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%{!?with_bar:BuildRequires: baz}'],
+                ['BuildRequires:  foo', '%{!?with_bar:BuildRequires: baz}'],
+            ),
+            # a one-line conditional wrapping a define breaks instead
+            (
+                ['BuildRequires: foo \\', '%{?with_bar:%define qux 1}'],
+                ['%{?with_bar:%define qux 1}', 'BuildRequires:  foo'],
+            ),
+            # a dep pragma continues like a plain tag
+            (
+                ['#!BuildRequires: foo \\', 'bar'],
+                ['BuildRequires:  bar', 'BuildRequires:  foo'],
+            ),
+            (
+                ['#!BuildRequires: foo \\ # c1', 'bar'],
+                ['BuildRequires:  bar # c1', 'BuildRequires:  foo'],
+            ),
+            # a %dnl inside a # comment is comment text, not the comment start
+            (
+                ['BuildRequires: foo \\ # use %dnl here', 'bar'],
+                ['BuildRequires:  bar # use %dnl here', 'BuildRequires:  foo'],
+            ),
+            # carried and trailing comments keep their original order
+            (
+                ['BuildRequires: foo \\ # c1', 'bar # c2'],
+                ['BuildRequires:  bar # c1 # c2', 'BuildRequires:  foo'],
+            ),
+            # a trailing comment on the first line stays with the joined line
+            (
+                ['BuildRequires: foo \\ # comment', 'bar'],
+                ['BuildRequires:  bar # comment', 'BuildRequires:  foo'],
+            ),
+            # a backslash inside a trailing comment is comment text, not a continuation
+            (
+                ['BuildRequires: foo # comment \\', 'bar'],
+                ['BuildRequires:  foo # comment \\', 'bar'],
+            ),
+            # a new tag, define or conditional breaks the continuation
+            (
+                ['BuildRequires: foo \\', 'Requires: bar'],
+                ['BuildRequires:  foo', 'Requires:       bar'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%define myfoo bar'],
+                ['%define myfoo bar', 'BuildRequires:  foo'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%global myfoo bar'],
+                ['%global myfoo bar', 'BuildRequires:  foo'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%bcond_with foo'],
+                ['%bcond_with foo', 'BuildRequires:  foo'],
+            ),
+            (
+                ['BuildRequires: foo \\', 'Name: test'],
+                ['Name:           test', 'BuildRequires:  foo'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%if 0', 'BuildRequires: baz', '%endif'],
+                ['BuildRequires:  foo', '%if 0', 'BuildRequires:  baz', '%endif'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%endif'],
+                ['BuildRequires:  foo', '%endif'],
+            ),
+            (
+                ['BuildRequires: foo \\', '# MANUAL END'],
+                ['BuildRequires:  foo', '# MANUAL END'],
+            ),
+            (
+                ['# MANUAL BEGIN', 'BuildRequires: foo \\', '# MANUAL END'],
+                ['# MANUAL BEGIN', 'BuildRequires:  foo', '# MANUAL END'],
+            ),
+            (
+                ['%{?with_foo:', 'BuildRequires: bar \\', '}', 'BuildRequires: after'],
+                ['BuildRequires:  after', '%{?with_foo:', 'BuildRequires:  bar', '}'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%{?with_foo:', 'BuildRequires: bar', '}'],
+                ['BuildRequires:  foo', '%{?with_foo:', 'BuildRequires:  bar', '}'],
+            ),
+            # preamble macros break the continuation
+            (
+                ['BuildRequires: foo \\', '%python_subpackages'],
+                ['BuildRequires:  foo', '%python_subpackages'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%lang_package'],
+                ['BuildRequires:  foo', '%lang_package'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%sle15_python_module_pythons'],
+                ['%{sle15_python_module_pythons}', 'BuildRequires:  foo'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%requires_eq libfoo libbar'],
+                ['BuildRequires:  foo', '%requires_eq    libbar', '%requires_eq    libfoo'],
+            ),
+            # an open continuation at the end flushes
+            (['BuildRequires: foo \\'], ['BuildRequires:  foo']),
+        ],
+        ids=[
+            'adjacent-join',
+            'spaced-join',
+            'multi-line-join',
+            'comment-only-keeps-open',
+            'two-comments-kept-in-order',
+            'comment-only-then-break',
+            'comment-only-then-eof',
+            'plain-onelinecond-joins',
+            'onelinecond-dep-breaks',
+            'onelinecond-negated-breaks',
+            'onelinecond-define-breaks',
+            'pragma-continues',
+            'pragma-comment',
+            'hash-before-dnl',
+            'comment-order',
+            'comment-join',
+            'backslash-in-comment',
+            'requires-breaks',
+            'define-breaks',
+            'global-breaks',
+            'bcond-breaks',
+            'name-breaks',
+            'if-breaks',
+            'endif-breaks',
+            'codeblock-end-flushes',
+            'codeblock-end-inside',
+            'closer-flushes',
+            'multilinecond-breaks',
+            'python-subpackages-breaks',
+            'lang-package-breaks',
+            'head-macro-breaks',
+            'requires-eq-breaks',
+            'open-at-eof-flushes',
+        ],
+    )
+    def test_dep_continuation(
+        self, preamble: RpmPreamble, lines: list[str], expected: list[str]
+    ) -> None:
+        """Test the backslash-continued dependency join/flush matrix."""
+        for line in lines:
+            preamble.add(line)
+        preamble._flush_dep_continuation()
+        assert [str(item) for item in preamble.paragraph.flatten_output()] == expected
+
 
 class TestRpmPreambleOrder:
     """We run few tests to ensure minimal mode keeps the preamble order."""
