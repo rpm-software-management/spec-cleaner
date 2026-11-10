@@ -208,6 +208,10 @@ class RpmPreambleElements:
         'enhances',
         'supplements',
         'conflicts',
+        # %pattern_* macros expand into a Provides (pattern-category),
+        # so they are emitted with the Provides, never hoisted before
+        # the %bcond lines with the defines
+        'patterndefine',
         'provides_obsoletes',
         'removepath',
         'buildroot',

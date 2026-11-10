@@ -1,5 +1,4 @@
 %package dhcp_dns_server
-%pattern_serverfunctions
 Summary:        DHCP and DNS Server
 Group:          Metapackages
 Provides:       pattern() = dhcp_dns_server
@@ -12,9 +11,9 @@ Provides:       patterns-openSUSE-dhcp_dns_server = %{version}
 Obsoletes:      patterns-openSUSE-dhcp_dns_server < %{version}
 Requires:       curl
 Recommends:     wget
+%pattern_serverfunctions
 
 %package devel_gnome
-%pattern_development
 Summary:        GNOME Development
 Group:          Metapackages
 Provides:       pattern() = devel_gnome
@@ -31,9 +30,9 @@ Suggests:       pattern() = devel_C_C++
 Requires:       vim
 Recommends:     gtk3
 Suggests:       python-gobject
+%pattern_development
 
 %package base
-%pattern_basetechnologies
 Summary:        Base System
 Group:          Metapackages
 Provides:       pattern() = base
@@ -59,6 +58,7 @@ Requires:       util-linux
 # Add some static base tool in case system explodes; Recommend only, as users are free to uninstall it
 Recommends:     busybox-static
 Recommends:     haveged
+%pattern_basetechnologies
 %obsolete_legacy_pattern base
 %{obsolete_legacy_pattern minimal}
 
