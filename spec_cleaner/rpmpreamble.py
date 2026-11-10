@@ -906,7 +906,10 @@ class RpmPreamble(Section):
         """Handle pattern define. Return True if handled."""
         if not self.reg.re_patterndefine.match(line):
             return False
-        self._add_line_to('define', line)
+        # A %pattern_* macro expands into a Provides (pattern-category),
+        # so it belongs with the Provides, not with the defines hoisted
+        # before the %bcond lines.
+        self._add_line_to('patterndefine', line)
         return True
 
     def _handle_patternprovides(self, line: str) -> bool:
