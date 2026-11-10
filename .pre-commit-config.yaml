@@ -7,7 +7,7 @@ repos:
     - id: ruff-format
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v2.4.0'
+    rev: 'v2.4.1'
     hooks:
     - id: mypy
       additional_dependencies: [pytest, python-rpm-spec]
