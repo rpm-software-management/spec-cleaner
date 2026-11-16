@@ -227,6 +227,102 @@ def test_known_dirs_kept_in_minimal_run(default_options: Callable[..., dict[str,
     assert _cleaned_line(default_options, True, line) == line
 
 
+# gh#519: a path-valued BuildRequires must stay literal in the full run.
+# The OBS scheduler records BuildRequires unexpanded, so a macroised file
+# dependency matches nothing and the build goes unresolvable.
+PATH_BUILDREQUIRES_KEPT = [
+    'BuildRequires:  /usr/bin/zcat',
+    'BuildRequires:  /usr/bin/gpg',
+    'BuildRequires:  /usr/bin/make',
+    'BuildRequires:  /usr/sbin/foo',
+    'BuildRequires:  foo /usr/bin/make',
+    # a path right after '(' in a rich dependency
+    'BuildRequires:  (/usr/bin/foo or bar)',
+    'BuildRequires:  (foo or /usr/bin/bar)',
+    # the tag inside a one-line conditional is still a BuildRequires
+    '%{?with_foo:BuildRequires: /usr/bin/foo}',
+    # the tag inside a one-line conditional may be a dep pragma
+    '%{?with_foo:#!BuildRequires: /usr/bin/foo}',
+    '%{!?with_foo:#!BuildRequires: /usr/bin/foo}',
+]
+
+
+@pytest.mark.parametrize('line', PATH_BUILDREQUIRES_KEPT)
+def test_path_buildrequires_kept_in_full_run(
+    default_options: Callable[..., dict[str, Any]], line: str
+) -> None:
+    """A file BuildRequires stays literal in the full run (gh#519)."""
+    assert _cleaned_line(default_options, False, line) == line
+
+
+def test_requires_path_still_macroised_in_full_run(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """The carve-out is BuildRequires-only; a path in Requires still macroises."""
+    assert (
+        _cleaned_line(default_options, False, 'Requires:  /usr/bin/foo')
+        == 'Requires:  %{_bindir}/foo'
+    )
+
+
+def test_conditional_requires_path_still_macroised_in_full_run(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A path in a conditional Requires still macroises; only BuildRequires is exempt."""
+    assert (
+        _cleaned_line(default_options, False, '%{?with_foo:Requires: /usr/bin/foo}')
+        == '%{?with_foo:Requires: %{_bindir}/foo}'
+    )
+
+
+def test_conditional_pragma_requires_path_still_macroised_in_full_run(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A path in a conditional pragma Requires still macroises; only BuildRequires is exempt."""
+    assert (
+        _cleaned_line(default_options, False, '%{?with_foo:#!Requires: /usr/bin/foo}')
+        == '%{?with_foo:#!Requires: %{_bindir}/foo}'
+    )
+
+
+def test_buildrequires_comment_slash_does_not_exempt(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A `/` in a trailing comment is not a path dependency (gh#519)."""
+    assert (
+        _cleaned_line(default_options, False, 'BuildRequires:  foo # needs /usr/bin/foo')
+        == 'BuildRequires:  foo # needs %{_bindir}/foo'
+    )
+
+
+def test_dnl_inside_macro_body_is_not_a_comment(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A `%dnl` inside a macro body is body text; the next one starts the comment (gh#519)."""
+    assert (
+        _cleaned_line(
+            default_options,
+            False,
+            'BuildRequires:  foo %{foo %dnl} bar %dnl /usr/bin/baz',
+        )
+        == 'BuildRequires:  foo %{foo %dnl} bar %dnl %{_bindir}/baz'
+    )
+
+
+def test_path_before_dnl_inside_macro_body_stays_literal(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A `%dnl` inside a macro body does not hide the path before it (gh#519)."""
+    assert (
+        _cleaned_line(
+            default_options,
+            False,
+            'BuildRequires:  /usr/bin/foo %{foo %dnl} bar %dnl comment',
+        )
+        == 'BuildRequires:  /usr/bin/foo %{foo %dnl} bar %dnl comment'
+    )
+
+
 def test_buildroot_replaced_in_minimal_run(default_options: Callable[..., dict[str, Any]]) -> None:
     """$RPM_BUILD_ROOT is a variable substitution and is replaced in both modes."""
     line = 'install -D -m 0644 foo.conf $RPM_BUILD_ROOT/usr/share/foo/foo.conf'
