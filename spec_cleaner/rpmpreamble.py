@@ -709,7 +709,14 @@ class RpmPreamble(Section):
         return MacroLine(line, is_global=is_global, is_eager=is_global or oneline)
 
     def _is_dep_tag_line(self, line: str) -> bool:
-        """Whether the line opens a dependency tag that may continue on the next line."""
+        """
+        Whether the line opens a dependency tag that may continue on the next line.
+
+        A one-line conditional wraps the tag, so a conditional dep (or a
+        conditional dep pragma) is a dep tag line too: without it, a
+        backslash-continued conditional dependency is never recorded as a
+        continuation and its fragment is cleaned as a stray line instead.
+        """
         return any(
             regexp.match(line)
             for regexp in (
@@ -730,8 +737,33 @@ class RpmPreamble(Section):
                 self.reg.re_buildrequires_pragma,
                 self.reg.re_buildconflicts_pragma,
                 self.reg.re_buildignores,
+                self.reg.re_onelinecond_dep,
+                self.reg.re_onelinecond_dep_pragma,
             )
         )
+
+    def _is_path_buildrequires(self, line: str) -> bool:
+        """
+        Whether the line is a BuildRequires tag naming an absolute file path.
+
+        A backslash-continued dependency is cleaned fragment by fragment,
+        so the base check cannot see the joined line: when the pending
+        tag is a BuildRequires, a path in the fragment belongs to that
+        BuildRequires and must stay literal. A dep pragma (#!BuildRequires:)
+        converts to the plain tag, so its fragment is exempt the same way,
+        and so does a BuildRequires wrapped in a one-line conditional
+        (plain or pragma): the pending tag is recognised through the value
+        lookup, which covers the plain, conditional and conditional-pragma
+        forms alike.
+        """
+        if super()._is_path_buildrequires(line):
+            return True
+        if self._dep_continuation is not None and (
+            super()._path_buildrequires_value(self._dep_continuation.lstrip()) is not None
+            or self.reg.re_buildrequires_pragma.match(self._dep_continuation.lstrip())
+        ):
+            return self._has_path_token(self._strip_trailing_comment(line.lstrip()))
+        return False
 
     def _is_block_closer_line(self, line: str) -> bool:
         """Whether the line closes a conditional or codeblock instead of continuing a dependency."""
@@ -1478,9 +1510,10 @@ class RpmPreamble(Section):
                             f'{carried} {trailing_comment}' if carried else trailing_comment
                         )
                     return
-                # Join with a space when neither side has whitespace at the seam.
-                sep = '' if self._dep_continuation[-1:].isspace() else ' '
-                line = f'{self._dep_continuation}{sep}{code_line}'
+                # Join with exactly one space at the seam: the fragment's
+                # indentation is not meaningful, so keeping it would leave
+                # a gap in the joined line.
+                line = f'{self._dep_continuation.rstrip()} {code_line.lstrip()}'
                 self._dep_continuation = None
                 comments = [c for c in (self._dep_continuation_comment, trailing_comment) if c]
                 self._dep_continuation_comment = None

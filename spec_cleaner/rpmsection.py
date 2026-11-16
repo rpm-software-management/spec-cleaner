@@ -2,6 +2,7 @@
 import re
 from typing import IO, Any
 
+from .rpmhelpers import open_macro_bodies
 from .rpmregexp import Regexp
 
 # Short utilities and what they expand to; the bare names map to
@@ -193,6 +194,98 @@ class Section:
         # or None when not inside one
         self._quoted_heredoc: str | None = None
 
+    @staticmethod
+    def _strip_trailing_comment(value: str) -> str:
+        """
+        The value without its trailing comment.
+
+        A `#` (or `%dnl`) only starts a comment outside every `%{...}`
+        and `%(...)` body; inside a macro body it is body text. Mirrors the
+        comment detection of RpmPreamble._split_trailing_comment.
+        """
+        dnl_idx = -1
+        index = value.find('%dnl')
+        while index >= 0:
+            if open_macro_bodies(value[:index]) == (0, 0):
+                dnl_idx = index
+                break
+            index = value.find('%dnl', index + 1)
+        # the comment starts at whichever marker comes first: a %dnl inside
+        # a # comment is comment text, and a # after %dnl is inside it
+        end = dnl_idx if dnl_idx >= 0 else len(value)
+        for i in range(end):
+            if value[i] != '#':
+                continue
+            if i == 0 or value[i - 1] in ' \t':
+                if open_macro_bodies(value[:i]) == (0, 0):
+                    return value[:i].rstrip()
+        if dnl_idx >= 0:
+            return value[:dnl_idx].rstrip()
+        return value
+
+    @staticmethod
+    def _has_path_token(value: str) -> bool:
+        """
+        Whether the dependency value names an absolute file path.
+
+        A token starting with '/' is a file path, alone or among package
+        names, also right after '(' in a rich dependency such as
+        (/usr/bin/foo or bar).
+        """
+        return bool(re.search(r'(?:^|[\s,(])/', value))
+
+    def _path_buildrequires_value(self, line: str) -> str | None:
+        """
+        The dependency value of a BuildRequires tag on the line, or None.
+
+        The tag may sit inside a one-line conditional
+        (%{?with_foo:BuildRequires: /usr/bin/foo}), an abbreviated %if
+        block whose value is still a BuildRequires. A dep pragma
+        (#!BuildRequires:) carries the same file dependency, inside a
+        one-line conditional too (%{?with_foo:#!BuildRequires: /usr/bin/foo}).
+        """
+        match = self.reg.re_buildrequires.match(line)
+        if match:
+            return match.group(2)
+        cond = self.reg.re_onelinecond_dep.match(line)
+        if cond:
+            # the matched prefix ends at the tag colon; only a BuildRequires
+            # (or BuildPreReq) inside the conditional carries a file
+            # dependency the scheduler records
+            tag = re.search(
+                r'(BuildRequires|BuildPreReq)(?:\([^)]*\))?\s*:$',
+                cond.group(0),
+                re.IGNORECASE,
+            )
+            if tag:
+                return line[cond.end() :]
+        # a one-line conditional wrapping a dep pragma: the pragma marker
+        # sits between the conditional colon and the tag, so the shared
+        # conditional pattern does not match it
+        pragma_cond = re.match(
+            r'^\s*%{!?[^?]*\?[^:]+:\s*#!BuildRequires:\s*(.*)',
+            line,
+            re.IGNORECASE,
+        )
+        if pragma_cond:
+            return pragma_cond.group(1)
+        return None
+
+    def _is_path_buildrequires(self, line: str) -> bool:
+        """
+        Whether the line is a BuildRequires tag naming an absolute file path.
+
+        The OBS scheduler records BuildRequires unexpanded, so a macroised
+        file dependency (%{_bindir}/zcat) matches nothing and the build goes
+        unresolvable; the literal path resolves because the provider ships
+        the file. Only BuildRequires goes through that lookup, so a macroised
+        path in Requires is harmless (rpm expands it at build/install time).
+        A `/` in a trailing comment does not count: the comment is not
+        part of the dependency.
+        """
+        value = self._path_buildrequires_value(self._strip_trailing_comment(line.lstrip()))
+        return value is not None and self._has_path_token(value)
+
     def _complete_cleanup(self, line: str) -> str:
         """
         Call all the cleanups in proper order.
@@ -222,7 +315,7 @@ class Section:
                 line = self.embrace_macros_outside_lua(line)
             line = self.replace_buildroot(line)
             line = self.replace_optflags(line)
-            if not self.minimal:
+            if not self.minimal and not self._is_path_buildrequires(line):
                 line = self.replace_known_dirs(line)
             line = self.replace_utils(line)
             line = self.replace_buildservice(line)

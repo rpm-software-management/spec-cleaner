@@ -184,6 +184,14 @@ class Regexp:
         r'(?:\([^)]*\))?\s*:',
         re.IGNORECASE,
     )
+    # one-line conditional wrapping a dep pragma, eg.
+    # %{?with_foo:#!BuildRequires: bar}; an abbreviated %if with_foo block.
+    # Covers all three pragma forms: only the BuildRequires one carries a
+    # file dependency, but a continued line of any of them joins the same way.
+    re_onelinecond_dep_pragma = re.compile(
+        r'^\s*%{!?[^?]*\?[^:]+:\s*#!Build(?:Requires|Conflicts|Ignore):',
+        re.IGNORECASE,
+    )
     # one-line conditional wrapping a %define/%global, eg. %{?foo:%define bar}
     re_onelinecond_define = re.compile(
         r'^\s*%{!?[^?]*\?[^:]+:\s*%(define|global)\b',

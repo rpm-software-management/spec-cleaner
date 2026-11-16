@@ -847,6 +847,51 @@ class TestRpmPreamble:
                 ['BuildRequires: foo \\', 'bar \\', 'baz'],
                 ['BuildRequires:  bar', 'BuildRequires:  baz', 'BuildRequires:  foo'],
             ),
+            # a path in the fragment belongs to the BuildRequires and stays literal (gh#519)
+            (
+                ['BuildRequires: foo \\', '    /usr/bin/bar'],
+                ['BuildRequires:  /usr/bin/bar', 'BuildRequires:  foo'],
+            ),
+            # a path in a dep pragma fragment belongs to the BuildRequires too (gh#519)
+            (
+                ['#!BuildRequires: foo \\', '    /usr/bin/bar'],
+                ['BuildRequires:  /usr/bin/bar', 'BuildRequires:  foo'],
+            ),
+            # a BuildConflicts fragment is not a BuildRequires and still macroises
+            (
+                ['#!BuildConflicts: foo \\', '    /usr/bin/bar'],
+                ['BuildConflicts: %{_bindir}/bar', 'BuildConflicts: foo'],
+            ),
+            # a path in a conditional BuildRequires fragment stays literal (gh#519):
+            # the conditional dep line continues like a plain tag, so the
+            # fragment joins the one-liner instead of being cleaned alone
+            (
+                ['%{?with_foo:BuildRequires: foo \\', '    /usr/bin/bar}'],
+                ['%{?with_foo:BuildRequires: foo /usr/bin/bar}'],
+            ),
+            (
+                ['%{?with_foo:BuildRequires: foo \\', '    bar}'],
+                ['%{?with_foo:BuildRequires: foo bar}'],
+            ),
+            (
+                ['%{!?with_foo:BuildRequires: foo \\', '    /usr/bin/bar}'],
+                ['%{!?with_foo:BuildRequires: foo /usr/bin/bar}'],
+            ),
+            # a path in a conditional dep pragma fragment stays literal too (gh#519)
+            (
+                ['%{?with_foo:#!BuildRequires: foo \\', '    /usr/bin/bar}'],
+                ['%{?with_foo:#!BuildRequires: foo /usr/bin/bar}'],
+            ),
+            # a conditional BuildConflicts fragment joins but still macroises
+            (
+                ['%{?with_foo:#!BuildConflicts: foo \\', '    /usr/bin/bar}'],
+                ['%{?with_foo:#!BuildConflicts: foo %{_bindir}/bar}'],
+            ),
+            # a conditional Requires fragment joins but still macroises
+            (
+                ['%{?with_foo:Requires: foo \\', '    /usr/bin/bar}'],
+                ['%{?with_foo:Requires: foo %{_bindir}/bar}'],
+            ),
             # a comment-only line keeps the continuation open; its comment is carried
             (
                 ['BuildRequires: foo \\', '# note', 'bar'],
@@ -980,6 +1025,15 @@ class TestRpmPreamble:
             'adjacent-join',
             'spaced-join',
             'multi-line-join',
+            'path-fragment-kept',
+            'pragma-path-fragment-kept',
+            'pragma-buildconflicts-fragment-macroised',
+            'onelinecond-path-fragment-kept',
+            'onelinecond-plain-fragment-kept',
+            'onelinecond-negated-path-fragment-kept',
+            'onelinecond-pragma-path-fragment-kept',
+            'onelinecond-pragma-buildconflicts-fragment-macroised',
+            'onelinecond-requires-fragment-macroised',
             'comment-only-keeps-open',
             'two-comments-kept-in-order',
             'comment-only-then-break',

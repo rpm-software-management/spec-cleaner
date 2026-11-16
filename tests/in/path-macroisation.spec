@@ -4,7 +4,14 @@
 # shapes the Factory corpus showed being rewritten: %description prose,
 # %define values, a path-valued tag, scriptlets, an indented comment and
 # %files entries. $RPM_BUILD_ROOT is a variable substitution rather than a
-# path macroisation and is rewritten in both modes.
+# path macroisation and is rewritten in both modes. A path-valued
+# BuildRequires stays literal in both modes: the OBS scheduler records
+# BuildRequires unexpanded, so a macroised file dependency matches nothing.
+# That holds for the tag in a rich dependency, a backslash-continued
+# dependency and a one-line conditional, too, and for the dep pragma form
+# (#!BuildRequires:), whose continuation fragment and one-line conditional
+# carry the same file dependency. A one-line conditional whose value
+# continues onto the next line joins the same way, pragma form included.
 #
 %define CATALINA_HOME /usr/share/tomcat6
 %define apparmor_bin_prefix /usr/lib/apparmor
@@ -15,6 +22,18 @@ Summary:        Paths stay as written in the minimal run
 License:        MIT
 URL:            https://example.org/path-macroisation
 BuildRequires:  /usr/bin/make
+BuildRequires:  (/usr/bin/foo or bar)
+BuildRequires:  foo \
+    /usr/bin/bar
+%{?with_foo:BuildRequires: /usr/bin/foo}
+#!BuildRequires: /usr/bin/foo
+#!BuildRequires: foo \
+    /usr/bin/bar
+%{?with_foo:#!BuildRequires: /usr/bin/foo}
+%{?with_foo:BuildRequires: foo \
+    /usr/bin/bar}
+%{?with_foo:#!BuildRequires: foo \
+    /usr/bin/bar}
 
 %description
 The driver is /usr/bin/hpijs from HPLIP.
