@@ -6,7 +6,7 @@ install -D -m 0644 99-%{name}.rules %{buildroot}%{_udevrulesdir}/99-%{name}.rule
 install -D -m 0644 %{name}.sysctl %{buildroot}%{_sysctldir}/99-%{name}.conf
 install -D -m 0644 Module.pm %{buildroot}%{perl_vendorlib}/Module.pm
 install -D -m 0644 %{name}.el %{buildroot}%{_emacs_sitelispdir}/%{name}.el
-install -D -m 0644 %{name}.ttf %{buildroot}%{_fontsdir}/%{name}.ttf
+install -D -m 0644 %{name}.ttf %{buildroot}%{_datadir}/fonts/%{name}.ttf
 install -D -m 0644 %{name}.cmxs %{buildroot}%{ocaml_standard_library}/%{name}.cmxs
 install -D -m 0644 %{name} %{buildroot}%{apparmor_profilesdir}/%{name}
 cp -a package.json %{buildroot}%{nodejs_sitelib}/%{name}/
@@ -41,7 +41,7 @@ echo %{_prefix}
 %{_emacs_sitelispdir}/legacy.el
 %{_emacs_sitelispdir}/premacroed.el
 %{_fontsdir}/%{name}.ttf
-%dir %{_fontsdir}
+%dir %{_datadir}/fonts
 %{ocaml_standard_library}/%{name}.cmxs
 %{_libdir}/bar.so
 %{apparmor_profilesdir}/%{name}

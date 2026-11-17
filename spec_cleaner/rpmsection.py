@@ -784,7 +784,6 @@ class Section:
                 r'%{perl_vendorlib}\1',
                 ('_prefix', 'perl_version', 'perl_vendorlib'),
             ),
-            (self.reg.re_fontsdir, r'%{_fontsdir}\1', ('_datadir', '_fontsdir')),
             (
                 self.reg.re_emacssitelispdir,
                 r'%{_emacs_sitelispdir}\1',

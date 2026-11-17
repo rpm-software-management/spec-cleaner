@@ -59,7 +59,6 @@ KNOWN_DIR_RULES: list[tuple[str, str, tuple[str, ...]]] = [
         'echo %{perl_vendorlib}',
         ('_prefix', 'perl_version', 'perl_vendorlib'),
     ),
-    ('echo %{_datadir}/fonts', 'echo %{_fontsdir}', ('_datadir', '_fontsdir')),
     (
         'echo %{_datadir}/emacs/site-lisp',
         'echo %{_emacs_sitelispdir}',
@@ -108,7 +107,19 @@ def test_rewrite_disabled_by_redefined_macro(
 
 def test_every_guard_macro_is_covered() -> None:
     """Every macro name in the rules table is exercised as a redefinition."""
-    assert len(KNOWN_DIR_MACROS) == 29
+    assert len(KNOWN_DIR_MACROS) == 28
+
+
+def test_fontsdir_is_not_a_rewrite_target(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """%{_fontsdir} needs fontpackages-devel, so a fonts path macroises only to %{_datadir} (gh#528)."""
+    section = _section(default_options, set())
+    assert section.replace_known_dirs('echo /usr/share/fonts') == 'echo %{_datadir}/fonts'
+    assert section.replace_known_dirs('echo %{_datadir}/fonts') == 'echo %{_datadir}/fonts'
+    assert '%{_fontsdir}' not in section.replace_known_dirs(
+        'install -D foo %{buildroot}/usr/share/fonts/foo.ttf'
+    )
 
 
 def _check(default_options: Callable[..., dict[str, Any]]) -> RpmCheck:

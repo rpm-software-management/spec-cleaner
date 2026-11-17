@@ -486,7 +486,6 @@ class Regexp:
     re_perlvendorlib = re.compile(
         r'%{?_prefix}?/lib/perl5/vendor_perl/%{?perl_version}?' + endmacro
     )
-    re_fontsdir = re.compile(r'%{?_datadir}?/fonts' + endmacro)
     re_emacssitelispdir = re.compile(r'%{?_datadir}?/emacs/site-lisp' + endmacro)
     re_ocamlstdlib = re.compile(r'%{?_prefix}?/lib64/ocaml' + endmacro)
     re_apparmorprofilesdir = re.compile(r'%{?_sysconfdir}?/apparmor.d' + endmacro)
