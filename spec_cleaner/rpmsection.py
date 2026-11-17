@@ -93,6 +93,27 @@ _RE_LUA_OPENER = re.compile(r'(?<!%)%\{lua\s*:|(?<!%)%lua(?=\s)')
 # Section.embrace_macros; the index refers to that call's shield list
 _RE_SHIELDED = re.compile(r'\x00(\d+)\x00')
 
+# the program argument of awk(1) (gawk, mawk); its %-forms (regex
+# literals matching spec text like %lang(...), printf formats,
+# strftime formats) belong to awk, not to rpm (gh#524). The 'option'
+# group is the awk command plus its options (and -v assignments);
+# only the 'program' group is shielded, so macros elsewhere on the
+# line are still braced. The option repetition is possessive: the
+# token alternatives overlap (a '-v' assignment also matches the
+# short-option form), so a backtracking repetition re-partitions the
+# options exponentially on a long option list; once the options are
+# consumed the program either follows or there is no match. An option
+# value may be quoted, like the -v branch's, or a bare word; the awk
+# command itself may be spelled as the %{__awk} macro.
+_RE_AWK_PROGRAM = re.compile(
+    r'(?P<option>(?:(?<![\w-])(?:g?awk|mawk)\b|%\{__(?:g?awk|mawk)\}|%__(?:g?awk|mawk)\b)'
+    r'(?:\s+(?:-v\s*\w+=(?:\"(?:[^\"\\]|\\.)*\"|\'[^\']*\'|[^\s\"\']+)'
+    r'|--[\w-]+(?:=(?:\"(?:[^\"\\]|\\.)*\"|\'[^\']*\'|[^\s\"\']+)|\s+(?:\"(?:[^\"\\]|\\.)*\"|\'[^\']*\'|[^\s\"\']+))?'
+    r'|-[a-zA-Z](?:(?:\"(?:[^\"\\]|\\.)*\"|\'[^\']*\'|[^\s\"\']+)|\s+(?:\"(?:[^\"\\]|\\.)*\"|\'[^\']*\'|[^\s\"\']+))?'
+    r'))*+\s*)'
+    r'(?P<program>\'[^\']*\'|\"(?:[^\"\\]|\\.)*\")'
+)
+
 # the format string of a find/stat -printf/-fprintf/--printf option; its
 # %-directives (%f, %p, ...) belong to the tool, not to rpm, so the
 # brace-the-macros pass in Section.embrace_macros must leave them alone
@@ -585,6 +606,25 @@ class Section:
         def shield(match: re.Match[str]) -> str:
             shielded.append(match.group(0))
             return f'\x00{len(shielded) - 1}\x00'
+
+        # Shield the program argument of awk(1) first: its %-forms
+        # (regex literals like %lang(...), printf formats, strftime
+        # formats) belong to awk, not to rpm, so the brace-the-macros
+        # pass below must leave them alone (gh#524). Shielding before
+        # the braced-argument-macro pass keeps the two shields from
+        # nesting: a braced macro inside the program stays verbatim
+        # instead of leaving a placeholder behind when the single
+        # restore pass runs. Only the program is shielded, so macros
+        # elsewhere on the line are still braced. The awk shield runs
+        # before the printf-family shields below, so a printf format
+        # inside an awk program is shielded as part of the program
+        # and no placeholder is left behind.
+        def shield_awk_program(match: re.Match[str]) -> str:
+            shielded.append(match.group('program'))
+            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
+
+        if 'awk' in sp[0]:
+            sp[0] = _RE_AWK_PROGRAM.sub(shield_awk_program, sp[0])
 
         # Shield the format string of a find/stat -printf/-fprintf/--printf
         # option first: its %-directives (%f, %p, ...) belong to the tool,
