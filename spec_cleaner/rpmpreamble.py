@@ -762,6 +762,12 @@ class RpmPreamble(Section):
             super()._path_buildrequires_value(self._dep_continuation.lstrip()) is not None
             or self.reg.re_buildrequires_pragma.match(self._dep_continuation.lstrip())
         ):
+            # A line opening a new statement is not the continuation
+            # fragment: add() flushes the pending dependency first and
+            # cleans this line on its own, so a path on it (e.g. a
+            # Requires: /usr/bin/bar break line) macroises as usual.
+            if self._is_block_closer_line(line) or self._is_dep_continuation_break_line(line):
+                return False
             return self._has_path_token(self._strip_trailing_comment(line.lstrip()))
         return False
 
