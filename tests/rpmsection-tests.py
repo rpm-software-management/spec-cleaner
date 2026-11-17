@@ -562,6 +562,132 @@ def test_embrace_leaves_printf_format_directives(
     assert _cleaned_line(default_options, False, line) == expected
 
 
+# gh#522: the same brace-the-macros pass also rewrote the %-directives of
+# other tools' format strings. printf/sprintf (shell builtin,
+# /usr/bin/printf, perl/ruby, awk) and awk's printf/sprintf inside the
+# program carry %-directives that belong to the tool, not to rpm.
+EMBRACE_SHELL_PRINTF_FORMATS = [
+    # shell builtin / /usr/bin/printf, double- and single-quoted
+    (
+        'printf "%s\\n%s" "$MIN_TIME_VERSION" "$MIN_PG_VERSION"',
+        'printf "%s\\n%s" "$MIN_TIME_VERSION" "$MIN_PG_VERSION"',
+    ),
+    ('printf "%d%02d" $maj $min', 'printf "%d%02d" $maj $min'),
+    ('printf \'%s\' "6-zig-..."', 'printf \'%s\' "6-zig-..."'),
+    (
+        "printf 'Name: Proton Core\\nVersion: %{version}\\n'",
+        "printf 'Name: Proton Core\\nVersion: %{version}\\n'",
+    ),
+    # perl/ruby paren form, and printf's -- and -v options
+    ('return printf("%d.%d.%d\\n",', 'return printf("%d.%d.%d\\n",'),
+    ('printf -- "%s\\n" foo', 'printf -- "%s\\n" foo'),
+    ('printf -v var "%s\\n"', 'printf -v var "%s\\n"'),
+    ('sprintf "%s" $x', 'sprintf "%s" $x'),
+    # awk printf/sprintf inside the program
+    (
+        'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',
+        'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',
+    ),
+    # a + inside the printf format must not be fragmented by the date
+    # shield: the whole quoted string is shielded as one unit
+    ('printf "%+d" $x', 'printf "%+d" $x'),
+    # a bare macro outside the format string is still braced
+    (
+        'printf "%s\\n" /usr/share/foo',
+        'printf "%s\\n" %{_datadir}/foo',
+    ),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_SHELL_PRINTF_FORMATS)
+def test_embrace_leaves_shell_printf_format_directives(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
+    """%-directives in a printf/sprintf format string stay unbraced."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
+# gh#522: date(1) '+FORMAT' carries strftime %-directives (%Y, %m, %d,
+# %s, ...) that belong to date, not to rpm. The + sits either outside
+# the quotes ('+%s', '+ "%s"') or inside them ('"+%s"', ''+%Y%m%d'').
+EMBRACE_DATE_FORMATS = [
+    # + outside the quotes, format unquoted
+    ('date +%Y-%m-%d', 'date +%Y-%m-%d'),
+    ('date -r LICENSE +%s', 'date -r LICENSE +%s'),
+    ('date -u +%Y-%m-%dT%H:%M:%SZ', 'date -u +%Y-%m-%dT%H:%M:%SZ'),
+    # + inside the quotes
+    ('date "+%s"', 'date "+%s"'),
+    ('date -u -d "..." "+%s"', 'date -u -d "..." "+%s"'),
+    ("date '+%Y%m%d'", "date '+%Y%m%d'"),
+    ("date -u '+%FT%T%z'", "date -u '+%FT%T%z'"),
+    ('date --date="$..." \'+%%F %T%z\'', 'date --date="$..." \'+%%F %T%z\''),
+    # + outside the quotes, format quoted
+    (
+        'date -r %{SOURCE1} "+%B %d, %Y"',
+        'date -r %{SOURCE1} "+%B %d, %Y"',
+    ),
+    ("date --date=@... +'\\\\date{%B %Y}'", "date --date=@... +'\\\\date{%B %Y}'"),
+    # a bare macro outside the format string is still braced
+    (
+        'date +%Y-%m-%d /usr/share/foo',
+        'date +%Y-%m-%d %{_datadir}/foo',
+    ),
+    # the S: macro rewrite still applies outside the format string
+    ('date +%s -r %{S:99}', 'date +%s -r %{SOURCE99}'),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_DATE_FORMATS)
+def test_embrace_leaves_date_format_directives(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
+    """Strftime %-directives in a date '+FORMAT' argument stay unbraced."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
+# gh#522: stat(1) -c/--format carries %-directives (%n, %s, %a, %Y, ...)
+# that belong to stat, not to rpm. (stat --printf is covered by
+# EMBRACE_PRINTF_FORMATS above.)
+EMBRACE_STAT_FORMATS = [
+    ("stat -c '%G' /usr/bin/foo", "stat -c '%G' %{_bindir}/foo"),
+    ('stat -c "%a" /usr/bin/foo', 'stat -c "%a" %{_bindir}/foo'),
+    ('stat -c %Y /usr/bin/foo', 'stat -c %Y %{_bindir}/foo'),
+    ('stat --format="%y" /usr/bin/foo', 'stat --format="%y" %{_bindir}/foo'),
+    ('stat -c %U:%G:%a /usr/bin/foo', 'stat -c %U:%G:%a %{_bindir}/foo'),
+    ('stat -L -c "%i" /usr/bin/foo', 'stat -L -c "%i" %{_bindir}/foo'),
+    ('stat --format=%Y /usr/bin/foo', 'stat --format=%Y %{_bindir}/foo'),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_STAT_FORMATS)
+def test_embrace_leaves_stat_format_directives(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
+    """%-directives in a stat -c/--format argument stay unbraced."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
+# gh#522: git log/show/for-each-ref --format/--pretty/--date=format:
+# carries %-placeholders (%H, %h, %s, %an, %cd, ...) that belong to git,
+# not to rpm.
+EMBRACE_GIT_FORMATS = [
+    (
+        "%define git_version %(git log '-n1' '--date=format:%Y%m%d' "
+        '\'--no-show-signature\' "--pretty=format:+git%cd.%h")',
+        "%define git_version %(git log '-n1' '--date=format:%Y%m%d' "
+        '\'--no-show-signature\' "--pretty=format:+git%cd.%h")',
+    ),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_GIT_FORMATS)
+def test_embrace_leaves_git_format_placeholders(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
+    """%-placeholders in a git --format/--pretty argument stay unbraced."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
 def test_embrace_leaves_known_macro_function_unbraced(
     default_options: Callable[..., dict[str, Any]],
 ) -> None:

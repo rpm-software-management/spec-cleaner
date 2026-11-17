@@ -104,6 +104,47 @@ _RE_PRINTF_FORMAT = re.compile(
     r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\')'
 )
 
+# the format string of a printf/sprintf call (shell builtin, /usr/bin/printf,
+# perl/ruby printf/sprintf, and awk printf/sprintf inside the program); its
+# %-directives (%s, %d, ...) belong to the tool, not to rpm (gh#522). The
+# 'option' group is the command plus its separator (and printf's -- or -v
+# option, and perl/ruby's opening paren); only the 'format' group is
+# shielded, so macros elsewhere on the line are still braced.
+_RE_SHELL_PRINTF_FORMAT = re.compile(
+    r'(?P<option>(?<![\w-])(?:s?printf)\s*\(?\s*(?:--\s+|-v\s+\S+\s+)?)'
+    r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
+)
+
+# the format argument of date(1). Its %-directives (%Y, %m, %d, %s, ...)
+# are strftime directives, not rpm macros (gh#522). The argument takes two
+# shapes: '+FORMAT' (the + outside the quotes, or the format unquoted)
+# and '"+FORMAT"' / ''+FORMAT'' (the + inside the quotes). The inside
+# form is matched first, so the whole quoted string is shielded as one
+# unit; the outside form then only sees a + followed by a quoted or
+# unquoted format.
+_RE_DATE_FORMAT_INSIDE = re.compile(r'(?P<option>)(?P<format>"\+(?:[^"\\]|\\.)*"|\'\+[^\']*\')')
+_RE_DATE_FORMAT_OUTSIDE = re.compile(
+    r'(?P<option>\+\s*)(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|%[^\s"\';&|]+)'
+)
+
+# the format argument of stat(1) -c/--format (its --printf is covered by
+# _RE_PRINTF_FORMAT above); its %-directives (%n, %s, %a, %Y, ...) belong
+# to stat, not to rpm (gh#522). The 'option' group is the stat command
+# plus any short options and the -c/--format option itself.
+_RE_STAT_FORMAT = re.compile(
+    r'(?P<option>(?<![\w-])stat\b(?:\s+-[a-zA-Z])*?\s*(?:-c|--format)(?:=|\s+))'
+    r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
+)
+
+# the format argument of git log/show/for-each-ref --format/--pretty (and
+# --date=format:); its %-placeholders (%H, %h, %s, %an, %cd, ...) belong
+# to git, not to rpm (gh#522). The 'option' group is the option plus its
+# separator (and the optional 'format:' prefix).
+_RE_GIT_FORMAT = re.compile(
+    r'(?P<option>--(?:format|pretty|date)(?:=|\s+)(?:format:)?)'
+    r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
+)
+
 # the opener of a heredoc whose delimiter is quoted ('EOF', "EOF" or
 # \EOF); the shell does not expand anything in such a heredoc body,
 # unlike an unquoted heredoc
@@ -550,8 +591,27 @@ class Section:
             shielded.append(match.group('format'))
             return match.group('option') + f'\x00{len(shielded) - 1}\x00'
 
+        # Shield the format strings of the commands whose %-directives
+        # belong to the tool, not to rpm (gh#522), before the
+        # braced-argument-macro shield below, so the shields never nest.
+        # The date '+FORMAT' form inside quotes is shielded before
+        # printf/sprintf, so the whole quoted string is shielded as one
+        # unit; printf/sprintf is shielded before the date '+FORMAT' form
+        # outside quotes, so a printf format containing '+' is not
+        # fragmented by it. Only the format string is shielded, so
+        # macros elsewhere on the line are still braced.
         if '-printf' in sp[0] or '-fprintf' in sp[0]:
             sp[0] = _RE_PRINTF_FORMAT.sub(shield_printf_format, sp[0])
+        if 'date' in sp[0]:
+            sp[0] = _RE_DATE_FORMAT_INSIDE.sub(shield_printf_format, sp[0])
+        if 'printf' in sp[0]:
+            sp[0] = _RE_SHELL_PRINTF_FORMAT.sub(shield_printf_format, sp[0])
+        if 'date' in sp[0]:
+            sp[0] = _RE_DATE_FORMAT_OUTSIDE.sub(shield_printf_format, sp[0])
+        if 'stat' in sp[0]:
+            sp[0] = _RE_STAT_FORMAT.sub(shield_printf_format, sp[0])
+        if 'git' in sp[0]:
+            sp[0] = _RE_GIT_FORMAT.sub(shield_printf_format, sp[0])
 
         if self.reg.re_braced_argument_macro is not None and '%{' in sp[0]:
             sp[0] = self.reg.re_braced_argument_macro.sub(shield, sp[0])
