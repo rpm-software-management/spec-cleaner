@@ -4,7 +4,9 @@
 # brace-the-macros pass must leave them alone, or the build fails when
 # GNU find rejects the braced form (%{ is reserved for future use).
 # The same holds for -fprintf and for stat --printf. A bare macro
-# outside a format string is still braced.
+# outside a format string is still braced. The format may also be
+# unquoted (-printf %p, --printf=%a, -c%a); the format then runs to
+# the next shell separator.
 #
 Name:           find-printf
 Version:        1.0
@@ -28,6 +30,10 @@ find * -name \*.so -printf "/%p\n"
 find $root -name FEATURE -printf ' -I%h'
 find -type l -printf '%f\a%l\n'
 find . -type f -fprintf /tmp/out.txt "%p %s\n"
+find . -type f -printf %p\n
+find . -type f -fprintf f %p\n
+stat --printf=%a %{_localstatedir}/spool/mail/
+stat -c%a %{_localstatedir}/spool/mail/
 test 1777 = "$(stat --printf='%a' %{_localstatedir}/spool/mail/)" || exit 1
 install -D -m 0644 foo.conf %{buildroot}%{_datadir}/foo/foo.conf
 

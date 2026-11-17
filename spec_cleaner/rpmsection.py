@@ -97,10 +97,12 @@ _RE_SHIELDED = re.compile(r'\x00(\d+)\x00')
 # brace-the-macros pass in Section.embrace_macros must leave them alone
 # (gh#522). The 'option' group is the option plus its separator (and
 # -fprintf's file argument); only the 'format' group is shielded, so
-# macros elsewhere on the line are still braced.
+# macros elsewhere on the line are still braced. The format may also be
+# unquoted (-printf %p, --printf=%a): the unquoted alternative runs to
+# the next shell separator, like _RE_SHELL_PRINTF_FORMAT's.
 _RE_PRINTF_FORMAT = re.compile(
     r'(?<![\w-])(?P<option>-fprintf\s+\S+\s+|(?:-printf|--printf)(?:\s+|=)\s*)'
-    r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\')'
+    r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
 )
 
 # the format string of a printf/sprintf call (shell builtin, /usr/bin/printf,
@@ -129,9 +131,11 @@ _RE_DATE_FORMAT_OUTSIDE = re.compile(
 # the format argument of stat(1) -c/--format (its --printf is covered by
 # _RE_PRINTF_FORMAT above); its %-directives (%n, %s, %a, %Y, ...) belong
 # to stat, not to rpm (gh#522). The 'option' group is the stat command
-# plus any short options and the -c/--format option itself.
+# plus any short options and the -c/--format option itself. The format
+# may be attached to the short -c with no separator (-c%a), as getopt
+# allows; --format still needs = or a space.
 _RE_STAT_FORMAT = re.compile(
-    r'(?P<option>(?<![\w-])stat\b(?:\s+-[a-zA-Z])*?\s*(?:-c|--format)(?:=|\s+))'
+    r'(?P<option>(?<![\w-])stat\b(?:\s+-[a-zA-Z])*?\s*(?:-c\s*|--format(?:=|\s+)))'
     r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
 )
 
