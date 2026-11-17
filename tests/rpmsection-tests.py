@@ -631,6 +631,111 @@ def test_replace_optflags_ignores_heredoc_opener_inside_quotes(
     ]
 
 
+def test_replace_optflags_assignment_midline_forms(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """
+    An assignment need not start the line to mark the variable.
+
+    After a separator, in an environment prefix, or after 'env' it
+    still marks the variable. A use that is no assignment (an argument,
+    or an assignment to another variable) does not.
+    """
+
+    def _cleaned(lines: list[str]) -> list[str]:
+        section = _section(default_options, set())
+        for line in lines:
+            section.add(line)
+        return section.lines
+
+    # compound assignments after a command separator
+    for separator in (';', '&&', '||'):
+        assert _cleaned(
+            [
+                f'FOO=1{separator} RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"',
+                'CFLAGS="$RPM_OPT_FLAGS"',
+            ]
+        ) == [
+            f'FOO=1{separator} RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    # 'export' after a separator, and '+=' after a separator
+    assert _cleaned(
+        [
+            'FOO=1; export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'FOO=1; export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    assert _cleaned(
+        [
+            'FOO=1; RPM_OPT_FLAGS+=" -x"',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'FOO=1; RPM_OPT_FLAGS+=" -x"',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    # in an environment prefix before the command, optionally led by
+    # 'export', or after the 'env' command, or after a separator
+    assert _cleaned(
+        [
+            'CFLAGS="-O2" RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x" make',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'CFLAGS="-O2" RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x" make',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    assert _cleaned(
+        [
+            'export FOO=1 RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'export FOO=1 RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    assert _cleaned(
+        [
+            'env RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x" make',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'env RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x" make',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    assert _cleaned(
+        [
+            'cd src; CFLAGS="-O2" RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x" make',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'cd src; CFLAGS="-O2" RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x" make',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    # no assignment: an argument, an assignment to another variable,
+    # a use after the command name, or a longer variable name
+    for first in (
+        'echo RPM_OPT_FLAGS=x',
+        'FOO=RPM_OPT_FLAGS=x',
+        'make RPM_OPT_FLAGS=x',
+        'FOO=bar make RPM_OPT_FLAGS=x',
+        'RPM_OPT_FLAGS_EXTRA=x',
+    ):
+        assert _cleaned(
+            [
+                first,
+                'CFLAGS="$RPM_OPT_FLAGS"',
+            ]
+        ) == [
+            first,
+            'CFLAGS="%{optflags}"',
+        ]
+
+
 def test_replace_optflags_keeps_assigned_variable(
     default_options: Callable[..., dict[str, Any]],
 ) -> None:
