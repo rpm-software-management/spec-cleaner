@@ -718,6 +718,103 @@ def test_embrace_leaves_git_format_placeholders(
     assert _cleaned_line(default_options, False, line) == expected
 
 
+# gh#524: the program argument of awk(1) (gawk, mawk) carries %-forms
+# (regex literals matching spec text like %lang(...), printf formats,
+# strftime formats) that belong to awk, not to rpm.
+EMBRACE_AWK_PROGRAMS = [
+    # the reported case: %lang inside the regex, %buildroot outside it
+    (
+        "awk -v P=%buildroot '/^(%lang|[^%])/{print P $NF}' libpq.files libecpg.files | xargs rm",
+        "awk -v P=%{buildroot} '/^(%lang|[^%])/{print P $NF}' libpq.files libecpg.files | xargs rm",
+    ),
+    # a printf format inside the program stays unbraced too
+    (
+        'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',
+        'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',
+    ),
+    # gawk and mawk take the same shield
+    (
+        "gawk '/^(%lang|[^%])/{print}' file",
+        "gawk '/^(%lang|[^%])/{print}' file",
+    ),
+    (
+        "mawk -v x=%foo '/%bar/{print}'",
+        "mawk -v x=%{foo} '/%bar/{print}'",
+    ),
+    # a double-quoted program is shielded as well
+    (
+        'awk "/^(%lang|[^%])/ {print}"',
+        'awk "/^(%lang|[^%])/ {print}"',
+    ),
+    # a quoted field separator is an option, not the program
+    (
+        "awk -F '[<>]' '/%lang/{print}'",
+        "awk -F '[<>]' '/%lang/{print}'",
+    ),
+    (
+        'awk -F " - " \'/%lang/{print}\'',
+        'awk -F " - " \'/%lang/{print}\'',
+    ),
+    # a quoted value attached to the short option is an option too
+    (
+        "awk -F'[<>]' '/%lang/{print}'",
+        "awk -F'[<>]' '/%lang/{print}'",
+    ),
+    # long options, with the value attached or separate
+    (
+        "awk --field-separator=: '/%lang/{print}'",
+        "awk --field-separator=: '/%lang/{print}'",
+    ),
+    (
+        "awk --field-separator : '/%lang/{print}'",
+        "awk --field-separator : '/%lang/{print}'",
+    ),
+    # a quoted long-option value is an option too, attached or separate
+    (
+        'awk --field-separator=":" \'/%lang/{print}\'',
+        'awk --field-separator=":" \'/%lang/{print}\'',
+    ),
+    (
+        'awk --field-separator ":" \'/%lang/{print}\'',
+        'awk --field-separator ":" \'/%lang/{print}\'',
+    ),
+    # a macro-spelled awk is shielded the same way; the macro itself
+    # expands to gawk in the util pass
+    (
+        "%{__awk} '/%lang/{print}'",
+        "gawk '/%lang/{print}'",
+    ),
+    # a braced macro inside the program stays verbatim
+    (
+        'awk \'{print "%{name}"}\'',
+        'awk \'{print "%{name}"}\'',
+    ),
+    # a bare macro outside the program is still braced
+    (
+        "awk '/%lang/{print}' /usr/share/foo",
+        "awk '/%lang/{print}' %{_datadir}/foo",
+    ),
+    # no program argument, nothing to shield: macros brace normally
+    (
+        'awk -f %{SOURCE1} /usr/bin/foo',
+        'awk -f %{SOURCE1} %{_bindir}/foo',
+    ),
+    # 'awk' inside another word is not the command
+    (
+        'echo awk-%name',
+        'echo awk-%{name}',
+    ),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_AWK_PROGRAMS)
+def test_embrace_leaves_awk_program_directives(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
+    """%-forms in an awk program argument stay unbraced."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
 def test_embrace_leaves_known_macro_function_unbraced(
     default_options: Callable[..., dict[str, Any]],
 ) -> None:
