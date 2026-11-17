@@ -961,6 +961,27 @@ class TestRpmPreamble:
                 ['BuildRequires: foo \\', 'Requires: bar'],
                 ['BuildRequires:  foo', 'Requires:       bar'],
             ),
+            # a break line after a continued BuildRequires is not the
+            # fragment: its own path macroises as usual (gh#519)
+            (
+                ['BuildRequires: foo \\', 'Requires: /usr/bin/bar'],
+                ['BuildRequires:  foo', 'Requires:       %{_bindir}/bar'],
+            ),
+            (
+                ['BuildRequires: foo \\', '%{?with_bar:Requires: /usr/bin/baz}'],
+                ['BuildRequires:  foo', '%{?with_bar:Requires: %{_bindir}/baz}'],
+            ),
+            # a new BuildRequires break line is a path BuildRequires itself
+            # and stays literal (gh#519)
+            (
+                ['BuildRequires: foo \\', 'BuildRequires: /usr/bin/bar'],
+                ['BuildRequires:  /usr/bin/bar', 'BuildRequires:  foo'],
+            ),
+            # a define break line macroises its path as usual (gh#519)
+            (
+                ['BuildRequires: foo \\', '%define myfoo /usr/bin/bar'],
+                ['%define myfoo %{_bindir}/bar', 'BuildRequires:  foo'],
+            ),
             (
                 ['BuildRequires: foo \\', '%define myfoo bar'],
                 ['%define myfoo bar', 'BuildRequires:  foo'],
@@ -1049,6 +1070,10 @@ class TestRpmPreamble:
             'comment-join',
             'backslash-in-comment',
             'requires-breaks',
+            'requires-path-break-macroises',
+            'onelinecond-requires-path-break-macroises',
+            'buildrequires-path-break-kept',
+            'define-path-break-macroises',
             'define-breaks',
             'global-breaks',
             'bcond-breaks',

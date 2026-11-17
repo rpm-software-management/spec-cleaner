@@ -12,6 +12,8 @@
 # (#!BuildRequires:), whose continuation fragment and one-line conditional
 # carry the same file dependency. A one-line conditional whose value
 # continues onto the next line joins the same way, pragma form included.
+# A new statement after a continued BuildRequires is not the fragment:
+# its own path macroises as usual.
 #
 %define CATALINA_HOME %{_datadir}/tomcat6
 %define apparmor_bin_prefix %{_prefix}/lib/apparmor
@@ -28,6 +30,8 @@ BuildRequires:  /usr/bin/bar
 BuildRequires:  /usr/bin/foo
 BuildRequires:  /usr/bin/make
 BuildRequires:  foo
+BuildRequires:  qux
+Requires:       %{_bindir}/bar
 %{?with_foo:BuildRequires: /usr/bin/foo}
 %{?with_foo:BuildRequires: foo /usr/bin/bar}
 
