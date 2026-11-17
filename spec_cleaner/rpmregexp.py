@@ -300,6 +300,12 @@ class Regexp:
         r'|(?<=[\w+])=\$(?:RPM_OPT_FLAGS\b|\{RPM_OPT_FLAGS\})(?=[\s;&|)])'
     )
     re_optflags = re.compile(r'\$(?:RPM_OPT_FLAGS\b|\{RPM_OPT_FLAGS\})')
+    # a statement-level assignment to RPM_OPT_FLAGS makes the variable
+    # spec-managed for the rest of the section: later references read
+    # the progressively filtered value, not the raw %{optflags}. Only
+    # a bare 'export' marks it for export without assigning, and a
+    # 'VAR = ...' spelling is no shell assignment at all
+    re_optflags_assign = re.compile(r'^\s*(?:export\s+)?RPM_OPT_FLAGS\+?=')
     re_suseupdateconfig = re.compile(r'%{?\??suse_update_config')
     re_configure = re.compile(r'(^|(.*\s)?)./configure(\s.*|)$')
     re_cmake = re.compile(r'(^|(.*\s)?)cmake(\s.*|)$')

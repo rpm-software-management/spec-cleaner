@@ -629,3 +629,91 @@ def test_replace_optflags_ignores_heredoc_opener_inside_quotes(
         'CXXFLAGS="%{optflags}"',
         'EOF',
     ]
+
+
+def test_replace_optflags_keeps_assigned_variable(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """Once the section assigns to RPM_OPT_FLAGS, its references read the filtered value."""
+    section = _section(default_options, set())
+    lines = [
+        # a use before any assignment still reads the environment value
+        'CFLAGS="$RPM_OPT_FLAGS"',
+        # the assignment itself keeps its right-hand side as well
+        'RPM_OPT_FLAGS="$RPM_OPT_FLAGS -U_FORTIFY_SOURCE"',
+        # the filtering chain reads the value built up so far
+        "RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-Wall//g'`",
+        'RPM_OPT_FLAGS="${RPM_OPT_FLAGS//-O[s0-9]/-O}"',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    for line in lines:
+        section.add(line)
+    assert section.lines == [
+        'CFLAGS="%{optflags}"',
+        'RPM_OPT_FLAGS="$RPM_OPT_FLAGS -U_FORTIFY_SOURCE"',
+        "RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-Wall//g'`",
+        'RPM_OPT_FLAGS="${RPM_OPT_FLAGS//-O[s0-9]/-O}"',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+
+
+def test_replace_optflags_assignment_forms(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """'export' and '+=' assign the variable; a bare export and 'VAR = ...' do not."""
+
+    def _cleaned(lines: list[str]) -> list[str]:
+        section = _section(default_options, set())
+        for line in lines:
+            section.add(line)
+        return section.lines
+
+    # 'export' and '+=' are assignments too, indented or not
+    assert _cleaned(
+        [
+            'export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -std=gnu11"',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -std=gnu11"',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    assert _cleaned(
+        [
+            'RPM_OPT_FLAGS+=" -Wno-error"',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'RPM_OPT_FLAGS+=" -Wno-error"',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    assert _cleaned(
+        [
+            '\tRPM_OPT_FLAGS="$RPM_OPT_FLAGS -fPIC"',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        '\tRPM_OPT_FLAGS="$RPM_OPT_FLAGS -fPIC"',
+        'CFLAGS="$RPM_OPT_FLAGS"',
+    ]
+    # a bare 'export' marks the variable for export without assigning it
+    assert _cleaned(
+        [
+            'export RPM_OPT_FLAGS',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'export RPM_OPT_FLAGS',
+        'CFLAGS="%{optflags}"',
+    ]
+    # spaces around '=' make it a command invocation, not an assignment
+    # (the trailing variable is still quoted and rewritten as usual)
+    assert _cleaned(
+        [
+            'RPM_OPT_FLAGS = $RPM_OPT_FLAGS',
+            'CFLAGS="$RPM_OPT_FLAGS"',
+        ]
+    ) == [
+        'RPM_OPT_FLAGS ="%{optflags}"',
+        'CFLAGS="%{optflags}"',
+    ]
