@@ -312,8 +312,22 @@ class Regexp:
     # spec-managed for the rest of the section: later references read
     # the progressively filtered value, not the raw %{optflags}. Only
     # a bare 'export' marks it for export without assigning, and a
-    # 'VAR = ...' spelling is no shell assignment at all
-    re_optflags_assign = re.compile(r'^\s*(?:export\s+)?RPM_OPT_FLAGS\+?=')
+    # 'VAR = ...' spelling is no shell assignment at all. The assignment
+    # need not start the line: it may follow a command separator
+    # ('FOO=1; RPM_OPT_FLAGS="..."'), sit in an environment prefix
+    # ('CFLAGS="-O2" RPM_OPT_FLAGS="..." make', optionally led by
+    # 'export'), or follow the 'env' command ('env RPM_OPT_FLAGS="..."
+    # make'). A statement starts at the line start or after a separator
+    # (';', '&&', '||', '&', '|'); the lookbehind also matches after
+    # the last character of a doubled separator. Over-detecting is
+    # safe here: a spurious match only leaves later references in
+    # their shell form, which reads the same value
+    _optflags_stmt_start = r'(?:^|(?<=[;&|]))\s*'
+    re_optflags_assign = re.compile(
+        _optflags_stmt_start + r'(?:export\s+)?RPM_OPT_FLAGS\+?='
+        r'|' + _optflags_stmt_start + r'(?:export\s+)?' + _make_env_prefix + r'RPM_OPT_FLAGS\+?='
+        r'|' + _optflags_stmt_start + r'env\s+RPM_OPT_FLAGS\+?='
+    )
     re_suseupdateconfig = re.compile(r'%{?\??suse_update_config')
     re_configure = re.compile(r'(^|(.*\s)?)./configure(\s.*|)$')
     re_cmake = re.compile(r'(^|(.*\s)?)cmake(\s.*|)$')

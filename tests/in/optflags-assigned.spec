@@ -6,3 +6,7 @@ echo "CFLAGS=$CFLAGS"
 
 %install
 CFLAGS="$RPM_OPT_FLAGS"
+
+%check
+FOO=1; RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"
+CFLAGS="$RPM_OPT_FLAGS"

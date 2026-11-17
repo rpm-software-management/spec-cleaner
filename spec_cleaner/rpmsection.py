@@ -696,7 +696,7 @@ class Section:
         # variable at all ('RPM_OPT_FLAGS+=" -x"')
         if self._rpm_opt_flags_assigned:
             return line
-        if self.reg.re_optflags_assign.match(line):
+        if self.reg.re_optflags_assign.search(line):
             self._rpm_opt_flags_assigned = True
             return line
         # both substitutions below need $RPM_OPT_FLAGS; without it the
