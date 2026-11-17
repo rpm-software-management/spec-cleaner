@@ -249,6 +249,9 @@ class Section:
         # delimiter of a quoted heredoc body left open by previous lines,
         # or None when not inside one
         self._quoted_heredoc: str | None = None
+        # whether this section has assigned to RPM_OPT_FLAGS, making the
+        # variable spec-managed (see replace_optflags)
+        self._rpm_opt_flags_assigned: bool = False
 
     @staticmethod
     def _strip_trailing_comment(value: str) -> str:
@@ -655,6 +658,10 @@ class Section:
         """
         Replace RPM_OPT_FLAGS for %{optflags}.
 
+        Except where the section assigns to RPM_OPT_FLAGS itself: then
+        the variable is spec-managed and its references are left alone,
+        so a filtering chain keeps reading the filtered value.
+
         Args:
             line: A string representing a line to process.
 
@@ -679,6 +686,19 @@ class Section:
                 continue
             self._quoted_heredoc = opener.group(1) or opener.group(2) or opener.group(3)
             break
+        # once the section assigns to RPM_OPT_FLAGS, the variable is
+        # spec-managed: references read the progressively filtered value
+        # (e.g. a sed chain stripping flags gcc 7 rejects), not the raw
+        # %{optflags}, so nothing more is rewritten in this section.
+        # The assignment line itself is left alone too: its right-hand
+        # side reads the value built up so far. This runs before the
+        # '$' check below, as an assignment need not reference the
+        # variable at all ('RPM_OPT_FLAGS+=" -x"')
+        if self._rpm_opt_flags_assigned:
+            return line
+        if self.reg.re_optflags_assign.match(line):
+            self._rpm_opt_flags_assigned = True
+            return line
         # both substitutions below need $RPM_OPT_FLAGS; without it the
         # split/join round-trips, so skip the whole dance
         if '$' not in line or 'RPM_OPT_FLAGS' not in line:
