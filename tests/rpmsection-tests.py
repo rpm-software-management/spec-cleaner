@@ -530,7 +530,20 @@ EMBRACE_PRINTF_FORMATS = [
         'find . -type f -fprintf /tmp/out.txt "%p %s\\n"',
         'find . -type f -fprintf /tmp/out.txt "%p %s\\n"',
     ),
-    # stat --printf takes its format after = or a space
+    # unquoted formats: the format runs to the next shell separator,
+    # and a bare macro elsewhere on the line is still braced
+    ('find . -type f -printf %p\\n', 'find . -type f -printf %p\\n'),
+    ('find . -type f -fprintf f %p\\n', 'find . -type f -fprintf f %p\\n'),
+    (
+        'find . -type f -printf %p -o -type d -printf %d\\n',
+        'find . -type f -printf %p -o -type d -printf %d\\n',
+    ),
+    (
+        'find /usr/share/foo -type f -printf %p\\n >> %{name}.files',
+        'find %{_datadir}/foo -type f -printf %p\\n >> %{name}.files',
+    ),
+    # stat --printf takes its format after = or a space; the format may
+    # also be unquoted (--printf=%a), and the path is still macroised
     (
         'test 1777 = "$(stat --printf=\'%a\' /var/spool/mail/)" || exit 1',
         'test 1777 = "$(stat --printf=\'%a\' %{_localstatedir}/spool/mail/)" || exit 1',
@@ -538,6 +551,10 @@ EMBRACE_PRINTF_FORMATS = [
     (
         "stat --printf '%a' /var/spool/mail/",
         "stat --printf '%a' %{_localstatedir}/spool/mail/",
+    ),
+    (
+        'stat --printf=%a /var/spool/mail/',
+        'stat --printf=%a %{_localstatedir}/spool/mail/',
     ),
     # a bare macro outside the format string is still braced
     (
@@ -652,6 +669,8 @@ EMBRACE_STAT_FORMATS = [
     ("stat -c '%G' /usr/bin/foo", "stat -c '%G' %{_bindir}/foo"),
     ('stat -c "%a" /usr/bin/foo', 'stat -c "%a" %{_bindir}/foo'),
     ('stat -c %Y /usr/bin/foo', 'stat -c %Y %{_bindir}/foo'),
+    # the format may be attached to the short -c with no separator
+    ('stat -c%a /usr/bin/foo', 'stat -c%a %{_bindir}/foo'),
     ('stat --format="%y" /usr/bin/foo', 'stat --format="%y" %{_bindir}/foo'),
     ('stat -c %U:%G:%a /usr/bin/foo', 'stat -c %U:%G:%a %{_bindir}/foo'),
     ('stat -L -c "%i" /usr/bin/foo', 'stat -L -c "%i" %{_bindir}/foo'),
