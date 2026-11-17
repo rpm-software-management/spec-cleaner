@@ -295,6 +295,44 @@ def test_buildrequires_comment_slash_does_not_exempt(
     )
 
 
+def test_path_buildrequires_comment_still_macroised(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A path in a trailing comment macroises even when the value is a path (gh#519)."""
+    assert (
+        _cleaned_line(
+            default_options,
+            False,
+            'BuildRequires:  /usr/bin/foo # see /usr/bin/bar for details',
+        )
+        == 'BuildRequires:  /usr/bin/foo # see %{_bindir}/bar for details'
+    )
+
+
+def test_path_buildrequires_dnl_comment_still_macroised(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """A path in a %dnl comment macroises even when the value is a path (gh#519)."""
+    assert (
+        _cleaned_line(default_options, False, 'BuildRequires:  /usr/bin/foo %dnl /usr/bin/bar')
+        == 'BuildRequires:  /usr/bin/foo %dnl %{_bindir}/bar'
+    )
+
+
+def test_path_buildrequires_comment_separator_kept(
+    default_options: Callable[..., dict[str, Any]],
+) -> None:
+    """The whitespace before a trailing comment is kept verbatim (gh#519)."""
+    assert (
+        _cleaned_line(
+            default_options,
+            False,
+            'BuildRequires:  /usr/bin/foo  # see /usr/bin/bar',
+        )
+        == 'BuildRequires:  /usr/bin/foo  # see %{_bindir}/bar'
+    )
+
+
 def test_dnl_inside_macro_body_is_not_a_comment(
     default_options: Callable[..., dict[str, Any]],
 ) -> None:

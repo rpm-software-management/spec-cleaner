@@ -13,7 +13,9 @@
 # carry the same file dependency. A one-line conditional whose value
 # continues onto the next line joins the same way, pragma form included.
 # A new statement after a continued BuildRequires is not the fragment:
-# its own path macroises as usual.
+# its own path macroises as usual. And a trailing comment on a
+# path-valued BuildRequires is not part of the dependency, so the paths
+# in it macroise as usual while the value stays literal.
 #
 %define CATALINA_HOME /usr/share/tomcat6
 %define apparmor_bin_prefix /usr/lib/apparmor
@@ -38,6 +40,7 @@ BuildRequires:  foo \
     /usr/bin/bar}
 BuildRequires:  qux \
 Requires:       /usr/bin/bar
+BuildRequires:  /usr/bin/gpg # see /usr/bin/bar for details
 
 %description
 The driver is /usr/bin/hpijs from HPLIP.

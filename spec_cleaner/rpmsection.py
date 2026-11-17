@@ -315,8 +315,20 @@ class Section:
                 line = self.embrace_macros_outside_lua(line)
             line = self.replace_buildroot(line)
             line = self.replace_optflags(line)
-            if not self.minimal and not self._is_path_buildrequires(line):
-                line = self.replace_known_dirs(line)
+            if not self.minimal:
+                if self._is_path_buildrequires(line):
+                    # The value names a file path that must stay literal,
+                    # but a trailing comment is not part of the dependency:
+                    # macroise the paths in it as usual. The separator
+                    # between code and comment is kept verbatim.
+                    code = self._strip_trailing_comment(line)
+                    rest = line[len(code) :]
+                    if rest.strip():
+                        stripped = rest.lstrip()
+                        sep = rest[: len(rest) - len(stripped)]
+                        line = f'{code}{sep}{self.replace_known_dirs(stripped)}'
+                else:
+                    line = self.replace_known_dirs(line)
             line = self.replace_utils(line)
             line = self.replace_buildservice(line)
             if not self.minimal:

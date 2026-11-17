@@ -13,7 +13,9 @@
 # carry the same file dependency. A one-line conditional whose value
 # continues onto the next line joins the same way, pragma form included.
 # A new statement after a continued BuildRequires is not the fragment:
-# its own path macroises as usual.
+# its own path macroises as usual. And a trailing comment on a
+# path-valued BuildRequires is not part of the dependency, so the paths
+# in it macroise as usual while the value stays literal.
 #
 %define CATALINA_HOME %{_datadir}/tomcat6
 %define apparmor_bin_prefix %{_prefix}/lib/apparmor
@@ -28,6 +30,7 @@ URL:            https://example.org/path-macroisation
 BuildRequires:  (/usr/bin/foo or bar)
 BuildRequires:  /usr/bin/bar
 BuildRequires:  /usr/bin/foo
+BuildRequires:  /usr/bin/gpg # see %{_bindir}/bar for details
 BuildRequires:  /usr/bin/make
 BuildRequires:  foo
 BuildRequires:  qux
