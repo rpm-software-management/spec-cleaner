@@ -368,6 +368,66 @@ def test_embrace_glued_keywords(
     assert _cleaned_line(default_options, False, line) == expected
 
 
+# gh#522: a find/stat -printf/-fprintf/--printf format string carries
+# %-directives that belong to the tool, not to rpm. The brace-the-macros
+# pass must leave them alone, or the build fails when GNU find rejects
+# the braced form (%{ is reserved for future use). Only the format
+# string is shielded, so a bare macro elsewhere on the line is braced.
+EMBRACE_PRINTF_FORMATS = [
+    # the util-linux case: %f is find's basename directive
+    (
+        '  -printf "%{_mandir}/man8/%f*\\n" >> %{name}.files',
+        '  -printf "%{_mandir}/man8/%f*\\n" >> %{name}.files',
+    ),
+    (
+        '  -printf "%{_bindir}/%f\\n" >> %{name}.files',
+        '  -printf "%{_bindir}/%f\\n" >> %{name}.files',
+    ),
+    # single-quoted formats and other directives
+    (
+        'find . -xtype l -delete -printf "deleted \'%f\'\\n"',
+        'find . -xtype l -delete -printf "deleted \'%f\'\\n"',
+    ),
+    ('find * -name \\*.so -printf "/%p\\n"', 'find * -name \\*.so -printf "/%p\\n"'),
+    ("find $root -name FEATURE -printf ' -I%h'", "find $root -name FEATURE -printf ' -I%h'"),
+    ("find -type l -printf '%f\\a%l\\n'", "find -type l -printf '%f\\a%l\\n'"),
+    # -fprintf takes a file argument before the format string
+    (
+        'find . -type f -fprintf /tmp/out.txt "%p %s\\n"',
+        'find . -type f -fprintf /tmp/out.txt "%p %s\\n"',
+    ),
+    # stat --printf takes its format after = or a space
+    (
+        'test 1777 = "$(stat --printf=\'%a\' /var/spool/mail/)" || exit 1',
+        'test 1777 = "$(stat --printf=\'%a\' %{_localstatedir}/spool/mail/)" || exit 1',
+    ),
+    (
+        "stat --printf '%a' /var/spool/mail/",
+        "stat --printf '%a' %{_localstatedir}/spool/mail/",
+    ),
+    # a bare macro outside the format string is still braced
+    (
+        'install -D -m 0644 foo.conf %buildroot/usr/share/foo/foo.conf',
+        'install -D -m 0644 foo.conf %{buildroot}%{_datadir}/foo/foo.conf',
+    ),
+    # a braced macro inside the format string stays verbatim: the format
+    # shield runs before the braced-argument-macro shield, so the two
+    # shields never nest and no placeholder is left behind
+    (
+        '-printf "%{cargo_build} %f\\n" >> %{name}.files',
+        '-printf "%{cargo_build} %f\\n" >> %{name}.files',
+    ),
+]
+
+
+@pytest.mark.parametrize(('line', 'expected'), EMBRACE_PRINTF_FORMATS)
+def test_embrace_leaves_printf_format_directives(
+    default_options: Callable[..., dict[str, Any]], line: str, expected: str
+) -> None:
+    """%-directives in a -printf/--printf format string stay unbraced."""
+    assert _cleaned_line(default_options, False, line) == expected
+
+
 def test_embrace_leaves_known_macro_function_unbraced(
     default_options: Callable[..., dict[str, Any]],
 ) -> None:
