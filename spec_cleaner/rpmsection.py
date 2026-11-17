@@ -93,6 +93,17 @@ _RE_LUA_OPENER = re.compile(r'(?<!%)%\{lua\s*:|(?<!%)%lua(?=\s)')
 # Section.embrace_macros; the index refers to that call's shield list
 _RE_SHIELDED = re.compile(r'\x00(\d+)\x00')
 
+# the format string of a find/stat -printf/-fprintf/--printf option; its
+# %-directives (%f, %p, ...) belong to the tool, not to rpm, so the
+# brace-the-macros pass in Section.embrace_macros must leave them alone
+# (gh#522). The 'option' group is the option plus its separator (and
+# -fprintf's file argument); only the 'format' group is shielded, so
+# macros elsewhere on the line are still braced.
+_RE_PRINTF_FORMAT = re.compile(
+    r'(?<![\w-])(?P<option>-fprintf\s+\S+\s+|(?:-printf|--printf)(?:\s+|=)\s*)'
+    r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\')'
+)
+
 # the opener of a heredoc whose delimiter is quoted ('EOF', "EOF" or
 # \EOF); the shell does not expand anything in such a heredoc body,
 # unlike an unquoted heredoc
@@ -526,6 +537,21 @@ class Section:
         def shield(match: re.Match[str]) -> str:
             shielded.append(match.group(0))
             return f'\x00{len(shielded) - 1}\x00'
+
+        # Shield the format string of a find/stat -printf/-fprintf/--printf
+        # option first: its %-directives (%f, %p, ...) belong to the tool,
+        # not to rpm, so the brace-the-macros pass below must leave them
+        # alone (gh#522). Shielding before the braced-argument-macro pass
+        # keeps the two shields from nesting: a braced macro inside a
+        # format string stays verbatim instead of leaving a placeholder
+        # behind when the single restore pass runs. Only the format string
+        # is shielded, so macros elsewhere on the line are still braced.
+        def shield_printf_format(match: re.Match[str]) -> str:
+            shielded.append(match.group('format'))
+            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
+
+        if '-printf' in sp[0] or '-fprintf' in sp[0]:
+            sp[0] = _RE_PRINTF_FORMAT.sub(shield_printf_format, sp[0])
 
         if self.reg.re_braced_argument_macro is not None and '%{' in sp[0]:
             sp[0] = self.reg.re_braced_argument_macro.sub(shield, sp[0])
