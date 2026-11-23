@@ -1334,3 +1334,45 @@ def test_replace_optflags_assignment_forms(
         'RPM_OPT_FLAGS ="%{optflags}"',
         'CFLAGS="%{optflags}"',
     ]
+
+
+OPTFLAGS_KEPT_ASSIGNMENTS = [
+    'if true; then RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"; fi',
+    'for x in a; do RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"; done',
+    'if false; then :; else RPM_OPT_FLAGS=x; fi',
+    '{ RPM_OPT_FLAGS=x; }',
+    '(RPM_OPT_FLAGS=x; make)',
+    'declare -x RPM_OPT_FLAGS="${RPM_OPT_FLAGS/-Werror/}"',
+    'local RPM_OPT_FLAGS=x',
+    'typeset RPM_OPT_FLAGS=x',
+    'readonly RPM_OPT_FLAGS=x',
+    'declare -x CFLAGS=1 RPM_OPT_FLAGS=x',
+]
+
+OPTFLAGS_NOT_ASSIGNMENTS = [
+    'echo then RPM_OPT_FLAGS=x',
+    'doit RPM_OPT_FLAGS=x',
+    'make RPM_OPT_FLAGS="$RPM_OPT_FLAGS"',
+]
+
+
+@pytest.mark.parametrize('assignment', OPTFLAGS_KEPT_ASSIGNMENTS)
+def test_replace_optflags_assignment_after_keyword_or_builtin(
+    default_options: Callable[..., dict[str, Any]], assignment: str
+) -> None:
+    """An assignment after a shell keyword or declaration builtin keeps later references."""
+    section = _section(default_options, set())
+    section.add(assignment)
+    section.add('CFLAGS="$RPM_OPT_FLAGS"')
+    assert section.lines[-1] == 'CFLAGS="$RPM_OPT_FLAGS"'
+
+
+@pytest.mark.parametrize('line', OPTFLAGS_NOT_ASSIGNMENTS)
+def test_replace_optflags_non_assignment_still_macroised(
+    default_options: Callable[..., dict[str, Any]], line: str
+) -> None:
+    """A word before the variable makes it an argument, not an assignment."""
+    section = _section(default_options, set())
+    section.add(line)
+    section.add('CFLAGS="$RPM_OPT_FLAGS"')
+    assert section.lines[-1] == 'CFLAGS="%{optflags}"'
