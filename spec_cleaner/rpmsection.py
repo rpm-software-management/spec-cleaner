@@ -590,6 +590,45 @@ class Section:
         if '%' not in line:
             return line
 
+        # shielded text is swapped for placeholders and restored at the end
+        shielded: list[str] = []
+
+        def shield(match: re.Match[str]) -> str:
+            shielded.append(match.group(0))
+            return f'\x00{len(shielded) - 1}\x00'
+
+        def shield_awk_program(match: re.Match[str]) -> str:
+            shielded.append(match.group('program'))
+            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
+
+        def shield_printf_format(match: re.Match[str]) -> str:
+            shielded.append(match.group('format'))
+            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
+
+        # The %-forms in these tool arguments belong to the tool, not to rpm.
+        # They are shielded on the whole line, before the comment split, as
+        # a '#' inside a format is not a comment, and before the
+        # braced-argument-macro shield below, so the shields do not nest.
+        # Only the program or format is shielded, macros elsewhere on the
+        # line are still braced.
+        # awk goes first so a printf inside its program is shielded with it
+        if 'awk' in line:
+            line = _RE_AWK_PROGRAM.sub(shield_awk_program, line)
+        if '-printf' in line or '-fprintf' in line:
+            line = _RE_PRINTF_FORMAT.sub(shield_printf_format, line)
+        # date '+FORMAT' inside quotes goes first so a quoted string is shielded as one
+        # unit; printf goes before the unquoted '+FORMAT' so a '+' in its format is not split
+        if 'date' in line:
+            line = _RE_DATE_FORMAT_INSIDE.sub(shield_printf_format, line)
+        if 'printf' in line:
+            line = _RE_SHELL_PRINTF_FORMAT.sub(shield_printf_format, line)
+        if 'date' in line:
+            line = _RE_DATE_FORMAT_OUTSIDE.sub(shield_printf_format, line)
+        if 'stat' in line:
+            line = _RE_STAT_FORMAT.sub(shield_printf_format, line)
+        if 'git' in line:
+            line = _RE_GIT_FORMAT.sub(shield_printf_format, line)
+
         # work only with non-commented part
         sp = line.split('#')
 
@@ -599,69 +638,9 @@ class Section:
         # braces are what keeps the tokens in the surrounding grammar
         # (a dependency's version relation, a %files option, plain
         # prose, options for the command the macro runs as in
-        # '%{cargo_build} --locked'). The shielded uses are swapped for
-        # placeholders before the substitutions below and restored
-        # afterwards; uses that were unbraced in the input are not
-        # shielded, so the space form of an invocation keeps its form.
-        shielded: list[str] = []
-
-        def shield(match: re.Match[str]) -> str:
-            shielded.append(match.group(0))
-            return f'\x00{len(shielded) - 1}\x00'
-
-        # Shield the program argument of awk(1) first: its %-forms
-        # (regex literals like %lang(...), printf formats, strftime
-        # formats) belong to awk, not to rpm, so the brace-the-macros
-        # pass below must leave them alone (gh#524). Shielding before
-        # the braced-argument-macro pass keeps the two shields from
-        # nesting: a braced macro inside the program stays verbatim
-        # instead of leaving a placeholder behind when the single
-        # restore pass runs. Only the program is shielded, so macros
-        # elsewhere on the line are still braced. The awk shield runs
-        # before the printf-family shields below, so a printf format
-        # inside an awk program is shielded as part of the program
-        # and no placeholder is left behind.
-        def shield_awk_program(match: re.Match[str]) -> str:
-            shielded.append(match.group('program'))
-            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
-
-        if 'awk' in sp[0]:
-            sp[0] = _RE_AWK_PROGRAM.sub(shield_awk_program, sp[0])
-
-        # Shield the format string of a find/stat -printf/-fprintf/--printf
-        # option first: its %-directives (%f, %p, ...) belong to the tool,
-        # not to rpm, so the brace-the-macros pass below must leave them
-        # alone (gh#522). Shielding before the braced-argument-macro pass
-        # keeps the two shields from nesting: a braced macro inside a
-        # format string stays verbatim instead of leaving a placeholder
-        # behind when the single restore pass runs. Only the format string
-        # is shielded, so macros elsewhere on the line are still braced.
-        def shield_printf_format(match: re.Match[str]) -> str:
-            shielded.append(match.group('format'))
-            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
-
-        # Shield the format strings of the commands whose %-directives
-        # belong to the tool, not to rpm (gh#522), before the
-        # braced-argument-macro shield below, so the shields never nest.
-        # The date '+FORMAT' form inside quotes is shielded before
-        # printf/sprintf, so the whole quoted string is shielded as one
-        # unit; printf/sprintf is shielded before the date '+FORMAT' form
-        # outside quotes, so a printf format containing '+' is not
-        # fragmented by it. Only the format string is shielded, so
-        # macros elsewhere on the line are still braced.
-        if '-printf' in sp[0] or '-fprintf' in sp[0]:
-            sp[0] = _RE_PRINTF_FORMAT.sub(shield_printf_format, sp[0])
-        if 'date' in sp[0]:
-            sp[0] = _RE_DATE_FORMAT_INSIDE.sub(shield_printf_format, sp[0])
-        if 'printf' in sp[0]:
-            sp[0] = _RE_SHELL_PRINTF_FORMAT.sub(shield_printf_format, sp[0])
-        if 'date' in sp[0]:
-            sp[0] = _RE_DATE_FORMAT_OUTSIDE.sub(shield_printf_format, sp[0])
-        if 'stat' in sp[0]:
-            sp[0] = _RE_STAT_FORMAT.sub(shield_printf_format, sp[0])
-        if 'git' in sp[0]:
-            sp[0] = _RE_GIT_FORMAT.sub(shield_printf_format, sp[0])
-
+        # '%{cargo_build} --locked'). Uses that were unbraced in the
+        # input are not shielded, so the space form of an invocation
+        # keeps its form.
         if self.reg.re_braced_argument_macro is not None and '%{' in sp[0]:
             sp[0] = self.reg.re_braced_argument_macro.sub(shield, sp[0])
 
@@ -677,14 +656,15 @@ class Section:
 
         # and replace back known keywords to braceless state again
         sp[0] = self.reg.re_unbrace_keywords.sub(r'%\1', sp[0])
+        # re-create the line back
+        result = '#'.join(sp)
         # a shield may wrap text holding an earlier placeholder; each pass unwraps one level
         for _ in range(len(shielded)):
-            restored = _RE_SHIELDED.sub(lambda match: shielded[int(match.group(1))], sp[0])
-            if restored == sp[0]:
+            restored = _RE_SHIELDED.sub(lambda match: shielded[int(match.group(1))], result)
+            if restored == result:
                 break
-            sp[0] = restored
-        # re-create the line back
-        return '#'.join(sp)
+            result = restored
+        return result
 
     def replace_buildroot(self, line: str) -> str:
         """

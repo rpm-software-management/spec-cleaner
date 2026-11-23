@@ -534,6 +534,7 @@ EMBRACE_PRINTF_FORMATS = [
         'find . -xtype l -delete -printf "deleted \'%f\'\\n"',
         'find . -xtype l -delete -printf "deleted \'%f\'\\n"',
     ),
+    ("find . -printf '%p#\\n'", "find . -printf '%p#\\n'"),
     ('find * -name \\*.so -printf "/%p\\n"', 'find * -name \\*.so -printf "/%p\\n"'),
     ("find $root -name FEATURE -printf ' -I%h'", "find $root -name FEATURE -printf ' -I%h'"),
     ("find -type l -printf '%f\\a%l\\n'", "find -type l -printf '%f\\a%l\\n'"),
@@ -625,6 +626,10 @@ EMBRACE_SHELL_PRINTF_FORMATS = [
         'printf "%s\\n" /usr/share/foo',
         'printf "%s\\n" %{_datadir}/foo',
     ),
+    # a '#' inside the format is not a comment
+    ('printf "%s # x\\n" %name', 'printf "%s # x\\n" %{name}'),
+    # a real comment is still left alone
+    ('make %name # %foo', 'make %{name} # %foo'),
     # a date format nested in a printf format leaves no placeholder behind
     (
         'printf "Date: $(date "+%F") %name\\n"',
@@ -751,6 +756,8 @@ EMBRACE_AWK_PROGRAMS = [
         "awk -v P=%buildroot '/^(%lang|[^%])/{print P $NF}' libpq.files libecpg.files | xargs rm",
         "awk -v P=%{buildroot} '/^(%lang|[^%])/{print P $NF}' libpq.files libecpg.files | xargs rm",
     ),
+    # a '#' inside the program is not a comment
+    ('awk \'/%lang/ {print "#"}\' f', 'awk \'/%lang/ {print "#"}\' f'),
     # a printf format inside the program stays unbraced too
     (
         'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',
