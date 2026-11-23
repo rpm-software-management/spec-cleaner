@@ -2,7 +2,7 @@
 import re
 from typing import IO, Any
 
-from .rpmhelpers import open_macro_bodies
+from .rpmhelpers import trailing_comment_start
 from .rpmregexp import Regexp
 
 # Short utilities and what they expand to; the bare names map to
@@ -284,28 +284,10 @@ class Section:
         The value without its trailing comment.
 
         A `#` (or `%dnl`) only starts a comment outside every `%{...}`
-        and `%(...)` body; inside a macro body it is body text. Mirrors the
-        comment detection of RpmPreamble._split_trailing_comment.
+        and `%(...)` body; inside a macro body it is body text.
         """
-        dnl_idx = -1
-        index = value.find('%dnl')
-        while index >= 0:
-            if open_macro_bodies(value[:index]) == (0, 0):
-                dnl_idx = index
-                break
-            index = value.find('%dnl', index + 1)
-        # the comment starts at whichever marker comes first: a %dnl inside
-        # a # comment is comment text, and a # after %dnl is inside it
-        end = dnl_idx if dnl_idx >= 0 else len(value)
-        for i in range(end):
-            if value[i] != '#':
-                continue
-            if i == 0 or value[i - 1] in ' \t':
-                if open_macro_bodies(value[:i]) == (0, 0):
-                    return value[:i].rstrip()
-        if dnl_idx >= 0:
-            return value[:dnl_idx].rstrip()
-        return value
+        start = trailing_comment_start(value)
+        return value if start < 0 else value[:start].rstrip()
 
     @staticmethod
     def _has_path_token(value: str) -> bool:

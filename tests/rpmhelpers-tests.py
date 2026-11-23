@@ -108,6 +108,27 @@ class TestRpmhelpers:
         """Test counting the %{ and %( bodies left open, as rpm does when joining lines."""
         assert rpmhelpers.open_macro_bodies(line, depth) == expected
 
+    @pytest.mark.parametrize(
+        'value, skip_pragma, expected',
+        [
+            ('foo bar', False, -1),
+            ('foo # bar', False, 4),
+            ('foo#bar', False, -1),
+            ('# bar', False, 0),
+            ('%{?with_foo: # bar} baz', False, -1),
+            ('%{?with_foo: %dnl bar} baz', False, -1),
+            ('foo %dnl bar', False, 4),
+            ('foo %dnl bar # baz', False, 4),
+            ('foo # bar %dnl baz', False, 4),
+            ('#!BuildRequires: foo', True, -1),
+            ('#!BuildRequires: foo', False, 0),
+            ('#!BuildRequires: foo # bar', True, 21),
+        ],
+    )
+    def test_trailing_comment_start(self, value: str, skip_pragma: bool, expected: int) -> None:
+        """Test finding where a trailing # or %dnl comment starts outside macro bodies."""
+        assert rpmhelpers.trailing_comment_start(value, skip_pragma=skip_pragma) == expected
+
     def test_fix_license_keeps_a_name_ending_in_x(self) -> None:
         """Test that trimming the trailing semicolon does not eat a trailing letter."""
         conversions = rpmhelpers.read_licenses_changes()

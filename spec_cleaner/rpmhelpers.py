@@ -486,6 +486,46 @@ def open_macro_bodies(line: str, depth: tuple[int, int] = (0, 0)) -> tuple[int, 
     return braces, parens
 
 
+def trailing_comment_start(value: str, *, skip_pragma: bool = False) -> int:
+    """
+    Find where a trailing comment starts, outside every %{...} and %(...) body.
+
+    A `#` starts a comment at the start or after a blank, a `%dnl` anywhere; inside
+    a macro body either is body text. The comment starts at the earlier marker.
+
+    Args:
+        value: A string representing the text to scan.
+        skip_pragma: Whether a leading #!BuildRequires:, #!BuildConflicts: or
+            #!BuildIgnore: is a dep pragma marker, not a comment.
+
+    Returns:
+        The index where the comment starts, or -1 when there is none.
+    """
+    dnl_idx = -1
+    index = value.find('%dnl')
+    while index >= 0:
+        if open_macro_bodies(value[:index]) == (0, 0):
+            dnl_idx = index
+            break
+        index = value.find('%dnl', index + 1)
+    # a %dnl inside a # comment is comment text, and a # after %dnl is inside it
+    end = dnl_idx if dnl_idx >= 0 else len(value)
+    for i in range(end):
+        if value[i] != '#':
+            continue
+        if (
+            skip_pragma
+            and i == 0
+            and value.lower().startswith(
+                ('#!buildrequires:', '#!buildconflicts:', '#!buildignore:')
+            )
+        ):
+            continue
+        if (i == 0 or value[i - 1] in ' \t') and open_macro_bodies(value[:i]) == (0, 0):
+            return i
+    return dnl_idx
+
+
 def find_pkgconfig_statement(elements: Iterable[GroupLine]) -> bool:
     """
     Find pkgconfig() statement.
