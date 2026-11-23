@@ -192,6 +192,16 @@ class Regexp:
         r'^\s*%{!?[^?]*\?[^:]+:\s*#!Build(?:Requires|Conflicts|Ignore):',
         re.IGNORECASE,
     )
+    # tag at the end of the prefix re_onelinecond_dep matched; only a BuildRequires
+    # (or BuildPreReq) there carries a file dependency the scheduler records
+    re_buildrequires_tag_end = re.compile(
+        r'(BuildRequires|BuildPreReq)(?:\([^)]*\))?\s*:$', re.IGNORECASE
+    )
+    # one-line conditional wrapping a BuildRequires dep pragma; the pragma marker
+    # sits between the conditional colon and the tag, so the pattern above does not match it
+    re_onelinecond_buildrequires_pragma = re.compile(
+        r'^\s*%{!?[^?]*\?[^:]+:\s*#!BuildRequires:\s*(.*)', re.IGNORECASE
+    )
     # one-line conditional wrapping a %define/%global, eg. %{?foo:%define bar}
     re_onelinecond_define = re.compile(
         r'^\s*%{!?[^?]*\?[^:]+:\s*%(define|global)\b',

@@ -316,24 +316,10 @@ class Section:
             return match.group(2)
         cond = self.reg.re_onelinecond_dep.match(line)
         if cond:
-            # the matched prefix ends at the tag colon; only a BuildRequires
-            # (or BuildPreReq) inside the conditional carries a file
-            # dependency the scheduler records
-            tag = re.search(
-                r'(BuildRequires|BuildPreReq)(?:\([^)]*\))?\s*:$',
-                cond.group(0),
-                re.IGNORECASE,
-            )
-            if tag:
+            # the matched prefix ends at the tag colon
+            if self.reg.re_buildrequires_tag_end.search(cond.group(0)):
                 return line[cond.end() :]
-        # a one-line conditional wrapping a dep pragma: the pragma marker
-        # sits between the conditional colon and the tag, so the shared
-        # conditional pattern does not match it
-        pragma_cond = re.match(
-            r'^\s*%{!?[^?]*\?[^:]+:\s*#!BuildRequires:\s*(.*)',
-            line,
-            re.IGNORECASE,
-        )
+        pragma_cond = self.reg.re_onelinecond_buildrequires_pragma.match(line)
         if pragma_cond:
             return pragma_cond.group(1)
         return None
