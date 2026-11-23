@@ -624,6 +624,11 @@ EMBRACE_SHELL_PRINTF_FORMATS = [
         'printf "%s\\n" /usr/share/foo',
         'printf "%s\\n" %{_datadir}/foo',
     ),
+    # a date format nested in a printf format leaves no placeholder behind
+    (
+        'printf "Date: $(date "+%F") %name\\n"',
+        'printf "Date: $(date "+%F") %name\\n"',
+    ),
 ]
 
 
@@ -686,6 +691,11 @@ EMBRACE_STAT_FORMATS = [
     ('stat -c %U:%G:%a /usr/bin/foo', 'stat -c %U:%G:%a %{_bindir}/foo'),
     ('stat -L -c "%i" /usr/bin/foo', 'stat -L -c "%i" %{_bindir}/foo'),
     ('stat --format=%Y /usr/bin/foo', 'stat --format=%Y %{_bindir}/foo'),
+    # the git shield's format group reaches over the stat placeholder
+    (
+        'test "$(stat --format=%a %{buildroot}%{_bindir}/git)" = 755',
+        'test "$(stat --format=%a %{buildroot}%{_bindir}/git)" = 755',
+    ),
 ]
 
 
@@ -706,6 +716,11 @@ EMBRACE_GIT_FORMATS = [
         '\'--no-show-signature\' "--pretty=format:+git%cd.%h")',
         "%define git_version %(git log '-n1' '--date=format:%Y%m%d' "
         '\'--no-show-signature\' "--pretty=format:+git%cd.%h")',
+    ),
+    # the date shield runs first, and the git shield wraps its placeholder
+    (
+        'git log -1 --date=format:"+%Y" --format=%cd',
+        'git log -1 --date=format:"+%Y" --format=%cd',
     ),
 ]
 
@@ -813,6 +828,28 @@ def test_embrace_leaves_awk_program_directives(
 ) -> None:
     """%-forms in an awk program argument stay unbraced."""
     assert _cleaned_line(default_options, False, line) == expected
+
+
+EMBRACE_FORMAT_LINES = [
+    line
+    for table in (
+        EMBRACE_PRINTF_FORMATS,
+        EMBRACE_SHELL_PRINTF_FORMATS,
+        EMBRACE_DATE_FORMATS,
+        EMBRACE_STAT_FORMATS,
+        EMBRACE_GIT_FORMATS,
+        EMBRACE_AWK_PROGRAMS,
+    )
+    for line, _ in table
+]
+
+
+@pytest.mark.parametrize('line', EMBRACE_FORMAT_LINES)
+def test_embrace_never_leaves_placeholders(
+    default_options: Callable[..., dict[str, Any]], line: str
+) -> None:
+    """No shield placeholder survives into the output, however the shields overlap."""
+    assert '\x00' not in _cleaned_line(default_options, False, line)
 
 
 def test_embrace_leaves_known_macro_function_unbraced(

@@ -675,8 +675,12 @@ class Section:
 
         # and replace back known keywords to braceless state again
         sp[0] = self.reg.re_unbrace_keywords.sub(r'%\1', sp[0])
-        if shielded:
-            sp[0] = _RE_SHIELDED.sub(lambda match: shielded[int(match.group(1))], sp[0])
+        # a shield may wrap text holding an earlier placeholder; each pass unwraps one level
+        for _ in range(len(shielded)):
+            restored = _RE_SHIELDED.sub(lambda match: shielded[int(match.group(1))], sp[0])
+            if restored == sp[0]:
+                break
+            sp[0] = restored
         # re-create the line back
         return '#'.join(sp)
 
