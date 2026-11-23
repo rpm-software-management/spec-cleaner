@@ -332,9 +332,9 @@ class Regexp:
     # the last character of a doubled separator. Over-detecting is
     # safe here: a spurious match only leaves later references in
     # their shell form, which reads the same value. A statement may also
-    # open with a shell keyword ('then', 'do', 'else', '{') or a '(' and
+    # open with a shell keyword ('then', 'do', 'else', 'elif', '{') or a '(' and
     # be declared by export, declare, typeset, local or readonly.
-    _optflags_stmt_start = r'(?:^|(?<=[;&|(]))\s*(?:(?:then|do|else|\{)\s+)*'
+    _optflags_stmt_start = r'(?:^|(?<=[;&|(]))\s*(?:(?:then|do|else|elif|\{)\s+)*'
     _optflags_declare = r'(?:(?:export|declare|typeset|local|readonly)(?:\s+-[a-zA-Z]+)*\s+)?'
     re_optflags_assign = re.compile(
         _optflags_stmt_start + _optflags_declare + r'RPM_OPT_FLAGS\+?='

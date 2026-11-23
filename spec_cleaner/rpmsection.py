@@ -598,9 +598,10 @@ class Section:
         # braced-argument-macro shield below, so the shields do not nest.
         # Only the program or format is shielded, macros elsewhere on the
         # line are still braced.
-        # awk goes first so a printf inside its program is shielded with it
+        # awk (gh#524) goes first so a printf inside its program is shielded with it
         if 'awk' in line:
             line = _RE_AWK_PROGRAM.sub(shield_awk_program, line)
+        # find/stat -printf (gh#522)
         if '-printf' in line or '-fprintf' in line:
             line = _RE_PRINTF_FORMAT.sub(shield_printf_format, line)
         # date '+FORMAT' inside quotes goes first so a quoted string is shielded as one

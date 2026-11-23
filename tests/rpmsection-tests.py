@@ -625,6 +625,10 @@ EMBRACE_SHELL_PRINTF_FORMATS = [
     ('printf $fh "%s\\n", $x;', 'printf $fh "%s\\n", $x;'),
     ('printf {$fh} "%d\\n", 1;', 'printf {$fh} "%d\\n", 1;'),
     ('printf(STDERR "%d\\n", 1);', 'printf(STDERR "%d\\n", 1);'),
+    ('printf {*STDERR} "%d\\n", 1;', 'printf {*STDERR} "%d\\n", 1;'),
+    # a shell variable reads as a filehandle, so its format is the shielded
+    # argument and a later macro stays unbraced
+    ('printf $FMT "%name"', 'printf $FMT "%name"'),
     # awk printf/sprintf inside the program
     (
         'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',
@@ -1352,6 +1356,7 @@ OPTFLAGS_KEPT_ASSIGNMENTS = [
     'if true; then RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"; fi',
     'for x in a; do RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"; done',
     'if false; then :; else RPM_OPT_FLAGS=x; fi',
+    'if true; then :; elif RPM_OPT_FLAGS=x; then make; fi',
     '{ RPM_OPT_FLAGS=x; }',
     '(RPM_OPT_FLAGS=x; make)',
     'declare -x RPM_OPT_FLAGS="${RPM_OPT_FLAGS/-Werror/}"',
