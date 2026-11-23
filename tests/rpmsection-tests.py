@@ -1,3 +1,4 @@
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -676,6 +677,14 @@ def test_embrace_leaves_date_format_directives(
 ) -> None:
     """Strftime %-directives in a date '+FORMAT' argument stay unbraced."""
     assert _cleaned_line(default_options, False, line) == expected
+
+
+def test_date_format_shield_is_linear(default_options: Callable[..., dict[str, Any]]) -> None:
+    """An escaped quote opens no date format, so a long run of them stays fast."""
+    section = _section(default_options, set())
+    start = time.perf_counter()
+    section.embrace_macros('date %name ' + '"+\\' * 20000)
+    assert time.perf_counter() - start < 1
 
 
 # gh#522: stat(1) -c/--format carries %-directives (%n, %s, %a, %Y, ...)

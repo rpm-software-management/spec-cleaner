@@ -145,7 +145,9 @@ _RE_SHELL_PRINTF_FORMAT = re.compile(
 # form is matched first, so the whole quoted string is shielded as one
 # unit; the outside form then only sees a + followed by a quoted or
 # unquoted format.
-_RE_DATE_FORMAT_INSIDE = re.compile(r'(?P<option>)(?P<format>"\+(?:[^"\\]|\\.)*"|\'\+[^\']*\')')
+_RE_DATE_FORMAT_INSIDE = re.compile(
+    r'(?P<option>)(?<!\\)(?P<format>"\+(?:[^"\\]|\\.)*"|\'\+[^\']*\')'
+)
 _RE_DATE_FORMAT_OUTSIDE = re.compile(
     r'(?P<option>\+\s*)(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|%[^\s"\';&|]+)'
 )
