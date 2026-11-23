@@ -183,6 +183,7 @@ perl-Convert-ASN1: Convert::ASN1 Convert::ASN1::parser
 perl-Convert-BinHex: Convert::BinHex Convert::BinHex::Bin2Hex Convert::BinHex::Fork Convert::BinHex::Hex2Bin Convert::BinHex::IO_Handle Convert::BinHex::IO_Scalar 
 perl-Cookie-Baker: Cookie::Baker 
 perl-Cpanel-JSON-XS: Cpanel::JSON::XS 
+perl-Cpanel-JSON-XS: Cpanel::JSON::XS Cpanel::JSON::XS::Boolean Cpanel::JSON::XS::Type 
 perl-Cpanel-JSON-XS: Cpanel::JSON::XS Cpanel::JSON::XS::Type 
 perl-Crypt-DES: Crypt::DES 
 perl-Crypt-DH-GMP: Crypt::DH::GMP Crypt::DH::GMP::Compat 
@@ -234,6 +235,7 @@ perl-Dancer2-Plugin-DBIC: Dancer2::Plugin::DBIC
 perl-Dancer2-Plugin-REST: Dancer2::Plugin::REST 
 perl-Dancer2-Plugin-WebSocket: Dancer2::Plugin::WebSocket Dancer2::Plugin::WebSocket::Connection Dancer2::Plugin::WebSocket::Group 
 perl-Dancer2: Dancer2 Dancer2::CLI Dancer2::CLI::Gen Dancer2::CLI::Version Dancer2::Core Dancer2::Core::App Dancer2::Core::Cookie Dancer2::Core::DSL Dancer2::Core::Dispatcher Dancer2::Core::Error Dancer2::Core::Factory Dancer2::Core::HTTP Dancer2::Core::Hook Dancer2::Core::MIME Dancer2::Core::Request Dancer2::Core::Request::Upload Dancer2::Core::Response Dancer2::Core::Response::Delayed Dancer2::Core::Role::ConfigReader Dancer2::Core::Role::DSL Dancer2::Core::Role::Engine Dancer2::Core::Role::Handler Dancer2::Core::Role::HasLocation Dancer2::Core::Role::Hookable Dancer2::Core::Role::Logger Dancer2::Core::Role::Serializer Dancer2::Core::Role::SessionFactory Dancer2::Core::Role::SessionFactory::File Dancer2::Core::Role::StandardResponses Dancer2::Core::Role::Template Dancer2::Core::Route Dancer2::Core::Runner Dancer2::Core::Session Dancer2::Core::Time Dancer2::Core::Types Dancer2::FileUtils Dancer2::Handler::AutoPage Dancer2::Handler::File Dancer2::Logger::Capture Dancer2::Logger::Capture::Trap Dancer2::Logger::Console Dancer2::Logger::Diag Dancer2::Logger::File Dancer2::Logger::Note Dancer2::Logger::Null Dancer2::Plugin Dancer2::Serializer::Dumper Dancer2::Serializer::JSON Dancer2::Serializer::Mutable Dancer2::Serializer::YAML Dancer2::Session::Simple Dancer2::Session::YAML Dancer2::Template::Implementation::ForkedTiny Dancer2::Template::Simple Dancer2::Template::TemplateToolkit Dancer2::Template::Tiny Dancer2::Test 
+perl-Data-Censor: Data::Censor 
 perl-Data-Compare: Data::Compare Data::Compare::Plugins::Scalar::Properties 
 perl-Data-Dump-Streamer: Data::Dump::Streamer Data::Dump::Streamer::Deparser 
 perl-Data-Dump: Data::Dump Data::Dump::FilterContext Data::Dump::Filtered Data::Dump::Trace Data::Dump::Trace::Call Data::Dump::Trace::Wrapper 

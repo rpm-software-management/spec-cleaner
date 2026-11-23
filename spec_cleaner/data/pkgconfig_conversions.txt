@@ -499,6 +499,7 @@ kim-api-devel: libkim-api
 kissfft-devel: kissfft-float 
 kmod: kmod 
 knot-devel: knotd libdnssec libknot libzscanner 
+knot-devel: knotd libknot libzscanner 
 krb5-devel: gssrpc kadm-client kadm-server kdb krb5 krb5-gssapi mit-krb5 mit-krb5-gssapi 
 kseexpr-devel: kseexpr 
 ktoblzcheck-devel: ktoblzcheck 
@@ -1380,7 +1381,9 @@ libtevent-devel: tevent
 libthai-devel: libthai 
 libtheora-devel: theora theoradec theoraenc 
 libthreadar-devel: libthreadar 
+libthrift-devel: thrift thrift-nb thrift-z 
 libthrift-devel: thrift thrift-nb thrift-z thrift_c_glib 
+libthrift_c_glib-devel: thrift_c_glib 
 libtidy-devel: tidy 
 libtiff-devel: libtiff-4 
 libtimidity-devel: libtimidity 

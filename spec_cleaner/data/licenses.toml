@@ -1,6 +1,6 @@
 # Generated with generate-licenses-for-rpmlint.py script from spec-cleaner:
 # URL: https://github.com/rpm-software-management/spec-cleaner
-# Source data: SPDX license list 3.29.0, fetched 2026-10-26
+# Source data: SPDX license list ddf7382, fetched 2026-11-23
 
 ValidLicenses = [
     "0BSD",
@@ -247,6 +247,8 @@ ValidLicenses = [
     "BSL-1.0+",
     "BUSL-1.1",
     "BUSL-1.1+",
+    "BaKoMa",
+    "BaKoMa+",
     "Baekmuk",
     "Baekmuk+",
     "Bahyph",
@@ -793,6 +795,8 @@ ValidLicenses = [
     "HPND-UC+",
     "HPND-UC-export-US",
     "HPND-UC-export-US+",
+    "HPND-X11",
+    "HPND-X11+",
     "HPND-doc",
     "HPND-doc+",
     "HPND-doc-sell",
@@ -1038,6 +1042,8 @@ ValidLicenses = [
     "MIT-enna+",
     "MIT-feh",
     "MIT-feh+",
+    "MIT-kdevelop-ideal",
+    "MIT-kdevelop-ideal+",
     "MIT-open-group",
     "MIT-open-group+",
     "MIT-testregex",

@@ -73,6 +73,7 @@ clFFT-devel: clFFT
 clang15-devel: Clang 
 clang17-devel: Clang 
 clang19-devel: Clang 
+clang21-devel: Clang 
 cli11-devel: CLI11 
 clingo-devel: Clingo 
 cmake-extras: CopyrightTest CoverageReport DoxygenBuilder FormatCode GDbus GMock GObjectIntrospection GSettings GdbusCodegen IncludeChecker Intltool Lcov QmlPlugins Vala gcovr 
@@ -539,6 +540,8 @@ llvm17-devel: LLVM LLVM-
 llvm17-polly-devel: Polly 
 llvm19-devel: LLVM LLVM- 
 llvm19-polly-devel: Polly 
+llvm21-devel: LLVM LLVM- 
+llvm21-polly-devel: Polly 
 lucene++-devel: liblucene++ liblucene++-contrib 
 lxqt-build-tools-qt5-devel: lxqt-build-tools 
 lxqt-globalkeys-devel: lxqt-globalkeys lxqt-globalkeys-ui 
