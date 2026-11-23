@@ -87,6 +87,7 @@ class RpmSpecCleaner:
     _previous_line: str | None = None
     _previous_nonempty_line: str | None = None
     _resume_section: type[Section] | None = None
+    _resume_from: Section | None = None
     _resuming: bool = False
     _target: str | None = None
 
@@ -497,8 +498,10 @@ class RpmSpecCleaner:
                 # which just print the one evil line
                 if isinstance(self.current_section, BODY_SECTIONS):
                     self._resume_section = type(self.current_section)
+                    self._resume_from = self.current_section
                 elif type(self.current_section) is not Section:
                     self._resume_section = None
+                    self._resume_from = None
                 return Section
         return None
 
@@ -821,6 +824,12 @@ class RpmSpecCleaner:
                     # the body continues without its header
                     self.current_section.headless = True
                     self.current_section.previous_line = self._previous_line
+                    if self._resume_from is not None:
+                        self.current_section._rpm_opt_flags_assigned = (
+                            self._resume_from._rpm_opt_flags_assigned
+                        )
+                        self.current_section._quoted_heredoc = self._resume_from._quoted_heredoc
+                        self._resume_from = None
                 # skip empty line adding if we are switching sections
                 if self._previous_line == '' and line == '':
                     continue
