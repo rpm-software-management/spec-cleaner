@@ -251,6 +251,9 @@ PATH_BUILDREQUIRES_KEPT = [
     # a path right after '(' in a rich dependency
     'BuildRequires:  (/usr/bin/foo or bar)',
     'BuildRequires:  (foo or /usr/bin/bar)',
+    # a path inside a conditional macro value
+    'BuildRequires:  %{?with_x:/usr/bin/foo}',
+    'BuildRequires:  %{!?with_x:/usr/bin/foo}',
     # the tag inside a one-line conditional is still a BuildRequires
     '%{?with_foo:BuildRequires: /usr/bin/foo}',
     # the tag inside a one-line conditional may be a dep pragma
@@ -274,6 +277,10 @@ def test_requires_path_still_macroised_in_full_run(
     assert (
         _cleaned_line(default_options, False, 'Requires:  /usr/bin/foo')
         == 'Requires:  %{_bindir}/foo'
+    )
+    assert (
+        _cleaned_line(default_options, False, 'Requires:  %{?with_x:/usr/bin/foo}')
+        == 'Requires:  %{?with_x:%{_bindir}/foo}'
     )
 
 

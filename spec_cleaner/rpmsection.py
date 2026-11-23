@@ -314,9 +314,10 @@ class Section:
 
         A token starting with '/' is a file path, alone or among package
         names, also right after '(' in a rich dependency such as
-        (/usr/bin/foo or bar).
+        (/usr/bin/foo or bar), or after the colon of a conditional macro
+        such as %{?with_foo:/usr/bin/foo}.
         """
-        return bool(re.search(r'(?:^|[\s,(])/', value))
+        return bool(re.search(r'(?:^|[\s,(:])/', value))
 
     def _path_buildrequires_value(self, line: str) -> str | None:
         """
