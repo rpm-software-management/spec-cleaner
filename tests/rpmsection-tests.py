@@ -685,6 +685,13 @@ EMBRACE_DATE_FORMATS = [
     ),
     # the S: macro rewrite still applies outside the format string
     ('date +%s -r %{S:99}', 'date +%s -r %{SOURCE99}'),
+    # a nested date command inside another date's option stays shielded
+    (
+        'date -u -d "@${SOURCE_DATE_EPOCH:-$(date +%s)}" "+%Y-%m-%d"',
+        'date -u -d "@${SOURCE_DATE_EPOCH:-$(date +%s)}" "+%Y-%m-%d"',
+    ),
+    # a quoted '+' string that no date command precedes is not a date format
+    ('echo "+%name" > update-me', 'echo "+%{name}" > update-me'),
 ]
 
 
@@ -742,6 +749,11 @@ EMBRACE_GIT_FORMATS = [
         '\'--no-show-signature\' "--pretty=format:+git%cd.%h")',
         "%define git_version %(git log '-n1' '--date=format:%Y%m%d' "
         '\'--no-show-signature\' "--pretty=format:+git%cd.%h")',
+    ),
+    # a --format option of some other command is not a git format
+    (
+        './configure --with-github --format=%name',
+        './configure --with-github --format=%{name}',
     ),
     # the date shield runs first, and the git shield wraps its placeholder
     (

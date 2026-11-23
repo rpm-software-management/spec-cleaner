@@ -1,5 +1,6 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 import re
+from collections.abc import Callable
 from typing import IO, Any
 
 from .rpmhelpers import trailing_comment_start
@@ -173,6 +174,11 @@ _RE_GIT_FORMAT = re.compile(
     r'(?P<option>--(?:format|pretty|date)(?:=|\s+)(?:format:)?)'
     r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
 )
+
+# the date and git words a format shield must follow to count as that command's
+# format; --date, update, github and SOURCE_DATE_EPOCH are not the words
+_RE_DATE_COMMAND = re.compile(r'(?<![\w-])date\b')
+_RE_GIT_COMMAND = re.compile(r'(?<![\w-])git\b')
 
 # the opener of a heredoc whose delimiter is quoted ('EOF', "EOF" or
 # \EOF); the shell does not expand anything in such a heredoc body,
@@ -576,6 +582,16 @@ class Section:
             shielded.append(match.group('format'))
             return match.group('option') + f'\x00{len(shielded) - 1}\x00'
 
+        def shield_printf_format_after(
+            command: re.Match[str],
+        ) -> Callable[[re.Match[str]], str]:
+            def callback(match: re.Match[str]) -> str:
+                if match.start() < command.end():
+                    return match.group(0)
+                return shield_printf_format(match)
+
+            return callback
+
         # The %-forms in these tool arguments belong to the tool, not to rpm.
         # They are shielded on the whole line, before the comment split, as
         # a '#' inside a format is not a comment, and before the
@@ -589,16 +605,16 @@ class Section:
             line = _RE_PRINTF_FORMAT.sub(shield_printf_format, line)
         # date '+FORMAT' inside quotes goes first so a quoted string is shielded as one
         # unit; printf goes before the unquoted '+FORMAT' so a '+' in its format is not split
-        if 'date' in line:
-            line = _RE_DATE_FORMAT_INSIDE.sub(shield_printf_format, line)
+        if 'date' in line and (date := _RE_DATE_COMMAND.search(line)):
+            line = _RE_DATE_FORMAT_INSIDE.sub(shield_printf_format_after(date), line)
         if 'printf' in line:
             line = _RE_SHELL_PRINTF_FORMAT.sub(shield_printf_format, line)
-        if 'date' in line:
-            line = _RE_DATE_FORMAT_OUTSIDE.sub(shield_printf_format, line)
+        if 'date' in line and (date := _RE_DATE_COMMAND.search(line)):
+            line = _RE_DATE_FORMAT_OUTSIDE.sub(shield_printf_format_after(date), line)
         if 'stat' in line:
             line = _RE_STAT_FORMAT.sub(shield_printf_format, line)
-        if 'git' in line:
-            line = _RE_GIT_FORMAT.sub(shield_printf_format, line)
+        if 'git' in line and (git := _RE_GIT_COMMAND.search(line)):
+            line = _RE_GIT_FORMAT.sub(shield_printf_format_after(git), line)
 
         # work only with non-commented part
         sp = line.split('#')
