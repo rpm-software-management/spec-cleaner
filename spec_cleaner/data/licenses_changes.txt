@@ -1,4 +1,4 @@
-# SPDX license list 3.29.0, fetched 2026-10-26
+# SPDX license list ddf7382, fetched 2026-11-23
 0BSD	0BSD
 0BSD+	0BSD+
 3D-Slicer-1.0	3D-Slicer-1.0
@@ -243,6 +243,8 @@ BSL-1.0	BSL-1.0
 BSL-1.0+	BSL-1.0+
 BUSL-1.1	BUSL-1.1
 BUSL-1.1+	BUSL-1.1+
+BaKoMa	BaKoMa
+BaKoMa+	BaKoMa+
 Baekmuk	Baekmuk
 Baekmuk+	Baekmuk+
 Bahyph	Bahyph
@@ -789,6 +791,8 @@ HPND-UC	HPND-UC
 HPND-UC+	HPND-UC+
 HPND-UC-export-US	HPND-UC-export-US
 HPND-UC-export-US+	HPND-UC-export-US+
+HPND-X11	HPND-X11
+HPND-X11+	HPND-X11+
 HPND-doc	HPND-doc
 HPND-doc+	HPND-doc+
 HPND-doc-sell	HPND-doc-sell
@@ -1034,6 +1038,8 @@ MIT-enna	MIT-enna
 MIT-enna+	MIT-enna+
 MIT-feh	MIT-feh
 MIT-feh+	MIT-feh+
+MIT-kdevelop-ideal	MIT-kdevelop-ideal
+MIT-kdevelop-ideal+	MIT-kdevelop-ideal+
 MIT-open-group	MIT-open-group
 MIT-open-group+	MIT-open-group+
 MIT-testregex	MIT-testregex
