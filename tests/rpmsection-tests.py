@@ -613,6 +613,11 @@ EMBRACE_SHELL_PRINTF_FORMATS = [
     ('printf -- "%s\\n" foo', 'printf -- "%s\\n" foo'),
     ('printf -v var "%s\\n"', 'printf -v var "%s\\n"'),
     ('sprintf "%s" $x', 'sprintf "%s" $x'),
+    # perl's printf takes an optional filehandle before the format
+    ('perl -e \'printf STDERR "%s\\n", 1\'', 'perl -e \'printf STDERR "%s\\n", 1\''),
+    ('printf $fh "%s\\n", $x;', 'printf $fh "%s\\n", $x;'),
+    ('printf {$fh} "%d\\n", 1;', 'printf {$fh} "%d\\n", 1;'),
+    ('printf(STDERR "%d\\n", 1);', 'printf(STDERR "%d\\n", 1);'),
     # awk printf/sprintf inside the program
     (
         'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',

@@ -131,10 +131,12 @@ _RE_PRINTF_FORMAT = re.compile(
 # perl/ruby printf/sprintf, and awk printf/sprintf inside the program); its
 # %-directives (%s, %d, ...) belong to the tool, not to rpm (gh#522). The
 # 'option' group is the command plus its separator (and printf's -- or -v
-# option, and perl/ruby's opening paren); only the 'format' group is
-# shielded, so macros elsewhere on the line are still braced.
+# option, perl's filehandle, and perl/ruby's opening paren); only the
+# 'format' group is shielded, so macros elsewhere on the line are still
+# braced.
 _RE_SHELL_PRINTF_FORMAT = re.compile(
-    r'(?P<option>(?<![\w-])(?:s?printf)\s*\(?\s*(?:--\s+|-v\s+\S+\s+)?)'
+    r'(?P<option>(?<![\w-])(?:s?printf)\s*\(?\s*'
+    r'(?:--\s+|-v\s+\S+\s+|(?:[A-Z][A-Z0-9_]*|\$\w+|\{[^{}\s]+\})\s+)?)'
     r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
 )
 
