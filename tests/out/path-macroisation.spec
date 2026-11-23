@@ -27,6 +27,7 @@ Release:        0
 Summary:        Paths stay as written in the minimal run
 License:        MIT
 URL:            https://example.org/path-macroisation
+BuildRequires:  %{?with_x:/usr/bin/zcat}
 BuildRequires:  (/usr/bin/foo or bar)
 BuildRequires:  /usr/bin/bar
 BuildRequires:  /usr/bin/foo

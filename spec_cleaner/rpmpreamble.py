@@ -13,7 +13,13 @@ import pyrpm.spec  # type: ignore[import-untyped, unused-ignore]
 
 from .dependency_parser import DependencyParser, DepParserError
 from .rpmexception import NoMatchExceptionError
-from .rpmhelpers import GroupItem, GroupLine, fix_license, open_macro_bodies
+from .rpmhelpers import (
+    GroupItem,
+    GroupLine,
+    fix_license,
+    open_macro_bodies,
+    trailing_comment_start,
+)
 from .rpmpreambleelements import MacroLine, RpmPreambleElements, Unit
 from .rpmrequirestoken import RpmRequiresToken
 from .rpmsection import Section
@@ -480,43 +486,12 @@ class RpmPreamble(Section):
     def _split_trailing_comment(value: str) -> tuple[str, str | None]:
         # Separate trailing %dnl or # comments before dependency parsing.
         # They are not part of the dependency and would crash the parser.
-        # A # or %dnl only starts a comment outside every %{...} and
-        # %(...) body: inside a macro body it is body text, and the
-        # wrapper's closing brace still closes the wrapper. Judge the
-        # closure on the code before the comment, or a closed one-liner
-        # such as %{?with_foo: # comment} looks like an open block.
-        # The comment starts at the earlier marker, and a leading #! is
-        # a dep pragma marker, not a comment.
-        trailing_comment: str | None = None
-        dnl_idx = -1
-        index = value.find('%dnl')
-        while index >= 0:
-            if open_macro_bodies(value[:index]) == (0, 0):
-                dnl_idx = index
-                break
-            index = value.find('%dnl', index + 1)
-        # the comment starts at whichever marker comes first: a %dnl inside
-        # a # comment is comment text, and a # after %dnl is inside it
-        end = dnl_idx if dnl_idx >= 0 else len(value)
-        hash_idx = -1
-        for i in range(end):
-            if value[i] != '#':
-                continue
-            if i == 0 and value.lower().startswith(
-                ('#!buildrequires:', '#!buildconflicts:', '#!buildignore:')
-            ):
-                continue
-            if i == 0 or value[i - 1] in ' \t':
-                if open_macro_bodies(value[:i]) == (0, 0):
-                    hash_idx = i
-                    break
-        if hash_idx >= 0:
-            trailing_comment = value[hash_idx:].strip()
-            value = value[:hash_idx].strip()
-        elif dnl_idx >= 0:
-            trailing_comment = value[dnl_idx:].strip()
-            value = value[:dnl_idx].strip()
-        return value, trailing_comment
+        # Judge the closure on the code before the comment, or a closed
+        # one-liner such as %{?with_foo: # comment} looks like an open block.
+        start = trailing_comment_start(value, skip_pragma=True)
+        if start < 0:
+            return value, None
+        return value[:start].strip(), value[start:].strip()
 
     @staticmethod
     def _attach_trailing_comment(

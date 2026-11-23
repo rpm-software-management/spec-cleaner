@@ -1,8 +1,9 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 import re
+from collections.abc import Callable
 from typing import IO, Any
 
-from .rpmhelpers import open_macro_bodies
+from .rpmhelpers import trailing_comment_start
 from .rpmregexp import Regexp
 
 # Short utilities and what they expand to; the bare names map to
@@ -131,10 +132,12 @@ _RE_PRINTF_FORMAT = re.compile(
 # perl/ruby printf/sprintf, and awk printf/sprintf inside the program); its
 # %-directives (%s, %d, ...) belong to the tool, not to rpm (gh#522). The
 # 'option' group is the command plus its separator (and printf's -- or -v
-# option, and perl/ruby's opening paren); only the 'format' group is
-# shielded, so macros elsewhere on the line are still braced.
+# option, perl's filehandle, and perl/ruby's opening paren); only the
+# 'format' group is shielded, so macros elsewhere on the line are still
+# braced.
 _RE_SHELL_PRINTF_FORMAT = re.compile(
-    r'(?P<option>(?<![\w-])(?:s?printf)\s*\(?\s*(?:--\s+|-v\s+\S+\s+)?)'
+    r'(?P<option>(?<![\w-])(?:s?printf)\s*\(?\s*'
+    r'(?:--\s+|-v\s+\S+\s+|(?:[A-Z][A-Z0-9_]*|\$\w+|\{[^{}\s]+\})\s+)?)'
     r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
 )
 
@@ -145,7 +148,9 @@ _RE_SHELL_PRINTF_FORMAT = re.compile(
 # form is matched first, so the whole quoted string is shielded as one
 # unit; the outside form then only sees a + followed by a quoted or
 # unquoted format.
-_RE_DATE_FORMAT_INSIDE = re.compile(r'(?P<option>)(?P<format>"\+(?:[^"\\]|\\.)*"|\'\+[^\']*\')')
+_RE_DATE_FORMAT_INSIDE = re.compile(
+    r'(?P<option>)(?<!\\)(?P<format>"\+(?:[^"\\]|\\.)*"|\'\+[^\']*\')'
+)
 _RE_DATE_FORMAT_OUTSIDE = re.compile(
     r'(?P<option>\+\s*)(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|%[^\s"\';&|]+)'
 )
@@ -169,6 +174,11 @@ _RE_GIT_FORMAT = re.compile(
     r'(?P<option>--(?:format|pretty|date)(?:=|\s+)(?:format:)?)'
     r'(?P<format>"(?:[^"\\]|\\.)*"|\'[^\']*\'|[^\s"\';&|]+)'
 )
+
+# the date and git words a format shield must follow to count as that command's
+# format; --date, update, github and SOURCE_DATE_EPOCH are not the words
+_RE_DATE_COMMAND = re.compile(r'(?<![\w-])date\b')
+_RE_GIT_COMMAND = re.compile(r'(?<![\w-])git\b')
 
 # the opener of a heredoc whose delimiter is quoted ('EOF', "EOF" or
 # \EOF); the shell does not expand anything in such a heredoc body,
@@ -280,28 +290,10 @@ class Section:
         The value without its trailing comment.
 
         A `#` (or `%dnl`) only starts a comment outside every `%{...}`
-        and `%(...)` body; inside a macro body it is body text. Mirrors the
-        comment detection of RpmPreamble._split_trailing_comment.
+        and `%(...)` body; inside a macro body it is body text.
         """
-        dnl_idx = -1
-        index = value.find('%dnl')
-        while index >= 0:
-            if open_macro_bodies(value[:index]) == (0, 0):
-                dnl_idx = index
-                break
-            index = value.find('%dnl', index + 1)
-        # the comment starts at whichever marker comes first: a %dnl inside
-        # a # comment is comment text, and a # after %dnl is inside it
-        end = dnl_idx if dnl_idx >= 0 else len(value)
-        for i in range(end):
-            if value[i] != '#':
-                continue
-            if i == 0 or value[i - 1] in ' \t':
-                if open_macro_bodies(value[:i]) == (0, 0):
-                    return value[:i].rstrip()
-        if dnl_idx >= 0:
-            return value[:dnl_idx].rstrip()
-        return value
+        start = trailing_comment_start(value)
+        return value if start < 0 else value[:start].rstrip()
 
     @staticmethod
     def _has_path_token(value: str) -> bool:
@@ -310,9 +302,10 @@ class Section:
 
         A token starting with '/' is a file path, alone or among package
         names, also right after '(' in a rich dependency such as
-        (/usr/bin/foo or bar).
+        (/usr/bin/foo or bar), or after the colon of a conditional macro
+        such as %{?with_foo:/usr/bin/foo}.
         """
-        return bool(re.search(r'(?:^|[\s,(])/', value))
+        return bool(re.search(r'(?:^|[\s,(:])/', value))
 
     def _path_buildrequires_value(self, line: str) -> str | None:
         """
@@ -329,24 +322,10 @@ class Section:
             return match.group(2)
         cond = self.reg.re_onelinecond_dep.match(line)
         if cond:
-            # the matched prefix ends at the tag colon; only a BuildRequires
-            # (or BuildPreReq) inside the conditional carries a file
-            # dependency the scheduler records
-            tag = re.search(
-                r'(BuildRequires|BuildPreReq)(?:\([^)]*\))?\s*:$',
-                cond.group(0),
-                re.IGNORECASE,
-            )
-            if tag:
+            # the matched prefix ends at the tag colon
+            if self.reg.re_buildrequires_tag_end.search(cond.group(0)):
                 return line[cond.end() :]
-        # a one-line conditional wrapping a dep pragma: the pragma marker
-        # sits between the conditional colon and the tag, so the shared
-        # conditional pattern does not match it
-        pragma_cond = re.match(
-            r'^\s*%{!?[^?]*\?[^:]+:\s*#!BuildRequires:\s*(.*)',
-            line,
-            re.IGNORECASE,
-        )
+        pragma_cond = self.reg.re_onelinecond_buildrequires_pragma.match(line)
         if pragma_cond:
             return pragma_cond.group(1)
         return None
@@ -588,6 +567,56 @@ class Section:
         if '%' not in line:
             return line
 
+        # shielded text is swapped for placeholders and restored at the end
+        shielded: list[str] = []
+
+        def shield(match: re.Match[str]) -> str:
+            shielded.append(match.group(0))
+            return f'\x00{len(shielded) - 1}\x00'
+
+        def shield_awk_program(match: re.Match[str]) -> str:
+            shielded.append(match.group('program'))
+            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
+
+        def shield_printf_format(match: re.Match[str]) -> str:
+            shielded.append(match.group('format'))
+            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
+
+        def shield_printf_format_after(
+            command: re.Match[str],
+        ) -> Callable[[re.Match[str]], str]:
+            def callback(match: re.Match[str]) -> str:
+                if match.start() < command.end():
+                    return match.group(0)
+                return shield_printf_format(match)
+
+            return callback
+
+        # The %-forms in these tool arguments belong to the tool, not to rpm.
+        # They are shielded on the whole line, before the comment split, as
+        # a '#' inside a format is not a comment, and before the
+        # braced-argument-macro shield below, so the shields do not nest.
+        # Only the program or format is shielded, macros elsewhere on the
+        # line are still braced.
+        # awk (gh#524) goes first so a printf inside its program is shielded with it
+        if 'awk' in line:
+            line = _RE_AWK_PROGRAM.sub(shield_awk_program, line)
+        # find/stat -printf (gh#522)
+        if '-printf' in line or '-fprintf' in line:
+            line = _RE_PRINTF_FORMAT.sub(shield_printf_format, line)
+        # date '+FORMAT' inside quotes goes first so a quoted string is shielded as one
+        # unit; printf goes before the unquoted '+FORMAT' so a '+' in its format is not split
+        if 'date' in line and (date := _RE_DATE_COMMAND.search(line)):
+            line = _RE_DATE_FORMAT_INSIDE.sub(shield_printf_format_after(date), line)
+        if 'printf' in line:
+            line = _RE_SHELL_PRINTF_FORMAT.sub(shield_printf_format, line)
+        if 'date' in line and (date := _RE_DATE_COMMAND.search(line)):
+            line = _RE_DATE_FORMAT_OUTSIDE.sub(shield_printf_format_after(date), line)
+        if 'stat' in line:
+            line = _RE_STAT_FORMAT.sub(shield_printf_format, line)
+        if 'git' in line and (git := _RE_GIT_COMMAND.search(line)):
+            line = _RE_GIT_FORMAT.sub(shield_printf_format_after(git), line)
+
         # work only with non-commented part
         sp = line.split('#')
 
@@ -597,69 +626,9 @@ class Section:
         # braces are what keeps the tokens in the surrounding grammar
         # (a dependency's version relation, a %files option, plain
         # prose, options for the command the macro runs as in
-        # '%{cargo_build} --locked'). The shielded uses are swapped for
-        # placeholders before the substitutions below and restored
-        # afterwards; uses that were unbraced in the input are not
-        # shielded, so the space form of an invocation keeps its form.
-        shielded: list[str] = []
-
-        def shield(match: re.Match[str]) -> str:
-            shielded.append(match.group(0))
-            return f'\x00{len(shielded) - 1}\x00'
-
-        # Shield the program argument of awk(1) first: its %-forms
-        # (regex literals like %lang(...), printf formats, strftime
-        # formats) belong to awk, not to rpm, so the brace-the-macros
-        # pass below must leave them alone (gh#524). Shielding before
-        # the braced-argument-macro pass keeps the two shields from
-        # nesting: a braced macro inside the program stays verbatim
-        # instead of leaving a placeholder behind when the single
-        # restore pass runs. Only the program is shielded, so macros
-        # elsewhere on the line are still braced. The awk shield runs
-        # before the printf-family shields below, so a printf format
-        # inside an awk program is shielded as part of the program
-        # and no placeholder is left behind.
-        def shield_awk_program(match: re.Match[str]) -> str:
-            shielded.append(match.group('program'))
-            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
-
-        if 'awk' in sp[0]:
-            sp[0] = _RE_AWK_PROGRAM.sub(shield_awk_program, sp[0])
-
-        # Shield the format string of a find/stat -printf/-fprintf/--printf
-        # option first: its %-directives (%f, %p, ...) belong to the tool,
-        # not to rpm, so the brace-the-macros pass below must leave them
-        # alone (gh#522). Shielding before the braced-argument-macro pass
-        # keeps the two shields from nesting: a braced macro inside a
-        # format string stays verbatim instead of leaving a placeholder
-        # behind when the single restore pass runs. Only the format string
-        # is shielded, so macros elsewhere on the line are still braced.
-        def shield_printf_format(match: re.Match[str]) -> str:
-            shielded.append(match.group('format'))
-            return match.group('option') + f'\x00{len(shielded) - 1}\x00'
-
-        # Shield the format strings of the commands whose %-directives
-        # belong to the tool, not to rpm (gh#522), before the
-        # braced-argument-macro shield below, so the shields never nest.
-        # The date '+FORMAT' form inside quotes is shielded before
-        # printf/sprintf, so the whole quoted string is shielded as one
-        # unit; printf/sprintf is shielded before the date '+FORMAT' form
-        # outside quotes, so a printf format containing '+' is not
-        # fragmented by it. Only the format string is shielded, so
-        # macros elsewhere on the line are still braced.
-        if '-printf' in sp[0] or '-fprintf' in sp[0]:
-            sp[0] = _RE_PRINTF_FORMAT.sub(shield_printf_format, sp[0])
-        if 'date' in sp[0]:
-            sp[0] = _RE_DATE_FORMAT_INSIDE.sub(shield_printf_format, sp[0])
-        if 'printf' in sp[0]:
-            sp[0] = _RE_SHELL_PRINTF_FORMAT.sub(shield_printf_format, sp[0])
-        if 'date' in sp[0]:
-            sp[0] = _RE_DATE_FORMAT_OUTSIDE.sub(shield_printf_format, sp[0])
-        if 'stat' in sp[0]:
-            sp[0] = _RE_STAT_FORMAT.sub(shield_printf_format, sp[0])
-        if 'git' in sp[0]:
-            sp[0] = _RE_GIT_FORMAT.sub(shield_printf_format, sp[0])
-
+        # '%{cargo_build} --locked'). Uses that were unbraced in the
+        # input are not shielded, so the space form of an invocation
+        # keeps its form.
         if self.reg.re_braced_argument_macro is not None and '%{' in sp[0]:
             sp[0] = self.reg.re_braced_argument_macro.sub(shield, sp[0])
 
@@ -675,10 +644,15 @@ class Section:
 
         # and replace back known keywords to braceless state again
         sp[0] = self.reg.re_unbrace_keywords.sub(r'%\1', sp[0])
-        if shielded:
-            sp[0] = _RE_SHIELDED.sub(lambda match: shielded[int(match.group(1))], sp[0])
         # re-create the line back
-        return '#'.join(sp)
+        result = '#'.join(sp)
+        # a shield may wrap text holding an earlier placeholder; each pass unwraps one level
+        for _ in range(len(shielded)):
+            restored = _RE_SHIELDED.sub(lambda match: shielded[int(match.group(1))], result)
+            if restored == result:
+                break
+            result = restored
+        return result
 
     def replace_buildroot(self, line: str) -> str:
         """

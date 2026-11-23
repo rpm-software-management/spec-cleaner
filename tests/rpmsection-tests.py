@@ -1,3 +1,4 @@
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -250,6 +251,9 @@ PATH_BUILDREQUIRES_KEPT = [
     # a path right after '(' in a rich dependency
     'BuildRequires:  (/usr/bin/foo or bar)',
     'BuildRequires:  (foo or /usr/bin/bar)',
+    # a path inside a conditional macro value
+    'BuildRequires:  %{?with_x:/usr/bin/foo}',
+    'BuildRequires:  %{!?with_x:/usr/bin/foo}',
     # the tag inside a one-line conditional is still a BuildRequires
     '%{?with_foo:BuildRequires: /usr/bin/foo}',
     # the tag inside a one-line conditional may be a dep pragma
@@ -273,6 +277,10 @@ def test_requires_path_still_macroised_in_full_run(
     assert (
         _cleaned_line(default_options, False, 'Requires:  /usr/bin/foo')
         == 'Requires:  %{_bindir}/foo'
+    )
+    assert (
+        _cleaned_line(default_options, False, 'Requires:  %{?with_x:/usr/bin/foo}')
+        == 'Requires:  %{?with_x:%{_bindir}/foo}'
     )
 
 
@@ -533,6 +541,7 @@ EMBRACE_PRINTF_FORMATS = [
         'find . -xtype l -delete -printf "deleted \'%f\'\\n"',
         'find . -xtype l -delete -printf "deleted \'%f\'\\n"',
     ),
+    ("find . -printf '%p#\\n'", "find . -printf '%p#\\n'"),
     ('find * -name \\*.so -printf "/%p\\n"', 'find * -name \\*.so -printf "/%p\\n"'),
     ("find $root -name FEATURE -printf ' -I%h'", "find $root -name FEATURE -printf ' -I%h'"),
     ("find -type l -printf '%f\\a%l\\n'", "find -type l -printf '%f\\a%l\\n'"),
@@ -611,6 +620,15 @@ EMBRACE_SHELL_PRINTF_FORMATS = [
     ('printf -- "%s\\n" foo', 'printf -- "%s\\n" foo'),
     ('printf -v var "%s\\n"', 'printf -v var "%s\\n"'),
     ('sprintf "%s" $x', 'sprintf "%s" $x'),
+    # perl's printf takes an optional filehandle before the format
+    ('perl -e \'printf STDERR "%s\\n", 1\'', 'perl -e \'printf STDERR "%s\\n", 1\''),
+    ('printf $fh "%s\\n", $x;', 'printf $fh "%s\\n", $x;'),
+    ('printf {$fh} "%d\\n", 1;', 'printf {$fh} "%d\\n", 1;'),
+    ('printf(STDERR "%d\\n", 1);', 'printf(STDERR "%d\\n", 1);'),
+    ('printf {*STDERR} "%d\\n", 1;', 'printf {*STDERR} "%d\\n", 1;'),
+    # a shell variable reads as a filehandle, so its format is the shielded
+    # argument and a later macro stays unbraced
+    ('printf $FMT "%name"', 'printf $FMT "%name"'),
     # awk printf/sprintf inside the program
     (
         'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',
@@ -623,6 +641,15 @@ EMBRACE_SHELL_PRINTF_FORMATS = [
     (
         'printf "%s\\n" /usr/share/foo',
         'printf "%s\\n" %{_datadir}/foo',
+    ),
+    # a '#' inside the format is not a comment
+    ('printf "%s # x\\n" %name', 'printf "%s # x\\n" %{name}'),
+    # a real comment is still left alone
+    ('make %name # %foo', 'make %{name} # %foo'),
+    # a date format nested in a printf format leaves no placeholder behind
+    (
+        'printf "Date: $(date "+%F") %name\\n"',
+        'printf "Date: $(date "+%F") %name\\n"',
     ),
 ]
 
@@ -662,6 +689,13 @@ EMBRACE_DATE_FORMATS = [
     ),
     # the S: macro rewrite still applies outside the format string
     ('date +%s -r %{S:99}', 'date +%s -r %{SOURCE99}'),
+    # a nested date command inside another date's option stays shielded
+    (
+        'date -u -d "@${SOURCE_DATE_EPOCH:-$(date +%s)}" "+%Y-%m-%d"',
+        'date -u -d "@${SOURCE_DATE_EPOCH:-$(date +%s)}" "+%Y-%m-%d"',
+    ),
+    # a quoted '+' string that no date command precedes is not a date format
+    ('echo "+%name" > update-me', 'echo "+%{name}" > update-me'),
 ]
 
 
@@ -671,6 +705,14 @@ def test_embrace_leaves_date_format_directives(
 ) -> None:
     """Strftime %-directives in a date '+FORMAT' argument stay unbraced."""
     assert _cleaned_line(default_options, False, line) == expected
+
+
+def test_date_format_shield_is_linear(default_options: Callable[..., dict[str, Any]]) -> None:
+    """An escaped quote opens no date format, so a long run of them stays fast."""
+    section = _section(default_options, set())
+    start = time.perf_counter()
+    section.embrace_macros('date %name ' + '"+\\' * 20000)
+    assert time.perf_counter() - start < 1
 
 
 # gh#522: stat(1) -c/--format carries %-directives (%n, %s, %a, %Y, ...)
@@ -686,6 +728,11 @@ EMBRACE_STAT_FORMATS = [
     ('stat -c %U:%G:%a /usr/bin/foo', 'stat -c %U:%G:%a %{_bindir}/foo'),
     ('stat -L -c "%i" /usr/bin/foo', 'stat -L -c "%i" %{_bindir}/foo'),
     ('stat --format=%Y /usr/bin/foo', 'stat --format=%Y %{_bindir}/foo'),
+    # the git shield's format group reaches over the stat placeholder
+    (
+        'test "$(stat --format=%a %{buildroot}%{_bindir}/git)" = 755',
+        'test "$(stat --format=%a %{buildroot}%{_bindir}/git)" = 755',
+    ),
 ]
 
 
@@ -707,6 +754,16 @@ EMBRACE_GIT_FORMATS = [
         "%define git_version %(git log '-n1' '--date=format:%Y%m%d' "
         '\'--no-show-signature\' "--pretty=format:+git%cd.%h")',
     ),
+    # a --format option of some other command is not a git format
+    (
+        './configure --with-github --format=%name',
+        './configure --with-github --format=%{name}',
+    ),
+    # the date shield runs first, and the git shield wraps its placeholder
+    (
+        'git log -1 --date=format:"+%Y" --format=%cd',
+        'git log -1 --date=format:"+%Y" --format=%cd',
+    ),
 ]
 
 
@@ -727,6 +784,8 @@ EMBRACE_AWK_PROGRAMS = [
         "awk -v P=%buildroot '/^(%lang|[^%])/{print P $NF}' libpq.files libecpg.files | xargs rm",
         "awk -v P=%{buildroot} '/^(%lang|[^%])/{print P $NF}' libpq.files libecpg.files | xargs rm",
     ),
+    # a '#' inside the program is not a comment
+    ('awk \'/%lang/ {print "#"}\' f', 'awk \'/%lang/ {print "#"}\' f'),
     # a printf format inside the program stays unbraced too
     (
         'awk -F. \'{ printf "%d.%03d%03d", $1, $2, $3 }\'',
@@ -813,6 +872,28 @@ def test_embrace_leaves_awk_program_directives(
 ) -> None:
     """%-forms in an awk program argument stay unbraced."""
     assert _cleaned_line(default_options, False, line) == expected
+
+
+EMBRACE_FORMAT_LINES = [
+    line
+    for table in (
+        EMBRACE_PRINTF_FORMATS,
+        EMBRACE_SHELL_PRINTF_FORMATS,
+        EMBRACE_DATE_FORMATS,
+        EMBRACE_STAT_FORMATS,
+        EMBRACE_GIT_FORMATS,
+        EMBRACE_AWK_PROGRAMS,
+    )
+    for line, _ in table
+]
+
+
+@pytest.mark.parametrize('line', EMBRACE_FORMAT_LINES)
+def test_embrace_never_leaves_placeholders(
+    default_options: Callable[..., dict[str, Any]], line: str
+) -> None:
+    """No shield placeholder survives into the output, however the shields overlap."""
+    assert '\x00' not in _cleaned_line(default_options, False, line)
 
 
 def test_embrace_leaves_known_macro_function_unbraced(
@@ -1269,3 +1350,46 @@ def test_replace_optflags_assignment_forms(
         'RPM_OPT_FLAGS ="%{optflags}"',
         'CFLAGS="%{optflags}"',
     ]
+
+
+OPTFLAGS_KEPT_ASSIGNMENTS = [
+    'if true; then RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"; fi',
+    'for x in a; do RPM_OPT_FLAGS="$RPM_OPT_FLAGS -x"; done',
+    'if false; then :; else RPM_OPT_FLAGS=x; fi',
+    'if true; then :; elif RPM_OPT_FLAGS=x; then make; fi',
+    '{ RPM_OPT_FLAGS=x; }',
+    '(RPM_OPT_FLAGS=x; make)',
+    'declare -x RPM_OPT_FLAGS="${RPM_OPT_FLAGS/-Werror/}"',
+    'local RPM_OPT_FLAGS=x',
+    'typeset RPM_OPT_FLAGS=x',
+    'readonly RPM_OPT_FLAGS=x',
+    'declare -x CFLAGS=1 RPM_OPT_FLAGS=x',
+]
+
+OPTFLAGS_NOT_ASSIGNMENTS = [
+    'echo then RPM_OPT_FLAGS=x',
+    'doit RPM_OPT_FLAGS=x',
+    'make RPM_OPT_FLAGS="$RPM_OPT_FLAGS"',
+]
+
+
+@pytest.mark.parametrize('assignment', OPTFLAGS_KEPT_ASSIGNMENTS)
+def test_replace_optflags_assignment_after_keyword_or_builtin(
+    default_options: Callable[..., dict[str, Any]], assignment: str
+) -> None:
+    """An assignment after a shell keyword or declaration builtin keeps later references."""
+    section = _section(default_options, set())
+    section.add(assignment)
+    section.add('CFLAGS="$RPM_OPT_FLAGS"')
+    assert section.lines[-1] == 'CFLAGS="$RPM_OPT_FLAGS"'
+
+
+@pytest.mark.parametrize('line', OPTFLAGS_NOT_ASSIGNMENTS)
+def test_replace_optflags_non_assignment_still_macroised(
+    default_options: Callable[..., dict[str, Any]], line: str
+) -> None:
+    """A word before the variable makes it an argument, not an assignment."""
+    section = _section(default_options, set())
+    section.add(line)
+    section.add('CFLAGS="$RPM_OPT_FLAGS"')
+    assert section.lines[-1] == 'CFLAGS="%{optflags}"'

@@ -192,6 +192,16 @@ class Regexp:
         r'^\s*%{!?[^?]*\?[^:]+:\s*#!Build(?:Requires|Conflicts|Ignore):',
         re.IGNORECASE,
     )
+    # tag at the end of the prefix re_onelinecond_dep matched; only a BuildRequires
+    # (or BuildPreReq) there carries a file dependency the scheduler records
+    re_buildrequires_tag_end = re.compile(
+        r'(BuildRequires|BuildPreReq)(?:\([^)]*\))?\s*:$', re.IGNORECASE
+    )
+    # one-line conditional wrapping a BuildRequires dep pragma; the pragma marker
+    # sits between the conditional colon and the tag, so the pattern above does not match it
+    re_onelinecond_buildrequires_pragma = re.compile(
+        r'^\s*%{!?[^?]*\?[^:]+:\s*#!BuildRequires:\s*(.*)', re.IGNORECASE
+    )
     # one-line conditional wrapping a %define/%global, eg. %{?foo:%define bar}
     re_onelinecond_define = re.compile(
         r'^\s*%{!?[^?]*\?[^:]+:\s*%(define|global)\b',
@@ -321,11 +331,14 @@ class Regexp:
     # (';', '&&', '||', '&', '|'); the lookbehind also matches after
     # the last character of a doubled separator. Over-detecting is
     # safe here: a spurious match only leaves later references in
-    # their shell form, which reads the same value
-    _optflags_stmt_start = r'(?:^|(?<=[;&|]))\s*'
+    # their shell form, which reads the same value. A statement may also
+    # open with a shell keyword ('then', 'do', 'else', 'elif', '{') or a '(' and
+    # be declared by export, declare, typeset, local or readonly.
+    _optflags_stmt_start = r'(?:^|(?<=[;&|(]))\s*(?:(?:then|do|else|elif|\{)\s+)*'
+    _optflags_declare = r'(?:(?:export|declare|typeset|local|readonly)(?:\s+-[a-zA-Z]+)*\s+)?'
     re_optflags_assign = re.compile(
-        _optflags_stmt_start + r'(?:export\s+)?RPM_OPT_FLAGS\+?='
-        r'|' + _optflags_stmt_start + r'(?:export\s+)?' + _make_env_prefix + r'RPM_OPT_FLAGS\+?='
+        _optflags_stmt_start + _optflags_declare + r'RPM_OPT_FLAGS\+?='
+        r'|' + _optflags_stmt_start + _optflags_declare + _make_env_prefix + r'RPM_OPT_FLAGS\+?='
         r'|' + _optflags_stmt_start + r'env\s+RPM_OPT_FLAGS\+?='
     )
     re_suseupdateconfig = re.compile(r'%{?\??suse_update_config')

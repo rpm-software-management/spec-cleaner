@@ -27,6 +27,7 @@ License:        MIT
 URL:            https://example.org/path-macroisation
 BuildRequires:  /usr/bin/make
 BuildRequires:  (/usr/bin/foo or bar)
+BuildRequires:  %{?with_x:/usr/bin/zcat}
 BuildRequires:  foo \
     /usr/bin/bar
 %{?with_foo:BuildRequires: /usr/bin/foo}

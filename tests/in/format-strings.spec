@@ -46,6 +46,12 @@ stat --format=%Y /usr/bin/foo
 printf "%s\n" /usr/share/foo
 date +%Y-%m-%d /usr/share/foo
 stat -c %a /usr/share/foo
+test "$(stat --format=%a %{buildroot}%{_bindir}/git)" = 755
+printf "Date: $(date "+%F") %name\n"
+git log -1 --date=format:"+%Y" --format=%cd
+find . -printf '%p#\n'
+awk '/%lang/ {print "#"}' f
+perl -e 'printf STDERR "%s\n", 1'
 
 %files
 %license LICENSE
